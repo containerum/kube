@@ -40,5 +40,7 @@ func main() {
 	}
 	g := gin.New()
 	g.Use(http.InitCmdContext)
-	g.POST("/namespaces", http.GinHandler(http.NamespaceCreate))
+	g.POST("/namespaces",
+		http.GinHandler(ReadRequestData),
+		http.GinHandler(http.NamespaceCreate))
 }

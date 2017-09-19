@@ -28,7 +28,7 @@ func NamespaceCreate(c *cmdContext) {
 	c.log.Infof("NamespaceCreate start")
 	defer c.log.Info("NamespaceCreate end")
 
-	ns_, kind, err := parseJSON(c.body)
+	ns_, kind, err := parseJSON(c.rawbody)
 	if err != nil {
 		c.log.Warnf("parseJSON error: %[1]T: %[1]v", err)
 		c.JSON(500, "E1")
@@ -66,4 +66,7 @@ func NamespaceCreate(c *cmdContext) {
 }
 
 func DeploymentCreate(c *cmdContext) {
+	c.log = c.log.WithField("handler", "DeploymentCreate")
+	c.log.Infof("DeploymentCreate start")
+	defer c.log.Infof("DeploymentCreate end")
 }

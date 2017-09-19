@@ -34,3 +34,6 @@ func makeCmdID() string {
 
 func GinHandler(func(*cmdContext)) gin.HandlerFunc {
 }
+
+func ReadRequestData(c *cmdContext) {
+}
