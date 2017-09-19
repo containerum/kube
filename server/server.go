@@ -5,7 +5,7 @@ import (
 )
 
 type Server struct {
-	kubeclients []*kubernetes.Clientset
+	KubeClients []*kubernetes.Clientset
 }
 
 // GetKubeClient picks and returns a kubernetes.Clientset

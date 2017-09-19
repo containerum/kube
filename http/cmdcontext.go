@@ -16,3 +16,7 @@ type cmdContext struct {
 	// 3rd party API clients.
 	server server.Server
 }
+
+func (c *cmdContext) ErrorJSON(code int, errstr string) {
+	c.Context.JSON(code, map[string]string{"error": errstr})
+}
