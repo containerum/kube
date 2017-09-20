@@ -14,7 +14,9 @@ func MakeCmdID() string {
 		key := make([]byte, 16)
 		prng.Read(key)
 		aesCipher, _ := aes.NewCipher(key)
-		sr = cipher.NewCTR(aesCipher)
+		iv := make([]byte, 16)
+		prng.Read(iv)
+		sr = cipher.NewCTR(aesCipher, iv)
 	}
 
 	b := make([]byte, 32)
