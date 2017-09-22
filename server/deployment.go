@@ -58,6 +58,23 @@ func ListDeployments(c *gin.Context) {
 	c.JSON(200, deplList)
 }
 
+func GetDeployment(c *gin.Context) {
+	ns := c.MustGet("namespace").(string)
+	deplname := c.MustGet("objectName").(string)
+	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+
+	depl, err := kubecli.AppsV1beta2().Deployments(ns).Get(deplname)
+	if err != nil {
+		util.Log(c).Wanrf("kubecli.Deployments.Get error: %v", err)
+		c.AbortWithStatusJSON(503, map[string]string{
+			"error": fmt.Sprintf("cannot list deployments: %v", err),
+		})
+		return
+	}
+	redactDeploymentForUser(depl)
+	c.JSON(200, depl)
+}
+
 // middleware deps:
 // 	SetNamespace
 // 	SetObjectName
