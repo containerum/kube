@@ -58,6 +58,10 @@ func ListDeployments(c *gin.Context) {
 	c.JSON(200, deplList)
 }
 
+// middleware deps:
+// 	SetNamespace
+// 	SetObjectName
+// 	Set(…)KubeClient
 func GetDeployment(c *gin.Context) {
 	ns := c.MustGet("namespace").(string)
 	deplname := c.MustGet("objectName").(string)
