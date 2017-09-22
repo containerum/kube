@@ -1,18 +1,42 @@
 package middleware
 
+import (
+	"encoding/json"
+	"math/rand"
+
+	"bitbucket.org/exonch/kube-api/server"
+	"bitbucket.org/exonch/kube-api/utils"
+
+	"github.com/gin-gonic/gin"
+	"github.com/satori/go.uuid"
+	"k8s.io/api/apps/v1beta2"
+	"k8s.io/api/core/v1"
+)
+
 func SetNamespace(c *gin.Context) {
 	ns := c.Param("namespace")
 	if ns == "" {
-		c.AbortWithErrorJSON(400, map[string]string{
-			"error": `missing "namespace" parameter`,
+		c.AbortWithStatusJSON(400, map[string]string{
+			"error": `missing namespace name`,
 		})
 	}
+	c.Set("namespace", ns)
+}
+
+func SetObjectName(c *gin.Context) {
+	objname := c.Param("objname")
+	if objname == "" {
+		c.AbortWithStatusJSON(400, map[string]string{
+			"error": `missing object name`,
+		})
+	}
+	c.Set("objectName", objname)
 }
 
 func SetRandomKubeClient(c *gin.Context) {
 	if len(server.KubeClients) == 0 {
-		c.AbortWithErrorJSON(500, map[string]string{
-			"error": "no available kubernetes apiserver clients"
+		c.AbortWithStatusJSON(500, map[string]string{
+			"error": "no available kubernetes apiserver clients",
 		})
 		return
 	}
@@ -39,7 +63,7 @@ func ParseJSON(c *gin.Context) {
 
 	err = json.Unmarshal(jsn, &kind)
 	if err != nil {
-		return nil, "", err
+		return
 	}
 	switch kind.Kind {
 	case "Namespace":
@@ -60,4 +84,10 @@ func ParseJSON(c *gin.Context) {
 		err = json.Unmarshal(jsn, &obj)
 		c.Set("requestObject", obj)
 	}
+}
+
+func SetRequestID(c *gin.Context) {
+	reqid := uuid.NewV4().String()
+	c.Set("request-id", reqid)
+	c.Header("X-Request-ID", reqid)
 }

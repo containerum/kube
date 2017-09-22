@@ -81,5 +81,8 @@ func ListNamespaces(c *gin.Context) {
 func UpdateNamespace(c *gin.Context) {
 }
 
-func RemoveNamespace(c *gin.Context) {
+func DeleteNamespace(c *gin.Context) {
+	c.AbortWithStatusJSON(500, map[string]string{
+		"error": "not implemented",
+	})
 }
