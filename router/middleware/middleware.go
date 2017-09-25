@@ -9,7 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/satori/go.uuid"
-	"k8s.io/api/apps/v1beta2"
+	"k8s.io/api/apps/v1beta1"
 	"k8s.io/api/core/v1"
 )
 
@@ -45,7 +45,7 @@ func SetRandomKubeClient(c *gin.Context) {
 	utils.Log(c).Infof("picked server.KubeClients[%d]", n)
 	utils.AddLogField(c, "kubeclient-address", server.KubeClients[n].Tag)
 	server.KubeClients[n].UseCount++
-	c.Set("kubeclient", server.KubeClients[n])
+	c.Set("kubeclient", server.KubeClients[n].Client)
 }
 
 // ParseJSON parses a JSON payload into a kubernetes struct of appropriate
@@ -71,9 +71,9 @@ func ParseJSON(c *gin.Context) {
 		err = json.Unmarshal(jsn, &obj)
 		c.Set("requestObject", obj)
 	case "Deployment":
-		var obj *v1beta2.Deployment
+		var obj *v1beta1.Deployment
 		err = json.Unmarshal(jsn, &obj)
-		obj.Status = v1beta2.DeploymentStatus{}
+		obj.Status = v1beta1.DeploymentStatus{}
 		c.Set("requestObject", obj)
 	case "Service":
 		var obj *v1.Service
@@ -90,4 +90,22 @@ func SetRequestID(c *gin.Context) {
 	reqid := uuid.NewV4().String()
 	c.Set("request-id", reqid)
 	c.Header("X-Request-ID", reqid)
+}
+
+func CheckHTTP411(c *gin.Context) {
+	if c.Request.Method == "GET" || c.Request.Method == "OPTIONS" {
+		return
+	}
+	if c.Request.ContentLength < 0 {
+		c.AbortWithStatus(411)
+	}
+}
+
+func WriteResponseObject(c *gin.Context) {
+	obj, ok := c.Get("responseObject")
+	if !ok {
+		return
+	}
+	jsn, _ := json.Marshal(obj)
+	c.Writer.Write(jsn)
 }

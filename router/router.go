@@ -32,10 +32,15 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 	namespace := e.Group("/api/namespace")
 	{
 		namespace.Use(middleware.SetRandomKubeClient)
+
+		namespace.GET("",
+			server.ListNamespaces)
 		namespace.POST("",
 			middleware.ParseJSON,
 			server.CreateNamespace)
-		namespace.GET("", server.ListNamespaces)
+		namespace.GET("/:namespace",
+			middleware.SetNamespace,
+			server.GetNamespace)
 		namespace.DELETE("/:namespace",
 			middleware.SetNamespace,
 			server.DeleteNamespace)
@@ -44,13 +49,19 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 	deployment := e.Group("/api/namespace/:namespace/deployment")
 	{
 		deployment.Use(middleware.SetNamespace)
+		deployment.Use(middleware.SetRandomKubeClient)
+
+		deployment.GET("",
+			server.ListDeployments)
 		deployment.POST("",
 			middleware.ParseJSON,
 			server.CreateDeployment)
-		deployment.GET("", server.ListDeployments)
+		deployment.GET("/:objname",
+			middleware.SetObjectName,
+			server.GetDeployment)
 		deployment.DELETE("/:objname",
-			middleware.ParseJSON,
-			server.ListDeployments)
+			middleware.SetObjectName,
+			server.DeleteDeployment)
 	}
 
 	return e
