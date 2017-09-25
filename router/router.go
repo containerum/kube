@@ -19,6 +19,7 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 	e.Use(gin.Recovery())
 	e.Use(middleware.SetRequestID)
 	e.Use(utils.AddLogger)
+	e.Use(middleware.CheckHTTP411)
 	e.Use(middlewares...)
 
 	e.Use(func(c *gin.Context) {
@@ -29,7 +30,7 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 		c.Status(404)
 	})
 
-	namespace := e.Group("/api/namespace")
+	namespace := e.Group("/api/v1/namespace")
 	{
 		namespace.Use(middleware.SetRandomKubeClient)
 
@@ -44,24 +45,27 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 		namespace.DELETE("/:namespace",
 			middleware.SetNamespace,
 			server.DeleteNamespace)
-	}
 
-	deployment := e.Group("/api/namespace/:namespace/deployment")
-	{
-		deployment.Use(middleware.SetNamespace)
-		deployment.Use(middleware.SetRandomKubeClient)
+		subns := namespace.Group("/:namespace")
+		{
+			subns.Use(middleware.SetNamespace)
 
-		deployment.GET("",
-			server.ListDeployments)
-		deployment.POST("",
-			middleware.ParseJSON,
-			server.CreateDeployment)
-		deployment.GET("/:objname",
-			middleware.SetObjectName,
-			server.GetDeployment)
-		deployment.DELETE("/:objname",
-			middleware.SetObjectName,
-			server.DeleteDeployment)
+			deployment := subns.Group("/deployment")
+			{
+				deployment.GET("", server.ListDeployments)
+				deployment.POST("", middleware.ParseJSON, server.CreateDeployment)
+				deployment.GET("/:objname", middleware.SetObjectName, server.GetDeployment)
+				deployment.DELETE("/:objname", middleware.SetObjectName, server.DeleteDeployment)
+			}
+
+			service := subns.Group("/service")
+			{
+				service.GET("", server.ListServices)
+				service.POST("", middleware.ParseJSON, server.CreateService)
+				service.GET("/:objname", middleware.SetObjectName, server.GetService)
+				service.DELETE("/:objname", middleware.SetObjectName, server.DeleteService)
+			}
+		}
 	}
 
 	return e
