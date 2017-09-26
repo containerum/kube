@@ -65,6 +65,14 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 				service.GET("/:objname", middleware.SetObjectName, server.GetService)
 				service.DELETE("/:objname", middleware.SetObjectName, server.DeleteService)
 			}
+
+			endpoints := subns.Group("/endpoints")
+			{
+				endpoints.GET("", server.ListEndpoints)
+				endpoints.POST("", middleware.ParseJSON, server.CreateEndpoints)
+				endpoints.GET("/:objname", middleware.SetObjectName, server.GetEndpoints)
+				endpoints.DELETE("/:objname", middleware.SetObjectName, server.DeleteEndpoints)
+			}
 		}
 	}
 
