@@ -73,6 +73,22 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 				endpoints.GET("/:objname", middleware.SetObjectName, server.GetEndpoints)
 				endpoints.DELETE("/:objname", middleware.SetObjectName, server.DeleteEndpoints)
 			}
+
+			configmaps := subns.Group("/configmaps")
+			{
+				configmaps.GET("", server.ListConfigMaps)
+				configmaps.POST("", middleware.ParseJSON, server.CreateConfigMap)
+				configmaps.GET("/:objname", middleware.SetObjectName, server.GetConfigMap)
+				configmaps.DELETE("/:objname", middleware.SetObjectName, server.DeleteConfigMap)
+			}
+
+			secrets := subns.Group("/secrets")
+			{
+				secrets.GET("", server.ListSecrets)
+				secrets.POST("", middleware.ParseJSON, server.CreateSecret)
+				secrets.GET("/:objname", middleware.SetObjectName, server.GetSecret)
+				secrets.DELETE("/:objname", middleware.SetObjectName, server.DeleteSecret)
+			}
 		}
 	}
 
