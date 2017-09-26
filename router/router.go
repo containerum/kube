@@ -30,7 +30,7 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 		c.Status(404)
 	})
 
-	namespace := e.Group("/api/v1/namespace")
+	namespace := e.Group("/api/v1/namespaces")
 	{
 		namespace.Use(middleware.SetRandomKubeClient)
 
@@ -50,7 +50,7 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 		{
 			subns.Use(middleware.SetNamespace)
 
-			deployment := subns.Group("/deployment")
+			deployment := subns.Group("/deployments")
 			{
 				deployment.GET("", server.ListDeployments)
 				deployment.POST("", middleware.ParseJSON, server.CreateDeployment)
@@ -58,7 +58,7 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 				deployment.DELETE("/:objname", middleware.SetObjectName, server.DeleteDeployment)
 			}
 
-			service := subns.Group("/service")
+			service := subns.Group("/services")
 			{
 				service.GET("", server.ListServices)
 				service.POST("", middleware.ParseJSON, server.CreateService)
