@@ -3,6 +3,7 @@ package middleware
 import (
 	"encoding/json"
 	"math/rand"
+	"reflect"
 
 	"bitbucket.org/exonch/kube-api/server"
 	"bitbucket.org/exonch/kube-api/utils"
@@ -101,7 +102,58 @@ func CheckHTTP411(c *gin.Context) {
 	}
 }
 
+// NOTE: обработчик выполняется на обратном ходе рекурсии.
+func RedactResponseMetadata(c *gin.Context) {
+	c.Next() // NOTE
+	obj, ok := c.Get("responseObject")
+	if !ok {
+		return
+	}
+	jsn, _ := json.Marshal(obj)
+	var m map[string]interface{}
+	json.Unmarshal(jsn, &m)
+	jsonDeleteInMetadata(m, "selfLink")
+	jsonDeleteInMetadata(m, "uid")
+	jsonDeleteInMetadata(m, "resourceVersion")
+
+	var newobj interface{}
+	t := reflect.TypeOf(obj)
+	tt := t.Elem()
+	v := reflect.New(tt)
+	newobj = v.Interface()
+
+	jsn, _ = json.Marshal(m)
+	json.Unmarshal(jsn, newobj)
+	c.Set("responseObject", newobj)
+}
+
+func jsonDeleteInMetadata(m map[string]interface{}, fieldName string) {
+	for k, v := range m {
+		if k == "metadata" {
+			vmap := v.(map[string]interface{}) //"metadata" is always a JSON object
+			for k2 := range vmap {
+				if k2 == fieldName {
+					delete(vmap, k2)
+				}
+			}
+			m[k] = vmap
+		} else if vmap, ok := v.(map[string]interface{}); ok {
+			jsonDeleteInMetadata(vmap, fieldName)
+			m[k] = vmap
+		} else if varray, ok := v.([]interface{}); ok {
+			for i := range varray {
+				if vimap, ok := varray[i].(map[string]interface{}); ok {
+					jsonDeleteInMetadata(vimap, fieldName)
+				}
+			}
+			m[k] = varray
+		}
+	}
+}
+
+// NOTE: обработчик выполняется на обратном ходе рекурсии.
 func WriteResponseObject(c *gin.Context) {
+	c.Next() // NOTE
 	obj, ok := c.Get("responseObject")
 	if !ok {
 		return

@@ -25,7 +25,8 @@ func ListSecrets(c *gin.Context) {
 	}
 
 	redactSecretListForUser(secretList)
-	c.JSON(200, secretList)
+	c.Status(200)
+	c.Set("responseObject", secretList)
 }
 
 func CreateSecret(c *gin.Context) {
@@ -57,7 +58,8 @@ func CreateSecret(c *gin.Context) {
 
 	redactSecretForUser(secretAfter)
 
-	c.JSON(201, secretAfter)
+	c.Status(201)
+	c.Set("responseObject", secretAfter)
 }
 
 func GetSecret(c *gin.Context) {
@@ -73,7 +75,8 @@ func GetSecret(c *gin.Context) {
 		return
 	}
 	redactSecretForUser(secret)
-	c.JSON(200, secret)
+	c.Status(200)
+	c.Set("responseObject", secret)
 }
 
 func DeleteSecret(c *gin.Context) {
