@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"encoding/json"
+	"fmt"
 	"math/rand"
 	"reflect"
 
@@ -10,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/satori/go.uuid"
+	//"github.com/sirupsen/logrus"
 	"k8s.io/api/apps/v1beta1"
 	"k8s.io/api/core/v1"
 )
@@ -112,9 +114,9 @@ func RedactResponseMetadata(c *gin.Context) {
 	jsn, _ := json.Marshal(obj)
 	var m map[string]interface{}
 	json.Unmarshal(jsn, &m)
-	jsonDeleteInMetadata(m, "selfLink")
-	jsonDeleteInMetadata(m, "uid")
-	jsonDeleteInMetadata(m, "resourceVersion")
+	jsonDeleteInMetadata(m, "selfLink", fmt.Sprintf("%p", m))
+	jsonDeleteInMetadata(m, "uid", fmt.Sprintf("%p", m))
+	jsonDeleteInMetadata(m, "resourceVersion", fmt.Sprintf("%p", m))
 
 	var newobj interface{}
 	t := reflect.TypeOf(obj)
@@ -127,27 +129,33 @@ func RedactResponseMetadata(c *gin.Context) {
 	c.Set("responseObject", newobj)
 }
 
-func jsonDeleteInMetadata(m map[string]interface{}, fieldName string) {
-	for k, v := range m {
-		if k == "metadata" {
-			vmap := v.(map[string]interface{}) //"metadata" is always a JSON object
-			for k2 := range vmap {
-				if k2 == fieldName {
-					delete(vmap, k2)
+func jsonDeleteInMetadata(obj interface{}, fieldName string, trace string) {
+	//logrus.Infof("in %s", trace)
+	switch objTyped := obj.(type) {
+	case map[string]interface{}:
+		//logrus.Infof("type object")
+		for k, v := range objTyped {
+			if k == "metadata" {
+				vmap := v.(map[string]interface{})
+				for Mk := range vmap {
+					//logrus.Infof("considering %s from %s -> metadata", fieldName, trace)
+					if Mk == fieldName {
+						//logrus.Infof("deleting %s from %s -> metadata", fieldName, trace)
+						delete(vmap, Mk)
+					}
 				}
+				objTyped[k] = vmap
+			} else {
+				jsonDeleteInMetadata(v, fieldName, trace+" -> "+k)
 			}
-			m[k] = vmap
-		} else if vmap, ok := v.(map[string]interface{}); ok {
-			jsonDeleteInMetadata(vmap, fieldName)
-			m[k] = vmap
-		} else if varray, ok := v.([]interface{}); ok {
-			for i := range varray {
-				if vimap, ok := varray[i].(map[string]interface{}); ok {
-					jsonDeleteInMetadata(vimap, fieldName)
-				}
-			}
-			m[k] = varray
 		}
+	case []interface{}:
+		//logrus.Infof("type array")
+		for i := range objTyped {
+			jsonDeleteInMetadata(objTyped[i], fieldName, fmt.Sprintf("%s -> %d", trace, i))
+		}
+	default:
+		//logrus.Infof("skip")
 	}
 }
 

@@ -29,7 +29,8 @@ func ListDeployments(c *gin.Context) {
 
 	redactDeploymentListForUser(deplList)
 
-	c.JSON(200, deplList)
+	c.Status(200)
+	c.Set("responseObject", deplList)
 }
 
 // middleware deps:
@@ -63,13 +64,10 @@ func CreateDeployment(c *gin.Context) {
 
 	redactDeploymentForUser(deplAfter)
 
-	c.JSON(201, deplAfter)
+	c.Status(201)
+	c.Set("responseObject", deplAfter)
 }
 
-// middleware deps:
-// 	SetNamespace
-// 	SetObjectName
-// 	Set(…)KubeClient
 func GetDeployment(c *gin.Context) {
 	ns := c.MustGet("namespace").(string)
 	deplname := c.MustGet("objectName").(string)
@@ -84,13 +82,10 @@ func GetDeployment(c *gin.Context) {
 		return
 	}
 	redactDeploymentForUser(depl)
-	c.JSON(200, depl)
+	c.Status(200)
+	c.Set("responseObject", depl)
 }
 
-// middleware deps:
-// 	SetNamespace
-// 	SetObjectName
-// 	Set(…)KubeClient
 func DeleteDeployment(c *gin.Context) {
 	ns := c.MustGet("namespace").(string)
 	deplname := c.MustGet("objectName").(string)

@@ -25,7 +25,8 @@ func ListNamespaces(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, nsList)
+	c.Status(200)
+	c.Set("responseObject", nsList)
 }
 
 // CreateNamespace uses query parameters 'cpu' and 'memory' to determine namespace quota.
@@ -77,8 +78,13 @@ func CreateNamespace(c *gin.Context) {
 		})
 		return
 	}
+
+	c.Status(201)
+	c.Set("responseObject", nsAfter)
 }
 
+// FIXME(a.ts): this is stupid, should have separated the quota out into its
+// own handler.
 func GetNamespace(c *gin.Context) {
 	nsname := c.MustGet("namespace").(string)
 	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
@@ -101,13 +107,14 @@ func GetNamespace(c *gin.Context) {
 		return
 	}
 
-	var objlist struct {
+	var objlist = new(struct {
 		Kind  string        `json:"kind"`
 		Items []interface{} `json:"items"`
-	}
+	})
 	objlist.Kind = "List"
 	objlist.Items = append(objlist.Items, ns, quota)
-	c.JSON(200, objlist)
+	c.Status(200)
+	c.Set("responseObject", objlist)
 }
 
 func DeleteNamespace(c *gin.Context) {
