@@ -118,7 +118,7 @@ func RedactResponseMetadata(c *gin.Context) {
 
 	var newobj interface{}
 	t := reflect.TypeOf(obj)
-	tt := t.Elem()
+	tt := t.Elem() //t should always be a pointer, so this should work w/o problems
 	v := reflect.New(tt)
 	newobj = v.Interface()
 
