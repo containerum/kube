@@ -17,8 +17,9 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 
 	e := gin.New()
 	e.Use(gin.Recovery())
-	e.Use(middleware.WriteResponseObject)    //not reversed
-	e.Use(middleware.RedactResponseMetadata) //not reversed
+	e.Use(middleware.WriteResponseObject)      //order is alright
+	e.Use(middleware.RedactResponseMetadata)   //order is alright
+	e.Use(middleware.SubstitutionsFromHeadersFor("responseObject", true))
 	e.Use(middleware.SetRequestID)
 	e.Use(utils.AddLogger)
 	e.Use(middleware.CheckHTTP411)
@@ -40,6 +41,7 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 			server.ListNamespaces)
 		namespace.POST("",
 			middleware.ParseJSON,
+			middleware.SubstitutionsFromHeadersFor("requestObject", false),
 			server.CreateNamespace)
 		namespace.GET("/:namespace",
 			middleware.SetNamespace,
@@ -55,15 +57,25 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 			deployment := subns.Group("/deployments")
 			{
 				deployment.GET("", server.ListDeployments)
-				deployment.POST("", middleware.ParseJSON, server.CreateDeployment)
-				deployment.GET("/:objname", middleware.SetObjectName, server.GetDeployment)
-				deployment.DELETE("/:objname", middleware.SetObjectName, server.DeleteDeployment)
+				deployment.POST("",
+					middleware.ParseJSON,
+					middleware.SubstitutionsFromHeadersFor("requestObject", false),
+					server.CreateDeployment)
+				deployment.GET("/:objname",
+					middleware.SetObjectName,
+					server.GetDeployment)
+				deployment.DELETE("/:objname",
+					middleware.SetObjectName,
+					server.DeleteDeployment)
 			}
 
 			service := subns.Group("/services")
 			{
 				service.GET("", server.ListServices)
-				service.POST("", middleware.ParseJSON, server.CreateService)
+				service.POST("",
+					middleware.ParseJSON,
+					middleware.SubstitutionsFromHeadersFor("requestObject", false),
+					server.CreateService)
 				service.GET("/:objname", middleware.SetObjectName, server.GetService)
 				service.DELETE("/:objname", middleware.SetObjectName, server.DeleteService)
 			}
@@ -71,7 +83,10 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 			endpoints := subns.Group("/endpoints")
 			{
 				endpoints.GET("", server.ListEndpoints)
-				endpoints.POST("", middleware.ParseJSON, server.CreateEndpoints)
+				endpoints.POST("",
+					middleware.ParseJSON,
+					middleware.SubstitutionsFromHeadersFor("requestObject", false),
+					server.CreateEndpoints)
 				endpoints.GET("/:objname", middleware.SetObjectName, server.GetEndpoints)
 				endpoints.DELETE("/:objname", middleware.SetObjectName, server.DeleteEndpoints)
 			}
@@ -79,7 +94,10 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 			configmaps := subns.Group("/configmaps")
 			{
 				configmaps.GET("", server.ListConfigMaps)
-				configmaps.POST("", middleware.ParseJSON, server.CreateConfigMap)
+				configmaps.POST("",
+					middleware.ParseJSON,
+					middleware.SubstitutionsFromHeadersFor("requestObject", false),
+					server.CreateConfigMap)
 				configmaps.GET("/:objname", middleware.SetObjectName, server.GetConfigMap)
 				configmaps.DELETE("/:objname", middleware.SetObjectName, server.DeleteConfigMap)
 			}
@@ -87,7 +105,10 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 			secrets := subns.Group("/secrets")
 			{
 				secrets.GET("", server.ListSecrets)
-				secrets.POST("", middleware.ParseJSON, server.CreateSecret)
+				secrets.POST("",
+					middleware.ParseJSON,
+					middleware.SubstitutionsFromHeadersFor("requestObject", false),
+					server.CreateSecret)
 				secrets.GET("/:objname", middleware.SetObjectName, server.GetSecret)
 				secrets.DELETE("/:objname", middleware.SetObjectName, server.DeleteSecret)
 			}

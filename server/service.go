@@ -26,7 +26,8 @@ func ListServices(c *gin.Context) {
 	}
 
 	redactServiceListForUser(svcList)
-	c.JSON(200, svcList)
+	c.Status(200)
+	c.Set("responseObject", svcList)
 }
 
 func CreateService(c *gin.Context) {
@@ -58,7 +59,8 @@ func CreateService(c *gin.Context) {
 
 	redactServiceForUser(svcAfter)
 
-	c.JSON(201, svcAfter)
+	c.Status(201)
+	c.Set("responseObject", svcAfter)
 }
 
 func GetService(c *gin.Context) {
@@ -74,7 +76,8 @@ func GetService(c *gin.Context) {
 		return
 	}
 	redactServiceForUser(svc)
-	c.JSON(200, svc)
+	c.Status(200)
+	c.Set("responseObject", svc)
 }
 
 func DeleteService(c *gin.Context) {

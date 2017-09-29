@@ -45,6 +45,7 @@ func CreateDeployment(c *gin.Context) {
 		return
 	}
 	if nsname != depl.ObjectMeta.Namespace {
+		utils.Log(c).Warnf("namespace in URI (%s) does not match namespace in deployment (%s)", nsname, depl.ObjectMeta.Namespace)
 		c.AbortWithStatusJSON(400, map[string]string{
 			"error": "namespace in URI does not match namespace in deployment",
 		})
