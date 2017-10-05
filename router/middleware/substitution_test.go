@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"testing"
 
 	"k8s.io/api/apps/v1beta1"
@@ -19,18 +20,7 @@ func init() {
 	log.SetFlags(log.LstdFlags)
 }
 
-// type testResponseWriter struct {
-// 	*bytes.Buffer
-// }
-//
-// func (rw testResponseWriter) Header() http.Header {
-// 	return map[string][]string{}
-// }
-//
-// func (rw testResponseWriter) WriteHeader(n int) {
-// 	log.WriteString(fmt.Sprint(n, "\n"))
-// }
-
+// testSubsType is for unmarshaling JSON test data onto it.
 type testSubsType struct {
 	Kube, User struct {
 		Namespace, Deployment, DeploymentList, Service, ServiceList []struct {
@@ -42,18 +32,23 @@ type testSubsType struct {
 	}
 }
 
-func TestNamespaceSubstitutionsInNamespaces(t *testing.T) {
+var testdata testSubsType
+
+func TestMain(m *testing.M) {
 	testdataraw, err := ioutil.ReadFile("testdata/test_substitutions.json")
 	if err != nil {
-		t.Fatalf("cannot open test data file: %T %[1]v", err)
+		log.Fatalf("cannot open test data file: %T %[1]v", err)
 	}
 
-	var testdata testSubsType
 	err = json.Unmarshal(testdataraw, &testdata)
 	if err != nil {
-		t.Fatalf("cannot parse test data file: %T %[1]v", err)
+		log.Fatalf("cannot parse test data file: %T %[1]v", err)
 	}
 
+	m.Run()
+}
+
+func TestNamespaceSubstitutionsInNamespaces(t *testing.T) {
 	for i, nstest := range testdata.Kube.Namespace {
 		c, _ := gin.CreateTestContext(nil)
 		httphead := http.Header{}
@@ -66,34 +61,22 @@ func TestNamespaceSubstitutionsInNamespaces(t *testing.T) {
 		}
 
 		ParseJSON(c)
-
 		SubstitutionsFromHeadersFor("requestObject", false)(c)
 
-		gotns := *c.MustGet("requestObject").(*v1.Namespace)
-		var wantns v1.Namespace
-		json.Unmarshal(nstest.Want.Body, &wantns)
+		got := *c.MustGet("requestObject").(*v1.Namespace)
+		var want v1.Namespace
+		json.Unmarshal(nstest.Want.Body, &want)
 
-		if wantns.Namespace != gotns.Namespace {
-			t.Fatalf("mismatch in namespace %d", i)
-			t.Fatalf("wanted %#v", wantns)
-			t.Fatalf("got    %#v", gotns)
+		if want.Namespace != got.Namespace {
+			t.Fatalf("mismatch in namespace %d", i+1)
+			t.Fatalf("wanted %#v", want)
+			t.Fatalf("got    %#v", got)
 		}
 	}
 
 }
 
 func TestNamespaceSubstitutionsInDeployments(t *testing.T) {
-	testdataraw, err := ioutil.ReadFile("testdata/test_substitutions.json")
-	if err != nil {
-		t.Fatalf("cannot open test data file: %T %[1]v", err)
-	}
-
-	var testdata testSubsType
-	err = json.Unmarshal(testdataraw, &testdata)
-	if err != nil {
-		t.Fatalf("cannot parse test data file: %T %[1]v", err)
-	}
-
 	for i, deptest := range testdata.Kube.Deployment {
 		c, _ := gin.CreateTestContext(nil)
 		httphead := http.Header{}
@@ -106,7 +89,6 @@ func TestNamespaceSubstitutionsInDeployments(t *testing.T) {
 		}
 
 		ParseJSON(c)
-
 		SubstitutionsFromHeadersFor("requestObject", false)(c)
 
 		got := *c.MustGet("requestObject").(*v1beta1.Deployment)
@@ -114,26 +96,15 @@ func TestNamespaceSubstitutionsInDeployments(t *testing.T) {
 		json.Unmarshal(deptest.Want.Body, &want)
 
 		if want.Namespace != got.Namespace {
-			t.Errorf("mismatch in deployment %d", i)
+			t.Errorf("mismatch in deployment %d", i+1)
 			t.Errorf("wanted %s", deplstr(want))
-			t.Errorf("got    %s", deplstr(got ))
+			t.Errorf("got    %s", deplstr(got))
 			t.FailNow()
 		}
 	}
 }
 
 func TestVolumeSubstitutionsInDeployments(t *testing.T) {
-	testdataraw, err := ioutil.ReadFile("testdata/test_substitutions.json")
-	if err != nil {
-		t.Fatalf("cannot open test data file: %T %[1]v", err)
-	}
-
-	var testdata testSubsType
-	err = json.Unmarshal(testdataraw, &testdata)
-	if err != nil {
-		t.Fatalf("cannot parse test data file: %T %[1]v", err)
-	}
-
 	for i, deptest := range testdata.Kube.Deployment {
 		c, _ := gin.CreateTestContext(nil)
 		httphead := http.Header{}
@@ -146,14 +117,18 @@ func TestVolumeSubstitutionsInDeployments(t *testing.T) {
 		}
 
 		ParseJSON(c)
-
 		SubstitutionsFromHeadersFor("requestObject", false)(c)
 
 		got := *c.MustGet("requestObject").(*v1beta1.Deployment)
 		var want v1beta1.Deployment
 		json.Unmarshal(deptest.Want.Body, &want)
 
-		//TODO
+		for j, vol := range got.Spec.Template.Spec.Volumes {
+			if vol.Name != want.Spec.Template.Spec.Volumes[j].Name {
+				t.Fatalf("mismatch in deployment %d volume %d (got name %s, wanted %s)",
+					i+1, j+1, vol.Name, want.Spec.Template.Spec.Volumes[j].Name)
+			}
+		}
 	}
 }
 
