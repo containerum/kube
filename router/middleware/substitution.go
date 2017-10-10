@@ -37,6 +37,7 @@ func SubstitutionsFromHeadersFor(objctxkey string, after bool) gin.HandlerFunc {
 		reps = make(map[string][]userReplacement)
 		reps["x-user-namespace"] = nil
 		reps["x-user-volume"] = nil
+		//reps["x-user-hide-data"] = nil
 
 		// find, decode & validate data
 		for hdr, repArray := range reps {
