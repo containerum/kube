@@ -169,3 +169,14 @@ func WriteResponseObject(c *gin.Context) {
 	jsn, _ := json.Marshal(obj)
 	c.Writer.Write(jsn)
 }
+
+func SwapInputOutput(c *gin.Context) {
+	in, ok1 := c.Get("requestObject")
+	out, ok2 := c.Get("responseObject")
+	if ok1 {
+		c.Set("responseObject", in)
+	}
+	if ok2 {
+		c.Set("requestObject", out)
+	}
+}

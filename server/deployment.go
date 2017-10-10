@@ -9,9 +9,12 @@ import (
 	"k8s.io/api/apps/v1beta1"
 	"k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	mach_types "k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 )
 
+// GET /api/v1/namespaces/:namespace/deployments
+//
 // middleware deps:
 // 	SetNamespace
 // 	Set(…)KubeClient
@@ -33,6 +36,8 @@ func ListDeployments(c *gin.Context) {
 	c.Set("responseObject", deplList)
 }
 
+// POST /api/v1/namespaces/:namespace/deployments
+//
 // middleware deps:
 // 	SetNamespace
 // 	Set(…)KubeClient
@@ -69,6 +74,7 @@ func CreateDeployment(c *gin.Context) {
 	c.Set("responseObject", deplAfter)
 }
 
+// GET /api/v1/namespaces/:namespace/deployments/:objname
 func GetDeployment(c *gin.Context) {
 	ns := c.MustGet("namespace").(string)
 	deplname := c.MustGet("objectName").(string)
@@ -87,6 +93,7 @@ func GetDeployment(c *gin.Context) {
 	c.Set("responseObject", depl)
 }
 
+// DELETE /api/v1/namespaces/:namespace/deployments/:objname
 func DeleteDeployment(c *gin.Context) {
 	ns := c.MustGet("namespace").(string)
 	deplname := c.MustGet("objectName").(string)
@@ -99,6 +106,38 @@ func DeleteDeployment(c *gin.Context) {
 		})
 	}
 	c.Status(204)
+}
+
+// PUT /api/v1/namespaces/:namespace/deployments/:objname
+func ChangeDeployment(c *gin.Context) {
+}
+
+type ChangeImagesInput struct {
+	Name  string `json:"name"`
+	Image string `json:"image"`
+}
+
+// PATCH /api/v1/namespaces/:namespace/deployments/:objname/container/:contname
+//
+// ChangeDeploymentImages expects ChangeImagesInput structure in
+// "requestObject" context var, and the target deployment struct in
+// "responseObject".
+// Just as if you ran it right after GetDeployment.
+func ChangeDeploymentImages(c *gin.Context) {
+	ns := c.MustGet("namespace").(string)
+	deplname := c.MustGet("objectName").(string)
+	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+
+	chimg := c.MustGet("requestObject").(*ChangeImagesInput)
+	depl := c.MustGet("responseObject").(*v1beta1.Deployment)
+
+	for i := range depl.Spec.Template.Spec.Containers {
+		if depl.Spec.Template.Spec.Containers[i].Name == chimg.Name {
+			depl.Spec.Template.Spec.Containers[i].Image = chimg.Image
+		}
+	}
+
+	//TODO
 }
 
 func redactDeploymentForUser(depl *v1beta1.Deployment) {
