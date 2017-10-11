@@ -86,6 +86,8 @@ func ParseJSON(c *gin.Context) {
 		var obj *v1.Endpoints
 		err = json.Unmarshal(jsn, &obj)
 		c.Set("requestObject", obj)
+	default:
+		c.Set("requestObject", json.RawMessage(jsn))
 	}
 }
 

@@ -67,12 +67,19 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 				deployment.DELETE("/:objname",
 					middleware.SetObjectName,
 					server.DeleteDeployment)
-				deployment.PATCH("/:objname/container/:contname",
+				deployment.PUT("/:objname",
+					middleware.ParseJSON,
+					middleware.SetObjectName,
+					server.ReplaceDeployment)
+				deployment.PATCH("/:objname",
+					middleware.ParseJSON,
+					middleware.SetObjectName,
+					server.PatchDeployment)
+				deployment.PATCH("/:objname/changeimage",
+					middleware.ParseJSON,
 					middleware.SetObjectName,
 					server.GetDeployment,
-					server.ChangeDeploymentImages,
-					middleware.SwapInputOutput,
-					server.ChangeDeployment)
+					server.ChangeDeploymentImage)
 			}
 
 			service := subns.Group("/services")

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"bitbucket.org/exonch/kube-api/utils"
@@ -9,7 +10,6 @@ import (
 	"k8s.io/api/apps/v1beta1"
 	"k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	mach_types "k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -104,40 +104,60 @@ func DeleteDeployment(c *gin.Context) {
 		c.AbortWithStatusJSON(503, map[string]string{
 			"error": fmt.Sprintf("cannot delete deployments: %v", err),
 		})
+		return
 	}
 	c.Status(204)
 }
 
 // PUT /api/v1/namespaces/:namespace/deployments/:objname
-func ChangeDeployment(c *gin.Context) {
+func ReplaceDeployment(c *gin.Context) {
+	c.AbortWithStatusJSON(501, map[string]string{
+		"error": "not implemented",
+	})
 }
 
-type ChangeImagesInput struct {
-	Name  string `json:"name"`
-	Image string `json:"image"`
+// PATCH /api/v1/namespaces/:namespace/deployments/:objname
+func PatchDeployment(c *gin.Context) {
+	c.AbortWithStatusJSON(501, map[string]string{
+		"error": "not implemented",
+	})
 }
 
-// PATCH /api/v1/namespaces/:namespace/deployments/:objname/container/:contname
+// Only invoke after GetDeployment.
 //
-// ChangeDeploymentImages expects ChangeImagesInput structure in
-// "requestObject" context var, and the target deployment struct in
-// "responseObject".
-// Just as if you ran it right after GetDeployment.
-func ChangeDeploymentImages(c *gin.Context) {
+// PATCH /api/v1/namespaces/:namespace/deployments/:objname/changeimage
+func ChangeDeploymentImage(c *gin.Context) {
+	var chimg struct {
+		Name  string // selector for container name
+		Image string // new image name
+	}
 	ns := c.MustGet("namespace").(string)
 	deplname := c.MustGet("objectName").(string)
 	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
 
-	chimg := c.MustGet("requestObject").(*ChangeImagesInput)
 	depl := c.MustGet("responseObject").(*v1beta1.Deployment)
+	jsn := c.MustGet("requestObject").(json.RawMessage)
+	json.Unmarshal(jsn, &chimg)
 
 	for i := range depl.Spec.Template.Spec.Containers {
 		if depl.Spec.Template.Spec.Containers[i].Name == chimg.Name {
+			utils.Log(c).Infof("changing image in deployment %q container %q from %q to %q",
+				deplname, chimg.Name, depl.Spec.Template.Spec.Containers[i].Image, chimg.Image)
 			depl.Spec.Template.Spec.Containers[i].Image = chimg.Image
 		}
 	}
 
-	//TODO
+	deplAfter, err := kubecli.AppsV1beta1().Deployments(ns).Update(depl)
+	if err != nil {
+		utils.Log(c).Warnf("kubecli.Deployments.Update error: %T %[1]v", err)
+		c.AbortWithStatusJSON(utils.KubeErrorHTTPStatus(err), map[string]string{
+			"error": fmt.Sprintf("cannot update deployment %s: %v", deplname, err),
+		})
+		return
+	}
+	redactDeploymentForUser(deplAfter)
+	c.Status(200)
+	c.Set("responseObject", deplAfter)
 }
 
 func redactDeploymentForUser(depl *v1beta1.Deployment) {
