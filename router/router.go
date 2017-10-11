@@ -75,11 +75,17 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 					middleware.ParseJSON,
 					middleware.SetObjectName,
 					server.PatchDeployment)
-				deployment.PATCH("/:objname/changeimage",
+
+				deployment.PATCH("/:objname/image",
 					middleware.ParseJSON,
 					middleware.SetObjectName,
 					server.GetDeployment,
 					server.ChangeDeploymentImage)
+				deployment.PUT("/:objname/replicas",
+					middleware.ParseJSON,
+					middleware.SetObjectName,
+					server.GetDeployment,
+					server.ChangeDeploymentReplicas)
 			}
 
 			service := subns.Group("/services")

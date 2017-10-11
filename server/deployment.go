@@ -124,8 +124,11 @@ func PatchDeployment(c *gin.Context) {
 }
 
 // Only invoke after GetDeployment.
+// Example
 //
-// PATCH /api/v1/namespaces/:namespace/deployments/:objname/changeimage
+//   {"name":"ngx","image":"nginx:1.10.3"}
+//
+// PATCH /api/v1/namespaces/:namespace/deployments/:objname/image
 func ChangeDeploymentImage(c *gin.Context) {
 	var chimg struct {
 		Name  string // selector for container name
@@ -146,6 +149,48 @@ func ChangeDeploymentImage(c *gin.Context) {
 			depl.Spec.Template.Spec.Containers[i].Image = chimg.Image
 		}
 	}
+
+	deplAfter, err := kubecli.AppsV1beta1().Deployments(ns).Update(depl)
+	if err != nil {
+		utils.Log(c).Warnf("kubecli.Deployments.Update error: %T %[1]v", err)
+		c.AbortWithStatusJSON(utils.KubeErrorHTTPStatus(err), map[string]string{
+			"error": fmt.Sprintf("cannot update deployment %s: %v", deplname, err),
+		})
+		return
+	}
+	redactDeploymentForUser(deplAfter)
+	c.Status(200)
+	c.Set("responseObject", deplAfter)
+}
+
+// Only invoke after GetDeployment.
+//
+// Example
+//
+//   {"replicas": 3}
+//
+// PUT /api/v1/namespaces/:namespace/deployments/:objname/replicas
+func ChangeDeploymentReplicas(c *gin.Context) {
+	var replicas struct {
+		Replicas *int32 `json:"replicas,omitempty"`
+	}
+	ns := c.MustGet("namespace").(string)
+	deplname := c.MustGet("objectName").(string)
+	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+
+	depl := c.MustGet("responseObject").(*v1beta1.Deployment)
+	jsn := c.MustGet("requestObject").(json.RawMessage)
+	json.Unmarshal(jsn, &replicas)
+
+	if replicas.Replicas == nil || *replicas.Replicas < 0 {
+		utils.Log(c).WithField("function", "ChangeDeploymentReplicas").
+			Warnf("invalid replicas: %v %+[1]v", replicas.Replicas)
+		c.AbortWithStatusJSON(400, map[string]string{
+			"error": "invalid input",
+		})
+		return
+	}
+	depl.Spec.Replicas = replicas.Replicas
 
 	deplAfter, err := kubecli.AppsV1beta1().Deployments(ns).Update(depl)
 	if err != nil {
