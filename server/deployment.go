@@ -58,7 +58,7 @@ func CreateDeployment(c *gin.Context) {
 	}
 
 	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
-	clientDeploymentInsertions(depl)
+	incomingDeploymentMod(depl)
 	deplAfter, err := kubecli.AppsV1beta1().Deployments(depl.ObjectMeta.Namespace).Create(depl)
 	if err != nil {
 		utils.Log(c).Warnf("kubecli.Deployments.Create error: %[1]T %[1]v", err)
@@ -225,7 +225,9 @@ func redactDeploymentListForUser(deplList *v1beta1.DeploymentList) {
 	deplList.ListMeta.ResourceVersion = ""
 }
 
-func clientDeploymentInsertions(depl *v1beta1.Deployment) {
+func incomingDeploymentMod(depl *v1beta1.Deployment) {
+	depl.TypeMeta.APIVersion = "apps/v1beta1"
+	depl.Status = v1beta1.DeploymentStatus{}
 	depl.Spec.Template.Spec.NodeSelector = map[string]string{
 		"role": "slave",
 	}
