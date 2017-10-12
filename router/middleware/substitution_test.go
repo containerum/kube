@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"testing"
 
 	"k8s.io/api/apps/v1beta1"
@@ -67,10 +66,11 @@ func TestNamespaceSubstitutionsInNamespaces(t *testing.T) {
 		var want v1.Namespace
 		json.Unmarshal(nstest.Want.Body, &want)
 
-		if want.Namespace != got.Namespace {
-			t.Fatalf("mismatch in namespace %d", i+1)
-			t.Fatalf("wanted %#v", want)
-			t.Fatalf("got    %#v", got)
+		if want.Name != got.Name {
+			t.Errorf("mismatch in namespace %d", i+1)
+			t.Errorf("wanted metadata.namespace=%q", want.ObjectMeta.Name)
+			t.Errorf("got    metadata.namespace=%q", got.ObjectMeta.Name)
+			t.FailNow()
 		}
 	}
 

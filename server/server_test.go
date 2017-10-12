@@ -21,10 +21,10 @@ func TestMain(m *testing.M) {
 func Test001GetNamespaceBefore(t *testing.T) {
 	ns
 }
-func Test002CreateNamespace(t *testing.T)    {}
-func Test003GetNamespace(t *testing.T)       {}
-func Test004ListNamespaces(t *testing.T)     {}
-func Test005DeleteNamespace(t *testing.T)    {}
+func Test002CreateNamespace(t *testing.T) {}
+func Test003GetNamespace(t *testing.T)    {}
+func Test004ListNamespaces(t *testing.T)  {}
+func Test005DeleteNamespace(t *testing.T) {}
 
 func Test006GetServiceBefore(t *testing.T) {}
 func Test007CreateService(t *testing.T)    {}

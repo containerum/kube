@@ -37,9 +37,11 @@ func SubstitutionsFromHeadersFor(objctxkey string, after bool) gin.HandlerFunc {
 		reps = make(map[string][]userReplacement)
 		reps["x-user-namespace"] = nil
 		reps["x-user-volume"] = nil
-		//reps["x-user-hide-data"] = nil
 
 		// find, decode & validate data
+		if c.Request.Header.Get("x-user-hide-data") == "" {
+			return
+		}
 		for hdr, repArray := range reps {
 			var b64 string
 			if b64 = c.Request.Header.Get(hdr); b64 == "" {
