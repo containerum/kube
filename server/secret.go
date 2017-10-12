@@ -95,9 +95,14 @@ func DeleteSecret(c *gin.Context) {
 }
 
 func redactSecretForUser(secret *v1.Secret) {
+	secret.TypeMeta.Kind = "Secret"
+	secret.TypeMeta.APIVersion = "v1"
 }
 
 func redactSecretListForUser(secretList *v1.SecretList) {
+	for i := range secretList.Items {
+		redactSecretForUser(&secretList.Items[i])
+	}
 }
 
 func clientSecretInsertions(secret *v1.Secret) {

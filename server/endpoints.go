@@ -92,9 +92,14 @@ func DeleteEndpoints(c *gin.Context) {
 }
 
 func redactEndpointsForUser(ept *v1.Endpoints) {
+	ept.TypeMeta.Kind = "Endpoints"
+	ept.TypeMeta.APIVersion = "v1"
 }
 
-func redactEndpointsListForUser(ept *v1.EndpointsList) {
+func redactEndpointsListForUser(eptl *v1.EndpointsList) {
+	for i := range eptl.Items {
+		redactEndpointsForUser(&eptl.Items[i])
+	}
 }
 
 func clientEndpointsInsertions(ept *v1.Endpoints) {

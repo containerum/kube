@@ -96,9 +96,14 @@ func DeleteService(c *gin.Context) {
 }
 
 func redactServiceForUser(svc *v1.Service) {
+	svc.TypeMeta.Kind = "Service"
+	svc.TypeMeta.APIVersion = "v1"
 }
 
-func redactServiceListForUser(svc *v1.ServiceList) {
+func redactServiceListForUser(svcl *v1.ServiceList) {
+	for i := range svcl.Items {
+		redactServiceForUser(&svcl.Items[i])
+	}
 }
 
 func clientServiceInsertions(svc *v1.Service) {

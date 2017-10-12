@@ -92,9 +92,14 @@ func DeleteConfigMap(c *gin.Context) {
 }
 
 func redactConfigMapForUser(cm *v1.ConfigMap) {
+	cm.TypeMeta.Kind = "ConfigMap"
+	cm.TypeMeta.APIVersion = "v1"
 }
 
 func redactConfigMapListForUser(cmlist *v1.ConfigMapList) {
+	for i := range cmlist.Items {
+		redactConfigMapForUser(&cmlist.Items[i])
+	}
 }
 
 func clientConfigMapInsertions(cm *v1.ConfigMap) {

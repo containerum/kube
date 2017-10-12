@@ -57,20 +57,25 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 			deployment := subns.Group("/deployments")
 			{
 				deployment.GET("", server.ListDeployments)
+
 				deployment.POST("",
 					middleware.ParseJSON,
 					middleware.SubstitutionsFromHeadersFor("requestObject", false),
 					server.CreateDeployment)
+
 				deployment.GET("/:objname",
 					middleware.SetObjectName,
 					server.GetDeployment)
+
 				deployment.DELETE("/:objname",
 					middleware.SetObjectName,
 					server.DeleteDeployment)
+
 				deployment.PUT("/:objname",
 					middleware.ParseJSON,
 					middleware.SetObjectName,
 					server.ReplaceDeployment)
+
 				deployment.PATCH("/:objname",
 					middleware.ParseJSON,
 					middleware.SetObjectName,
@@ -81,6 +86,7 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 					middleware.SetObjectName,
 					server.GetDeployment,
 					server.ChangeDeploymentImage)
+
 				deployment.PUT("/:objname/replicas",
 					middleware.ParseJSON,
 					middleware.SetObjectName,

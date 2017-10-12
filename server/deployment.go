@@ -124,6 +124,7 @@ func PatchDeployment(c *gin.Context) {
 }
 
 // Only invoke after GetDeployment.
+//
 // Example
 //
 //   {"name":"ngx","image":"nginx:1.10.3"}
@@ -206,6 +207,8 @@ func ChangeDeploymentReplicas(c *gin.Context) {
 }
 
 func redactDeploymentForUser(depl *v1beta1.Deployment) {
+	depl.TypeMeta.Kind = "Deployment"
+	depl.TypeMeta.APIVersion = "apps/v1beta1"
 	depl.ObjectMeta.SelfLink = ""
 	depl.ObjectMeta.UID = ""
 	for i := range depl.Spec.Template.Spec.Volumes {
