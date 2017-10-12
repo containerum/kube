@@ -83,8 +83,6 @@ func CreateNamespace(c *gin.Context) {
 	c.Set("responseObject", nsAfter)
 }
 
-// FIXME(a.ts): this is stupid, should have separated the quota out into its
-// own handler.
 func GetNamespace(c *gin.Context) {
 	nsname := c.MustGet("namespace").(string)
 	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
@@ -98,23 +96,24 @@ func GetNamespace(c *gin.Context) {
 		return
 	}
 
+	c.Status(200)
+	c.Set("responseObject", ns)
+}
+
+func GetNamespaceQuota(c *gin.Context) {
+	nsname := c.MustGet("namespace").(string)
+	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
 	quota, err := kubecli.CoreV1().ResourceQuotas(nsname).Get("quota", meta_v1.GetOptions{})
 	if err != nil {
-		utils.Log(c).Errorf("kubecli.Namespaces.Create error: %[1]T %[1]v", err)
+		utils.Log(c).Errorf("kubecli.ResourceQuota.Get error: %T %[1]v", err)
 		c.AbortWithStatusJSON(utils.KubeErrorHTTPStatus(err), map[string]string{
-			"error": fmt.Sprintf("cannot get namespace quota: %v", err),
+			"error": fmt.Sprintf("cannot get quota \"quota\": %v", err),
 		})
 		return
 	}
 
-	var objlist = new(struct {
-		Kind  string        `json:"kind"`
-		Items []interface{} `json:"items"`
-	})
-	objlist.Kind = "List"
-	objlist.Items = append(objlist.Items, ns, quota)
 	c.Status(200)
-	c.Set("responseObject", objlist)
+	c.Set("responseObject", quota)
 }
 
 func DeleteNamespace(c *gin.Context) {

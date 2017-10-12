@@ -183,7 +183,7 @@ func ChangeDeploymentReplicas(c *gin.Context) {
 	jsn := c.MustGet("requestObject").(json.RawMessage)
 	json.Unmarshal(jsn, &replicas)
 
-	if replicas.Replicas == nil || *replicas.Replicas < 0 {
+	if replicas.Replicas == nil || *replicas.Replicas < 0 || *replicas.Replicas >= 20 {
 		utils.Log(c).WithField("function", "ChangeDeploymentReplicas").
 			Warnf("invalid replicas: %v %+[1]v", replicas.Replicas)
 		c.AbortWithStatusJSON(400, map[string]string{
@@ -234,4 +234,14 @@ func incomingDeploymentMod(depl *v1beta1.Deployment) {
 	for i := range depl.Spec.Template.Spec.Containers {
 		depl.Spec.Template.Spec.Containers[i].Resources.Limits = depl.Spec.Template.Spec.Containers[i].Resources.Requests
 	}
+}
+
+// deploymentSanityCheck checks, e.g. that replicas is within [1; 20].
+func deploymentSanityCheck(depl *v1beta1.Deployment) (err error) {
+	if depl.Spec.Replicas != nil && (*depl.Spec.Replicas < 1 || *depl.Spec.Replicas > 20) {
+		err = fmt.Errorf("invalid replicas (1 <= %d <= 20)", *depl.Spec.Replicas)
+		return
+	}
+
+	return
 }

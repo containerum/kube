@@ -54,6 +54,8 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 		{
 			subns.Use(middleware.SetNamespace)
 
+			subns.GET("/resourcequotas/quota", server.GetNamespaceQuota)
+
 			deployment := subns.Group("/deployments")
 			{
 				deployment.GET("", server.ListDeployments)
