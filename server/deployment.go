@@ -43,6 +43,7 @@ func ListDeployments(c *gin.Context) {
 // 	Set(…)KubeClient
 // 	ParseJSON
 func CreateDeployment(c *gin.Context) {
+	var err error
 	nsname := c.MustGet("namespace").(string)
 	depl, ok := c.MustGet("requestObject").(*v1beta1.Deployment)
 	if !ok || depl == nil {
@@ -59,6 +60,16 @@ func CreateDeployment(c *gin.Context) {
 
 	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
 	incomingDeploymentMod(depl)
+
+	err = deploymentSanityCheck(depl)
+	if err != nil {
+		utils.Log(c).Warnf("deploymentSanityCheck: %v", err)
+		c.AbortWithStatusJSON(400, map[string]string{
+			"error": fmt.Sprintf("bad input: %v", err),
+		})
+		return
+	}
+
 	deplAfter, err := kubecli.AppsV1beta1().Deployments(depl.ObjectMeta.Namespace).Create(depl)
 	if err != nil {
 		utils.Log(c).Warnf("kubecli.Deployments.Create error: %[1]T %[1]v", err)
@@ -135,6 +146,7 @@ func ChangeDeploymentImage(c *gin.Context) {
 		Name  string // selector for container name
 		Image string // new image name
 	}
+	var err error
 	ns := c.MustGet("namespace").(string)
 	deplname := c.MustGet("objectName").(string)
 	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
@@ -149,6 +161,15 @@ func ChangeDeploymentImage(c *gin.Context) {
 				deplname, chimg.Name, depl.Spec.Template.Spec.Containers[i].Image, chimg.Image)
 			depl.Spec.Template.Spec.Containers[i].Image = chimg.Image
 		}
+	}
+
+	err = deploymentSanityCheck(depl)
+	if err != nil {
+		utils.Log(c).Warnf("deploymentSanityCheck: %v", err)
+		c.AbortWithStatusJSON(400, map[string]string{
+			"error": fmt.Sprintf("bad input: %v", err),
+		})
+		return
 	}
 
 	deplAfter, err := kubecli.AppsV1beta1().Deployments(ns).Update(depl)
@@ -175,6 +196,7 @@ func ChangeDeploymentReplicas(c *gin.Context) {
 	var replicas struct {
 		Replicas *int32 `json:"replicas,omitempty"`
 	}
+	var err error
 	ns := c.MustGet("namespace").(string)
 	deplname := c.MustGet("objectName").(string)
 	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
@@ -192,6 +214,15 @@ func ChangeDeploymentReplicas(c *gin.Context) {
 		return
 	}
 	depl.Spec.Replicas = replicas.Replicas
+
+	err = deploymentSanityCheck(depl)
+	if err != nil {
+		utils.Log(c).Warnf("deploymentSanityCheck: %v", err)
+		c.AbortWithStatusJSON(400, map[string]string{
+			"error": fmt.Sprintf("bad input: %v", err),
+		})
+		return
+	}
 
 	deplAfter, err := kubecli.AppsV1beta1().Deployments(ns).Update(depl)
 	if err != nil {
@@ -239,8 +270,7 @@ func incomingDeploymentMod(depl *v1beta1.Deployment) {
 // deploymentSanityCheck checks, e.g. that replicas is within [1; 20].
 func deploymentSanityCheck(depl *v1beta1.Deployment) (err error) {
 	if depl.Spec.Replicas != nil && (*depl.Spec.Replicas < 1 || *depl.Spec.Replicas > 20) {
-		err = fmt.Errorf("invalid replicas (1 <= %d <= 20)", *depl.Spec.Replicas)
-		return
+		return fmt.Errorf("invalid replicas (1 <= %d <= 20)", *depl.Spec.Replicas)
 	}
 
 	return
