@@ -76,7 +76,7 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 				deployment.PUT("/:objname",
 					middleware.ParseJSON,
 					middleware.SetObjectName,
-					server.ReplaceDeployment)
+					server.UpdateDeployment)
 
 				deployment.PATCH("/:objname",
 					middleware.ParseJSON,

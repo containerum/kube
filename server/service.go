@@ -16,7 +16,6 @@ func ListServices(c *gin.Context) {
 	nsname := c.MustGet("namespace").(string)
 	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
 	svcList, err := kubecli.CoreV1().Services(nsname).List(meta_v1.ListOptions{})
-	utils.Log(c).Infof("svcList type %T", svcList)
 	if err != nil {
 		utils.Log(c).Errorf("kubecli.Services.List error: %[1]T %[1]v", err)
 		c.AbortWithStatusJSON(utils.KubeErrorHTTPStatus(err), map[string]string{

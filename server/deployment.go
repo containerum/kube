@@ -80,7 +80,6 @@ func CreateDeployment(c *gin.Context) {
 	}
 
 	redactDeploymentForUser(deplAfter)
-
 	c.Status(201)
 	c.Set("responseObject", deplAfter)
 }
@@ -99,6 +98,7 @@ func GetDeployment(c *gin.Context) {
 		})
 		return
 	}
+
 	redactDeploymentForUser(depl)
 	c.Status(200)
 	c.Set("responseObject", depl)
@@ -109,6 +109,7 @@ func DeleteDeployment(c *gin.Context) {
 	ns := c.MustGet("namespace").(string)
 	deplname := c.MustGet("objectName").(string)
 	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+
 	err := kubecli.AppsV1beta1().Deployments(ns).Delete(deplname, &meta_v1.DeleteOptions{})
 	if err != nil {
 		utils.Log(c).Warnf("kubecli.Deployments.Delete error: %[1]T %[1]v", err)
@@ -117,14 +118,55 @@ func DeleteDeployment(c *gin.Context) {
 		})
 		return
 	}
+
 	c.Status(204)
 }
 
 // PUT /api/v1/namespaces/:namespace/deployments/:objname
-func ReplaceDeployment(c *gin.Context) {
-	c.AbortWithStatusJSON(501, map[string]string{
-		"error": "not implemented",
-	})
+func UpdateDeployment(c *gin.Context) {
+	var err error
+	ns := c.MustGet("namespace").(string)
+	deplname := c.MustGet("objectName").(string)
+	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+
+	depl, ok := c.MustGet("requestObject").(*v1beta1.Deployment)
+	if !ok {
+		utils.Log(c).Warnf("invalid input: type %T value %[1]v", depl)
+		c.AbortWithStatusJSON(400, map[string]string{
+			"error": "invalid input",
+		})
+		return
+	}
+	if ns != depl.ObjectMeta.Namespace {
+		utils.Log(c).Warnf("namespace in URI (%s) does not match namespace in deployment (%s)", ns, depl.ObjectMeta.Namespace)
+		c.AbortWithStatusJSON(400, map[string]string{
+			"error": "namespace in URI does not match namespace in deployment",
+		})
+		return
+	}
+
+	incomingDeploymentMod(depl)
+	err = deploymentSanityCheck(depl)
+	if err != nil {
+		utils.Log(c).Warnf("deployment sanity check fail: %v", err)
+		c.AbortWithStatusJSON(400, map[string]string{
+			"error": fmt.Sprintf("invalid input: %v", err),
+		})
+		return
+	}
+
+	deplAfter, err := kubecli.AppsV1beta1().Deployments(ns).Update(depl)
+	if err != nil {
+		utils.Log(c).Warnf("cannot update deployment", err)
+		c.AbortWithStatusJSON(utils.KubeErrorHTTPStatus(err), map[string]string{
+			"error": fmt.Sprintf("cannot update deployment %s: %v", deplname, err),
+		})
+		return
+	}
+
+	redactDeploymentForUser(deplAfter)
+	c.Status(200)
+	c.Set("responseObject", deplAfter)
 }
 
 // PATCH /api/v1/namespaces/:namespace/deployments/:objname

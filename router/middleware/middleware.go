@@ -45,7 +45,7 @@ func SetRandomKubeClient(c *gin.Context) {
 	}
 
 	n := rand.Intn(len(server.KubeClients))
-	utils.Log(c).Infof("picked server.KubeClients[%d]", n)
+	utils.Log(c).Debugf("picked server.KubeClients[%d]", n)
 	utils.AddLogField(c, "kubeclient-address", server.KubeClients[n].Tag)
 	server.KubeClients[n].UseCount++
 	c.Set("kubeclient", server.KubeClients[n].Client)
@@ -76,7 +76,6 @@ func ParseJSON(c *gin.Context) {
 	case "Deployment":
 		var obj *v1beta1.Deployment
 		err = json.Unmarshal(jsn, &obj)
-		obj.Status = v1beta1.DeploymentStatus{}
 		c.Set("requestObject", obj)
 	case "Service":
 		var obj *v1.Service
