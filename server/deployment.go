@@ -123,7 +123,7 @@ func DeleteDeployment(c *gin.Context) {
 }
 
 // PUT /api/v1/namespaces/:namespace/deployments/:objname
-func UpdateDeployment(c *gin.Context) {
+func ReplaceDeployment(c *gin.Context) {
 	var err error
 	ns := c.MustGet("namespace").(string)
 	deplname := c.MustGet("objectName").(string)
@@ -157,9 +157,9 @@ func UpdateDeployment(c *gin.Context) {
 
 	deplAfter, err := kubecli.AppsV1beta1().Deployments(ns).Update(depl)
 	if err != nil {
-		utils.Log(c).Warnf("cannot update deployment", err)
+		utils.Log(c).Errorf("kubecli.Deployments.Update error: %T %[1]v", err)
 		c.AbortWithStatusJSON(utils.KubeErrorHTTPStatus(err), map[string]string{
-			"error": fmt.Sprintf("cannot update deployment %s: %v", deplname, err),
+			"error": fmt.Sprintf("cannot replace deployment %s: %v", deplname, err),
 		})
 		return
 	}
