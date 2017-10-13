@@ -79,6 +79,40 @@ func GetService(c *gin.Context) {
 	c.Set("responseObject", svc)
 }
 
+func ReplaceService(c *gin.Context) {
+	var err error
+	nsname := c.MustGet("namespace").(string)
+	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	svc := c.MustGet("requestObject").(*v1.Service)
+
+	if nsname != svc.ObjectMeta.Namespace {
+		err = fmt.Errorf("namespace name mismatch (url %q, service %q)",
+			nsname, svc.ObjectMeta.Namespace)
+	}
+	if err != nil {
+		utils.Log(c).Warnf("service %s: %v", svc.ObjectMeta.Name, err)
+		c.AbortWithStatusJSON(400, map[string]string{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	clientServiceInsertions(svc)
+
+	svcAfter, err := kubecli.CoreV1().Services(nsname).Update(svc)
+	if err != nil {
+		utils.Log(c).Warnf("kubecli.Services.Update %s: %v", svc.ObjectMeta.Name, err)
+		c.AbortWithStatusJSON(400, map[string]string{
+			"error": fmt.Sprintf("cannot replace service: %v", err),
+		})
+		return
+	}
+
+	redactServiceForUser(svcAfter)
+	c.Status(200)
+	c.Set("responseObject", svcAfter)
+}
+
 func DeleteService(c *gin.Context) {
 	nsname := c.MustGet("namespace").(string)
 	objname := c.MustGet("objectName").(string)

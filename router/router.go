@@ -98,13 +98,26 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 
 			service := subns.Group("/services")
 			{
-				service.GET("", server.ListServices)
+				service.GET("",
+					server.ListServices)
+
 				service.POST("",
 					middleware.ParseJSON,
 					middleware.SubstitutionsFromHeadersFor("requestObject", false),
 					server.CreateService)
-				service.GET("/:objname", middleware.SetObjectName, server.GetService)
-				service.DELETE("/:objname", middleware.SetObjectName, server.DeleteService)
+
+				service.GET("/:objname",
+					middleware.SetObjectName,
+					server.GetService)
+
+				service.DELETE("/:objname",
+					middleware.SetObjectName,
+					server.DeleteService)
+
+				service.PUT("/:objname",
+					middleware.ParseJSON,
+					middleware.SubstitutionsFromHeadersFor("requestObject", false),
+					server.ReplaceService)
 			}
 
 			endpoints := subns.Group("/endpoints")

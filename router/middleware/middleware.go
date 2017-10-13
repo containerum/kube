@@ -117,7 +117,7 @@ func RedactResponseMetadata(c *gin.Context) {
 	json.Unmarshal(jsn, &m)
 	jsonDeleteInMetadata(m, "selfLink", fmt.Sprintf("%p", m))
 	jsonDeleteInMetadata(m, "uid", fmt.Sprintf("%p", m))
-	jsonDeleteInMetadata(m, "resourceVersion", fmt.Sprintf("%p", m))
+	//jsonDeleteInMetadata(m, "resourceVersion", fmt.Sprintf("%p", m))
 
 	var newobj interface{}
 	t := reflect.TypeOf(obj)
