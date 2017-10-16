@@ -1,11 +1,13 @@
 package middleware
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"math/rand"
 	"reflect"
 
+	"bitbucket.org/exonch/kube-api/access"
 	"bitbucket.org/exonch/kube-api/server"
 	"bitbucket.org/exonch/kube-api/utils"
 
@@ -180,4 +182,45 @@ func SwapInputOutput(c *gin.Context) {
 	if ok2 {
 		c.Set("requestObject", out)
 	}
+}
+
+func ParseUserData(c *gin.Context) {
+	unb64, err := base64.StdEncoding.DecodeString(c.Request.Header.Get("x-user-namespace"))
+	if err != nil {
+		utils.Log(c).Warnf("invalid base64 in header x-user-namespace: %v", err)
+		c.AbortWithStatusJSON(400, map[string]string{
+			"error": "invalid base64 in header x-user-namespace",
+		})
+		return
+	}
+
+	hheaders := access.HTTPHeaders{}
+	err = json.Unmarshal(unb64, &hheaders.Namespace)
+	if err != nil {
+		utils.Log(c).Warnf("cannot unmarshal json in header x-user-namespace: %v", err)
+		c.AbortWithStatusJSON(400, map[string]string{
+			"error": "invalid json in header x-user-namespace",
+		})
+		return
+	}
+
+	unb64, err = base64.StdEncoding.DecodeString(c.Request.Header.Get("x-user-volume"))
+	if err != nil {
+		utils.Log(c).Warnf("invalid base64 in header x-user-volume: %v", err)
+		c.AbortWithStatusJSON(400, map[string]string{
+			"error": "invalid base64 in header x-user-volume",
+		})
+		return
+	}
+
+	err = json.Unmarshal(unb64, &hheaders.Volume)
+	if err != nil {
+		utils.Log(c).Warnf("cannot unmarshal json in header x-user-volume: %v", err)
+		c.AbortWithStatusJSON(400, map[string]string{
+			"error": "invalid json in header x-user-volume",
+		})
+		return
+	}
+
+	c.Set("userData", hheaders)
 }

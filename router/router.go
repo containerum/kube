@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 
+	"bitbucket.org/exonch/kube-api/access"
 	"bitbucket.org/exonch/kube-api/router/middleware"
 	"bitbucket.org/exonch/kube-api/server"
 	"bitbucket.org/exonch/kube-api/utils"
@@ -23,6 +24,7 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 	e.Use(middleware.SetRequestID)
 	e.Use(utils.AddLogger)
 	e.Use(middleware.CheckHTTP411)
+	e.Use(middleware.ParseUserData)
 	e.Use(middlewares...)
 
 	e.Use(func(c *gin.Context) {
@@ -38,17 +40,25 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 		namespace.Use(middleware.SetRandomKubeClient)
 
 		namespace.GET("",
-			server.ListNamespaces)
+			access.CheckAccess("Namespace", access.List),
+			server.ListNamespaces,
+		)
 		namespace.POST("",
 			middleware.ParseJSON,
 			middleware.SubstitutionsFromHeadersFor("requestObject", false),
-			server.CreateNamespace)
+			access.CheckAccess("Namespace", access.Create),
+			server.CreateNamespace,
+		)
 		namespace.GET("/:namespace",
 			middleware.SetNamespace,
-			server.GetNamespace)
+			access.CheckAccess("Namespace", access.Read),
+			server.GetNamespace,
+		)
 		namespace.DELETE("/:namespace",
 			middleware.SetNamespace,
-			server.DeleteNamespace)
+			access.CheckAccess("Namespace", access.Delete),
+			server.DeleteNamespace,
+		)
 
 		subns := namespace.Group("/:namespace")
 		{
@@ -58,99 +68,165 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 
 			deployment := subns.Group("/deployments")
 			{
-				deployment.GET("", server.ListDeployments)
+				deployment.GET("",
+					access.CheckAccess("Deployment", access.List),
+					server.ListDeployments,
+				)
 
 				deployment.POST("",
+					access.CheckAccess("Deployment", access.Create),
 					middleware.ParseJSON,
 					middleware.SubstitutionsFromHeadersFor("requestObject", false),
-					server.CreateDeployment)
+					server.CreateDeployment,
+				)
 
 				deployment.GET("/:objname",
+					access.CheckAccess("Deployment", access.Read),
 					middleware.SetObjectName,
-					server.GetDeployment)
+					server.GetDeployment,
+				)
 
 				deployment.DELETE("/:objname",
+					access.CheckAccess("Deployment", access.Delete),
 					middleware.SetObjectName,
-					server.DeleteDeployment)
+					server.DeleteDeployment,
+				)
 
 				deployment.PUT("/:objname",
+					access.CheckAccess("Deployment", access.Edit),
 					middleware.ParseJSON,
 					middleware.SetObjectName,
-					server.ReplaceDeployment)
+					server.ReplaceDeployment,
+				)
 
 				deployment.PATCH("/:objname",
+					access.CheckAccess("Deployment", access.Edit),
 					middleware.ParseJSON,
 					middleware.SetObjectName,
-					server.PatchDeployment)
+					server.PatchDeployment,
+				)
 
 				deployment.PATCH("/:objname/image",
+					access.CheckAccess("Deployment", access.Edit),
 					middleware.ParseJSON,
 					middleware.SetObjectName,
 					server.GetDeployment,
-					server.ChangeDeploymentImage)
+					server.ChangeDeploymentImage,
+				)
 
 				deployment.PUT("/:objname/replicas",
+					access.CheckAccess("Deployment", access.Edit),
 					middleware.ParseJSON,
 					middleware.SetObjectName,
 					server.GetDeployment,
-					server.ChangeDeploymentReplicas)
+					server.ChangeDeploymentReplicas,
+				)
 			}
 
 			service := subns.Group("/services")
 			{
 				service.GET("",
-					server.ListServices)
+					access.CheckAccess("Service", access.List),
+					server.ListServices,
+				)
 
 				service.POST("",
+					access.CheckAccess("Service", access.Create),
 					middleware.ParseJSON,
 					middleware.SubstitutionsFromHeadersFor("requestObject", false),
-					server.CreateService)
+					server.CreateService,
+				)
 
 				service.GET("/:objname",
+					access.CheckAccess("Service", access.Read),
 					middleware.SetObjectName,
-					server.GetService)
+					server.GetService,
+				)
 
 				service.DELETE("/:objname",
+					access.CheckAccess("Service", access.Delete),
 					middleware.SetObjectName,
-					server.DeleteService)
+					server.DeleteService,
+				)
 
 				service.PUT("/:objname",
+					access.CheckAccess("Service", access.Edit),
 					middleware.ParseJSON,
 					middleware.SubstitutionsFromHeadersFor("requestObject", false),
-					server.ReplaceService)
+					server.ReplaceService,
+				)
 			}
 
 			endpoints := subns.Group("/endpoints")
 			{
-				endpoints.GET("", server.ListEndpoints)
+				endpoints.GET("",
+					access.CheckAccess("Endpoints", access.List),
+					server.ListEndpoints,
+				)
 				endpoints.POST("",
+					access.CheckAccess("Endpoints", access.Create),
 					middleware.ParseJSON,
 					middleware.SubstitutionsFromHeadersFor("requestObject", false),
-					server.CreateEndpoints)
-				endpoints.GET("/:objname", middleware.SetObjectName, server.GetEndpoints)
-				endpoints.DELETE("/:objname", middleware.SetObjectName, server.DeleteEndpoints)
+					server.CreateEndpoints,
+				)
+				endpoints.GET("/:objname",
+					access.CheckAccess("Endpoints", access.Read),
+					middleware.SetObjectName,
+					server.GetEndpoints,
+				)
+				endpoints.DELETE("/:objname",
+					access.CheckAccess("Endpoints", access.Delete),
+					middleware.SetObjectName,
+					server.DeleteEndpoints,
+				)
 			}
 
 			configmaps := subns.Group("/configmaps")
 			{
-				configmaps.GET("", server.ListConfigMaps)
+				configmaps.GET("",
+					access.CheckAccess("ConfigMap", access.List),
+					server.ListConfigMaps,
+				)
 				configmaps.POST("",
+					access.CheckAccess("ConfigMap", access.Create),
 					middleware.ParseJSON,
 					middleware.SubstitutionsFromHeadersFor("requestObject", false),
-					server.CreateConfigMap)
-				configmaps.GET("/:objname", middleware.SetObjectName, server.GetConfigMap)
-				configmaps.DELETE("/:objname", middleware.SetObjectName, server.DeleteConfigMap)
+					server.CreateConfigMap,
+				)
+				configmaps.GET("/:objname",
+					access.CheckAccess("ConfigMap", access.Read),
+					middleware.SetObjectName,
+					server.GetConfigMap,
+				)
+				configmaps.DELETE("/:objname",
+					access.CheckAccess("ConfigMap", access.Delete),
+					middleware.SetObjectName,
+					server.DeleteConfigMap,
+				)
 			}
 
 			secrets := subns.Group("/secrets")
 			{
-				secrets.GET("", server.ListSecrets)
+				secrets.GET("",
+					access.CheckAccess("Secret", access.Read),
+					server.ListSecrets,
+				)
 				secrets.POST("",
+					access.CheckAccess("Secret", access.Read),
 					middleware.ParseJSON,
 					middleware.SubstitutionsFromHeadersFor("requestObject", false),
-					server.CreateSecret)
-				secrets.GET("/:objname", middleware.SetObjectName, server.GetSecret)
-				secrets.DELETE("/:objname", middleware.SetObjectName, server.DeleteSecret)
+					server.CreateSecret,
+				)
+				secrets.GET("/:objname",
+					access.CheckAccess("Secret", access.Read),
+					middleware.SetObjectName,
+					server.GetSecret,
+				)
+				secrets.DELETE("/:objname",
+					access.CheckAccess("Secret", access.Read),
+					middleware.SetObjectName,
+					server.DeleteSecret,
+				)
 			}
 		}
 	}
