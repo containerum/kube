@@ -74,50 +74,54 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 				)
 
 				deployment.POST("",
-					access.CheckAccess("Deployment", access.Create),
 					middleware.ParseJSON,
 					middleware.SubstitutionsFromHeadersFor("requestObject", false),
+					access.CheckAccess("Deployment", access.Create),
 					server.CreateDeployment,
 				)
 
 				deployment.GET("/:objname",
-					access.CheckAccess("Deployment", access.Read),
 					middleware.SetObjectName,
+					access.CheckAccess("Deployment", access.Read),
 					server.GetDeployment,
 				)
 
 				deployment.DELETE("/:objname",
-					access.CheckAccess("Deployment", access.Delete),
 					middleware.SetObjectName,
+					access.CheckAccess("Deployment", access.Delete),
 					server.DeleteDeployment,
 				)
 
 				deployment.PUT("/:objname",
-					access.CheckAccess("Deployment", access.Edit),
-					middleware.ParseJSON,
 					middleware.SetObjectName,
+					middleware.ParseJSON,
+					middleware.SubstitutionsFromHeadersFor("requestObject", false),
+					access.CheckAccess("Deployment", access.Edit),
 					server.ReplaceDeployment,
 				)
 
 				deployment.PATCH("/:objname",
-					access.CheckAccess("Deployment", access.Edit),
-					middleware.ParseJSON,
 					middleware.SetObjectName,
+					middleware.ParseJSON,
+					middleware.SubstitutionsFromHeadersFor("requestObject", false),
+					access.CheckAccess("Deployment", access.Edit),
 					server.PatchDeployment,
 				)
 
 				deployment.PATCH("/:objname/image",
-					access.CheckAccess("Deployment", access.Edit),
-					middleware.ParseJSON,
 					middleware.SetObjectName,
+					middleware.ParseJSON,
+					middleware.SubstitutionsFromHeadersFor("requestObject", false),
+					access.CheckAccess("Deployment", access.Edit),
 					server.GetDeployment,
 					server.ChangeDeploymentImage,
 				)
 
 				deployment.PUT("/:objname/replicas",
-					access.CheckAccess("Deployment", access.Edit),
-					middleware.ParseJSON,
 					middleware.SetObjectName,
+					middleware.ParseJSON,
+					middleware.SubstitutionsFromHeadersFor("requestObject", false),
+					access.CheckAccess("Deployment", access.Edit),
 					server.GetDeployment,
 					server.ChangeDeploymentReplicas,
 				)
@@ -131,28 +135,29 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 				)
 
 				service.POST("",
-					access.CheckAccess("Service", access.Create),
 					middleware.ParseJSON,
 					middleware.SubstitutionsFromHeadersFor("requestObject", false),
+					access.CheckAccess("Service", access.Create),
 					server.CreateService,
 				)
 
 				service.GET("/:objname",
-					access.CheckAccess("Service", access.Read),
 					middleware.SetObjectName,
+					access.CheckAccess("Service", access.Read),
 					server.GetService,
 				)
 
 				service.DELETE("/:objname",
-					access.CheckAccess("Service", access.Delete),
 					middleware.SetObjectName,
+					access.CheckAccess("Service", access.Delete),
 					server.DeleteService,
 				)
 
 				service.PUT("/:objname",
-					access.CheckAccess("Service", access.Edit),
+					middleware.SetObjectName,
 					middleware.ParseJSON,
 					middleware.SubstitutionsFromHeadersFor("requestObject", false),
+					access.CheckAccess("Service", access.Edit),
 					server.ReplaceService,
 				)
 			}
@@ -164,19 +169,19 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 					server.ListEndpoints,
 				)
 				endpoints.POST("",
-					access.CheckAccess("Endpoints", access.Create),
 					middleware.ParseJSON,
 					middleware.SubstitutionsFromHeadersFor("requestObject", false),
+					access.CheckAccess("Endpoints", access.Create),
 					server.CreateEndpoints,
 				)
 				endpoints.GET("/:objname",
-					access.CheckAccess("Endpoints", access.Read),
 					middleware.SetObjectName,
+					access.CheckAccess("Endpoints", access.Read),
 					server.GetEndpoints,
 				)
 				endpoints.DELETE("/:objname",
-					access.CheckAccess("Endpoints", access.Delete),
 					middleware.SetObjectName,
+					access.CheckAccess("Endpoints", access.Delete),
 					server.DeleteEndpoints,
 				)
 			}
@@ -188,19 +193,19 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 					server.ListConfigMaps,
 				)
 				configmaps.POST("",
-					access.CheckAccess("ConfigMap", access.Create),
 					middleware.ParseJSON,
 					middleware.SubstitutionsFromHeadersFor("requestObject", false),
+					access.CheckAccess("ConfigMap", access.Create),
 					server.CreateConfigMap,
 				)
 				configmaps.GET("/:objname",
-					access.CheckAccess("ConfigMap", access.Read),
 					middleware.SetObjectName,
+					access.CheckAccess("ConfigMap", access.Read),
 					server.GetConfigMap,
 				)
 				configmaps.DELETE("/:objname",
-					access.CheckAccess("ConfigMap", access.Delete),
 					middleware.SetObjectName,
+					access.CheckAccess("ConfigMap", access.Delete),
 					server.DeleteConfigMap,
 				)
 			}
@@ -212,19 +217,19 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 					server.ListSecrets,
 				)
 				secrets.POST("",
-					access.CheckAccess("Secret", access.Read),
 					middleware.ParseJSON,
 					middleware.SubstitutionsFromHeadersFor("requestObject", false),
+					access.CheckAccess("Secret", access.Read),
 					server.CreateSecret,
 				)
 				secrets.GET("/:objname",
-					access.CheckAccess("Secret", access.Read),
 					middleware.SetObjectName,
+					access.CheckAccess("Secret", access.Read),
 					server.GetSecret,
 				)
 				secrets.DELETE("/:objname",
-					access.CheckAccess("Secret", access.Read),
 					middleware.SetObjectName,
+					access.CheckAccess("Secret", access.Read),
 					server.DeleteSecret,
 				)
 			}

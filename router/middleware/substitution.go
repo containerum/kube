@@ -112,7 +112,7 @@ func SubstitutionsFromHeadersFor(objctxkey string, after bool) gin.HandlerFunc {
 					WithField("handler-after", after).
 					Infof("refusing to handle type %T", obj)
 			}
-			//c.Set("requestObject", obj) // no need as the types are pointers
+			c.Set(objctxkey, obj)
 		}
 	}
 }

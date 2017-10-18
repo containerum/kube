@@ -3,6 +3,9 @@ package access
 import (
 	"fmt"
 	"os"
+	"sync"
+
+	"bitbucket.org/exonch/kube-api/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -26,10 +29,12 @@ const (
 	LvlRead       AccessLevel = "read"
 	LvlWrite      AccessLevel = "write"
 	LvlReadDelete AccessLevel = "read-delete"
+	LvlNone       AccessLevel = ""
 )
 
 // accessMap : objtype → Perm → role → (true|false)
 var accessMap = make(map[string]map[Perm]map[AccessLevel]bool)
+var accMapLock = &sync.RWMutex{}
 
 func init() {
 	objtypes := []string{
@@ -80,6 +85,9 @@ func init() {
 					if perm == Edit {
 						accessMap[tp][perm][lvl] = true
 					}
+					if tp == "Namespace" && (perm == Create || perm == Delete) {
+						accessMap[tp][perm][lvl] = false
+					}
 				}
 
 				if lvl == LvlOwner {
@@ -92,28 +100,47 @@ func init() {
 						accessMap[tp][perm][lvl] = true
 					}
 				}
+
+				if perm == Edit && tp == "Deployment" {
+					accessMap[tp][perm][lvl] = false
+				}
 			}
 		}
 	}
 
 	if os.Getenv("GIN_MODE") != "release" {
+		fmt.Printf("kube-api/access.accessMap:\n")
 		for k1 := range accessMap {
 			for k2 := range accessMap[k1] {
 				for k3 := range accessMap[k1][k2] {
-					fmt.Printf("%s %s %s %t\n", k1, k2, k3, accessMap[k1][k2][k3])
+					fmt.Printf("\t%s %s %s %t\n", k1, k2, k3, accessMap[k1][k2][k3])
 				}
 			}
 		}
 	}
 }
 
-// CheckAccess returns a gin.HandlerFunc that checks for specified
-// access permissions in the supplied HTTP headers.
+// CheckAccess returns a gin.HandlerFunc that checks for specified access
+// permissions in the supplied HTTP headers.
 //
-// objtype is a kubernetes object kind, e.g. "DeploymentList", "Namespace".
-// perm is one of "read", "write", "delete".
+// The handler operates on "namespace" and "objectName" context values.
 func CheckAccess(objtype string, perm Perm) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		var userdata *HTTPHeaders = c.MustGet("userData").(*HTTPHeaders)
+		var alvl AccessLevel
+		var verdict bool
 
+		var ns2alvl = make(map[string]AccessLevel)
+		for i, nsd := range userdata.Namespace {
+			ns2alvl[nsd.ID] = nsd.Access
+		}
+
+		switch objtype {
+		case "Namespace":
+			switch perm {
+			case List:
+
+			}
+		}
 	}
 }
