@@ -83,28 +83,53 @@ func SubstitutionsFromHeadersFor(objctxkey string, after bool) gin.HandlerFunc {
 			switch objtyped := obj.(type) {
 			case *v1.Namespace:
 				subNamespace(objtyped, reps)
+
 			case *v1.NamespaceList:
 				for i := range objtyped.Items {
 					subNamespace(&objtyped.Items[i], reps)
 				}
+
 			case *v1beta1.Deployment:
 				subDeployment(objtyped, reps)
+
 			case *v1beta1.DeploymentList:
 				for i := range objtyped.Items {
 					subDeployment(&objtyped.Items[i], reps)
 				}
+
 			case *v1.Service:
 				subService(objtyped, reps)
+
 			case *v1.ServiceList:
 				for i := range objtyped.Items {
 					subService(&objtyped.Items[i], reps)
 				}
+
 			case *v1.Endpoints:
 				subEndpoints(objtyped, reps)
+
 			case *v1.EndpointsList:
 				for i := range objtyped.Items {
 					subEndpoints(&objtyped.Items[i], reps)
 				}
+
+			case string:
+				switch objtyped {
+				case "namespace":
+					for _, re := range reps["x-user-namespace"] {
+						if !re.zero() && re.From == objtyped {
+							c.Set("namespace", re.To)
+						}
+					}
+
+				default:
+					utils.Log(c).
+						WithField("handler", "SubstitutionsFromHeadersFor").
+						WithField("handler-objctxkey", objctxkey).
+						WithField("handler-after", after).
+						Infof("refusing to handle type %T", obj)
+				}
+
 			default:
 				utils.Log(c).
 					WithField("handler", "SubstitutionsFromHeadersFor").
@@ -112,7 +137,7 @@ func SubstitutionsFromHeadersFor(objctxkey string, after bool) gin.HandlerFunc {
 					WithField("handler-after", after).
 					Infof("refusing to handle type %T", obj)
 			}
-			//c.Set("requestObject", obj) // no need as the types are pointers
+			c.Set(objctxkey, obj)
 		}
 	}
 }
@@ -139,6 +164,7 @@ func subDeployment(objtyped *v1beta1.Deployment, reps map[string][]userReplaceme
 					vol.Name = re.To
 				}
 			}
+			// FIXME: must also substitute Deployment.Spec.Template.Spec.Containers[*].VolumeMounts[*].Name
 		}
 	}
 }

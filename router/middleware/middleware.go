@@ -1,11 +1,13 @@
 package middleware
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"math/rand"
 	"reflect"
 
+	"bitbucket.org/exonch/kube-api/access"
 	"bitbucket.org/exonch/kube-api/server"
 	"bitbucket.org/exonch/kube-api/utils"
 
@@ -14,6 +16,7 @@ import (
 	//"github.com/sirupsen/logrus"
 	"k8s.io/api/apps/v1beta1"
 	"k8s.io/api/core/v1"
+	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func SetNamespace(c *gin.Context) {
@@ -68,25 +71,46 @@ func ParseJSON(c *gin.Context) {
 	if err != nil {
 		return
 	}
+
+	var objmeta *meta_v1.ObjectMeta
+
 	switch kind.Kind {
 	case "Namespace":
 		var obj *v1.Namespace
 		err = json.Unmarshal(jsn, &obj)
+		objmeta = &obj.ObjectMeta
 		c.Set("requestObject", obj)
 	case "Deployment":
 		var obj *v1beta1.Deployment
 		err = json.Unmarshal(jsn, &obj)
+		objmeta = &obj.ObjectMeta
 		c.Set("requestObject", obj)
 	case "Service":
 		var obj *v1.Service
 		err = json.Unmarshal(jsn, &obj)
+		objmeta = &obj.ObjectMeta
 		c.Set("requestObject", obj)
 	case "Endpoints":
 		var obj *v1.Endpoints
 		err = json.Unmarshal(jsn, &obj)
+		objmeta = &obj.ObjectMeta
 		c.Set("requestObject", obj)
 	default:
 		c.Set("requestObject", json.RawMessage(jsn))
+	}
+
+	if _, ok := c.Get("namespace"); !ok {
+		if kind.Kind == "Namespace" {
+			c.Set("namespace", objmeta.Name)
+		} else {
+			c.Set("namespace", objmeta.Namespace)
+		}
+	}
+
+	if _, ok := c.Get("objectName"); !ok {
+		if kind.Kind != "Namespace" {
+			c.Set("objectName", objmeta.Name)
+		}
 	}
 }
 
@@ -180,4 +204,50 @@ func SwapInputOutput(c *gin.Context) {
 	if ok2 {
 		c.Set("requestObject", out)
 	}
+}
+
+func ParseUserData(c *gin.Context) {
+	hheaders := &access.HTTPHeaders{}
+
+	if hdrdat := c.Request.Header.Get("x-user-namespace"); len(hdrdat) > 0 {
+		unb64, err := base64.StdEncoding.DecodeString(hdrdat)
+		if err != nil {
+			utils.Log(c).Warnf("invalid base64 in header x-user-namespace: %v", err)
+			c.AbortWithStatusJSON(400, map[string]string{
+				"error": "invalid base64 in header x-user-namespace",
+			})
+			return
+		}
+
+		err = json.Unmarshal(unb64, &hheaders.Namespace)
+		if err != nil {
+			utils.Log(c).Warnf("cannot unmarshal json in header x-user-namespace: %v (%[1]T)", err)
+			c.AbortWithStatusJSON(400, map[string]string{
+				"error": "invalid json in header x-user-namespace",
+			})
+			return
+		}
+	}
+
+	if hdrdat := c.Request.Header.Get("x-user-volume"); len(hdrdat) > 0 {
+		unb64, err := base64.StdEncoding.DecodeString(c.Request.Header.Get("x-user-volume"))
+		if err != nil {
+			utils.Log(c).Warnf("invalid base64 in header x-user-volume: %v", err)
+			c.AbortWithStatusJSON(400, map[string]string{
+				"error": "invalid base64 in header x-user-volume",
+			})
+			return
+		}
+
+		err = json.Unmarshal(unb64, &hheaders.Volume)
+		if err != nil {
+			utils.Log(c).Warnf("cannot unmarshal json in header x-user-volume: %v", err)
+			c.AbortWithStatusJSON(400, map[string]string{
+				"error": "invalid json in header x-user-volume",
+			})
+			return
+		}
+	}
+
+	c.Set("userData", hheaders)
 }

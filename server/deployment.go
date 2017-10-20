@@ -14,16 +14,12 @@ import (
 )
 
 // GET /api/v1/namespaces/:namespace/deployments
-//
-// middleware deps:
-// 	SetNamespace
-// 	Set(…)KubeClient
 func ListDeployments(c *gin.Context) {
 	ns := c.MustGet("namespace").(string)
 	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
 	deplList, err := kubecli.AppsV1beta1().Deployments(ns).List(meta_v1.ListOptions{})
 	if err != nil {
-		utils.Log(c).Warnf("kubecli.Deployments.List error: %[1]T %[1]v", err)
+		utils.Log(c).Warnf("kubecli.Deployments.List error: %T %[1]v", err)
 		c.AbortWithStatusJSON(503, map[string]string{
 			"error": fmt.Sprintf("cannot list deployments: %v", err),
 		})
@@ -37,11 +33,6 @@ func ListDeployments(c *gin.Context) {
 }
 
 // POST /api/v1/namespaces/:namespace/deployments
-//
-// middleware deps:
-// 	SetNamespace
-// 	Set(…)KubeClient
-// 	ParseJSON
 func CreateDeployment(c *gin.Context) {
 	var err error
 	nsname := c.MustGet("namespace").(string)
