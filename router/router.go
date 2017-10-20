@@ -112,7 +112,7 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 					middleware.SetObjectName,
 					middleware.ParseJSON,
 					middleware.SubstitutionsFromHeadersFor("requestObject", false),
-					access.CheckAccess("Deployment", access.Edit),
+					access.CheckAccess("Deployment", access.SetImage),
 					server.GetDeployment,
 					server.ChangeDeploymentImage,
 				)
@@ -121,7 +121,7 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 					middleware.SetObjectName,
 					middleware.ParseJSON,
 					middleware.SubstitutionsFromHeadersFor("requestObject", false),
-					access.CheckAccess("Deployment", access.Edit),
+					access.CheckAccess("Deployment", access.SetReplicas),
 					server.GetDeployment,
 					server.ChangeDeploymentReplicas,
 				)

@@ -5,20 +5,47 @@ import (
 	"os"
 	"sync"
 
-	"bitbucket.org/exonch/kube-api/utils"
+	"bitbucket.org/exonch/kube-api/model"
+
+	"k8s.io/api/apps/v1beta1"
 
 	"github.com/gin-gonic/gin"
 )
+
+type HTTPHeaders struct {
+	Namespace []model.UserData
+	Volume    []model.UserData
+}
+
+func (hh *HTTPHeaders) NamespaceAccess(nsname string) AccessLevel {
+	for _, ud := range hh.Namespace {
+		if ud.ID == nsname {
+			return AccessLevel(ud.Access)
+		}
+	}
+	return AccessLevel("")
+}
+
+func (hh *HTTPHeaders) VolumeAccess(volname string) AccessLevel {
+	for _, ud := range hh.Volume {
+		if ud.ID == volname {
+			return AccessLevel(ud.Access)
+		}
+	}
+	return AccessLevel("")
+}
 
 // Required permission for the action on the object.
 type Perm string
 
 const (
-	Create Perm = "create"
-	Delete Perm = "delete"
-	List   Perm = "list"
-	Read   Perm = "read"
-	Edit   Perm = "edit"
+	Create      Perm = "create"
+	Delete      Perm = "delete"
+	List        Perm = "list"
+	Read        Perm = "read"
+	Edit        Perm = "edit"
+	SetImage    Perm = "setimage"
+	SetReplicas Perm = "setreplicas"
 )
 
 // User's access level for this object.
@@ -32,7 +59,7 @@ const (
 	LvlNone       AccessLevel = ""
 )
 
-// accessMap : objtype → Perm → role → (true|false)
+// accessMap : m[objtype] → m[Perm] → m[role] → true/false
 var accessMap = make(map[string]map[Perm]map[AccessLevel]bool)
 var accMapLock = &sync.RWMutex{}
 
@@ -51,6 +78,8 @@ func init() {
 		List,
 		Read,
 		Edit,
+		SetImage,
+		SetReplicas,
 	}
 	accessLevels := []AccessLevel{
 		LvlOwner,
@@ -82,7 +111,7 @@ func init() {
 
 				if lvl == LvlWrite {
 					accessMap[tp][perm][lvl] = accessMap[tp][perm][LvlRead]
-					if perm == Edit {
+					if perm == Edit || perm == SetImage || perm == SetReplicas {
 						accessMap[tp][perm][lvl] = true
 					}
 					if tp == "Namespace" && (perm == Create || perm == Delete) {
@@ -108,6 +137,22 @@ func init() {
 		}
 	}
 
+	{
+		aMapVol := make(map[Perm]map[AccessLevel]bool)
+		accessMap["Volume"] = aMapVol
+		aMapVol[Read][LvlOwner] = true
+		aMapVol[Edit][LvlOwner] = true
+
+		aMapVol[Read][LvlRead] = true
+		aMapVol[Edit][LvlRead] = false
+
+		aMapVol[Read][LvlWrite] = true
+		aMapVol[Edit][LvlWrite] = true
+
+		aMapVol[Read][LvlReadDelete] = true
+		aMapVol[Edit][LvlReadDelete] = false
+	}
+
 	if os.Getenv("GIN_MODE") != "release" {
 		fmt.Printf("kube-api/access.accessMap:\n")
 		for k1 := range accessMap {
@@ -124,23 +169,74 @@ func init() {
 // permissions in the supplied HTTP headers.
 //
 // The handler operates on "namespace" and "objectName" context values.
+// Must be used AFTER user data substitutions.
 func CheckAccess(objtype string, perm Perm) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var userdata *HTTPHeaders = c.MustGet("userData").(*HTTPHeaders)
-		var alvl AccessLevel
+		var canAccess map[AccessLevel]bool = accessMap[objtype][perm]
+		var nsname, objname string
 		var verdict bool
 
-		var ns2alvl = make(map[string]AccessLevel)
-		for i, nsd := range userdata.Namespace {
-			ns2alvl[nsd.ID] = nsd.Access
+		if objtype != "Namespace" {
+			objname = c.MustGet("objectName").(string)
+		}
+		nsname = c.MustGet("namespace").(string)
+
+		verdict = canAccess[userdata.NamespaceAccess(nsname)]
+		if !verdict {
+			accessDenied(c, "namespace rights")
+			return
 		}
 
-		switch objtype {
-		case "Namespace":
-			switch perm {
-			case List:
+		if objtype == "Deployment" && (perm == Edit || perm == Create) { // also check volumes
+			var obj interface{}
+			var ok, exists bool
+			var depl *v1beta1.Deployment
+			var containerPerms = make(map[string]Perm) // m[volumeName] → Read/Edit
 
+			obj, exists = c.Get("requestObject")
+			if !exists {
+				goto endvol
 			}
+			depl, ok = obj.(*v1beta1.Deployment)
+			if !ok {
+				goto endvol
+			}
+
+			for _, cont := range depl.Spec.Template.Spec.Containers {
+				for _, volmnt := range cont.VolumeMounts {
+					_, exists := containerPerms[volmnt.Name]
+					if !exists {
+						containerPerms[volmnt.Name] = Read
+					}
+					if !volmnt.ReadOnly {
+						containerPerms[volmnt.Name] = Edit
+					}
+				}
+			}
+			for vol, perm := range containerPerms {
+				verdict = accessMap["Volume"][perm][userdata.VolumeAccess(vol)]
+				if !verdict {
+					accessDenied(c, "volume \""+vol+"\" in deployment \""+objname+"\"")
+					return
+				}
+			}
+		endvol:
+		}
+
+		if !verdict {
+			accessDenied(c, "no info")
 		}
 	}
+}
+
+func accessDenied(c *gin.Context, ctxinfo string) {
+	_, already := c.Get("accessDenied-mark")
+	if already {
+		return
+	}
+	c.Set("accessDenied-mark", true)
+	c.AbortWithStatusJSON(401, map[string]string{
+		"error": "unauthorized (" + ctxinfo + ")",
+	})
 }
