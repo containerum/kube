@@ -81,36 +81,46 @@ func SubstitutionsFromHeadersFor(objctxkey string, after bool) gin.HandlerFunc {
 
 		if obj, ok := c.Get(objctxkey); ok {
 			switch objtyped := obj.(type) {
-			case *v1.Namespace:
-				subNamespace(objtyped, reps)
-
-			case *v1.NamespaceList:
+			case *v1.ConfigMap:
+				subConfigMap(objtyped, reps)
+			case *v1.ConfigMapList:
 				for i := range objtyped.Items {
-					subNamespace(&objtyped.Items[i], reps)
+					subConfigMap(&objtyped.Items[i], reps)
 				}
 
 			case *v1beta1.Deployment:
 				subDeployment(objtyped, reps)
-
 			case *v1beta1.DeploymentList:
 				for i := range objtyped.Items {
 					subDeployment(&objtyped.Items[i], reps)
 				}
 
-			case *v1.Service:
-				subService(objtyped, reps)
-
-			case *v1.ServiceList:
-				for i := range objtyped.Items {
-					subService(&objtyped.Items[i], reps)
-				}
-
 			case *v1.Endpoints:
 				subEndpoints(objtyped, reps)
-
 			case *v1.EndpointsList:
 				for i := range objtyped.Items {
 					subEndpoints(&objtyped.Items[i], reps)
+				}
+
+			case *v1.Namespace:
+				subNamespace(objtyped, reps)
+			case *v1.NamespaceList:
+				for i := range objtyped.Items {
+					subNamespace(&objtyped.Items[i], reps)
+				}
+
+			case *v1.Secret:
+				subSecret(objtyped, reps)
+			case *v1.SecretList:
+				for i := range objtyped.Items {
+					subSecret(&objtyped.Items[i], reps)
+				}
+
+			case *v1.Service:
+				subService(objtyped, reps)
+			case *v1.ServiceList:
+				for i := range objtyped.Items {
+					subService(&objtyped.Items[i], reps)
 				}
 
 			case string:
@@ -178,6 +188,22 @@ func subService(objtyped *v1.Service, reps map[string][]userReplacement) {
 }
 
 func subEndpoints(objtyped *v1.Endpoints, reps map[string][]userReplacement) {
+	for _, re := range reps["x-user-namespace"] {
+		if !re.zero() && re.From == objtyped.ObjectMeta.Namespace {
+			objtyped.ObjectMeta.Namespace = re.To
+		}
+	}
+}
+
+func subConfigMap(objtyped *v1.ConfigMap, reps map[string][]userReplacement) {
+	for _, re := range reps["x-user-namespace"] {
+		if !re.zero() && re.From == objtyped.ObjectMeta.Namespace {
+			objtyped.ObjectMeta.Namespace = re.To
+		}
+	}
+}
+
+func subSecret(objtyped *v1.Secret, reps map[string][]userReplacement) {
 	for _, re := range reps["x-user-namespace"] {
 		if !re.zero() && re.From == objtyped.ObjectMeta.Namespace {
 			objtyped.ObjectMeta.Namespace = re.To
