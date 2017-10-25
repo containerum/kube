@@ -140,6 +140,9 @@ func init() {
 	{
 		aMapVol := make(map[Perm]map[AccessLevel]bool)
 		accessMap["Volume"] = aMapVol
+		aMapVol[Read] = make(map[AccessLevel]bool)
+		aMapVol[Edit] = make(map[AccessLevel]bool)
+
 		aMapVol[Read][LvlOwner] = true
 		aMapVol[Edit][LvlOwner] = true
 
