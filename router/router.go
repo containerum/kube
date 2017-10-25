@@ -63,6 +63,7 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 		subns := namespace.Group("/:namespace")
 		{
 			subns.Use(middleware.SetNamespace)
+			subns.Use(middleware.SubstitutionsFromHeadersFor("namespace", false))
 
 			subns.GET("/resourcequotas/quota", server.GetNamespaceQuota)
 

@@ -80,6 +80,9 @@ func SubstitutionsFromHeadersFor(objctxkey string, after bool) gin.HandlerFunc {
 		}
 
 		if obj, ok := c.Get(objctxkey); ok {
+			fmt.Printf("objctxkey %q\n", objctxkey)
+			fmt.Printf("obj <%T> %#[1]v\n", obj)
+
 			switch objtyped := obj.(type) {
 			case *v1.ConfigMap:
 				subConfigMap(objtyped, reps)
@@ -124,20 +127,20 @@ func SubstitutionsFromHeadersFor(objctxkey string, after bool) gin.HandlerFunc {
 				}
 
 			case string:
-				switch objtyped {
+				switch objctxkey {
 				case "namespace":
 					for _, re := range reps["x-user-namespace"] {
 						if !re.zero() && re.From == objtyped {
 							c.Set("namespace", re.To)
+							fmt.Printf("setting ctx.\"namespace\" from %q to %q\n", re.From, re.To)
 						}
 					}
-
 				default:
 					utils.Log(c).
 						WithField("handler", "SubstitutionsFromHeadersFor").
 						WithField("handler-objctxkey", objctxkey).
 						WithField("handler-after", after).
-						Infof("refusing to handle type %T", obj)
+						Infof("refusing to handle type %T (%#[1]v) key=%q", obj, objctxkey)
 				}
 
 			default:
@@ -147,7 +150,6 @@ func SubstitutionsFromHeadersFor(objctxkey string, after bool) gin.HandlerFunc {
 					WithField("handler-after", after).
 					Infof("refusing to handle type %T", obj)
 			}
-			c.Set(objctxkey, obj)
 		}
 	}
 }

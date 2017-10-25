@@ -65,12 +65,13 @@ var accMapLock = &sync.RWMutex{}
 
 func init() {
 	objtypes := []string{
-		"Namespace",
-		"Deployment",
-		"Service",
-		"Endpoints",
 		"ConfigMap",
+		"Deployment",
+		"Endpoints",
+		"Ingress",
+		"Namespace",
 		"Secret",
+		"Service",
 	}
 	perms := []Perm{
 		Create,
@@ -179,6 +180,9 @@ func CheckAccess(objtype string, perm Perm) gin.HandlerFunc {
 		var canAccess map[AccessLevel]bool = accessMap[objtype][perm]
 		var nsname, objname string
 		var verdict bool
+		
+		accMapLock.Lock()
+		defer accMapLock.Unlock()
 
 		nsname = c.MustGet("namespace").(string)
 
