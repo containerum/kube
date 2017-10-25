@@ -180,9 +180,6 @@ func CheckAccess(objtype string, perm Perm) gin.HandlerFunc {
 		var nsname, objname string
 		var verdict bool
 
-		if objtype != "Namespace" {
-			objname = c.MustGet("objectName").(string)
-		}
 		nsname = c.MustGet("namespace").(string)
 
 		verdict = canAccess[userdata.NamespaceAccess(nsname)]
@@ -220,6 +217,9 @@ func CheckAccess(objtype string, perm Perm) gin.HandlerFunc {
 			for vol, perm := range containerPerms {
 				verdict = accessMap["Volume"][perm][userdata.VolumeAccess(vol)]
 				if !verdict {
+					if tmp, ok := c.Get("objectName"); ok {
+						objname = tmp.(string)
+					}
 					accessDenied(c, "volume \""+vol+"\" in deployment \""+objname+"\"")
 					return
 				}
