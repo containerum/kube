@@ -180,7 +180,7 @@ func CheckAccess(objtype string, perm Perm) gin.HandlerFunc {
 		var canAccess map[AccessLevel]bool = accessMap[objtype][perm]
 		var nsname, objname string
 		var verdict bool
-		
+
 		accMapLock.Lock()
 		defer accMapLock.Unlock()
 

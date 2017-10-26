@@ -247,6 +247,16 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 					access.CheckAccess("Ingress", access.Create),
 					server.CreateIngress,
 				)
+				ingress.GET("/:objname",
+					middleware.SetObjectName,
+					access.CheckAccess("Ingress", access.Read),
+					server.GetIngress,
+				)
+				ingress.DELETE("/:objname",
+					middleware.SetObjectName,
+					access.CheckAccess("Ingress", access.Delete),
+					server.DeleteIngress,
+				)
 			}
 		}
 	}

@@ -51,7 +51,7 @@ func CreateSecret(c *gin.Context) {
 	if err != nil {
 		utils.Log(c).Warnf("kubecli.Secrets.Create error: %[1]T %[1]v", err)
 		c.AbortWithStatusJSON(utils.KubeErrorHTTPStatus(err), map[string]string{
-			"error": fmt.Sprintf("cannot create configmap: %v", err),
+			"error": fmt.Sprintf("cannot create secret: %v", err),
 		})
 		return
 	}
@@ -70,7 +70,7 @@ func GetSecret(c *gin.Context) {
 	if err != nil {
 		utils.Log(c).Warnf("kubecli.Secrets.Get error: %[1]T %[1]v", err)
 		c.AbortWithStatusJSON(utils.KubeErrorHTTPStatus(err), map[string]string{
-			"error": fmt.Sprintf("cannot get configmap %s: %v", objname, err),
+			"error": fmt.Sprintf("cannot get secret %s: %v", objname, err),
 		})
 		return
 	}

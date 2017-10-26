@@ -62,15 +62,34 @@ func CreateIngress(c *gin.Context) {
 	c.Set("responseObject", ingressAfter)
 }
 
+func GetIngress(c *gin.Context) {
+	nsname := c.MustGet("namespace").(string)
+	objname := c.MustGet("objectName").(string)
+	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+
+	ingress, err := kubecli.ExtensionsV1beta1().Ingresses(nsname).Get(objname, meta_v1.GetOptions{})
+	if err != nil {
+		utils.Log(c).Warnf("kubecli.Ingresses.Get error: %T %[1]v", err)
+		c.AbortWithStatusJSON(utils.KubeErrorHTTPStatus(err), map[string]string{
+			"error": fmt.Sprintf("cannot get ingress %s: %v", objname, err),
+		})
+		return
+	}
+	redactIngressForUser(ingress)
+	c.Status(200)
+	c.Set("responseObject", ingress)
+}
+
 func DeleteIngress(c *gin.Context) {
 	nsname := c.MustGet("namespace").(string)
 	objname := c.MustGet("objectName").(string)
 	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
-	err := kubecli.CoreV1().Secrets(nsname).Delete(objname, &meta_v1.DeleteOptions{})
+
+	err := kubecli.ExtensionsV1beta1().Ingresses(nsname).Delete(objname, &meta_v1.DeleteOptions{})
 	if err != nil {
-		utils.Log(c).Warnf("kubecli.Secrets.Delete error: %[1]T %[1]v", err)
+		utils.Log(c).Warnf("kubecli.Ingresses.Delete error: %T %[1]v", err)
 		c.AbortWithStatusJSON(utils.KubeErrorHTTPStatus(err), map[string]string{
-			"error": fmt.Sprintf("cannot delete endpoints %s: %v", objname, err),
+			"error": fmt.Sprintf("cannot delete ingress %s: %v", objname, err),
 		})
 		return
 	}
@@ -78,9 +97,14 @@ func DeleteIngress(c *gin.Context) {
 }
 
 func redactIngressForUser(ing *v1beta1.Ingress) {
+	ing.TypeMeta.Kind = "Ingress"
+	ing.TypeMeta.APIVersion = "extensions/v1beta1"
 }
 
 func redactIngressListForUser(ingList *v1beta1.IngressList) {
+	for i := range ingList.Items {
+		redactIngressForUser(&ingList.Items[i])
+	}
 }
 
 func clientIngressInsertions(ing *v1beta1.Ingress) {
