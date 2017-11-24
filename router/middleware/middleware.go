@@ -16,6 +16,7 @@ import (
 	//"github.com/sirupsen/logrus"
 	"k8s.io/api/apps/v1beta1"
 	"k8s.io/api/core/v1"
+	ext_v1beta1 "k8s.io/api/extensions/v1beta1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -75,26 +76,48 @@ func ParseJSON(c *gin.Context) {
 	var objmeta *meta_v1.ObjectMeta
 
 	switch kind.Kind {
-	case "Namespace":
-		var obj *v1.Namespace
+	case "ConfigMap":
+		var obj *v1.ConfigMap
 		err = json.Unmarshal(jsn, &obj)
 		objmeta = &obj.ObjectMeta
 		c.Set("requestObject", obj)
+
 	case "Deployment":
 		var obj *v1beta1.Deployment
 		err = json.Unmarshal(jsn, &obj)
 		objmeta = &obj.ObjectMeta
 		c.Set("requestObject", obj)
-	case "Service":
-		var obj *v1.Service
-		err = json.Unmarshal(jsn, &obj)
-		objmeta = &obj.ObjectMeta
-		c.Set("requestObject", obj)
+
 	case "Endpoints":
 		var obj *v1.Endpoints
 		err = json.Unmarshal(jsn, &obj)
 		objmeta = &obj.ObjectMeta
 		c.Set("requestObject", obj)
+
+	case "Namespace":
+		var obj *v1.Namespace
+		err = json.Unmarshal(jsn, &obj)
+		objmeta = &obj.ObjectMeta
+		c.Set("requestObject", obj)
+
+	case "Secret":
+		var obj *v1.Secret
+		err = json.Unmarshal(jsn, &obj)
+		objmeta = &obj.ObjectMeta
+		c.Set("requestObject", obj)
+
+	case "Service":
+		var obj *v1.Service
+		err = json.Unmarshal(jsn, &obj)
+		objmeta = &obj.ObjectMeta
+		c.Set("requestObject", obj)
+
+	case "Ingress":
+		var obj *ext_v1beta1.Ingress
+		err = json.Unmarshal(jsn, &obj)
+		objmeta = &obj.ObjectMeta
+		c.Set("requestObject", obj)
+
 	default:
 		c.Set("requestObject", json.RawMessage(jsn))
 	}
@@ -120,6 +143,7 @@ func SetRequestID(c *gin.Context) {
 	c.Header("X-Request-ID", reqid)
 }
 
+// CheckHTTP411 middleware rejects all submissions with unknown length.
 func CheckHTTP411(c *gin.Context) {
 	if c.Request.Method == "GET" || c.Request.Method == "OPTIONS" {
 		return

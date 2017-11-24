@@ -63,6 +63,7 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 		subns := namespace.Group("/:namespace")
 		{
 			subns.Use(middleware.SetNamespace)
+			subns.Use(middleware.SubstitutionsFromHeadersFor("namespace", false))
 
 			subns.GET("/resourcequotas/quota", server.GetNamespaceQuota)
 
@@ -213,13 +214,13 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 			secrets := subns.Group("/secrets")
 			{
 				secrets.GET("",
-					access.CheckAccess("Secret", access.Read),
+					access.CheckAccess("Secret", access.List),
 					server.ListSecrets,
 				)
 				secrets.POST("",
 					middleware.ParseJSON,
 					middleware.SubstitutionsFromHeadersFor("requestObject", false),
-					access.CheckAccess("Secret", access.Read),
+					access.CheckAccess("Secret", access.Create),
 					server.CreateSecret,
 				)
 				secrets.GET("/:objname",
@@ -229,8 +230,32 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 				)
 				secrets.DELETE("/:objname",
 					middleware.SetObjectName,
-					access.CheckAccess("Secret", access.Read),
+					access.CheckAccess("Secret", access.Delete),
 					server.DeleteSecret,
+				)
+			}
+
+			ingress := subns.Group("/ingress")
+			{
+				ingress.GET("",
+					access.CheckAccess("Ingress", access.List),
+					server.ListIngresses,
+				)
+				ingress.POST("",
+					middleware.ParseJSON,
+					middleware.SubstitutionsFromHeadersFor("requestObject", false),
+					access.CheckAccess("Ingress", access.Create),
+					server.CreateIngress,
+				)
+				ingress.GET("/:objname",
+					middleware.SetObjectName,
+					access.CheckAccess("Ingress", access.Read),
+					server.GetIngress,
+				)
+				ingress.DELETE("/:objname",
+					middleware.SetObjectName,
+					access.CheckAccess("Ingress", access.Delete),
+					server.DeleteIngress,
 				)
 			}
 		}

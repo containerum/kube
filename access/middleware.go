@@ -65,12 +65,13 @@ var accMapLock = &sync.RWMutex{}
 
 func init() {
 	objtypes := []string{
-		"Namespace",
-		"Deployment",
-		"Service",
-		"Endpoints",
 		"ConfigMap",
+		"Deployment",
+		"Endpoints",
+		"Ingress",
+		"Namespace",
 		"Secret",
+		"Service",
 	}
 	perms := []Perm{
 		Create,
@@ -140,6 +141,9 @@ func init() {
 	{
 		aMapVol := make(map[Perm]map[AccessLevel]bool)
 		accessMap["Volume"] = aMapVol
+		aMapVol[Read] = make(map[AccessLevel]bool)
+		aMapVol[Edit] = make(map[AccessLevel]bool)
+
 		aMapVol[Read][LvlOwner] = true
 		aMapVol[Edit][LvlOwner] = true
 
@@ -177,9 +181,9 @@ func CheckAccess(objtype string, perm Perm) gin.HandlerFunc {
 		var nsname, objname string
 		var verdict bool
 
-		if objtype != "Namespace" {
-			objname = c.MustGet("objectName").(string)
-		}
+		accMapLock.Lock()
+		defer accMapLock.Unlock()
+
 		nsname = c.MustGet("namespace").(string)
 
 		verdict = canAccess[userdata.NamespaceAccess(nsname)]
@@ -217,6 +221,9 @@ func CheckAccess(objtype string, perm Perm) gin.HandlerFunc {
 			for vol, perm := range containerPerms {
 				verdict = accessMap["Volume"][perm][userdata.VolumeAccess(vol)]
 				if !verdict {
+					if tmp, ok := c.Get("objectName"); ok {
+						objname = tmp.(string)
+					}
 					accessDenied(c, "volume \""+vol+"\" in deployment \""+objname+"\"")
 					return
 				}
