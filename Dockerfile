@@ -1,5 +1,5 @@
 FROM golang:1.9-alpine as builder
-WORKDIR /go/src/bitbucket.org/exonch/kube-api
+WORKDIR /go/src/git.containerum.net/ch/kube-api
 COPY . .
 WORKDIR cmd/kube-api
 RUN CGO_ENABLED=0 go build -v -ldflags="-w -s -extldflags '-static'" -o /bin/kube-api
