@@ -24,7 +24,8 @@ func SetNamespace(c *gin.Context) {
 	ns := c.Param("namespace")
 	if ns == "" {
 		c.AbortWithStatusJSON(400, map[string]string{
-			"error": `missing namespace name`,
+			"error":   `missing namespace name`,
+			"errcode": "BAD_INPUT",
 		})
 	}
 	c.Set("namespace", ns)
@@ -34,7 +35,8 @@ func SetObjectName(c *gin.Context) {
 	objname := c.Param("objname")
 	if objname == "" {
 		c.AbortWithStatusJSON(400, map[string]string{
-			"error": `missing object name`,
+			"error":   `missing object name`,
+			"errcode": "BAD_INPUT",
 		})
 	}
 	c.Set("objectName", objname)
@@ -43,7 +45,8 @@ func SetObjectName(c *gin.Context) {
 func SetRandomKubeClient(c *gin.Context) {
 	if len(server.KubeClients) == 0 {
 		c.AbortWithStatusJSON(500, map[string]string{
-			"error": "no available kubernetes apiserver clients",
+			"error":   "no available kubernetes apiserver clients",
+			"errcode": "INTERNAL",
 		})
 		return
 	}
@@ -64,12 +67,19 @@ func ParseJSON(c *gin.Context) {
 
 	jsn, err := c.GetRawData()
 	if err != nil {
-		c.AbortWithStatusJSON(999, map[string]string{"error": "bad request"})
+		c.AbortWithStatusJSON(400, map[string]string{
+			"error":   "bad request",
+			"errcode": "BAD_INPUT",
+		})
 		return
 	}
 
 	err = json.Unmarshal(jsn, &kind)
 	if err != nil {
+		c.AbortWithStatusJSON(400, map[string]string{
+			"error":   "json error: " + err.Error(),
+			"errcode": "BAD_INPUT",
+		})
 		return
 	}
 
@@ -238,7 +248,8 @@ func ParseUserData(c *gin.Context) {
 		if err != nil {
 			utils.Log(c).Warnf("invalid base64 in header x-user-namespace: %v", err)
 			c.AbortWithStatusJSON(400, map[string]string{
-				"error": "invalid base64 in header x-user-namespace",
+				"error":   "invalid base64 in header x-user-namespace",
+				"errcode": "BAD_INPUT",
 			})
 			return
 		}
@@ -247,7 +258,8 @@ func ParseUserData(c *gin.Context) {
 		if err != nil {
 			utils.Log(c).Warnf("cannot unmarshal json in header x-user-namespace: %v (%[1]T)", err)
 			c.AbortWithStatusJSON(400, map[string]string{
-				"error": "invalid json in header x-user-namespace",
+				"error":   "invalid json in header x-user-namespace",
+				"errcode": "BAD_INPUT",
 			})
 			return
 		}
@@ -258,7 +270,8 @@ func ParseUserData(c *gin.Context) {
 		if err != nil {
 			utils.Log(c).Warnf("invalid base64 in header x-user-volume: %v", err)
 			c.AbortWithStatusJSON(400, map[string]string{
-				"error": "invalid base64 in header x-user-volume",
+				"error":   "invalid base64 in header x-user-volume",
+				"errcode": "BAD_INPUT",
 			})
 			return
 		}
@@ -267,7 +280,8 @@ func ParseUserData(c *gin.Context) {
 		if err != nil {
 			utils.Log(c).Warnf("cannot unmarshal json in header x-user-volume: %v", err)
 			c.AbortWithStatusJSON(400, map[string]string{
-				"error": "invalid json in header x-user-volume",
+				"error":   "invalid json in header x-user-volume",
+				"errcode": "BAD_INPUT",
 			})
 			return
 		}

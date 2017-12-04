@@ -177,15 +177,17 @@ func init() {
 func CheckAccess(objtype string, perm Perm) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var userdata *HTTPHeaders = c.MustGet("userData").(*HTTPHeaders)
+		accMapLock.Lock()
 		var canAccess map[AccessLevel]bool = accessMap[objtype][perm]
+		defer accMapLock.Unlock()
 		var nsname, objname string
 		var verdict bool
 
-		accMapLock.Lock()
-		defer accMapLock.Unlock()
+		if objtype == "Namespace" && perm == List {
+			return
+		}
 
 		nsname = c.MustGet("namespace").(string)
-
 		verdict = canAccess[userdata.NamespaceAccess(nsname)]
 		if !verdict {
 			accessDenied(c, "namespace rights")
@@ -244,6 +246,7 @@ func accessDenied(c *gin.Context, ctxinfo string) {
 	}
 	c.Set("accessDenied-mark", true)
 	c.AbortWithStatusJSON(401, map[string]string{
-		"error": "unauthorized (" + ctxinfo + ")",
+		"error":   "unauthorized (" + ctxinfo + ")",
+		"errcode": "PERMISSION_DENIED",
 	})
 }
