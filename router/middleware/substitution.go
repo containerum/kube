@@ -52,7 +52,8 @@ func SubstitutionsFromHeadersFor(objctxkey string, after bool) gin.HandlerFunc {
 				logrus.Errorf("cannot b64-decode header %q: %v", hdr, err)
 				c.AbortWithStatus(400)
 				c.Set("responseObject", map[string]string{
-					"error": fmt.Sprintf("cannot decode %q: %v", hdr, err),
+					"error":   fmt.Sprintf("cannot decode %q: %v", hdr, err),
+					"errcode": "BAD_INPUT",
 				})
 				return
 			}
@@ -61,7 +62,8 @@ func SubstitutionsFromHeadersFor(objctxkey string, after bool) gin.HandlerFunc {
 				logrus.Errorf("cannot parse json from header %q: %v", hdr, err)
 				c.AbortWithStatus(400)
 				c.Set("responseObject", map[string]string{
-					"error": fmt.Sprintf("cannot parse %q: %v", hdr, err),
+					"error":   fmt.Sprintf("cannot parse %q: %v", hdr, err),
+					"errcode": "BAD_INPUT",
 				})
 				return
 			}
