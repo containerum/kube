@@ -5,7 +5,7 @@ import (
 	"os"
 	"sync"
 
-	"bitbucket.org/exonch/kube-api/model"
+	"git.containerum.net/ch/kube-api/model"
 
 	"k8s.io/api/apps/v1beta1"
 

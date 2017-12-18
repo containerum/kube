@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"bitbucket.org/exonch/kube-api/utils"
+	"git.containerum.net/ch/kube-api/utils"
 
 	"github.com/gin-gonic/gin"
 	"k8s.io/api/apps/v1beta1"

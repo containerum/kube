@@ -3,10 +3,10 @@ package router
 import (
 	"net/http"
 
-	"bitbucket.org/exonch/kube-api/access"
-	"bitbucket.org/exonch/kube-api/router/middleware"
-	"bitbucket.org/exonch/kube-api/server"
-	"bitbucket.org/exonch/kube-api/utils"
+	"git.containerum.net/ch/kube-api/access"
+	"git.containerum.net/ch/kube-api/router/middleware"
+	"git.containerum.net/ch/kube-api/server"
+	"git.containerum.net/ch/kube-api/utils"
 
 	"github.com/gin-gonic/gin"
 )
