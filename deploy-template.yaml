@@ -33,8 +33,6 @@ spec:
         env:
         - name: CH_KUBE_API_KUBE_CONF
           value: '${CH_KUBE_API_KUBE_CONF}'
-      nodeSelector:
-        role: master
       imagePullSecrets:
       - name: gitlab-registry
       volumes:
