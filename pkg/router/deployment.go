@@ -12,9 +12,12 @@ import (
 )
 
 func getDeploymentList(c *gin.Context) {
-	log.WithField("Namespace", c.Query(namespaceParam)).Debug("Get deployment list Call")
+	log.WithFields(log.Fields{
+		"Namespace": c.Param(namespaceParam),
+		"Owner":     c.Query(ownerQuery),
+	}).Debug("Get deployment list Call")
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-	deployments, err := kube.GetDeploymentList(c.Query("namespace"))
+	deployments, err := kube.GetDeploymentList(c.Param(namespaceParam), c.Query(ownerQuery))
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return

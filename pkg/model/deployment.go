@@ -3,7 +3,8 @@ package model
 import v1 "k8s.io/api/apps/v1"
 
 type Deployment struct {
-	Name string `json:"name"`
+	Name  string `json:"name"`
+	Owner string `json:"owner_id,omitempty"`
 }
 
 func ParseDeploymentList(deploys interface{}) []Deployment {
@@ -19,7 +20,6 @@ func ParseDeploymentList(deploys interface{}) []Deployment {
 
 func ParseDeployment(deployment interface{}) Deployment {
 	obj := deployment.(*v1.Deployment)
-
 	return Deployment{
 		Name: obj.GetName(),
 	}

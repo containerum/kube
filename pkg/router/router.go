@@ -33,5 +33,9 @@ func initRoutes(e *gin.Engine) {
 	{
 		namespace.Use(m.IsAdmin()).GET("", getNamespaceList)
 		namespace.Use(m.IsAdmin()).GET("/:namespace", getNamespace)
+		deployment := namespace.Group("/:namespace/deployments")
+		{
+			deployment.GET("", getDeploymentList)
+		}
 	}
 }
