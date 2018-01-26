@@ -17,7 +17,7 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 	}
 
 	e := gin.New()
-	e.Use(gin.Recovery())
+	e.Use(middlewares...)
 	e.Use(middleware.WriteResponseObject)    //order is alright
 	e.Use(middleware.RedactResponseMetadata) //order is alright
 	e.Use(middleware.SubstitutionsFromHeadersFor("responseObject", true))
@@ -25,7 +25,6 @@ func Load(debug bool, middlewares ...gin.HandlerFunc) http.Handler {
 	e.Use(utils.AddLogger)
 	e.Use(middleware.CheckHTTP411)
 	e.Use(middleware.ParseUserData)
-	e.Use(middlewares...)
 
 	e.Use(func(c *gin.Context) {
 		c.Set("debug", debug)

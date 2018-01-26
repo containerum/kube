@@ -6,7 +6,7 @@ import (
 
 	"git.containerum.net/ch/kube-api/router"
 	m_server "git.containerum.net/ch/kube-api/server"
-	"git.containerum.net/ch/kube-api/utils"
+	"github.com/gin-gonic/gin"
 
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/sirupsen/logrus"
@@ -29,18 +29,17 @@ var flags = []cli.Flag{
 func server(c *cli.Context) error {
 	m_server.LoadKubeClients(c.String("kubeconf"))
 
-	//create logger
-	log := utils.Logger(c.Bool("debug"))
+	//setup logger
+	if c.Bool("debug") {
+		logrus.StandardLogger().SetLevel(logrus.DebugLevel)
+	}
 
 	//create handler
 	handler := router.Load(
 		c.Bool("debug"),
-		ginrus.Ginrus(log, time.RFC3339, true),
+		gin.RecoveryWithWriter(logrus.WithField("component", "gin_recovery").WriterLevel(logrus.ErrorLevel)),
+		ginrus.Ginrus(logrus.StandardLogger(), time.RFC3339, true),
 	)
-
-	if c.Bool("debug") {
-		logrus.StandardLogger().SetLevel(logrus.DebugLevel)
-	}
 
 	//run http server
 	return http.ListenAndServe(":1212", handler)
