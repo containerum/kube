@@ -1,7 +1,10 @@
 package main
 
 import (
+	"context"
 	"net/http"
+	"os"
+	"os/signal"
 	"time"
 
 	"git.containerum.net/ch/kube-api/router"
@@ -41,6 +44,26 @@ func server(c *cli.Context) error {
 		ginrus.Ginrus(logrus.StandardLogger(), time.RFC3339, true),
 	)
 
-	//run http server
-	return http.ListenAndServe(":1212", handler)
+	httpsrv := &http.Server{
+		Addr:    ":1212",
+		Handler: handler,
+	}
+
+	// serve connections
+	go func() {
+		if err := httpsrv.ListenAndServe(); err != nil {
+			logrus.WithError(err).Panicln("server start failed")
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shutdown the server with
+	// a timeout of 5 seconds.
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt) // subscribe on interrupt event
+	<-quit                            // wait for event
+	logrus.Infoln("shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	return httpsrv.Shutdown(ctx)
 }
