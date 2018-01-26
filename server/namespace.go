@@ -14,7 +14,7 @@ import (
 )
 
 func ListNamespaces(c *gin.Context) {
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 
 	nsList, err := kubecli.CoreV1().Namespaces().List(meta_v1.ListOptions{})
 	if err != nil {
@@ -26,12 +26,12 @@ func ListNamespaces(c *gin.Context) {
 	}
 
 	c.Status(200)
-	c.Set("responseObject", nsList)
+	c.Set(ResponseObjectKey, nsList)
 }
 
 // CreateNamespace uses query parameters 'cpu' and 'memory' to determine namespace quota.
 func CreateNamespace(c *gin.Context) {
-	ns, ok := c.MustGet("requestObject").(*v1.Namespace)
+	ns, ok := c.MustGet(RequestObjectKey).(*v1.Namespace)
 	if !ok {
 		utils.Log(c).Warnf("request is not a Namespace")
 		c.AbortWithStatusJSON(400, map[string]string{
@@ -58,7 +58,7 @@ func CreateNamespace(c *gin.Context) {
 		return
 	}
 
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 	nsAfter, err := kubecli.CoreV1().Namespaces().Create(ns)
 	if err != nil {
 		utils.Log(c).Errorf("kubecli.Namespaces.Create error: %[1]T %[1]v", err)
@@ -80,12 +80,12 @@ func CreateNamespace(c *gin.Context) {
 	}
 
 	c.Status(201)
-	c.Set("responseObject", nsAfter)
+	c.Set(ResponseObjectKey, nsAfter)
 }
 
 func GetNamespace(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	nsname := c.MustGet(NamespaceKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 
 	ns, err := kubecli.CoreV1().Namespaces().Get(nsname, meta_v1.GetOptions{})
 	if err != nil {
@@ -97,12 +97,12 @@ func GetNamespace(c *gin.Context) {
 	}
 
 	c.Status(200)
-	c.Set("responseObject", ns)
+	c.Set(ResponseObjectKey, ns)
 }
 
 func GetNamespaceQuota(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	nsname := c.MustGet(NamespaceKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 	quota, err := kubecli.CoreV1().ResourceQuotas(nsname).Get("quota", meta_v1.GetOptions{})
 	if err != nil {
 		utils.Log(c).Errorf("kubecli.ResourceQuota.Get error: %T %[1]v", err)
@@ -113,12 +113,12 @@ func GetNamespaceQuota(c *gin.Context) {
 	}
 
 	c.Status(200)
-	c.Set("responseObject", quota)
+	c.Set(ResponseObjectKey, quota)
 }
 
 func DeleteNamespace(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	nsname := c.MustGet(NamespaceKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 
 	err := kubecli.CoreV1().Namespaces().Delete(nsname, &meta_v1.DeleteOptions{})
 	if err != nil {

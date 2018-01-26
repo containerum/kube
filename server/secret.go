@@ -13,8 +13,8 @@ import (
 )
 
 func ListSecrets(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	nsname := c.MustGet(NamespaceKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 	secretList, err := kubecli.CoreV1().Secrets(nsname).List(meta_v1.ListOptions{})
 	if err != nil {
 		utils.Log(c).Errorf("kubecli.Secrets.List error: %[1]T %[1]v", err)
@@ -26,12 +26,12 @@ func ListSecrets(c *gin.Context) {
 
 	redactSecretListForUser(secretList)
 	c.Status(200)
-	c.Set("responseObject", secretList)
+	c.Set(ResponseObjectKey, secretList)
 }
 
 func CreateSecret(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	secret, ok := c.MustGet("requestObject").(*v1.Secret)
+	nsname := c.MustGet(NamespaceKey).(string)
+	secret, ok := c.MustGet(RequestObjectKey).(*v1.Secret)
 	if !ok || secret == nil {
 		c.AbortWithStatusJSON(400, map[string]string{
 			"error": "bad request",
@@ -46,7 +46,7 @@ func CreateSecret(c *gin.Context) {
 	}
 	clientSecretInsertions(secret)
 
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 	secretAfter, err := kubecli.CoreV1().Secrets(secret.ObjectMeta.Namespace).Create(secret)
 	if err != nil {
 		utils.Log(c).Warnf("kubecli.Secrets.Create error: %[1]T %[1]v", err)
@@ -59,13 +59,13 @@ func CreateSecret(c *gin.Context) {
 	redactSecretForUser(secretAfter)
 
 	c.Status(201)
-	c.Set("responseObject", secretAfter)
+	c.Set(ResponseObjectKey, secretAfter)
 }
 
 func GetSecret(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	objname := c.MustGet("objectName").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	nsname := c.MustGet(NamespaceKey).(string)
+	objname := c.MustGet(ObjectNameKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 	secret, err := kubecli.CoreV1().Secrets(nsname).Get(objname, meta_v1.GetOptions{})
 	if err != nil {
 		utils.Log(c).Warnf("kubecli.Secrets.Get error: %[1]T %[1]v", err)
@@ -76,13 +76,13 @@ func GetSecret(c *gin.Context) {
 	}
 	redactSecretForUser(secret)
 	c.Status(200)
-	c.Set("responseObject", secret)
+	c.Set(ResponseObjectKey, secret)
 }
 
 func DeleteSecret(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	objname := c.MustGet("objectName").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	nsname := c.MustGet(NamespaceKey).(string)
+	objname := c.MustGet(ObjectNameKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 	err := kubecli.CoreV1().Secrets(nsname).Delete(objname, &meta_v1.DeleteOptions{})
 	if err != nil {
 		utils.Log(c).Warnf("kubecli.Secrets.Delete error: %[1]T %[1]v", err)

@@ -13,8 +13,8 @@ import (
 )
 
 func ListEndpoints(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	nsname := c.MustGet(NamespaceKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 	eptList, err := kubecli.CoreV1().Endpoints(nsname).List(meta_v1.ListOptions{})
 	if err != nil {
 		utils.Log(c).Errorf("kubecli.Endpoints.List error: %[1]T %[1]v", err)
@@ -29,8 +29,8 @@ func ListEndpoints(c *gin.Context) {
 }
 
 func CreateEndpoints(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	ept, ok := c.MustGet("requestObject").(*v1.Endpoints)
+	nsname := c.MustGet(NamespaceKey).(string)
+	ept, ok := c.MustGet(RequestObjectKey).(*v1.Endpoints)
 	if !ok || ept == nil {
 		c.AbortWithStatusJSON(400, map[string]string{
 			"error": "bad request",
@@ -45,7 +45,7 @@ func CreateEndpoints(c *gin.Context) {
 	}
 	clientEndpointsInsertions(ept)
 
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 	eptAfter, err := kubecli.CoreV1().Endpoints(ept.ObjectMeta.Namespace).Create(ept)
 	if err != nil {
 		utils.Log(c).Warnf("kubecli.Endpoints.Create error: %[1]T %[1]v", err)
@@ -61,9 +61,9 @@ func CreateEndpoints(c *gin.Context) {
 }
 
 func GetEndpoints(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	objname := c.MustGet("objectName").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	nsname := c.MustGet(NamespaceKey).(string)
+	objname := c.MustGet(ObjectNameKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 	ept, err := kubecli.CoreV1().Endpoints(nsname).Get(objname, meta_v1.GetOptions{})
 	if err != nil {
 		utils.Log(c).Warnf("kubecli.Endpoints.Get error: %[1]T %[1]v", err)
@@ -77,9 +77,9 @@ func GetEndpoints(c *gin.Context) {
 }
 
 func DeleteEndpoints(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	objname := c.MustGet("objectName").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	nsname := c.MustGet(NamespaceKey).(string)
+	objname := c.MustGet(ObjectNameKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 	err := kubecli.CoreV1().Endpoints(nsname).Delete(objname, &meta_v1.DeleteOptions{})
 	if err != nil {
 		utils.Log(c).Warnf("kubecli.Endpoints.Delete error: %[1]T %[1]v", err)

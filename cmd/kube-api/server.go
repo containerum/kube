@@ -24,7 +24,6 @@ var flags = []cli.Flag{
 }
 
 func server(c *cli.Context) error {
-
 	if c.Bool("debug") {
 		log.SetFormatter(&log.TextFormatter{})
 		log.SetLevel(log.DebugLevel)

@@ -14,10 +14,23 @@
   revision = "22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae"
 
 [[projects]]
+<<<<<<< HEAD
   name = "github.com/gin-gonic/gin"
   packages = [".","binding","render"]
   revision = "d459835d2b077e44f7c9b453505ee29881d5d12d"
   version = "v1.2"
+=======
+  branch = "master"
+  name = "github.com/gin-gonic/contrib"
+  packages = ["ginrus"]
+  revision = "dccbb4a462e965297e21372a9ad3ea05e0df3e5f"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/gin-gonic/gin"
+  packages = [".","binding","json","render"]
+  revision = "783c7ee9c14eac0e65b501664b4f553291556b43"
+>>>>>>> 213e6210fe3a8ed049c66a4aae2237c9c5ae1333
 
 [[projects]]
   name = "github.com/gogo/protobuf"
@@ -35,7 +48,11 @@
   branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto","ptypes","ptypes/any","ptypes/duration","ptypes/timestamp"]
+<<<<<<< HEAD
   revision = "c65a0412e71e8b9b3bfd22925720d23c0f054237"
+=======
+  revision = "925541529c1fa6821df4e44ce2723319eb2be768"
+>>>>>>> 213e6210fe3a8ed049c66a4aae2237c9c5ae1333
 
 [[projects]]
   branch = "master"
@@ -137,7 +154,11 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
+<<<<<<< HEAD
   revision = "3d37316aaa6bd9929127ac9a527abf408178ea7b"
+=======
+  revision = "0efb9460aaf800c6376acf625be2853bceac2e06"
+>>>>>>> 213e6210fe3a8ed049c66a4aae2237c9c5ae1333
 
 [[projects]]
   branch = "master"
@@ -149,7 +170,11 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix","windows"]
+<<<<<<< HEAD
   revision = "af9a21289d0040306ecc55fa668c95246f1f8425"
+=======
+  revision = "03467258950d845cd1877eab69461b98e8c09219"
+>>>>>>> 213e6210fe3a8ed049c66a4aae2237c9c5ae1333
 
 [[projects]]
   branch = "master"
@@ -179,13 +204,21 @@
   branch = "master"
   name = "k8s.io/api"
   packages = ["admissionregistration/v1alpha1","admissionregistration/v1beta1","apps/v1","apps/v1beta1","apps/v1beta2","authentication/v1","authentication/v1beta1","authorization/v1","authorization/v1beta1","autoscaling/v1","autoscaling/v2beta1","batch/v1","batch/v1beta1","batch/v2alpha1","certificates/v1beta1","core/v1","events/v1beta1","extensions/v1beta1","networking/v1","policy/v1beta1","rbac/v1","rbac/v1alpha1","rbac/v1beta1","scheduling/v1alpha1","settings/v1alpha1","storage/v1","storage/v1alpha1","storage/v1beta1"]
+<<<<<<< HEAD
   revision = "1114b579fde8730f5cffa8363506064eb082846a"
+=======
+  revision = "dc0dd48d5a5cae9f8736bb0643cfe6052e450f1b"
+>>>>>>> 213e6210fe3a8ed049c66a4aae2237c9c5ae1333
 
 [[projects]]
   branch = "master"
   name = "k8s.io/apimachinery"
   packages = ["pkg/api/errors","pkg/api/meta","pkg/api/resource","pkg/apis/meta/v1","pkg/apis/meta/v1/unstructured","pkg/apis/meta/v1alpha1","pkg/conversion","pkg/conversion/queryparams","pkg/fields","pkg/labels","pkg/runtime","pkg/runtime/schema","pkg/runtime/serializer","pkg/runtime/serializer/json","pkg/runtime/serializer/protobuf","pkg/runtime/serializer/recognizer","pkg/runtime/serializer/streaming","pkg/runtime/serializer/versioning","pkg/selection","pkg/types","pkg/util/clock","pkg/util/errors","pkg/util/framer","pkg/util/intstr","pkg/util/json","pkg/util/net","pkg/util/runtime","pkg/util/sets","pkg/util/validation","pkg/util/validation/field","pkg/util/wait","pkg/util/yaml","pkg/version","pkg/watch","third_party/forked/golang/reflect"]
+<<<<<<< HEAD
   revision = "2f1e02d3e57b8fb5206c5326bcb65217edc63a8e"
+=======
+  revision = "b621949a1923cee3fce8bca9613e9a83609f0bbc"
+>>>>>>> 213e6210fe3a8ed049c66a4aae2237c9c5ae1333
 
 [[projects]]
   name = "k8s.io/client-go"
@@ -196,6 +229,10 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
+<<<<<<< HEAD
   inputs-digest = "215bdb7a370e8781e2e52ad7202c8ddfd8e93d527e02d44d37aae4f105d2e16b"
+=======
+  inputs-digest = "2257c8463638c6eb9ce54d49ff4b3d11aecf438d5ffd0c795041c9922b885c9f"
+>>>>>>> 213e6210fe3a8ed049c66a4aae2237c9c5ae1333
   solver-name = "gps-cdcl"
   solver-version = 1
