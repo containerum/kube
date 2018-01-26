@@ -2,14 +2,11 @@ package main
 
 import (
 	"net/http"
-	"time"
 
-	"git.containerum.net/ch/kube-api/router"
-	m_server "git.containerum.net/ch/kube-api/server"
-	"git.containerum.net/ch/kube-api/utils"
+	"git.containerum.net/ch/kube-api/pkg/kubernetes"
+	"git.containerum.net/ch/kube-api/pkg/router"
 
-	"github.com/gin-gonic/contrib/ginrus"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
 
@@ -27,21 +24,17 @@ var flags = []cli.Flag{
 }
 
 func server(c *cli.Context) error {
-	m_server.LoadKubeClients(c.String("kubeconf"))
-
-	//create logger
-	log := utils.Logger(c.Bool("debug"))
-
-	//create handler
-	handler := router.Load(
-		c.Bool("debug"),
-		ginrus.Ginrus(log, time.RFC3339, true),
-	)
 
 	if c.Bool("debug") {
-		logrus.StandardLogger().SetLevel(logrus.DebugLevel)
+		log.SetFormatter(&log.TextFormatter{})
+		log.SetLevel(log.DebugLevel)
 	}
 
+	kube := kubernetes.Kube{}
+	kube.RegisterClient(c.String("kubeconf"))
+
+	router := router.CreateRouter(&kube, c.Bool("debug"))
+
 	//run http server
-	return http.ListenAndServe(":1212", handler)
+	return http.ListenAndServe(":1212", router)
 }
