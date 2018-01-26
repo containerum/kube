@@ -13,8 +13,8 @@ import (
 )
 
 func ListServices(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	nsname := c.MustGet(NamespaceKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 	svcList, err := kubecli.CoreV1().Services(nsname).List(meta_v1.ListOptions{})
 	if err != nil {
 		utils.Log(c).Errorf("kubecli.Services.List error: %[1]T %[1]v", err)
@@ -26,12 +26,12 @@ func ListServices(c *gin.Context) {
 
 	redactServiceListForUser(svcList)
 	c.Status(200)
-	c.Set("responseObject", svcList)
+	c.Set(ResponseObjectKey, svcList)
 }
 
 func CreateService(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	svc, ok := c.MustGet("requestObject").(*v1.Service)
+	nsname := c.MustGet(NamespaceKey).(string)
+	svc, ok := c.MustGet(RequestObjectKey).(*v1.Service)
 	if !ok || svc == nil {
 		c.AbortWithStatusJSON(400, map[string]string{
 			"error": "bad request",
@@ -46,7 +46,7 @@ func CreateService(c *gin.Context) {
 	}
 	clientServiceInsertions(svc)
 
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 	svcAfter, err := kubecli.CoreV1().Services(svc.ObjectMeta.Namespace).Create(svc)
 	if err != nil {
 		utils.Log(c).Warnf("kubecli.Services.Create error: %[1]T %[1]v", err)
@@ -59,13 +59,13 @@ func CreateService(c *gin.Context) {
 	redactServiceForUser(svcAfter)
 
 	c.Status(201)
-	c.Set("responseObject", svcAfter)
+	c.Set(ResponseObjectKey, svcAfter)
 }
 
 func GetService(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	objname := c.MustGet("objectName").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	nsname := c.MustGet(NamespaceKey).(string)
+	objname := c.MustGet(ObjectNameKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 	svc, err := kubecli.CoreV1().Services(nsname).Get(objname, meta_v1.GetOptions{})
 	if err != nil {
 		utils.Log(c).Warnf("kubecli.Services.Get error: %[1]T %[1]v", err)
@@ -76,14 +76,14 @@ func GetService(c *gin.Context) {
 	}
 	redactServiceForUser(svc)
 	c.Status(200)
-	c.Set("responseObject", svc)
+	c.Set(ResponseObjectKey, svc)
 }
 
 func ReplaceService(c *gin.Context) {
 	var err error
-	nsname := c.MustGet("namespace").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
-	svc := c.MustGet("requestObject").(*v1.Service)
+	nsname := c.MustGet(NamespaceKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
+	svc := c.MustGet(RequestObjectKey).(*v1.Service)
 
 	if nsname != svc.ObjectMeta.Namespace {
 		err = fmt.Errorf("namespace name mismatch (url %q, service %q)",
@@ -110,13 +110,13 @@ func ReplaceService(c *gin.Context) {
 
 	redactServiceForUser(svcAfter)
 	c.Status(200)
-	c.Set("responseObject", svcAfter)
+	c.Set(ResponseObjectKey, svcAfter)
 }
 
 func DeleteService(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	objname := c.MustGet("objectName").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	nsname := c.MustGet(NamespaceKey).(string)
+	objname := c.MustGet(ObjectNameKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 	err := kubecli.CoreV1().Services(nsname).Delete(objname, &meta_v1.DeleteOptions{})
 	if err != nil {
 		utils.Log(c).Warnf("kubecli.Services.Delete error: %[1]T %[1]v", err)

@@ -1,7 +1,11 @@
 package server
 
 import (
+	"os"
 	"testing"
+
+	"k8s.io/api/core/v1"
+	"k8s.io/api/extensions/v1beta1"
 )
 
 type testDataType struct {
@@ -13,18 +17,16 @@ var testdata testDataType
 
 func TestMain(m *testing.M) {
 	LoadKubeClients(os.Getenv("CH_KUBE_API_KUBE_CONF"))
-	err := json.Unmarshal(testdataraw, &testdata)
+	//err := jsoniter.Unmarshal(testdataraw, &testdata)
 	os.Setenv("GIN_MODE", "release")
 	m.Run()
 }
 
-func Test001GetNamespaceBefore(t *testing.T) {
-	ns
-}
-func Test002CreateNamespace(t *testing.T) {}
-func Test003GetNamespace(t *testing.T)    {}
-func Test004ListNamespaces(t *testing.T)  {}
-func Test005DeleteNamespace(t *testing.T) {}
+func Test001GetNamespaceBefore(t *testing.T) {}
+func Test002CreateNamespace(t *testing.T)    {}
+func Test003GetNamespace(t *testing.T)       {}
+func Test004ListNamespaces(t *testing.T)     {}
+func Test005DeleteNamespace(t *testing.T)    {}
 
 func Test006GetServiceBefore(t *testing.T) {}
 func Test007CreateService(t *testing.T)    {}

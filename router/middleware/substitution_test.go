@@ -2,12 +2,14 @@ package middleware
 
 import (
 	"bytes"
-	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"testing"
 
+	"git.containerum.net/ch/kube-api/server"
+
+	"github.com/json-iterator/go"
 	"k8s.io/api/apps/v1beta1"
 	"k8s.io/api/core/v1"
 	//meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,7 +27,7 @@ type testSubsType struct {
 		Namespace, Deployment, DeploymentList, Service, ServiceList []struct {
 			In, Want struct {
 				HTTPHeaders map[string]string `json:"http-headers,omitempty"`
-				Body        json.RawMessage
+				Body        jsoniter.RawMessage
 			}
 		}
 	}
@@ -39,7 +41,7 @@ func TestMain(m *testing.M) {
 		log.Fatalf("cannot open test data file: %T %[1]v", err)
 	}
 
-	err = json.Unmarshal(testdataraw, &testdata)
+	err = jsoniter.Unmarshal(testdataraw, &testdata)
 	if err != nil {
 		log.Fatalf("cannot parse test data file: %T %[1]v", err)
 	}
@@ -60,11 +62,11 @@ func TestNamespaceSubstitutionsInNamespaces(t *testing.T) {
 		}
 
 		ParseJSON(c)
-		SubstitutionsFromHeadersFor("requestObject", false)(c)
+		SubstitutionsFromHeadersFor(server.RequestObjectKey, false)(c)
 
-		got := *c.MustGet("requestObject").(*v1.Namespace)
+		got := *c.MustGet(server.RequestObjectKey).(*v1.Namespace)
 		var want v1.Namespace
-		json.Unmarshal(nstest.Want.Body, &want)
+		jsoniter.Unmarshal(nstest.Want.Body, &want)
 
 		if want.Name != got.Name {
 			t.Errorf("mismatch in namespace %d", i+1)
@@ -89,11 +91,11 @@ func TestNamespaceSubstitutionsInDeployments(t *testing.T) {
 		}
 
 		ParseJSON(c)
-		SubstitutionsFromHeadersFor("requestObject", false)(c)
+		SubstitutionsFromHeadersFor(server.RequestObjectKey, false)(c)
 
-		got := *c.MustGet("requestObject").(*v1beta1.Deployment)
+		got := *c.MustGet(server.RequestObjectKey).(*v1beta1.Deployment)
 		var want v1beta1.Deployment
-		json.Unmarshal(deptest.Want.Body, &want)
+		jsoniter.Unmarshal(deptest.Want.Body, &want)
 
 		if want.Namespace != got.Namespace {
 			t.Errorf("mismatch in deployment %d", i+1)
@@ -117,11 +119,11 @@ func TestVolumeSubstitutionsInDeployments(t *testing.T) {
 		}
 
 		ParseJSON(c)
-		SubstitutionsFromHeadersFor("requestObject", false)(c)
+		SubstitutionsFromHeadersFor(server.RequestObjectKey, false)(c)
 
-		got := *c.MustGet("requestObject").(*v1beta1.Deployment)
+		got := *c.MustGet(server.RequestObjectKey).(*v1beta1.Deployment)
 		var want v1beta1.Deployment
-		json.Unmarshal(deptest.Want.Body, &want)
+		jsoniter.Unmarshal(deptest.Want.Body, &want)
 
 		for j, vol := range got.Spec.Template.Spec.Volumes {
 			if vol.Name != want.Spec.Template.Spec.Volumes[j].Name {
@@ -133,9 +135,9 @@ func TestVolumeSubstitutionsInDeployments(t *testing.T) {
 }
 
 func deplstr(depl v1beta1.Deployment) string {
-	var b, err = json.Marshal(depl)
+	var b, err = jsoniter.Marshal(depl)
 	if err != nil {
-		b, _ = json.Marshal(map[string]string{
+		b, _ = jsoniter.Marshal(map[string]string{
 			"error": err.Error(),
 		})
 	}

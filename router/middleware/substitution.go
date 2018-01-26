@@ -2,10 +2,11 @@ package middleware
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 
+	"git.containerum.net/ch/kube-api/server"
 	"git.containerum.net/ch/kube-api/utils"
+	"github.com/json-iterator/go"
 
 	"k8s.io/api/apps/v1beta1"
 	"k8s.io/api/core/v1"
@@ -51,17 +52,17 @@ func SubstitutionsFromHeadersFor(objctxkey string, after bool) gin.HandlerFunc {
 			if err != nil {
 				logrus.Errorf("cannot b64-decode header %q: %v", hdr, err)
 				c.AbortWithStatus(400)
-				c.Set("responseObject", map[string]string{
+				c.Set(server.ResponseObjectKey, map[string]string{
 					"error":   fmt.Sprintf("cannot decode %q: %v", hdr, err),
 					"errcode": "BAD_INPUT",
 				})
 				return
 			}
-			err = json.Unmarshal(jsn, &repArray)
+			err = jsoniter.Unmarshal(jsn, &repArray)
 			if err != nil {
 				logrus.Errorf("cannot parse json from header %q: %v", hdr, err)
 				c.AbortWithStatus(400)
-				c.Set("responseObject", map[string]string{
+				c.Set(server.ResponseObjectKey, map[string]string{
 					"error":   fmt.Sprintf("cannot parse %q: %v", hdr, err),
 					"errcode": "BAD_INPUT",
 				})
@@ -130,10 +131,10 @@ func SubstitutionsFromHeadersFor(objctxkey string, after bool) gin.HandlerFunc {
 
 			case string:
 				switch objctxkey {
-				case "namespace":
+				case server.NamespaceKey:
 					for _, re := range reps["x-user-namespace"] {
 						if !re.zero() && re.From == objtyped {
-							c.Set("namespace", re.To)
+							c.Set(server.NamespaceKey, re.To)
 							fmt.Printf("setting ctx.\"namespace\" from %q to %q\n", re.From, re.To)
 						}
 					}
