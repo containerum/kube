@@ -13,8 +13,8 @@ import (
 )
 
 func ListConfigMaps(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	nsname := c.MustGet(NamespaceKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 	cmList, err := kubecli.CoreV1().ConfigMaps(nsname).List(meta_v1.ListOptions{})
 	if err != nil {
 		utils.Log(c).Errorf("kubecli.ConfigMap.List error: %[1]T %[1]v", err)
@@ -29,8 +29,8 @@ func ListConfigMaps(c *gin.Context) {
 }
 
 func CreateConfigMap(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	cm, ok := c.MustGet("requestObject").(*v1.ConfigMap)
+	nsname := c.MustGet(NamespaceKey).(string)
+	cm, ok := c.MustGet(RequestObjectKey).(*v1.ConfigMap)
 	if !ok || cm == nil {
 		c.AbortWithStatusJSON(400, map[string]string{
 			"error": "bad request",
@@ -45,7 +45,7 @@ func CreateConfigMap(c *gin.Context) {
 	}
 	clientConfigMapInsertions(cm)
 
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 	cmAfter, err := kubecli.CoreV1().ConfigMaps(cm.ObjectMeta.Namespace).Create(cm)
 	if err != nil {
 		utils.Log(c).Warnf("kubecli.ConfigMap.Create error: %[1]T %[1]v", err)
@@ -61,9 +61,9 @@ func CreateConfigMap(c *gin.Context) {
 }
 
 func GetConfigMap(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	objname := c.MustGet("objectName").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	nsname := c.MustGet(NamespaceKey).(string)
+	objname := c.MustGet(ObjectNameKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 	cm, err := kubecli.CoreV1().ConfigMaps(nsname).Get(objname, meta_v1.GetOptions{})
 	if err != nil {
 		utils.Log(c).Warnf("kubecli.ConfigMap.Get error: %[1]T %[1]v", err)
@@ -77,9 +77,9 @@ func GetConfigMap(c *gin.Context) {
 }
 
 func DeleteConfigMap(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	objname := c.MustGet("objectName").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	nsname := c.MustGet(NamespaceKey).(string)
+	objname := c.MustGet(ObjectNameKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 	err := kubecli.CoreV1().ConfigMaps(nsname).Delete(objname, &meta_v1.DeleteOptions{})
 	if err != nil {
 		utils.Log(c).Warnf("kubecli.ConfigMap.Delete error: %[1]T %[1]v", err)

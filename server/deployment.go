@@ -15,8 +15,8 @@ import (
 
 // GET /api/v1/namespaces/:namespace/deployments
 func ListDeployments(c *gin.Context) {
-	ns := c.MustGet("namespace").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	ns := c.MustGet(NamespaceKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 	deplList, err := kubecli.AppsV1beta1().Deployments(ns).List(meta_v1.ListOptions{})
 	if err != nil {
 		utils.Log(c).Warnf("kubecli.Deployments.List error: %T %[1]v", err)
@@ -29,14 +29,14 @@ func ListDeployments(c *gin.Context) {
 	redactDeploymentListForUser(deplList)
 
 	c.Status(200)
-	c.Set("responseObject", deplList)
+	c.Set(ResponseObjectKey, deplList)
 }
 
 // POST /api/v1/namespaces/:namespace/deployments
 func CreateDeployment(c *gin.Context) {
 	var err error
-	nsname := c.MustGet("namespace").(string)
-	depl, ok := c.MustGet("requestObject").(*v1beta1.Deployment)
+	nsname := c.MustGet(NamespaceKey).(string)
+	depl, ok := c.MustGet(RequestObjectKey).(*v1beta1.Deployment)
 	if !ok || depl == nil {
 		c.AbortWithStatusJSON(400, map[string]string{"error": "bad request"})
 		return
@@ -49,7 +49,7 @@ func CreateDeployment(c *gin.Context) {
 		return
 	}
 
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 	incomingDeploymentMod(depl)
 
 	err = deploymentSanityCheck(depl)
@@ -72,14 +72,14 @@ func CreateDeployment(c *gin.Context) {
 
 	redactDeploymentForUser(deplAfter)
 	c.Status(201)
-	c.Set("responseObject", deplAfter)
+	c.Set(ResponseObjectKey, deplAfter)
 }
 
 // GET /api/v1/namespaces/:namespace/deployments/:objname
 func GetDeployment(c *gin.Context) {
-	ns := c.MustGet("namespace").(string)
-	deplname := c.MustGet("objectName").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	ns := c.MustGet(NamespaceKey).(string)
+	deplname := c.MustGet(ObjectNameKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 
 	depl, err := kubecli.AppsV1beta1().Deployments(ns).Get(deplname, meta_v1.GetOptions{})
 	if err != nil {
@@ -92,14 +92,14 @@ func GetDeployment(c *gin.Context) {
 
 	redactDeploymentForUser(depl)
 	c.Status(200)
-	c.Set("responseObject", depl)
+	c.Set(ResponseObjectKey, depl)
 }
 
 // DELETE /api/v1/namespaces/:namespace/deployments/:objname
 func DeleteDeployment(c *gin.Context) {
-	ns := c.MustGet("namespace").(string)
-	deplname := c.MustGet("objectName").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	ns := c.MustGet(NamespaceKey).(string)
+	deplname := c.MustGet(ObjectNameKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 
 	err := kubecli.AppsV1beta1().Deployments(ns).Delete(deplname, &meta_v1.DeleteOptions{})
 	if err != nil {
@@ -116,11 +116,11 @@ func DeleteDeployment(c *gin.Context) {
 // PUT /api/v1/namespaces/:namespace/deployments/:objname
 func ReplaceDeployment(c *gin.Context) {
 	var err error
-	ns := c.MustGet("namespace").(string)
-	deplname := c.MustGet("objectName").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	ns := c.MustGet(NamespaceKey).(string)
+	deplname := c.MustGet(ObjectNameKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 
-	depl, ok := c.MustGet("requestObject").(*v1beta1.Deployment)
+	depl, ok := c.MustGet(RequestObjectKey).(*v1beta1.Deployment)
 	if !ok {
 		utils.Log(c).Warnf("invalid input: type %T value %[1]v", depl)
 		c.AbortWithStatusJSON(400, map[string]string{
@@ -157,7 +157,7 @@ func ReplaceDeployment(c *gin.Context) {
 
 	redactDeploymentForUser(deplAfter)
 	c.Status(200)
-	c.Set("responseObject", deplAfter)
+	c.Set(ResponseObjectKey, deplAfter)
 }
 
 // PATCH /api/v1/namespaces/:namespace/deployments/:objname
@@ -180,12 +180,12 @@ func ChangeDeploymentImage(c *gin.Context) {
 		Image string // new image name
 	}
 	var err error
-	ns := c.MustGet("namespace").(string)
-	deplname := c.MustGet("objectName").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	ns := c.MustGet(NamespaceKey).(string)
+	deplname := c.MustGet(ObjectNameKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 
-	depl := c.MustGet("responseObject").(*v1beta1.Deployment)
-	jsn := c.MustGet("requestObject").(json.RawMessage)
+	depl := c.MustGet(ResponseObjectKey).(*v1beta1.Deployment)
+	jsn := c.MustGet(RequestObjectKey).(json.RawMessage)
 	json.Unmarshal(jsn, &chimg)
 
 	for i := range depl.Spec.Template.Spec.Containers {
@@ -215,7 +215,7 @@ func ChangeDeploymentImage(c *gin.Context) {
 	}
 	redactDeploymentForUser(deplAfter)
 	c.Status(200)
-	c.Set("responseObject", deplAfter)
+	c.Set(ResponseObjectKey, deplAfter)
 }
 
 // Only invoke after GetDeployment.
@@ -230,12 +230,12 @@ func ChangeDeploymentReplicas(c *gin.Context) {
 		Replicas *int32 `json:"replicas,omitempty"`
 	}
 	var err error
-	ns := c.MustGet("namespace").(string)
-	deplname := c.MustGet("objectName").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	ns := c.MustGet(NamespaceKey).(string)
+	deplname := c.MustGet(ObjectNameKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 
-	depl := c.MustGet("responseObject").(*v1beta1.Deployment)
-	jsn := c.MustGet("requestObject").(json.RawMessage)
+	depl := c.MustGet(ResponseObjectKey).(*v1beta1.Deployment)
+	jsn := c.MustGet(RequestObjectKey).(json.RawMessage)
 	json.Unmarshal(jsn, &replicas)
 
 	if replicas.Replicas == nil || *replicas.Replicas < 0 || *replicas.Replicas >= 20 {
@@ -267,7 +267,7 @@ func ChangeDeploymentReplicas(c *gin.Context) {
 	}
 	redactDeploymentForUser(deplAfter)
 	c.Status(200)
-	c.Set("responseObject", deplAfter)
+	c.Set(ResponseObjectKey, deplAfter)
 }
 
 func redactDeploymentForUser(depl *v1beta1.Deployment) {

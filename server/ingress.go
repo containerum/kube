@@ -13,8 +13,8 @@ import (
 )
 
 func ListIngresses(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	nsname := c.MustGet(NamespaceKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 	ingressList, err := kubecli.ExtensionsV1beta1().Ingresses(nsname).List(meta_v1.ListOptions{})
 	if err != nil {
 		utils.Log(c).Errorf("kubecli.Ingresses.List error: %T %[1]v", err)
@@ -26,12 +26,12 @@ func ListIngresses(c *gin.Context) {
 
 	redactIngressListForUser(ingressList)
 	c.Status(200)
-	c.Set("responseObject", ingressList)
+	c.Set(ResponseObjectKey, ingressList)
 }
 
 func CreateIngress(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	ingress, ok := c.MustGet("requestObject").(*v1beta1.Ingress)
+	nsname := c.MustGet(NamespaceKey).(string)
+	ingress, ok := c.MustGet(RequestObjectKey).(*v1beta1.Ingress)
 	if !ok || ingress == nil {
 		c.AbortWithStatusJSON(400, map[string]string{
 			"error": "bad request",
@@ -46,7 +46,7 @@ func CreateIngress(c *gin.Context) {
 	}
 	clientIngressInsertions(ingress)
 
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 	ingressAfter, err := kubecli.ExtensionsV1beta1().Ingresses(ingress.ObjectMeta.Namespace).Create(ingress)
 	if err != nil {
 		utils.Log(c).Warnf("kubecli.Ingresses.Create error: %T %[1]v", err)
@@ -59,13 +59,13 @@ func CreateIngress(c *gin.Context) {
 	redactIngressForUser(ingressAfter)
 
 	c.Status(201)
-	c.Set("responseObject", ingressAfter)
+	c.Set(ResponseObjectKey, ingressAfter)
 }
 
 func GetIngress(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	objname := c.MustGet("objectName").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	nsname := c.MustGet(NamespaceKey).(string)
+	objname := c.MustGet(ObjectNameKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 
 	ingress, err := kubecli.ExtensionsV1beta1().Ingresses(nsname).Get(objname, meta_v1.GetOptions{})
 	if err != nil {
@@ -77,13 +77,13 @@ func GetIngress(c *gin.Context) {
 	}
 	redactIngressForUser(ingress)
 	c.Status(200)
-	c.Set("responseObject", ingress)
+	c.Set(ResponseObjectKey, ingress)
 }
 
 func DeleteIngress(c *gin.Context) {
-	nsname := c.MustGet("namespace").(string)
-	objname := c.MustGet("objectName").(string)
-	kubecli := c.MustGet("kubeclient").(*kubernetes.Clientset)
+	nsname := c.MustGet(NamespaceKey).(string)
+	objname := c.MustGet(ObjectNameKey).(string)
+	kubecli := c.MustGet(KubeClientKey).(*kubernetes.Clientset)
 
 	err := kubecli.ExtensionsV1beta1().Ingresses(nsname).Delete(objname, &meta_v1.DeleteOptions{})
 	if err != nil {

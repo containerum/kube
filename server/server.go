@@ -6,6 +6,15 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+// context keys
+const (
+	RequestObjectKey  = "requestObject"
+	ResponseObjectKey = "responseObject"
+	NamespaceKey      = "namespace"
+	ObjectNameKey     = "objectName"
+	KubeClientKey     = "kubeclient"
+)
+
 type KubeClient struct {
 	Tag      string
 	Client   *kubernetes.Clientset

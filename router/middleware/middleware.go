@@ -2,14 +2,15 @@ package middleware
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"math/rand"
+	"net/http"
 	"reflect"
 
 	"git.containerum.net/ch/kube-api/access"
 	"git.containerum.net/ch/kube-api/server"
 	"git.containerum.net/ch/kube-api/utils"
+	"github.com/json-iterator/go"
 
 	"github.com/gin-gonic/gin"
 	"github.com/satori/go.uuid"
@@ -20,6 +21,12 @@ import (
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// internal context keys
+const (
+	userDataKey  = "userData"
+	requestIDKey = "request-id"
+)
+
 func SetNamespace(c *gin.Context) {
 	ns := c.Param("namespace")
 	if ns == "" {
@@ -28,7 +35,7 @@ func SetNamespace(c *gin.Context) {
 			"errcode": "BAD_INPUT",
 		})
 	}
-	c.Set("namespace", ns)
+	c.Set(server.NamespaceKey, ns)
 }
 
 func SetObjectName(c *gin.Context) {
@@ -39,7 +46,7 @@ func SetObjectName(c *gin.Context) {
 			"errcode": "BAD_INPUT",
 		})
 	}
-	c.Set("objectName", objname)
+	c.Set(server.ObjectNameKey, objname)
 }
 
 func SetRandomKubeClient(c *gin.Context) {
@@ -55,11 +62,11 @@ func SetRandomKubeClient(c *gin.Context) {
 	utils.Log(c).Debugf("picked server.KubeClients[%d]", n)
 	utils.AddLogField(c, "kubeclient-address", server.KubeClients[n].Tag)
 	server.KubeClients[n].UseCount++
-	c.Set("kubeclient", server.KubeClients[n].Client)
+	c.Set(server.KubeClientKey, server.KubeClients[n].Client)
 }
 
 // ParseJSON parses a JSON payload into a kubernetes struct of appropriate
-// type and sets it into the gin context under the "requestObject" key.
+// type and sets it into the gin context under the server.RequestObjectKey key.
 func ParseJSON(c *gin.Context) {
 	var kind struct {
 		Kind string `json:"kind"`
@@ -74,7 +81,7 @@ func ParseJSON(c *gin.Context) {
 		return
 	}
 
-	err = json.Unmarshal(jsn, &kind)
+	err = jsoniter.Unmarshal(jsn, &kind)
 	if err != nil {
 		c.AbortWithStatusJSON(400, map[string]string{
 			"error":   "json error: " + err.Error(),
@@ -88,68 +95,68 @@ func ParseJSON(c *gin.Context) {
 	switch kind.Kind {
 	case "ConfigMap":
 		var obj *v1.ConfigMap
-		err = json.Unmarshal(jsn, &obj)
+		err = jsoniter.Unmarshal(jsn, &obj)
 		objmeta = &obj.ObjectMeta
-		c.Set("requestObject", obj)
+		c.Set(server.RequestObjectKey, obj)
 
 	case "Deployment":
 		var obj *v1beta1.Deployment
-		err = json.Unmarshal(jsn, &obj)
+		err = jsoniter.Unmarshal(jsn, &obj)
 		objmeta = &obj.ObjectMeta
-		c.Set("requestObject", obj)
+		c.Set(server.RequestObjectKey, obj)
 
 	case "Endpoints":
 		var obj *v1.Endpoints
-		err = json.Unmarshal(jsn, &obj)
+		err = jsoniter.Unmarshal(jsn, &obj)
 		objmeta = &obj.ObjectMeta
-		c.Set("requestObject", obj)
+		c.Set(server.RequestObjectKey, obj)
 
 	case "Namespace":
 		var obj *v1.Namespace
-		err = json.Unmarshal(jsn, &obj)
+		err = jsoniter.Unmarshal(jsn, &obj)
 		objmeta = &obj.ObjectMeta
-		c.Set("requestObject", obj)
+		c.Set(server.RequestObjectKey, obj)
 
 	case "Secret":
 		var obj *v1.Secret
-		err = json.Unmarshal(jsn, &obj)
+		err = jsoniter.Unmarshal(jsn, &obj)
 		objmeta = &obj.ObjectMeta
-		c.Set("requestObject", obj)
+		c.Set(server.RequestObjectKey, obj)
 
 	case "Service":
 		var obj *v1.Service
-		err = json.Unmarshal(jsn, &obj)
+		err = jsoniter.Unmarshal(jsn, &obj)
 		objmeta = &obj.ObjectMeta
-		c.Set("requestObject", obj)
+		c.Set(server.RequestObjectKey, obj)
 
 	case "Ingress":
 		var obj *ext_v1beta1.Ingress
-		err = json.Unmarshal(jsn, &obj)
+		err = jsoniter.Unmarshal(jsn, &obj)
 		objmeta = &obj.ObjectMeta
-		c.Set("requestObject", obj)
+		c.Set(server.RequestObjectKey, obj)
 
 	default:
-		c.Set("requestObject", json.RawMessage(jsn))
+		c.Set(server.RequestObjectKey, jsoniter.RawMessage(jsn))
 	}
 
-	if _, ok := c.Get("namespace"); !ok {
+	if _, ok := c.Get(server.NamespaceKey); !ok {
 		if kind.Kind == "Namespace" {
-			c.Set("namespace", objmeta.Name)
+			c.Set(server.NamespaceKey, objmeta.Name)
 		} else {
-			c.Set("namespace", objmeta.Namespace)
+			c.Set(server.NamespaceKey, objmeta.Namespace)
 		}
 	}
 
-	if _, ok := c.Get("objectName"); !ok {
+	if _, ok := c.Get(server.ObjectNameKey); !ok {
 		if kind.Kind != "Namespace" {
-			c.Set("objectName", objmeta.Name)
+			c.Set(server.ObjectNameKey, objmeta.Name)
 		}
 	}
 }
 
 func SetRequestID(c *gin.Context) {
 	reqid := uuid.NewV4().String()
-	c.Set("request-id", reqid)
+	c.Set(requestIDKey, reqid)
 	c.Header("X-Request-ID", reqid)
 }
 
@@ -166,13 +173,13 @@ func CheckHTTP411(c *gin.Context) {
 // NOTE: обработчик выполняется на обратном ходе рекурсии.
 func RedactResponseMetadata(c *gin.Context) {
 	c.Next() // NOTE
-	obj, ok := c.Get("responseObject")
+	obj, ok := c.Get(server.ResponseObjectKey)
 	if !ok {
 		return
 	}
-	jsn, _ := json.Marshal(obj)
+	jsn, _ := jsoniter.Marshal(obj)
 	var m map[string]interface{}
-	json.Unmarshal(jsn, &m)
+	jsoniter.Unmarshal(jsn, &m)
 	jsonDeleteInMetadata(m, "selfLink", fmt.Sprintf("%p", m))
 	jsonDeleteInMetadata(m, "uid", fmt.Sprintf("%p", m))
 	//jsonDeleteInMetadata(m, "resourceVersion", fmt.Sprintf("%p", m))
@@ -183,9 +190,9 @@ func RedactResponseMetadata(c *gin.Context) {
 	v := reflect.New(tt)
 	newobj = v.Interface()
 
-	jsn, _ = json.Marshal(m)
-	json.Unmarshal(jsn, newobj)
-	c.Set("responseObject", newobj)
+	jsn, _ = jsoniter.Marshal(m)
+	jsoniter.Unmarshal(jsn, newobj)
+	c.Set(server.ResponseObjectKey, newobj)
 }
 
 func jsonDeleteInMetadata(obj interface{}, fieldName string, trace string) {
@@ -221,22 +228,21 @@ func jsonDeleteInMetadata(obj interface{}, fieldName string, trace string) {
 // NOTE: обработчик выполняется на обратном ходе рекурсии.
 func WriteResponseObject(c *gin.Context) {
 	c.Next() // NOTE
-	obj, ok := c.Get("responseObject")
+	obj, ok := c.Get(server.ResponseObjectKey)
 	if !ok {
 		return
 	}
-	jsn, _ := json.Marshal(obj)
-	c.Writer.Write(jsn)
+	c.JSON(http.StatusOK, obj)
 }
 
 func SwapInputOutput(c *gin.Context) {
-	in, ok1 := c.Get("requestObject")
-	out, ok2 := c.Get("responseObject")
+	in, ok1 := c.Get(server.RequestObjectKey)
+	out, ok2 := c.Get(server.ResponseObjectKey)
 	if ok1 {
-		c.Set("responseObject", in)
+		c.Set(server.ResponseObjectKey, in)
 	}
 	if ok2 {
-		c.Set("requestObject", out)
+		c.Set(server.RequestObjectKey, out)
 	}
 }
 
@@ -254,7 +260,7 @@ func ParseUserData(c *gin.Context) {
 			return
 		}
 
-		err = json.Unmarshal(unb64, &hheaders.Namespace)
+		err = jsoniter.Unmarshal(unb64, &hheaders.Namespace)
 		if err != nil {
 			utils.Log(c).Warnf("cannot unmarshal json in header x-user-namespace: %v (%[1]T)", err)
 			c.AbortWithStatusJSON(400, map[string]string{
@@ -276,7 +282,7 @@ func ParseUserData(c *gin.Context) {
 			return
 		}
 
-		err = json.Unmarshal(unb64, &hheaders.Volume)
+		err = jsoniter.Unmarshal(unb64, &hheaders.Volume)
 		if err != nil {
 			utils.Log(c).Warnf("cannot unmarshal json in header x-user-volume: %v", err)
 			c.AbortWithStatusJSON(400, map[string]string{
@@ -287,5 +293,5 @@ func ParseUserData(c *gin.Context) {
 		}
 	}
 
-	c.Set("userData", hheaders)
+	c.Set(userDataKey, hheaders)
 }
