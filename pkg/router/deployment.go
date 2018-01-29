@@ -11,6 +11,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	deploymentParam = "deployment"
+)
+
 func getDeploymentList(c *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace": c.Param(namespaceParam),
@@ -19,9 +23,24 @@ func getDeploymentList(c *gin.Context) {
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 	deployments, err := kube.GetDeploymentList(c.Param(namespaceParam), c.Query(ownerQuery))
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		c.AbortWithError(http.StatusNotFound, err)
 		return
 	}
 	deployList := model.ParseDeploymentList(deployments)
 	c.JSON(http.StatusOK, deployList)
+}
+
+func getDeployment(c *gin.Context) {
+	log.WithFields(log.Fields{
+		"Namespace":  c.Param(namespaceParam),
+		"Deployment": c.Param(deploymentParam),
+	}).Debug("Get deployment Call")
+	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
+	deployment, err := kube.GetDeployment(c.Param(namespaceParam), c.Param(deploymentParam))
+	if err != nil {
+		c.AbortWithError(http.StatusNotFound, err)
+		return
+	}
+	deploy := model.ParseDeployment(deployment)
+	c.JSON(http.StatusOK, deploy)
 }

@@ -9,7 +9,7 @@ import (
 
 var (
 	ErrUnableGetDeploymentList = errors.New("Unable to get deployment list")
-	//ErrUnableGetDeployment     = errors.New("Unable to get deployment")
+	ErrUnableGetDeployment     = errors.New("Unable to get deployment")
 )
 
 func (k *Kube) GetDeploymentList(ns string, owner string) (interface{}, error) {
@@ -21,6 +21,19 @@ func (k *Kube) GetDeploymentList(ns string, owner string) (interface{}, error) {
 			"Namespace": ns,
 			"Owner":     owner,
 		}).Error(ErrUnableGetDeploymentList)
+		return nil, ErrUnableGetDeploymentList
 	}
 	return deployments, nil
+}
+
+func (k *Kube) GetDeployment(ns string, deploy string) (interface{}, error) {
+	deployment, err := k.AppsV1().Deployments(ns).Get(deploy, meta_v1.GetOptions{})
+	if err != nil {
+		log.WithError(err).WithFields(log.Fields{
+			"Namespace":  ns,
+			"Deployment": deploy,
+		}).Error(ErrUnableGetDeployment)
+		return nil, ErrUnableGetDeployment
+	}
+	return deployment, nil
 }
