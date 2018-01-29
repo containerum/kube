@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"net/http"
+	"strconv"
 
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
@@ -18,6 +19,10 @@ const (
 	podParam    = "pod"
 	followQuery = "follow"
 	tailQuery   = "tail"
+
+	logsBufferSize = 1024
+	tailDefault    = 200
+	tailMax        = 1000
 )
 
 var wsupgrader = websocket.Upgrader{
@@ -55,8 +60,13 @@ func getPodLogs(c *gin.Context) {
 	stream := new(bytes.Buffer)
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 	stop := make(chan struct{}, 1)
-
-	go kube.GetPodLogs(c.Param(namespaceParam), c.Param(podParam), stream, &stop)
+	tail, _ := strconv.Atoi(c.Query(tailQuery))
+	if tail <= 0 || tail > tailMax {
+		tail = tailDefault
+	}
+	go kube.GetPodLogs(c.Param(namespaceParam), c.Param(podParam), stream, &kubernetes.LogOptions{
+		Follow: c.Query(followQuery) == "true",
+	})
 	go writeLogs(conn, stream, &stop)
 }
 
@@ -70,11 +80,11 @@ func writeLogs(conn *websocket.Conn, logs *bytes.Buffer, done *chan struct{}) {
 		if logs == nil {
 			continue
 		}
-		buf := make([]byte, 1024)
+		buf := make([]byte, logsBufferSize)
 		_, err := logs.Read(buf)
 		if err != nil {
 			if err != io.EOF {
-				log.WithError(err).Error("Unable read logs stream")
+				log.WithError(err).Error("Unable read logs stream") //TODO: Write good err
 			}
 			continue
 		}
