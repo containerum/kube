@@ -36,6 +36,12 @@ func initRoutes(e *gin.Engine) {
 		deployment := namespace.Group("/:namespace/deployments")
 		{
 			deployment.GET("", getDeploymentList)
+			deployment.GET("/:deployment", getDeployment)
+		}
+		pod := namespace.Group("/:namespace/pods")
+		{
+			pod.GET("/", getPodList)
+			pod.GET("/:pod/log", getPodLogs)
 		}
 	}
 }
