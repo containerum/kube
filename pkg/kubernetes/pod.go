@@ -24,6 +24,8 @@ type LogOptions struct {
 	Follow     bool
 	StopFollow chan struct{}
 	Tail       int64
+	Previous   bool
+	Container  string
 }
 
 func (k *Kube) GetPodList(ns string, owner string) (interface{}, error) {
@@ -40,11 +42,25 @@ func (k *Kube) GetPodList(ns string, owner string) (interface{}, error) {
 	return pods, nil
 }
 
+func (k *Kube) GetPod(ns string, po string) (interface{}, error) {
+	pod, err := k.CoreV1().Pods(ns).Get(po, meta_v1.GetOptions{})
+	if err != nil {
+		log.WithError(err).WithFields(log.Fields{
+			"Namespace": ns,
+			"Pod":       po,
+		}).Error(ErrUnableGetPod)
+		return nil, ErrUnableGetPod
+	}
+	return pod, nil
+}
+
 func (k *Kube) GetPodLogs(ns string, po string, out *bytes.Buffer, opt *LogOptions) error {
 	defer log.Debug("STOP FOLLOW LOGS STREAM")
 	req := k.CoreV1().Pods(ns).GetLogs(po, &v1.PodLogOptions{
 		TailLines: &opt.Tail,
 		Follow:    opt.Follow,
+		Previous:  opt.Previous,
+		Container: opt.Container,
 	})
 	readCloser, err := req.Stream()
 	if err != nil {
@@ -59,11 +75,11 @@ func (k *Kube) GetPodLogs(ns string, po string, out *bytes.Buffer, opt *LogOptio
 			buf := make([]byte, 1024)
 			_, err := readCloser.Read(buf)
 			if err != nil {
-				log.WithError(err).Warn("Unable read get logs stream")
+				return err
 			}
 			_, err = out.Write(buf)
 			if err != nil {
-				log.WithError(err).Warn("Unable write logs stream")
+				return err
 			}
 		}
 	}

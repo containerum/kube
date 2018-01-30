@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"time"
 
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
@@ -16,12 +17,14 @@ import (
 )
 
 const (
-	podParam    = "pod"
-	followQuery = "follow"
-	tailQuery   = "tail"
+	podParam       = "pod"
+	followQuery    = "follow"
+	tailQuery      = "tail"
+	containerQuery = "container"
+	previousQuery  = "previous"
 
 	logsBufferSize = 1024
-	tailDefault    = 200
+	tailDefault    = 100
 	tailMax        = 1000
 )
 
@@ -45,10 +48,29 @@ func getPodList(c *gin.Context) {
 	c.JSON(http.StatusOK, podList)
 }
 
+func getPod(c *gin.Context) {
+	log.WithFields(log.Fields{
+		"Namespace": c.Param(namespaceParam),
+		"Pod":       c.Param(podParam),
+	}).Debug("Get pod list Call")
+	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
+	pod, err := kube.GetPod(c.Param(namespaceParam), c.Param(podParam))
+	if err != nil {
+		c.AbortWithError(http.StatusNotFound, err)
+		return
+	}
+	po := model.ParsePod(pod)
+	c.JSON(http.StatusOK, po)
+}
+
 func getPodLogs(c *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace": c.Param(namespaceParam),
 		"Pod":       c.Param(podParam),
+		"Follow":    c.Query(followQuery),
+		"Tail":      c.Query(tailQuery),
+		"Container": c.Query(containerQuery),
+		"Previous":  c.Query(previousQuery),
 	}).Debug("Get pod logs Call")
 
 	conn, err := wsupgrader.Upgrade(c.Writer, c.Request, nil)
@@ -56,18 +78,12 @@ func getPodLogs(c *gin.Context) {
 		log.WithError(err).Error("unable to upgrade http to socket")
 		return
 	}
-
 	stream := new(bytes.Buffer)
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-	stop := make(chan struct{}, 1)
-	tail, _ := strconv.Atoi(c.Query(tailQuery))
-	if tail <= 0 || tail > tailMax {
-		tail = tailDefault
-	}
-	go kube.GetPodLogs(c.Param(namespaceParam), c.Param(podParam), stream, &kubernetes.LogOptions{
-		Follow: c.Query(followQuery) == "true",
-	})
-	go writeLogs(conn, stream, &stop)
+	logOpt := makeLogOption(c)
+
+	go kube.GetPodLogs(c.Param(namespaceParam), c.Param(podParam), stream, &logOpt)
+	go writeLogs(conn, stream, &logOpt.StopFollow)
 }
 
 func writeLogs(conn *websocket.Conn, logs *bytes.Buffer, done *chan struct{}) {
@@ -77,19 +93,36 @@ func writeLogs(conn *websocket.Conn, logs *bytes.Buffer, done *chan struct{}) {
 	}(done)
 
 	for {
-		if logs == nil {
-			continue
-		}
+		time.Sleep(time.Millisecond * 5)
 		buf := make([]byte, logsBufferSize)
 		_, err := logs.Read(buf)
 		if err != nil {
 			if err != io.EOF {
 				log.WithError(err).Error("Unable read logs stream") //TODO: Write good err
+				return
 			}
 			continue
 		}
 		if err := conn.WriteMessage(websocket.TextMessage, buf); err != nil {
 			return
 		}
+	}
+}
+
+func makeLogOption(c *gin.Context) kubernetes.LogOptions {
+	stop := make(chan struct{}, 1)
+	followStr := c.Query(followQuery)
+	previousStr := c.Query(previousQuery)
+	container := c.Query(containerQuery)
+	tail, _ := strconv.Atoi(c.Query(tailQuery))
+	if tail <= 0 || tail > tailMax {
+		tail = tailDefault
+	}
+	return kubernetes.LogOptions{
+		Tail:       int64(tail),
+		Follow:     followStr == "true",
+		StopFollow: stop,
+		Previous:   previousStr == "true",
+		Container:  container,
 	}
 }

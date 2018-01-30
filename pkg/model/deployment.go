@@ -36,9 +36,10 @@ func ParseDeploymentList(deploys interface{}) []Deployment {
 
 func ParseDeployment(deployment interface{}) Deployment {
 	obj := deployment.(*v1.Deployment)
-	var containers []Container
+	// var containers []Container
 	owner := obj.GetLabels()[ownerLabel]
 	replicas := 0
+	containers := getContainers(obj.Spec.Template.Spec.Containers)
 	updated := obj.ObjectMeta.CreationTimestamp.Unix()
 	if r := obj.Spec.Replicas; r != nil {
 		replicas = int(*r)
@@ -47,29 +48,6 @@ func ParseDeployment(deployment interface{}) Deployment {
 		if t := c.LastUpdateTime.Unix(); t > updated {
 			updated = t
 		}
-	}
-	for _, c := range obj.Spec.Template.Spec.Containers {
-		var containerEnvs []Env
-		for _, env := range c.Env {
-			containerEnvs = append(containerEnvs, Env{
-				Name:  env.Name,
-				Value: env.Value,
-			})
-		}
-		var containerVols []Volume
-		for _, vol := range c.VolumeMounts {
-			containerVols = append(containerVols, Volume{
-				Name:      vol.Name,
-				MountPath: vol.MountPath,
-				SubPath:   vol.SubPath,
-			})
-		}
-		container := Container{
-			Name:  c.Name,
-			Image: c.Image,
-			Env:   containerEnvs,
-		}
-		containers = append(containers, container)
 	}
 	return Deployment{
 		Name:     obj.GetName(),

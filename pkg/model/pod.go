@@ -39,15 +39,58 @@ func ParsePodList(pods interface{}) []Pod {
 	objects := pods.(*v1.PodList)
 	var pos []Pod
 	for _, po := range objects.Items {
-		po := ParsePod(&po)
-		pos = append(pos, po)
+		pos = append(pos, ParsePod(&po))
 	}
 	return pos
 }
 
 func ParsePod(pod interface{}) Pod {
 	obj := pod.(*v1.Pod)
+	owner := obj.GetLabels()[ownerLabel]
+	containers := getContainers(obj.Spec.Containers)
 	return Pod{
-		Name: obj.GetName(),
+		Name:       obj.GetName(),
+		Owner:      owner,
+		Containers: containers,
+		Hostname:   obj.Spec.Hostname,
+		Status: PodStatus{
+			Phase: string(obj.Status.Phase),
+		},
 	}
+}
+
+func getContainers(cList []v1.Container) []Container {
+	var containers []Container
+	for _, c := range cList {
+		containers = append(containers, Container{
+			Name:   c.Name,
+			Image:  c.Image,
+			Env:    getEnv(c.Env),
+			Volume: getVolumes(c.VolumeMounts),
+		})
+	}
+	return containers
+}
+
+func getVolumes(vList []v1.VolumeMount) []Volume {
+	var volumes []Volume
+	for _, v := range vList {
+		volumes = append(volumes, Volume{
+			Name:      v.Name,
+			MountPath: v.MountPath,
+			SubPath:   v.SubPath,
+		})
+	}
+	return volumes
+}
+
+func getEnv(eList []v1.EnvVar) []Env {
+	var envs []Env
+	for _, e := range eList {
+		envs = append(envs, Env{
+			Name:  e.Name,
+			Value: e.Value,
+		})
+	}
+	return envs
 }
