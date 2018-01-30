@@ -58,5 +58,9 @@ unit-tests:
   stage: test
   tags:
     - test
+  before_script:
+    - mkdir -p /go/src/git.containerum.net/ch/
+    - mv ../kube-api /go/src/git.containerum.net/ch/
+    - cd /go/src/git.containerum.net/ch/kube-api
   script:
     - go test pkg/router/midlleware/* -v
