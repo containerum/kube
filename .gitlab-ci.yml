@@ -54,13 +54,13 @@ docker-build-test:
 unit-tests:
   services:
     - docker:dind
-  image: golang:1.9.2
+  image: golang:1.9.3
   stage: test
   tags:
     - test
   before_script:
     - mkdir -p /go/src/git.containerum.net/ch/
-    - mv ../kube-api /go/src/git.containerum.net/ch/
+    - cp -r ../kube-api /go/src/git.containerum.net/ch/
     - cd /go/src/git.containerum.net/ch/kube-api
   script:
     - go test pkg/router/midlleware/* -v
