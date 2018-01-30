@@ -47,7 +47,6 @@ func TestIsAdmin(t *testing.T) {
 		})
 		Convey("Check admin User-Role", func() {
 			r.GET("/test").
-				SetDebug(true).
 				SetHeader(gofight.H{
 					userRoleXHeader: "admin",
 				}).

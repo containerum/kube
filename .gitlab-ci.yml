@@ -1,4 +1,5 @@
 stages:
+  - test
   - build
   - deploy
 
@@ -49,3 +50,13 @@ docker-build-test:
     - docker build --pull -t ${CI_REGISTRY_IMAGE}:${TAG} .
   except:
     - develop
+
+unit-tests:
+  services:
+    - docker:dind
+  image: golang:1.9.2
+  stage: test
+  tags:
+    - test
+  script:
+    - go test pkg/router/midlleware/* -v
