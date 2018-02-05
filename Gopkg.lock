@@ -26,6 +26,12 @@
   revision = "22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/gin-gonic/contrib"
+  packages = ["ginrus"]
+  revision = "dccbb4a462e965297e21372a9ad3ea05e0df3e5f"
+
+[[projects]]
   name = "github.com/gin-gonic/gin"
   packages = [".","binding","render"]
   revision = "d459835d2b077e44f7c9b453505ee29881d5d12d"
@@ -140,12 +146,6 @@
   version = "v1.0.0"
 
 [[projects]]
-  name = "github.com/satori/go.uuid"
-  packages = ["."]
-  revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
-  version = "v1.2.0"
-
-[[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
   revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
@@ -250,6 +250,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "cb56782e514425f42e93f81d6841474236d0e150e6885771148bff4c391f0146"
+  inputs-digest = "e27f52409541a433c00354b22da36192543dc255ed78c67dc610d4780138573b"
   solver-name = "gps-cdcl"
   solver-version = 1
