@@ -8,6 +8,12 @@ stages:
     - export DATE=$(date +"%Y-%m-%d")
     - export TAG="${DATE}-${CI_COMMIT_SHA:0:8}"
 
+.correct_workdir: &correct_workdir
+  before_script:
+    - mkdir -p /go/src/git.containerum.net/${CI_PROJECT_PATH%/*}
+    - ln -sf ${CI_PROJECT_DIR} /go/src/git.containerum.net/${CI_PROJECT_PATH}
+    - cd /go/src/git.containerum.net/${CI_PROJECT_PATH}
+
 build-and-push-develop:
   <<: *create_tag
   services:
@@ -52,15 +58,10 @@ docker-build-test:
     - develop
 
 unit-tests:
-  services:
-    - docker:dind
+  <<: *correct_workdir
   image: golang:1.9.3
   stage: test
   tags:
     - test
-  before_script:
-    - mkdir -p /go/src/git.containerum.net/ch/
-    - cp -r ../kube-api /go/src/git.containerum.net/ch/
-    - cd /go/src/git.containerum.net/ch/kube-api
   script:
-    - go test pkg/router/midlleware/* -v
+    - go test -v -cover ./...
