@@ -9,8 +9,7 @@ import (
 )
 
 var (
-	ErrUnableGetService     = errors.New("Unable to get service")
-	ErrUnableGetServiceList = errors.New("Unable to get service list")
+	ErrUnableGetService = errors.New("Unable to get service")
 )
 
 // GetService returns Service with given name
@@ -28,4 +27,22 @@ func (kube *Kube) GetService(namespace, serviceName string) (*kubeCoreV1.Service
 		return nil, ErrUnableGetService
 	}
 	return nativeService, nil
+}
+
+func (kube *Kube) GetServiceList(nsname string) (interface{}, error) {
+	svcAfter, err := kube.CoreV1().Services(nsname).List(meta_v1.ListOptions{})
+	if err != nil {
+		log.WithError(err).WithField("Namespace", nsname).Error(ErrUnableGetServiceList)
+		return nil, ErrUnableGetServiceList
+	}
+	return svcAfter, nil
+}
+
+func (kube *Kube) CreateService(svc *kubeCoreV1.Service) (*kubeCoreV1.Service, error) {
+	svcAfter, err := kube.CoreV1().Services(svc.ObjectMeta.Namespace).Create(svc)
+	if err != nil {
+		log.WithError(err).WithField("Namespace", svc.Name).Error(ErrUnableCreateService)
+		return nil, err
+	}
+	return svcAfter, nil
 }

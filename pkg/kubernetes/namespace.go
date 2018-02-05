@@ -1,8 +1,6 @@
 package kubernetes
 
 import (
-	"errors"
-
 	log "github.com/sirupsen/logrus"
 	api_core "k8s.io/api/core/v1"
 	api_resource "k8s.io/apimachinery/pkg/api/resource"
@@ -11,15 +9,6 @@ import (
 
 const (
 	quotaName = "quota"
-)
-
-var (
-	ErrUnableGetNamespaceQuotaList = errors.New("Unable to get namespace list")
-	ErrUnableGetNamespaceQuota     = errors.New("Unable to get namespace")
-	ErrUnableCreateNamespace       = errors.New("Unable to create namespace")
-	ErrUnableCreateNamespaceQuota  = errors.New("Unable to create namespace quota")
-	ErrUnableUpdateNamespaceQuota  = errors.New("Unable to update namespace quota")
-	ErrUnableDeleteNamespace       = errors.New("Unable to delete namespace")
 )
 
 func (k *Kube) GetNamespaceQuotaList(owner string) (interface{}, error) {
@@ -63,16 +52,16 @@ func (k *Kube) CreateNamespaceQuota(nsName string, quota *api_core.ResourceQuota
 	return nil
 }
 
-func (k *Kube) UpdateNamespaceQuota(nsName string, quota *api_core.ResourceQuota) error {
+func (k *Kube) UpdateNamespaceQuota(nsName string, quota *api_core.ResourceQuota) (*api_core.ResourceQuota, error) {
 	quota.SetNamespace(nsName)
 	quota.SetName("quota")
 
-	_, err := k.CoreV1().ResourceQuotas(nsName).Update(quota)
+	quotaAfter, err := k.CoreV1().ResourceQuotas(nsName).Update(quota)
 	if err != nil {
 		log.WithError(err).WithField("Namespace", nsName).Error(ErrUnableUpdateNamespaceQuota)
-		return err
+		return nil, err
 	}
-	return nil
+	return quotaAfter, nil
 }
 
 func (k *Kube) DeleteNamespace(nsName string) error {

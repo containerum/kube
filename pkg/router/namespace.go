@@ -19,14 +19,17 @@ import (
 const (
 	ownerQuery     = "owner"
 	namespaceParam = "namespace"
+	serviceParam   = "service"
 )
 
 func getNamespaceList(c *gin.Context) {
 	log.WithField("Owner", c.Query(ownerQuery)).Debug("Get namespace list Call")
+
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
+
 	quotas, err := kube.GetNamespaceQuotaList(c.Query(ownerQuery))
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 	nsList := model.ParseResourceQuotaList(quotas)
@@ -35,7 +38,9 @@ func getNamespaceList(c *gin.Context) {
 
 func getNamespace(c *gin.Context) {
 	log.WithField("Namespace", c.Param(namespaceParam)).Debug("Get namespace Call")
+
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
+
 	quota, err := kube.GetNamespaceQuota(c.Param(namespaceParam))
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, err.Error())
@@ -48,15 +53,16 @@ func getNamespace(c *gin.Context) {
 func сreateNamespace(c *gin.Context) {
 	log.Debug("Create namespace Call")
 
-	ns, ok := c.MustGet(m.RequestObjectKey).(*api_core.Namespace)
-	if !ok {
-		log.Errorln(requestNotNamespace)
-		c.AbortWithStatusJSON(http.StatusBadRequest, requestNotNamespace)
+	var ns *api_core.Namespace
+	if err := c.ShouldBindJSON(&ns); err != nil {
+		c.Error(err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
 		return
 	}
-	ns.Spec = api_core.NamespaceSpec{}
 
 	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	ns.Spec = api_core.NamespaceSpec{}
 
 	cpuq, err := api_resource.ParseQuantity(c.Query("cpu"))
 	if err != nil {
@@ -120,10 +126,14 @@ func updateNamespace(c *gin.Context) {
 
 	quota := kubernetes.MakeResourceQuota(cpuq, memoryq)
 
-	err = kube.UpdateNamespaceQuota(c.Param(namespaceParam), quota)
+	quotaAfter, err := kube.UpdateNamespaceQuota(c.Param(namespaceParam), quota)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.Status(http.StatusNoContent)
+
+	ns := model.ParseResourceQuota(quotaAfter)
+
+	c.Set(m.ResponseObjectKey, ns)
+	c.JSON(http.StatusAccepted, ns)
 }

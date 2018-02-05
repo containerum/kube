@@ -2,9 +2,12 @@ package router
 
 import (
 	"net/http"
+	"time"
 
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
+	"github.com/gin-gonic/contrib/ginrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,8 +21,8 @@ func CreateRouter(kube *kubernetes.Kube, debug bool) http.Handler {
 
 func initMiddlewares(e *gin.Engine, kube *kubernetes.Kube) {
 	/* System */
-	e.Use(gin.Logger())
-	e.Use(gin.Recovery())
+	e.Use(ginrus.Ginrus(logrus.WithField("component", "gin"), time.RFC3339, true))
+	e.Use(gin.RecoveryWithWriter(logrus.WithField("component", "gin_recovery").WriterLevel(logrus.ErrorLevel)))
 	/* Custom */
 	e.Use(m.RequiredHeaders())
 	e.Use(m.RegisterKubeClient(kube))
@@ -31,11 +34,19 @@ func initRoutes(e *gin.Engine) {
 	})
 	namespace := e.Group("/namespaces")
 	{
-		namespace.Use(m.IsAdmin()).GET("", getNamespaceList)
-		namespace.Use(m.IsAdmin()).POST("", m.ParseJSON, сreateNamespace)
-		namespace.Use(m.IsAdmin()).GET("/:namespace", getNamespace)
+		namespace.GET("", getNamespaceList)
+		namespace.Use(m.IsAdmin()).POST("", сreateNamespace)
+		namespace.GET("/:namespace", getNamespace)
 		namespace.Use(m.IsAdmin()).DELETE("/:namespace", deleteNamespace)
 		namespace.Use(m.IsAdmin()).PUT("/:namespace", updateNamespace)
+
+		service := namespace.Group("/:namespace/services")
+		{
+			service.GET("", getServiceList)
+			service.Use(m.IsAdmin()).POST("/", createService)
+			//deployment.GET("/:service", getService)
+		}
+
 		deployment := namespace.Group("/:namespace/deployments")
 		{
 			deployment.GET("", getDeploymentList)
