@@ -8,7 +8,8 @@ import (
 )
 
 var (
-	ErrUnableDecodeServiceList = errors.New("unable decode service list")
+	ErrUnableConvertServiceList = errors.New("unable decode service list")
+	ErrUnableConvertService     = errors.New("unable convert cubernetes service to user representation")
 )
 
 // ServicePort is an user friendly service port representation
@@ -46,8 +47,11 @@ type Service struct {
 
 // ServiceFromNativeKubeService creates
 // user friendly service representation
-func ServiceFromNativeKubeService(native kubeCoreV1.Service) Service {
-	service := Service{
+func ServiceFromNativeKubeService(native *kubeCoreV1.Service) (*Service, error) {
+	if native == nil {
+		return nil, ErrUnableConvertService
+	}
+	service := &Service{
 		CreatedAt: native.GetCreationTimestamp().Unix(),
 		Deploy:    native.GetObjectMeta().GetLabels()["app"], // TODO: check if app key doesn't exists!
 		IP:        native.Spec.ExternalIPs,
@@ -59,17 +63,19 @@ func ServiceFromNativeKubeService(native kubeCoreV1.Service) Service {
 		service.Ports = append(service.Ports,
 			ServicePortFromNativeKubePort(nativePort))
 	}
-	return service
+	return service, nil
 }
 
 func ParseServiceList(nativeServices *kubeCoreV1.ServiceList) ([]Service, error) {
 	if nativeServices == nil {
-		return nil, ErrUnableDecodeServiceList
+		return nil, ErrUnableConvertServiceList
 	}
 	serviceList := make([]Service, 0, nativeServices.Size())
 	for _, nativeService := range nativeServices.Items {
-		service := ServiceFromNativeKubeService(nativeService)
-		serviceList = append(serviceList, service)
+		// error can be ignored because ServiceList provides
+		// Service stucts by values
+		service, _ := ServiceFromNativeKubeService(&nativeService)
+		serviceList = append(serviceList, *service)
 	}
 	return serviceList, nil
 }
