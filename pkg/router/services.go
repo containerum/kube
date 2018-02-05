@@ -76,3 +76,19 @@ func getService(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, service)
 }
+
+func deleteService(ctx *gin.Context) {
+	namespace := ctx.Param(namespaceParam)
+	serviceName := ctx.Param(serviceParam)
+	log.WithFields(log.Fields{
+		"Namespace": namespace,
+		"Service":   serviceName,
+	}).Debug("Delete service call")
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	err := kube.DeleteService(namespace, serviceName)
+	if err != nil {
+		ctx.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	ctx.Status(http.StatusOK)
+}
