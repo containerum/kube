@@ -27,6 +27,14 @@
 
 [[projects]]
   branch = "master"
+<<<<<<< HEAD
+=======
+  name = "github.com/gin-gonic/contrib"
+  packages = ["ginrus"]
+  revision = "dccbb4a462e965297e21372a9ad3ea05e0df3e5f"
+
+[[projects]]
+>>>>>>> a59b4c743d6c3b2a9183cf7f5bc50490bd4b4c4b
   name = "github.com/gin-gonic/gin"
   packages = [".","binding","json","render"]
   revision = "783c7ee9c14eac0e65b501664b4f553291556b43"
@@ -244,6 +252,10 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
+<<<<<<< HEAD
   inputs-digest = "07f16bcead8a782ff0269e003212cf38442d2c6f2f3c087b65d64a4317c9acbe"
+=======
+  inputs-digest = "e27f52409541a433c00354b22da36192543dc255ed78c67dc610d4780138573b"
+>>>>>>> a59b4c743d6c3b2a9183cf7f5bc50490bd4b4c4b
   solver-name = "gps-cdcl"
   solver-version = 1
