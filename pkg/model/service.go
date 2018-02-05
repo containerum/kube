@@ -1,8 +1,14 @@
 package model
 
 import (
+	"errors"
+
 	kubeCoreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+)
+
+var (
+	ErrUnableDecodeServiceList = errors.New("unable decode service list")
 )
 
 // ServicePort is an user friendly service port representation
@@ -40,8 +46,8 @@ type Service struct {
 
 // ServiceFromNativeKubeService creates
 // user friendly service representation
-func ServiceFromNativeKubeService(native *kubeCoreV1.Service) *Service {
-	service := &Service{
+func ServiceFromNativeKubeService(native kubeCoreV1.Service) Service {
+	service := Service{
 		CreatedAt: native.GetCreationTimestamp().Unix(),
 		Deploy:    native.GetObjectMeta().GetLabels()["app"], // TODO: check if app key doesn't exists!
 		IP:        native.Spec.ExternalIPs,
@@ -54,4 +60,16 @@ func ServiceFromNativeKubeService(native *kubeCoreV1.Service) *Service {
 			ServicePortFromNativeKubePort(nativePort))
 	}
 	return service
+}
+
+func ParseServiceList(nativeServices *kubeCoreV1.ServiceList) ([]Service, error) {
+	if nativeServices == nil {
+		return nil, ErrUnableDecodeServiceList
+	}
+	serviceList := make([]Service, 0, nativeServices.Size())
+	for _, nativeService := range nativeServices.Items {
+		service := ServiceFromNativeKubeService(nativeService)
+		serviceList = append(serviceList, service)
+	}
+	return serviceList, nil
 }
