@@ -31,11 +31,19 @@ func initRoutes(e *gin.Engine) {
 	})
 	namespace := e.Group("/namespaces")
 	{
-		namespace.Use(m.IsAdmin()).GET("", getNamespaceList)
-		namespace.Use(m.IsAdmin()).POST("", m.ParseJSON, сreateNamespace)
-		namespace.Use(m.IsAdmin()).GET("/:namespace", getNamespace)
+		namespace.GET("", getNamespaceList)
+		namespace.Use(m.IsAdmin()).POST("", сreateNamespace)
+		namespace.GET("/:namespace", getNamespace)
 		namespace.Use(m.IsAdmin()).DELETE("/:namespace", deleteNamespace)
 		namespace.Use(m.IsAdmin()).PUT("/:namespace", updateNamespace)
+
+		service := namespace.Group("/:namespace/services")
+		{
+			service.GET("", getServiceList)
+			service.Use(m.IsAdmin()).POST("/", createService)
+			//deployment.GET("/:service", getService)
+		}
+
 		deployment := namespace.Group("/:namespace/deployments")
 		{
 			deployment.GET("", getDeploymentList)
