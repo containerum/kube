@@ -27,7 +27,7 @@ func getServiceList(c *gin.Context) {
 }
 
 func createService(c *gin.Context) {
-	log.WithField("Service", c.Param(m.ServiceKey)).Debug("Create namespace Call")
+	log.WithField("Service", c.Param(m.ServiceKey)).Debug("Create service Call")
 
 	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 
