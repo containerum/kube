@@ -55,7 +55,7 @@ func ServiceFromNativeKubeService(native *kubeCoreV1.Service) (*Service, error) 
 		CreatedAt: native.GetCreationTimestamp().Unix(),
 		Deploy:    native.GetObjectMeta().GetLabels()["app"], // TODO: check if app key doesn't exists!
 		IP:        native.Spec.ExternalIPs,
-		Domain:    "", // TODO :!
+		Domain:    "", // TODO : add domain info!
 		Type:      native.Spec.Type,
 		Ports:     make([]ServicePort, 0, 1),
 	}
