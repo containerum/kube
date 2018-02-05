@@ -14,27 +14,6 @@ const (
 	serviceParam = "service"
 )
 
-func getServiceList(ctx *gin.Context) {
-	owner := ctx.Query(ownerQuery)
-	namespace := ctx.Param(namespaceParam)
-	log.WithFields(log.Fields{
-		"Owner":     owner,
-		"Namespace": namespace,
-	}).Debug("Get service list call")
-	kube := ctx.MustGet(middleware.KubeClient).(*kubernetes.Kube)
-	nativeServices, err := kube.GetServiceList(namespace, owner)
-	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	services, err := model.ParseServiceList(nativeServices)
-	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	ctx.JSON(http.StatusOK, services)
-}
-
 func getService(ctx *gin.Context) {
 	namespace := ctx.Param(namespaceParam)
 	serviceName := ctx.Param(serviceParam)

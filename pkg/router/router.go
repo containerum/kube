@@ -47,10 +47,5 @@ func initRoutes(e *gin.Engine) {
 			pod.GET("/:pod", getPod)
 			pod.GET("/:pod/log", getPodLogs)
 		}
-		service := namespace.Group("/:namespace/services")
-		{
-			service.GET("", getServiceList)
-			service.GET("/:service", getService)
-		}
 	}
 }
