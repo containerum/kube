@@ -23,5 +23,6 @@ var (
 	ErrUnableGetPodList = errors.New("Unable to get pod list")
 	ErrUnableGetPod     = errors.New("Unable to get pod")
 
-	ErrUnableGetService = errors.New("Unable to get service")
+	ErrUnableGetService    = errors.New("Unable to get service")
+	ErrUnableUpdateService = errors.New("Unable update service")
 )
