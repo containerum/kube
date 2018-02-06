@@ -1,6 +1,7 @@
 package kubernetes
 
 import (
+	json_types "git.containerum.net/ch/kube-client/pkg/model"
 	log "github.com/sirupsen/logrus"
 	api_core "k8s.io/api/core/v1"
 	api_resource "k8s.io/apimachinery/pkg/api/resource"
@@ -22,7 +23,7 @@ func (k *Kube) GetNamespaceQuotaList(owner string) (interface{}, error) {
 	return quotas, nil
 }
 
-func (k *Kube) GetNamespaceQuota(ns string) (interface{}, error) {
+func (k *Kube) GetNamespaceQuota(ns string) (*api_core.ResourceQuota, error) {
 	quota, err := k.CoreV1().ResourceQuotas(ns).Get(quotaName, api_meta.GetOptions{})
 	if err != nil {
 		log.WithError(err).WithField("Namespace", ns).Error(ErrUnableGetNamespaceQuota)
@@ -31,8 +32,20 @@ func (k *Kube) GetNamespaceQuota(ns string) (interface{}, error) {
 	return quota, nil
 }
 
-func (k *Kube) CreateNamespace(ns *api_core.Namespace) (*api_core.Namespace, error) {
-	nsAfter, err := k.CoreV1().Namespaces().Create(ns)
+func (k *Kube) CreateNamespace(ns *json_types.Namespace) (*api_core.Namespace, error) {
+	newReq := api_core.Namespace{
+		Spec: api_core.NamespaceSpec{},
+	}
+
+	newReq.Spec = api_core.NamespaceSpec{}
+	newReq.ObjectMeta.Name = ns.Name
+	newReq.ObjectMeta.Labels = make(map[string]string)
+	newReq.ObjectMeta.Labels["name"] = ns.Name
+	if ns.Owner != nil {
+		newReq.ObjectMeta.Labels["owner"] = *ns.Owner
+	}
+
+	nsAfter, err := k.CoreV1().Namespaces().Create(&newReq)
 	if err != nil {
 		log.WithError(err).WithField("Namespace", ns.Name).Error(ErrUnableCreateNamespace)
 		return nil, err
@@ -40,16 +53,16 @@ func (k *Kube) CreateNamespace(ns *api_core.Namespace) (*api_core.Namespace, err
 	return nsAfter, nil
 }
 
-func (k *Kube) CreateNamespaceQuota(nsName string, quota *api_core.ResourceQuota) error {
+func (k *Kube) CreateNamespaceQuota(nsName string, quota *api_core.ResourceQuota) (*api_core.ResourceQuota, error) {
 	quota.SetNamespace(nsName)
 	quota.SetName("quota")
 
-	_, err := k.CoreV1().ResourceQuotas(nsName).Create(quota)
+	nsAfter, err := k.CoreV1().ResourceQuotas(nsName).Create(quota)
 	if err != nil {
 		log.WithError(err).WithField("Namespace", nsName).Error(ErrUnableCreateNamespaceQuota)
-		return err
+		return nil, err
 	}
-	return nil
+	return nsAfter, nil
 }
 
 func (k *Kube) UpdateNamespaceQuota(nsName string, quota *api_core.ResourceQuota) (*api_core.ResourceQuota, error) {

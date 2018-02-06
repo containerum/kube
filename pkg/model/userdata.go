@@ -3,29 +3,19 @@ package model
 import (
 	"encoding/base64"
 	"encoding/json"
-	"errors"
+
+	"git.containerum.net/ch/kube-client/pkg/model"
 
 	log "github.com/sirupsen/logrus"
 )
 
-type UserHeaderData struct {
-	ID     string `json:"id"`     // hosting-internal name
-	Label  string `json:"label"`  // user-visible label for the object
-	Access string `json:"access"` // one of: "owner", "read", "write", "read-delete", "none"
-}
-
-var (
-	ErrUnableEncodeUserHeaderData    = errors.New("Unbale to encode user header data")
-	ErrUnableUnmarshalUserHeaderData = errors.New("Unable unmarshal user header data")
-)
-
-func ParseUserHeaderData(str string) (*UserHeaderData, error) {
+func ParseUserHeaderData(str string) (*model.UserHeaderData, error) {
 	data, err := base64.StdEncoding.DecodeString(str)
 	if err != nil {
 		log.WithError(err).WithField("Value", str).Warn(ErrUnableEncodeUserHeaderData)
 		return nil, ErrUnableEncodeUserHeaderData
 	}
-	var userData UserHeaderData
+	var userData model.UserHeaderData
 	err = json.Unmarshal(data, &userData)
 	if err != nil {
 		log.WithError(err).WithField("Value", string(data)).Warn(ErrUnableUnmarshalUserHeaderData)

@@ -1,32 +1,13 @@
 package model
 
 import (
+	"git.containerum.net/ch/kube-client/pkg/model"
 	v1 "k8s.io/api/apps/v1"
 )
 
-type Deployment struct {
-	Name            string            `json:"name"`
-	Owner           string            `json:"owner_id,omitempty"`
-	Replicas        int               `json:"replicas"`
-	Containers      []Container       `json:"containers"`
-	ImagePullSecret map[string]string `json:"image_pull_secret,omitempty"`
-	Status          DeploymentStatus  `json:"status,omitempty"`
-	Hostname        string            `json:"hostname,omitempty"`
-}
-
-type DeploymentStatus struct {
-	Created             int64 `json:"created_at"`
-	Updated             int64 `json:"updated_at"`
-	Replicas            int   `json:"replicas"`
-	ReadyReplicas       int   `json:"ready_replicas"`
-	AvailableReplicas   int   `json:"available_replicas"`
-	UnavailableReplicas int   `json:"unavailable_replicas"`
-	UpdatedReplicas     int   `json:"updated_replicas"`
-}
-
-func ParseDeploymentList(deploys interface{}) []Deployment {
+func ParseDeploymentList(deploys interface{}) []model.Deployment {
 	objects := deploys.(*v1.DeploymentList)
-	var deployments []Deployment
+	var deployments []model.Deployment
 	for _, deployment := range objects.Items {
 		deployment := ParseDeployment(&deployment)
 		deployments = append(deployments, deployment)
@@ -34,7 +15,7 @@ func ParseDeploymentList(deploys interface{}) []Deployment {
 	return deployments
 }
 
-func ParseDeployment(deployment interface{}) Deployment {
+func ParseDeployment(deployment interface{}) model.Deployment {
 	obj := deployment.(*v1.Deployment)
 	// var containers []Container
 	owner := obj.GetLabels()[ownerLabel]
@@ -49,11 +30,11 @@ func ParseDeployment(deployment interface{}) Deployment {
 			updated = t
 		}
 	}
-	return Deployment{
+	return model.Deployment{
 		Name:     obj.GetName(),
-		Owner:    owner,
+		Owner:    &owner,
 		Replicas: replicas,
-		Status: DeploymentStatus{
+		Status: &model.DeploymentStatus{
 			Created:             obj.ObjectMeta.CreationTimestamp.Unix(),
 			Updated:             updated,
 			Replicas:            int(obj.Status.Replicas),
@@ -63,6 +44,6 @@ func ParseDeployment(deployment interface{}) Deployment {
 			UnavailableReplicas: int(obj.Status.UnavailableReplicas),
 		},
 		Containers: containers,
-		Hostname:   obj.Spec.Template.Spec.Hostname,
+		Hostname:   &obj.Spec.Template.Spec.Hostname,
 	}
 }

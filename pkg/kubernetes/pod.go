@@ -2,7 +2,6 @@ package kubernetes
 
 import (
 	"bytes"
-	"errors"
 
 	v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,11 +11,6 @@ import (
 
 var (
 	tailDefault = int64(100)
-)
-
-var (
-	ErrUnableGetPodList = errors.New("Unable to get pod list")
-	ErrUnableGetPod     = errors.New("Unable to get pod")
 )
 
 //TODO: Imp struct to GetPodLogs func
