@@ -9,7 +9,8 @@ import (
 )
 
 var (
-	ErrUnableGetService = errors.New("Unable to get service")
+	ErrUnableGetService    = errors.New("Unable to get service")
+	ErrUnableUpdateService = errors.New("Unable update service")
 )
 
 // GetService returns Service with given name
@@ -45,4 +46,19 @@ func (kube *Kube) CreateService(svc *kubeCoreV1.Service) (*kubeCoreV1.Service, e
 		return nil, err
 	}
 	return svcAfter, nil
+}
+
+func (kube *Kube) UpdateService(service *kubeCoreV1.Service) (*kubeCoreV1.Service, error) {
+	newService, err := kube.CoreV1().
+		Services(service.ObjectMeta.Namespace).
+		Update(service)
+	if err != nil {
+		log.WithError(err).
+			WithFields(log.Fields{
+				"Namespace": service.Namespace,
+				"Service":   service.Name,
+			}).Error(ErrUnableUpdateService)
+		return nil, err
+	}
+	return newService, nil
 }
