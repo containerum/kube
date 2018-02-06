@@ -1,32 +1,17 @@
 package model
 
 import (
-	v1 "k8s.io/api/core/v1"
+	api_core "k8s.io/api/core/v1"
+	"git.containerum.net/ch/kube-client/pkg/model"
 )
 
 const (
 	ownerLabel = "owner"
 )
 
-type Namespace struct {
-	Name      string    `json:"name"`
-	Owner     string    `json:"owner_id,omitempty"`
-	Resources Resources `json:"resources"`
-}
-
-type Resources struct {
-	Hard Resource `json:"hard"`
-	Used Resource `json:"used"`
-}
-
-type Resource struct {
-	CPU    string `json:"cpu"`
-	Memory string `json:"memory"`
-}
-
-func ParseResourceQuotaList(quotas interface{}) []Namespace {
-	objects := quotas.(*v1.ResourceQuotaList)
-	var namespaces []Namespace
+func ParseResourceQuotaList(quotas interface{}) []model.Namespace {
+	objects := quotas.(*api_core.ResourceQuotaList)
+	var namespaces []model.Namespace
 	for _, quota := range objects.Items {
 		ns := ParseResourceQuota(&quota)
 		namespaces = append(namespaces, ns)
@@ -34,22 +19,22 @@ func ParseResourceQuotaList(quotas interface{}) []Namespace {
 	return namespaces
 }
 
-func ParseResourceQuota(quota interface{}) Namespace {
-	obj := quota.(*v1.ResourceQuota)
-	cpuLimit := obj.Spec.Hard[v1.ResourceLimitsCPU]
-	memoryLimit := obj.Spec.Hard[v1.ResourceLimitsMemory]
-	cpuUsed := obj.Status.Used[v1.ResourceLimitsCPU]
-	memoryUsed := obj.Status.Used[v1.ResourceLimitsMemory]
+func ParseResourceQuota(quota interface{}) model.Namespace {
+	obj := quota.(*api_core.ResourceQuota)
+	cpuLimit := obj.Spec.Hard[api_core.ResourceLimitsCPU]
+	memoryLimit := obj.Spec.Hard[api_core.ResourceLimitsMemory]
+	cpuUsed := obj.Status.Used[api_core.ResourceLimitsCPU]
+	memoryUsed := obj.Status.Used[api_core.ResourceLimitsMemory]
 	owner := obj.GetLabels()[ownerLabel]
-	return Namespace{
+	return model.Namespace{
 		Name:  obj.GetNamespace(),
-		Owner: owner,
-		Resources: Resources{
-			Hard: Resource{
+		Owner: &owner,
+		Resources: model.Resources{
+			Hard: model.Resource{
 				CPU:    cpuLimit.String(),
 				Memory: memoryLimit.String(),
 			},
-			Used: Resource{
+			Used: &model.Resource{
 				CPU:    cpuUsed.String(),
 				Memory: memoryUsed.String(),
 			},

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"git.containerum.net/ch/kube-api/pkg/model"
+	json_types "git.containerum.net/ch/kube-client/pkg/model"
 
 	"github.com/gin-gonic/gin"
 
@@ -59,10 +60,10 @@ func checkUserRole(userRole string) (bool, error) {
 	return false, ErrInvalidUserRole
 }
 
-func checkUserNamespace(userNamespace string) (*model.UserHeaderData, error) {
+func checkUserNamespace(userNamespace string) (*json_types.UserHeaderData, error) {
 	return model.ParseUserHeaderData(userNamespace)
 }
 
-func checkUserVolume(userVolume string) (*model.UserHeaderData, error) {
+func checkUserVolume(userVolume string) (*json_types.UserHeaderData, error) {
 	return model.ParseUserHeaderData(userVolume)
 }

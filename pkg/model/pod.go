@@ -2,92 +2,64 @@ package model
 
 import (
 	"k8s.io/api/core/v1"
+	"git.containerum.net/ch/kube-client/pkg/model"
 )
 
-type Pod struct {
-	Name            string            `json:"name"`
-	Owner           string            `json:"owner_id,omitempty"`
-	Containers      []Container       `json:"containers"`
-	ImagePullSecret map[string]string `json:"image_pull_secret,omitempty"`
-	Status          PodStatus         `json:"status,omitempty"`
-	Hostname        string            `json:"hostname,omitempty"`
-}
-
-type PodStatus struct {
-	Phase string `json:"phase"`
-}
-
-type Container struct {
-	Name   string   `json:"name"`
-	Env    []Env    `json:"env,omitempty"`
-	Image  string   `json:"image"`
-	Volume []Volume `json:"volume,omitempty"`
-}
-
-type Env struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
-}
-
-type Volume struct {
-	Name      string `json:"name"`
-	MountPath string `json:"mount_path"`
-	SubPath   string `json:"sub_path,omitempty"`
-}
-
-func ParsePodList(pods interface{}) []Pod {
+func ParsePodList(pods interface{}) []model.Pod {
 	objects := pods.(*v1.PodList)
-	var pos []Pod
+	var pos []model.Pod
 	for _, po := range objects.Items {
 		pos = append(pos, ParsePod(&po))
 	}
 	return pos
 }
 
-func ParsePod(pod interface{}) Pod {
+func ParsePod(pod interface{}) model.Pod {
 	obj := pod.(*v1.Pod)
 	owner := obj.GetLabels()[ownerLabel]
 	containers := getContainers(obj.Spec.Containers)
-	return Pod{
+	return model.Pod{
 		Name:       obj.GetName(),
-		Owner:      owner,
+		Owner:      &owner,
 		Containers: containers,
-		Hostname:   obj.Spec.Hostname,
-		Status: PodStatus{
+		Hostname:   &obj.Spec.Hostname,
+		Status: &model.PodStatus{
 			Phase: string(obj.Status.Phase),
 		},
 	}
 }
 
-func getContainers(cList []v1.Container) []Container {
-	var containers []Container
+func getContainers(cList []v1.Container) []model.Container {
+	var containers []model.Container
 	for _, c := range cList {
-		containers = append(containers, Container{
+		env := getEnv(c.Env)
+		volumes := getVolumes(c.VolumeMounts)
+		containers = append(containers, model.Container{
 			Name:   c.Name,
 			Image:  c.Image,
-			Env:    getEnv(c.Env),
-			Volume: getVolumes(c.VolumeMounts),
+			Env:    &env,
+			Volume: &volumes,
 		})
 	}
 	return containers
 }
 
-func getVolumes(vList []v1.VolumeMount) []Volume {
-	var volumes []Volume
+func getVolumes(vList []v1.VolumeMount) []model.Volume {
+	var volumes []model.Volume
 	for _, v := range vList {
-		volumes = append(volumes, Volume{
+		volumes = append(volumes, model.Volume{
 			Name:      v.Name,
 			MountPath: v.MountPath,
-			SubPath:   v.SubPath,
+			SubPath:   &v.SubPath,
 		})
 	}
 	return volumes
 }
 
-func getEnv(eList []v1.EnvVar) []Env {
-	var envs []Env
+func getEnv(eList []v1.EnvVar) []model.Env {
+	var envs []model.Env
 	for _, e := range eList {
-		envs = append(envs, Env{
+		envs = append(envs, model.Env{
 			Name:  e.Name,
 			Value: e.Value,
 		})

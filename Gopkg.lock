@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "git.containerum.net/ch/kube-client"
+  packages = [".","pkg/cmd","pkg/model"]
+  revision = "d965e2820ef5d9114444c770d4b5f09e7044df90"
+
+[[projects]]
   name = "github.com/appleboy/gofight"
   packages = ["."]
   revision = "beadc315fb676177c07a89c34159b9ca4e1aafd9"
@@ -36,6 +42,12 @@
   name = "github.com/gin-gonic/gin"
   packages = [".","binding","json","render"]
   revision = "783c7ee9c14eac0e65b501664b4f553291556b43"
+
+[[projects]]
+  name = "github.com/go-resty/resty"
+  packages = ["."]
+  revision = "00cb083b8cdc8b0fb1e1f5ebe24bbc23e0ff0cf6"
+  version = "v1.2"
 
 [[projects]]
   name = "github.com/gogo/protobuf"
@@ -196,7 +208,7 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["http2","http2/hpack","idna","lex/httplex"]
+  packages = ["http2","http2/hpack","idna","lex/httplex","publicsuffix"]
   revision = "2fb46b16b8dda405028c50f7c7f0f9dd1fa6bfb1"
 
 [[projects]]
@@ -250,6 +262,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "66f43e5f82ec8e57ef1fabd167da12215db7d95fd279a61a3fe1f6684afe71df"
+  inputs-digest = "e03a939a8d28fac9ffd61df0f7fbca0957efe957773d6521e51e68593936f533"
   solver-name = "gps-cdcl"
   solver-version = 1

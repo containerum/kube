@@ -6,13 +6,14 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
+	json_types "git.containerum.net/ch/kube-client/pkg/model"
 
 	"fmt"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 
-	api_core "k8s.io/api/core/v1"
+	//	api_core "k8s.io/api/core/v1"
 	api_resource "k8s.io/apimachinery/pkg/api/resource"
 )
 
@@ -32,8 +33,8 @@ func getNamespaceList(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
 	}
-	nsList := model.ParseResourceQuotaList(quotas)
-	c.JSON(http.StatusOK, nsList)
+	ret := model.ParseResourceQuotaList(quotas)
+	c.JSON(http.StatusOK, ret)
 }
 
 func getNamespace(c *gin.Context) {
@@ -46,14 +47,14 @@ func getNamespace(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusNotFound, err.Error())
 		return
 	}
-	ns := model.ParseResourceQuota(quota)
-	c.JSON(http.StatusOK, ns)
+	ret := model.ParseResourceQuota(quota)
+	c.JSON(http.StatusOK, ret)
 }
 
 func сreateNamespace(c *gin.Context) {
 	log.Debug("Create namespace Call")
 
-	var ns *api_core.Namespace
+	var ns json_types.Namespace
 	if err := c.ShouldBindJSON(&ns); err != nil {
 		c.Error(err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
@@ -61,8 +62,6 @@ func сreateNamespace(c *gin.Context) {
 	}
 
 	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-
-	ns.Spec = api_core.NamespaceSpec{}
 
 	cpuq, err := api_resource.ParseQuantity(c.Query("cpu"))
 	if err != nil {
@@ -77,23 +76,28 @@ func сreateNamespace(c *gin.Context) {
 		return
 	}
 
-	nsAfter, err := kubecli.CreateNamespace(ns)
+	nsAfter, err := kubecli.CreateNamespace(&ns)
 	if err != nil {
-		log.Errorf(namespaceCreationError, ns.ObjectMeta.Name, err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf(namespaceCreationError, ns.ObjectMeta.Name, err.Error()))
+		log.Errorf(namespaceCreationError, ns.Name, err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf(namespaceCreationError, ns.Name, err.Error()))
 		return
 	}
 
 	quota := kubernetes.MakeResourceQuota(cpuq, memoryq)
-	err = kubecli.CreateNamespaceQuota(ns.Name, quota)
+	quota.Labels = nsAfter.Labels
+	quotaAfter, err := kubecli.CreateNamespaceQuota(ns.Name, quota)
 	if err != nil {
-		log.Errorf(namespaceQuotaCreationError, ns.ObjectMeta.Name, err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf(namespaceQuotaCreationError, ns.ObjectMeta.Name, err.Error()))
+		log.Errorf(namespaceQuotaCreationError, ns.Name, err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf(namespaceQuotaCreationError, ns.Name, err.Error()))
 		return
 	}
 
-	c.Set(m.ResponseObjectKey, nsAfter)
-	c.JSON(http.StatusCreated, nsAfter)
+	quotaAfter.Labels = nsAfter.Labels
+
+	ret := model.ParseResourceQuota(quotaAfter)
+
+	c.Set(m.ResponseObjectKey, ret)
+	c.JSON(http.StatusCreated, ret)
 }
 
 func deleteNamespace(c *gin.Context) {
@@ -124,8 +128,14 @@ func updateNamespace(c *gin.Context) {
 		return
 	}
 
-	quota := kubernetes.MakeResourceQuota(cpuq, memoryq)
+	quotaOld, err := kube.GetNamespaceQuota(c.Param(namespaceParam))
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusNotFound, err.Error())
+		return
+	}
 
+	quota := kubernetes.MakeResourceQuota(cpuq, memoryq)
+	quota.Labels = quotaOld.Labels
 	quotaAfter, err := kube.UpdateNamespaceQuota(c.Param(namespaceParam), quota)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())

@@ -5,8 +5,10 @@ import (
 )
 
 var (
-	ErrUnableGetNamespaceQuotaList = errors.New("Unable to get namespace list")
-	ErrUnableGetNamespaceQuota     = errors.New("Unable to get namespace")
+	ErrUnableGetNamespaceQuotaList = errors.New("Unable to get namespace quota list")
+	ErrUnableGetNamespaceQuota     = errors.New("Unable to get namespace quota")
+	ErrUnableGetNamespaceList = errors.New("Unable to get namespace list")
+	ErrUnableGetNamespace     = errors.New("Unable to get namespace")
 	ErrUnableCreateNamespace       = errors.New("Unable to create namespace")
 	ErrUnableCreateNamespaceQuota  = errors.New("Unable to create namespace quota")
 	ErrUnableUpdateNamespaceQuota  = errors.New("Unable to update namespace quota")
