@@ -13,17 +13,23 @@ import (
 	api_core "k8s.io/api/core/v1"
 )
 
-func getServiceList(c *gin.Context) {
-	log.WithField("Namespace", c.Query(namespaceParam)).Debug("Get services list Call")
-
-	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-
-	svc, err := kubecli.GetServiceList(c.Param(namespaceParam))
+func getServiceList(ctx *gin.Context) {
+	namespace := ctx.Param(namespaceParam)
+	log.WithFields(log.Fields{
+		"Namespace": namespace,
+	}).Debug("Get service list call")
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	nativeServices, err := kube.GetServiceList(namespace)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		ctx.AbortWithError(http.StatusNotFound, err)
 		return
 	}
-	c.JSON(http.StatusOK, svc)
+	services, err := model.ParseServiceList(nativeServices.(*api_core.ServiceList))
+	if err != nil {
+		ctx.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, services)
 }
 
 func createService(c *gin.Context) {
