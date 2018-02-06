@@ -13,7 +13,7 @@ var (
 )
 
 const (
-	serviceTypeExternal  = "external"
+	serviceTypeExternal = "external"
 	serviceTypeInternal = "internal"
 )
 
