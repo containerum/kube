@@ -3,15 +3,10 @@ package model
 import (
 	"encoding/base64"
 	"encoding/json"
-	"errors"
+
 	"git.containerum.net/ch/kube-client/pkg/model"
 
 	log "github.com/sirupsen/logrus"
-)
-
-var (
-	ErrUnableEncodeUserHeaderData    = errors.New("Unbale to encode user header data")
-	ErrUnableUnmarshalUserHeaderData = errors.New("Unable unmarshal user header data")
 )
 
 func ParseUserHeaderData(str string) (*model.UserHeaderData, error) {

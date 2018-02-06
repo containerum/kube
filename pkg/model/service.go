@@ -1,15 +1,8 @@
 package model
 
 import (
-	"errors"
-
 	kubeCoreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-)
-
-var (
-	ErrUnableConvertServiceList = errors.New("unable decode service list")
-	ErrUnableConvertService     = errors.New("unable convert cubernetes service to user representation")
 )
 
 // ServicePort is an user friendly service port representation

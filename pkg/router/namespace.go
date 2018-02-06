@@ -57,7 +57,7 @@ func сreateNamespace(c *gin.Context) {
 	var ns json_types.Namespace
 	if err := c.ShouldBindJSON(&ns); err != nil {
 		c.Error(err)
-		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
+		c.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 

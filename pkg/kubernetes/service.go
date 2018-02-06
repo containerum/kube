@@ -1,15 +1,9 @@
 package kubernetes
 
 import (
-	"errors"
-
 	log "github.com/sirupsen/logrus"
 	kubeCoreV1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
-
-var (
-	ErrUnableGetService = errors.New("Unable to get service")
 )
 
 // GetService returns Service with given name
