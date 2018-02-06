@@ -12,6 +12,11 @@ var (
 	ErrUnableConvertService     = errors.New("unable convert cubernetes service to user representation")
 )
 
+const (
+	serviceTypeExternal  = "external"
+	serviceTypeInternal = "internal"
+)
+
 // ServicePort is an user friendly service port representation
 // Name is DNS_LABEL
 // TargetPort is an int32 or IANA_SVC_NAME
@@ -37,12 +42,12 @@ func ServicePortFromNativeKubePort(nativePort kubeCoreV1.ServicePort) ServicePor
 // Service is an user friendly kebernetes service representation
 // CreatedAt is an unix timestamp
 type Service struct {
-	CreatedAt int64                  `json:"created_at"`
-	Deploy    string                 `json:"deploy"`
-	IP        []string               `json:"ip"`
-	Domain    string                 `json:"domain, omitempty"`
-	Type      kubeCoreV1.ServiceType `json:"type"`
-	Ports     []ServicePort          `json:"ports"`
+	CreatedAt int64         `json:"created_at"`
+	Deploy    string        `json:"deploy"`
+	IP        []string      `json:"ip"`
+	Domain    string        `json:"domain, omitempty"`
+	Type      string        `json:"type"`
+	Ports     []ServicePort `json:"ports"`
 }
 
 // ServiceFromNativeKubeService creates
@@ -54,10 +59,15 @@ func ServiceFromNativeKubeService(native *kubeCoreV1.Service) (*Service, error) 
 	service := &Service{
 		CreatedAt: native.GetCreationTimestamp().Unix(),
 		Deploy:    native.GetObjectMeta().GetLabels()["app"], // TODO: check if app key doesn't exists!
-		IP:        native.Spec.ExternalIPs,
-		Domain:    "", // TODO : add domain info!
-		Type:      native.Spec.Type,
+		Domain:    "",                                        // TODO : add domain info!
 		Ports:     make([]ServicePort, 0, 1),
+	}
+	if len(native.Spec.ExternalIPs) > 0 {
+		service.Type = serviceTypeExternal
+		service.IP = native.Spec.ExternalIPs
+	} else {
+		service.Type = serviceTypeInternal
+		service.IP = []string{}
 	}
 	for _, nativePort := range native.Spec.Ports {
 		service.Ports = append(service.Ports,
