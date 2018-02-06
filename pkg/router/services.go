@@ -27,7 +27,7 @@ func getServiceList(c *gin.Context) {
 }
 
 func createService(c *gin.Context) {
-	log.WithField("Service", c.Param(m.ServiceKey)).Debug("Create namespace Call")
+	log.WithField("Service", c.Param(m.ServiceKey)).Debug("Create service Call")
 
 	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 
@@ -75,4 +75,30 @@ func getService(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, service)
+}
+
+func updateService(ctx *gin.Context) {
+	serviceName := ctx.Param(serviceParam)
+	namespace := ctx.Param(namespaceParam)
+	log.WithFields(log.Fields{
+		"Namespace": namespace,
+		"Service":   serviceName,
+	}).Debug("Update service Call")
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	var service api_core.Service
+	if err := ctx.ShouldBindJSON(&service); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
+		return
+	}
+	if service.ObjectMeta.Namespace != namespace {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest,
+			fmt.Sprintf(namespaceNotMatchError, service.ObjectMeta.Namespace, namespace))
+	}
+	updatedService, err := kube.UpdateService(&service)
+	if err != nil {
+		ctx.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	ctx.JSON(http.StatusAccepted, updatedService)
 }
