@@ -45,6 +45,7 @@ func initRoutes(e *gin.Engine) {
 			service.GET("", getServiceList)
 			service.Use(m.IsAdmin()).POST("/", createService)
 			service.GET("/:service", getService)
+			service.Use(m.IsAdmin()).PUT("/:service", updateService)
 		}
 
 		deployment := namespace.Group("/:namespace/deployments")
