@@ -66,7 +66,7 @@ func getService(ctx *gin.Context) {
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	nativeService, err := kube.GetService(namespace, serviceName)
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.AbortWithError(http.StatusNotFound, err)
 		return
 	}
 	service, err := model.ServiceFromNativeKubeService(nativeService)
