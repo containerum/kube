@@ -4,8 +4,8 @@
 [[projects]]
   branch = "master"
   name = "git.containerum.net/ch/kube-client"
-  packages = [".","pkg/cmd","pkg/model"]
-  revision = "d965e2820ef5d9114444c770d4b5f09e7044df90"
+  packages = ["pkg/model"]
+  revision = "8864ed0339cb006c9594983e02e5a50201de4379"
 
 [[projects]]
   name = "github.com/appleboy/gofight"
@@ -42,12 +42,6 @@
   name = "github.com/gin-gonic/gin"
   packages = [".","binding","json","render"]
   revision = "783c7ee9c14eac0e65b501664b4f553291556b43"
-
-[[projects]]
-  name = "github.com/go-resty/resty"
-  packages = ["."]
-  revision = "00cb083b8cdc8b0fb1e1f5ebe24bbc23e0ff0cf6"
-  version = "v1.2"
 
 [[projects]]
   name = "github.com/gogo/protobuf"
@@ -208,7 +202,7 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["http2","http2/hpack","idna","lex/httplex","publicsuffix"]
+  packages = ["http2","http2/hpack","idna","lex/httplex"]
   revision = "2fb46b16b8dda405028c50f7c7f0f9dd1fa6bfb1"
 
 [[projects]]
@@ -250,8 +244,8 @@
 [[projects]]
   branch = "master"
   name = "k8s.io/apimachinery"
-  packages = ["pkg/api/errors","pkg/api/meta","pkg/api/resource","pkg/apis/meta/v1","pkg/apis/meta/v1/unstructured","pkg/apis/meta/v1alpha1","pkg/conversion","pkg/conversion/queryparams","pkg/fields","pkg/labels","pkg/runtime","pkg/runtime/schema","pkg/runtime/serializer","pkg/runtime/serializer/json","pkg/runtime/serializer/protobuf","pkg/runtime/serializer/recognizer","pkg/runtime/serializer/streaming","pkg/runtime/serializer/versioning","pkg/selection","pkg/types","pkg/util/clock","pkg/util/errors","pkg/util/framer","pkg/util/intstr","pkg/util/json","pkg/util/net","pkg/util/runtime","pkg/util/sets","pkg/util/validation","pkg/util/validation/field","pkg/util/wait","pkg/util/yaml","pkg/version","pkg/watch","third_party/forked/golang/reflect"]
-  revision = "b29a2d60548358f302231eeb5359d57ed9adebc2"
+  packages = ["pkg/api/errors","pkg/api/meta","pkg/api/resource","pkg/apis/meta/v1","pkg/apis/meta/v1/unstructured","pkg/apis/meta/v1beta1","pkg/conversion","pkg/conversion/queryparams","pkg/fields","pkg/labels","pkg/runtime","pkg/runtime/schema","pkg/runtime/serializer","pkg/runtime/serializer/json","pkg/runtime/serializer/protobuf","pkg/runtime/serializer/recognizer","pkg/runtime/serializer/streaming","pkg/runtime/serializer/versioning","pkg/selection","pkg/types","pkg/util/clock","pkg/util/errors","pkg/util/framer","pkg/util/intstr","pkg/util/json","pkg/util/net","pkg/util/runtime","pkg/util/sets","pkg/util/validation","pkg/util/validation/field","pkg/util/wait","pkg/util/yaml","pkg/version","pkg/watch","third_party/forked/golang/reflect"]
+  revision = "caa3b27b0fdaa84adc020cd7663afd62777ec9bd"
 
 [[projects]]
   name = "k8s.io/client-go"
@@ -262,6 +256,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e03a939a8d28fac9ffd61df0f7fbca0957efe957773d6521e51e68593936f533"
+  inputs-digest = "79cd5ace253e405f3e4084bc8880450fb47236e321bc2936168f2d723351b8ae"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -1,7 +1,7 @@
 package model
 
 type Pod struct {
-	Name            string            `json:"name"`
+	Name            string            `json:"name" binding:"required"`
 	Owner           *string           `json:"owner_id,omitempty"`
 	Containers      []Container       `json:"containers"`
 	ImagePullSecret map[string]string `json:"image_pull_secret,omitempty"`
@@ -14,9 +14,9 @@ type PodStatus struct {
 }
 
 type Container struct {
-	Name   string    `json:"name"`
+	Name   string    `json:"name" binding:"required"`
 	Env    *[]Env    `json:"env,omitempty"`
-	Image  string    `json:"image"`
+	Image  string    `json:"image" binding:"required"`
 	Volume *[]Volume `json:"volume,omitempty"`
 }
 
