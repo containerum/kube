@@ -1,13 +1,18 @@
 package model
 
 import (
-	"git.containerum.net/ch/kube-client/pkg/model"
-	v1 "k8s.io/api/apps/v1"
+	json_types "git.containerum.net/ch/kube-client/pkg/model"
+	"github.com/gin-gonic/gin/binding"
+	"gopkg.in/inf.v0"
+	api_apps "k8s.io/api/apps/v1"
+	api_core "k8s.io/api/core/v1"
+	api_resource "k8s.io/apimachinery/pkg/api/resource"
+	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func ParseDeploymentList(deploys interface{}) []model.Deployment {
-	objects := deploys.(*v1.DeploymentList)
-	var deployments []model.Deployment
+func ParseDeploymentList(deploys interface{}) []json_types.Deployment {
+	objects := deploys.(*api_apps.DeploymentList)
+	var deployments []json_types.Deployment
 	for _, deployment := range objects.Items {
 		deployment := ParseDeployment(&deployment)
 		deployments = append(deployments, deployment)
@@ -15,10 +20,11 @@ func ParseDeploymentList(deploys interface{}) []model.Deployment {
 	return deployments
 }
 
-func ParseDeployment(deployment interface{}) model.Deployment {
-	obj := deployment.(*v1.Deployment)
+func ParseDeployment(deployment interface{}) json_types.Deployment {
+	obj := deployment.(*api_apps.Deployment)
 	// var containers []Container
 	owner := obj.GetLabels()[ownerLabel]
+	volume := getDeploymentVolumes(obj.Spec.Template.Spec.Volumes)
 	replicas := 0
 	containers := getContainers(obj.Spec.Template.Spec.Containers)
 	updated := obj.ObjectMeta.CreationTimestamp.Unix()
@@ -30,11 +36,11 @@ func ParseDeployment(deployment interface{}) model.Deployment {
 			updated = t
 		}
 	}
-	return model.Deployment{
+	return json_types.Deployment{
 		Name:     obj.GetName(),
-		Owner:    &owner,
+		Owner:    owner,
 		Replicas: replicas,
-		Status: &model.DeploymentStatus{
+		Status: &json_types.DeploymentStatus{
 			Created:             obj.ObjectMeta.CreationTimestamp.Unix(),
 			Updated:             updated,
 			Replicas:            int(obj.Status.Replicas),
@@ -43,7 +49,147 @@ func ParseDeployment(deployment interface{}) model.Deployment {
 			UpdatedReplicas:     int(obj.Status.UpdatedReplicas),
 			UnavailableReplicas: int(obj.Status.UnavailableReplicas),
 		},
-		Containers: containers,
+		Containers: &containers,
 		Hostname:   &obj.Spec.Template.Spec.Hostname,
+		Volume:     &volume,
 	}
+}
+
+func BuildDeployment(depl *json_types.Deployment, containers []api_core.Container) (*api_apps.Deployment, error) {
+	var newDepl api_apps.Deployment
+
+	//Adding deployment volumes
+	var deplVolumes []api_core.Volume
+
+	if depl.Volume != nil {
+		for _, v := range *depl.Volume {
+			err := binding.Validator.ValidateStruct(v)
+			if err != nil {
+				return nil, err
+			}
+
+			var vs api_core.VolumeSource
+			vs.Glusterfs = &api_core.GlusterfsVolumeSource{}
+			vs.Glusterfs.EndpointsName = v.GlusterFS.Endpoint
+			vs.Glusterfs.Path = v.GlusterFS.Path
+			deplVolumes = append(deplVolumes, api_core.Volume{Name: v.Name, VolumeSource: vs})
+		}
+	}
+
+	repl := int32(depl.Replicas)
+
+	newDepl.ObjectMeta.Name = depl.Name
+	newDepl.ObjectMeta.Labels = map[string]string{"app": depl.Name, "owner": depl.Owner}
+	newDepl.Spec.Selector = &api_meta.LabelSelector{MatchLabels: map[string]string{"app": depl.Name, "owner": depl.Owner}}
+	newDepl.Spec.Replicas = &repl
+	newDepl.Spec.Template.ObjectMeta.Labels = map[string]string{"app": depl.Name, "owner": depl.Owner}
+	newDepl.Spec.Template.Spec.Containers = containers
+	newDepl.Spec.Template.Spec.Volumes = deplVolumes
+	newDepl.Spec.Template.Spec.NodeSelector = map[string]string{"role": "slave"}
+
+	return &newDepl, nil
+}
+
+func BuildContainers(containers []json_types.Container) ([]api_core.Container, error) {
+	var containersAfter []api_core.Container
+	for _, container := range containers {
+		err := binding.Validator.ValidateStruct(container)
+		if err != nil {
+			return nil, err
+		}
+
+		parsedContainer, err := BuildContainer(container)
+		if err != nil {
+			return nil, err
+		}
+		containersAfter = append(containersAfter, *parsedContainer)
+	}
+	if len(containersAfter) == 0 {
+		return nil, ErrNoContainerInRequest
+	}
+	return containersAfter, nil
+}
+
+const requestCoeffUnscaled = 5
+const requestCoeffScale = 1
+
+func BuildContainer(container json_types.Container) (*api_core.Container, error) {
+	//Adding mounted volumes
+	var mounts []api_core.VolumeMount
+	if container.Volume != nil {
+		for _, v := range *container.Volume {
+			err := binding.Validator.ValidateStruct(v)
+			if err != nil {
+				return nil, err
+			}
+
+			var subpath string
+			if v.SubPath != nil {
+				subpath = *v.SubPath
+			}
+			mounts = append(mounts, api_core.VolumeMount{Name: v.Name, MountPath: v.MountPath, SubPath: subpath})
+		}
+	}
+
+	//Adding enviroment variables
+	var env []api_core.EnvVar
+	if container.Env != nil {
+		for _, v := range *container.Env {
+			err := binding.Validator.ValidateStruct(v)
+			if err != nil {
+				return nil, err
+			}
+			env = append(env, api_core.EnvVar{Name: v.Name, Value: v.Value})
+		}
+	}
+
+	//Adding ports
+	var ports []api_core.ContainerPort
+	if container.Ports != nil {
+		for _, v := range *container.Ports {
+			err := binding.Validator.ValidateStruct(v)
+			if err != nil {
+				return nil, err
+			}
+
+			var name string
+			if v.Name != nil {
+				name = *v.Name
+			}
+			ports = append(ports, api_core.ContainerPort{ContainerPort: v.Port, Protocol: api_core.Protocol(v.Protocol), Name: name})
+		}
+	}
+
+	limits := make(map[api_core.ResourceName]api_resource.Quantity)
+
+	var err error
+	limits["cpu"], err = api_resource.ParseQuantity(container.Limits.CPU)
+	if err != nil {
+		return nil, ErrInvalidCPUFormat
+	}
+	limits["memory"], err = api_resource.ParseQuantity(container.Limits.Memory)
+	if err != nil {
+		return nil, ErrInvalidMemoryFormat
+	}
+
+	requests := make(map[api_core.ResourceName]api_resource.Quantity)
+	reqCPU := limits["cpu"]
+	reqMem := limits["memory"]
+
+	//TODO Think how to divide Quantity values in adequate way
+	requests["cpu"] = *api_resource.NewScaledQuantity(reqCPU.AsDec().Mul(reqCPU.AsDec(), inf.NewDec(requestCoeffUnscaled, requestCoeffScale)).UnscaledBig().Int64(), api_resource.Scale(0-reqCPU.AsDec().Scale()))
+	requests["memory"] = *api_resource.NewScaledQuantity(reqMem.AsDec().Mul(reqMem.AsDec(), inf.NewDec(requestCoeffUnscaled, requestCoeffScale)).UnscaledBig().Int64(), api_resource.Scale(0-reqMem.AsDec().Scale()))
+
+	return &api_core.Container{
+		Name:         container.Name,
+		Image:        container.Image,
+		VolumeMounts: mounts,
+		Env:          env,
+		Ports:        ports,
+		Resources: api_core.ResourceRequirements{
+			Limits:   limits,
+			Requests: requests,
+		},
+		Command: *container.Command,
+	}, nil
 }

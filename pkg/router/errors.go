@@ -7,12 +7,14 @@ const (
 )
 
 const (
-	requestNotService           = "Request is not a Service request"
-	requestNotNamespace         = "Request is not a Namespace request"
-	invalidCPUFormat            = "Invalid cpu quota format: %v"
-	invalidMemoryFormat         = "Invalid memory quota format: %v"
-	namespaceCreationError      = "Namespace %v creation error: %v"
-	namespaceQuotaCreationError = "Namespace %v quota creation error: %v"
-	namespaceNotMatchError      = "Namespace %v does not match namespace %v in deployment"
-	serviceCreationError        = "Service %v creation error: %v"
+	invalidCPUFormat            = "Invalid cpu quota format: %s"
+	invalidMemoryFormat         = "Invalid memory quota format: %s"
+	namespaceCreationError      = "Namespace %s creation error: %s"
+	namespaceQuotaCreationError = "Namespace %s quota creation error: %s"
+	namespaceNotMatchError      = "Namespace %s does not match namespace %s in deployment"
+	serviceCreationError        = "Service %s creation error: %s"
+	deploymentCreationError     = "Deployment %s creation error: %s"
+	deploymentUpdateError       = "Deployment %s update error: %s"
+	invalidUpdateDeploymentName = "Deployment name in URI (%s) does not match deployment name in deployment (%s)"
+	containerNotFoundError      = "Container %s is not found in deployment %s"
 )

@@ -41,6 +41,20 @@ func (kube *Kube) CreateService(svc *kubeCoreV1.Service) (*kubeCoreV1.Service, e
 	return svcAfter, nil
 }
 
+func (kube *Kube) DeleteService(namespace, serviceName string) error {
+	err := kube.CoreV1().Services(namespace).
+		Delete(serviceName, &meta_v1.DeleteOptions{})
+	if err != nil {
+		log.WithError(err).
+			WithFields(log.Fields{
+				"Namespace": namespace,
+				"Service":   serviceName,
+			}).Error(err)
+		return err
+	}
+	return nil
+}
+
 func (kube *Kube) UpdateService(service *kubeCoreV1.Service) (*kubeCoreV1.Service, error) {
 	newService, err := kube.CoreV1().
 		Services(service.ObjectMeta.Namespace).

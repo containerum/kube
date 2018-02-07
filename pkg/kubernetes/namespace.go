@@ -4,7 +4,6 @@ import (
 	json_types "git.containerum.net/ch/kube-client/pkg/model"
 	log "github.com/sirupsen/logrus"
 	api_core "k8s.io/api/core/v1"
-	api_resource "k8s.io/apimachinery/pkg/api/resource"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -12,7 +11,7 @@ const (
 	quotaName = "quota"
 )
 
-func (k *Kube) GetNamespaceQuotaList(owner string) (interface{}, error) {
+func (k *Kube) GetNamespaceQuotaList(owner string) (*api_core.ResourceQuotaList, error) {
 	quotas, err := k.CoreV1().ResourceQuotas("").List(api_meta.ListOptions{
 		LabelSelector: getOwnerLabel(owner),
 	})
@@ -33,19 +32,17 @@ func (k *Kube) GetNamespaceQuota(ns string) (*api_core.ResourceQuota, error) {
 }
 
 func (k *Kube) CreateNamespace(ns *json_types.Namespace) (*api_core.Namespace, error) {
-	newReq := api_core.Namespace{
-		Spec: api_core.NamespaceSpec{},
-	}
+	newNs := api_core.Namespace{}
 
-	newReq.Spec = api_core.NamespaceSpec{}
-	newReq.ObjectMeta.Name = ns.Name
-	newReq.ObjectMeta.Labels = make(map[string]string)
-	newReq.ObjectMeta.Labels["name"] = ns.Name
+	newNs.Spec = api_core.NamespaceSpec{}
+	newNs.ObjectMeta.Name = ns.Name
+	newNs.ObjectMeta.Labels = make(map[string]string)
+	newNs.ObjectMeta.Labels["name"] = ns.Name
 	if ns.Owner != nil {
-		newReq.ObjectMeta.Labels["owner"] = *ns.Owner
+		newNs.ObjectMeta.Labels["owner"] = *ns.Owner
 	}
 
-	nsAfter, err := k.CoreV1().Namespaces().Create(&newReq)
+	nsAfter, err := k.CoreV1().Namespaces().Create(&newNs)
 	if err != nil {
 		log.WithError(err).WithField("Namespace", ns.Name).Error(ErrUnableCreateNamespace)
 		return nil, err
@@ -84,17 +81,4 @@ func (k *Kube) DeleteNamespace(nsName string) error {
 		return err
 	}
 	return nil
-}
-
-func MakeResourceQuota(cpu, memory api_resource.Quantity) *api_core.ResourceQuota {
-	return &api_core.ResourceQuota{
-		Spec: api_core.ResourceQuotaSpec{
-			Hard: api_core.ResourceList{
-				api_core.ResourceRequestsCPU:    cpu,
-				api_core.ResourceLimitsCPU:      cpu,
-				api_core.ResourceRequestsMemory: memory,
-				api_core.ResourceLimitsMemory:   memory,
-			},
-		},
-	}
 }

@@ -12,7 +12,7 @@ type BindError struct {
 }
 
 //ParseBindErorrs parses errors from message content binding
-func ParseBindErorrs(in error) []BindError {
+func ParseErorrs(in error) []BindError {
 	var out []BindError
 
 	t, isValidationError := in.(validator.ValidationErrors)

@@ -8,22 +8,29 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
 
 	api_core "k8s.io/api/core/v1"
 )
 
-func getServiceList(c *gin.Context) {
-	log.WithField("Namespace", c.Query(namespaceParam)).Debug("Get services list Call")
-
-	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-
-	svc, err := kubecli.GetServiceList(c.Param(namespaceParam))
+func getServiceList(ctx *gin.Context) {
+	namespace := ctx.Param(namespaceParam)
+	log.WithFields(log.Fields{
+		"Namespace": namespace,
+	}).Debug("Get service list call")
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	nativeServices, err := kube.GetServiceList(namespace)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		ctx.AbortWithError(http.StatusNotFound, err)
 		return
 	}
-	c.JSON(http.StatusOK, svc)
+	services, err := model.ParseServiceList(nativeServices.(*api_core.ServiceList))
+	if err != nil {
+		ctx.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, services)
 }
 
 func createService(c *gin.Context) {
@@ -34,7 +41,7 @@ func createService(c *gin.Context) {
 	nsname := c.Param(namespaceParam)
 
 	var svc *api_core.Service
-	if err := c.ShouldBindJSON(&svc); err != nil {
+	if err := c.ShouldBindWith(&svc, binding.JSON); err != nil {
 		c.Error(err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, err)
 		return
@@ -66,7 +73,7 @@ func getService(ctx *gin.Context) {
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	nativeService, err := kube.GetService(namespace, serviceName)
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.AbortWithError(http.StatusNotFound, err)
 		return
 	}
 	service, err := model.ServiceFromNativeKubeService(nativeService)
@@ -75,6 +82,22 @@ func getService(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, service)
+}
+
+func deleteService(ctx *gin.Context) {
+	namespace := ctx.Param(namespaceParam)
+	serviceName := ctx.Param(serviceParam)
+	log.WithFields(log.Fields{
+		"Namespace": namespace,
+		"Service":   serviceName,
+	}).Debug("Delete service call")
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	err := kube.DeleteService(namespace, serviceName)
+	if err != nil {
+		ctx.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	ctx.Status(http.StatusOK)
 }
 
 func updateService(ctx *gin.Context) {
@@ -86,7 +109,7 @@ func updateService(ctx *gin.Context) {
 	}).Debug("Update service Call")
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	var service api_core.Service
-	if err := ctx.ShouldBindJSON(&service); err != nil {
+	if err := ctx.ShouldBindWith(&service, binding.JSON); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
 		return

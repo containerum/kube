@@ -2,14 +2,15 @@ package router
 
 import (
 	"net/http"
-	"time"
 
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
-	"github.com/gin-gonic/contrib/ginrus"
-	"github.com/sirupsen/logrus"
 
+	"time"
+
+	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 func CreateRouter(kube *kubernetes.Kube, debug bool) http.Handler {
@@ -34,16 +35,16 @@ func initRoutes(e *gin.Engine) {
 	})
 	namespace := e.Group("/namespaces")
 	{
-		namespace.GET("", getNamespaceList)
+		namespace.Use(m.IsAdmin()).GET("", getNamespaceList)
 		namespace.Use(m.IsAdmin()).POST("", сreateNamespace)
-		namespace.GET("/:namespace", getNamespace)
+		namespace.Use(m.IsAdmin()).GET("/:namespace", getNamespace)
 		namespace.Use(m.IsAdmin()).DELETE("/:namespace", deleteNamespace)
 		namespace.Use(m.IsAdmin()).PUT("/:namespace", updateNamespace)
 
 		service := namespace.Group("/:namespace/services")
 		{
 			service.GET("", getServiceList)
-			service.Use(m.IsAdmin()).POST("/", createService)
+			service.POST("/", createService)
 			service.GET("/:service", getService)
 			service.Use(m.IsAdmin()).PUT("/:service", updateService)
 		}
@@ -52,6 +53,11 @@ func initRoutes(e *gin.Engine) {
 		{
 			deployment.GET("", getDeploymentList)
 			deployment.GET("/:deployment", getDeployment)
+			deployment.POST("", createDeployment)
+			deployment.PUT("/:deployment", updateDeployment)
+			deployment.PUT("/:deployment/replicas", updateDeploymentReplicas)
+			deployment.PUT("/:deployment/image", updateDeploymentImage)
+			deployment.DELETE("/:deployment", deleteDeployment)
 		}
 		pod := namespace.Group("/:namespace/pods")
 		{
