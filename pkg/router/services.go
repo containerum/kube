@@ -8,6 +8,7 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
 
 	api_core "k8s.io/api/core/v1"
@@ -40,7 +41,7 @@ func createService(c *gin.Context) {
 	nsname := c.Param(namespaceParam)
 
 	var svc *api_core.Service
-	if err := c.ShouldBindJSON(&svc); err != nil {
+	if err := c.ShouldBindWith(&svc, binding.JSON); err != nil {
 		c.Error(err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, err)
 		return
@@ -108,7 +109,7 @@ func updateService(ctx *gin.Context) {
 	}).Debug("Update service Call")
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	var service api_core.Service
-	if err := ctx.ShouldBindJSON(&service); err != nil {
+	if err := ctx.ShouldBindWith(&service, binding.JSON); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
 		return

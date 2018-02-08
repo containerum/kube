@@ -43,6 +43,7 @@ func initRoutes(e *gin.Engine) {
 		service := namespace.Group("/:namespace/services")
 		{
 			service.GET("", getServiceList)
+			service.POST("/", createService)
 			service.GET("/:service", getService)
 			service.Use(m.IsAdmin()).POST("/", createService)
 			service.Use(m.IsAdmin()).DELETE("/:service", deleteService)
@@ -53,6 +54,11 @@ func initRoutes(e *gin.Engine) {
 		{
 			deployment.GET("", getDeploymentList)
 			deployment.GET("/:deployment", getDeployment)
+			deployment.POST("", createDeployment)
+			deployment.PUT("/:deployment", updateDeployment)
+			deployment.PUT("/:deployment/replicas", updateDeploymentReplicas)
+			deployment.PUT("/:deployment/image", updateDeploymentImage)
+			deployment.DELETE("/:deployment", deleteDeployment)
 		}
 		pod := namespace.Group("/:namespace/pods")
 		{

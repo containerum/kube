@@ -19,6 +19,9 @@ var (
 
 	ErrUnableGetDeploymentList = errors.New("Unable to get deployment list")
 	ErrUnableGetDeployment     = errors.New("Unable to get deployment")
+	ErrUnableCreateDeployment  = errors.New("Unable to create deployment")
+	ErrUnableUpdateDeployment  = errors.New("Unable to update deployment")
+	ErrUnableDeleteDeployment  = errors.New("Unable to delete deployment")
 
 	ErrUnableGetPodList = errors.New("Unable to get pod list")
 	ErrUnableGetPod     = errors.New("Unable to get pod")
