@@ -16,8 +16,8 @@ func MakeSecret(nsName string, secret json_types.Secret) *api_core.Secret {
 	newSecret.APIVersion = "v1"
 	newSecret.Data = newData
 	newSecret.Type = "Opaque"
-	newSecret.ObjectMeta.Name = secret.Name
-	newSecret.ObjectMeta.Namespace = nsName
+	newSecret.SetName(secret.Name)
+	newSecret.SetNamespace(nsName)
 
 	return &newSecret
 }

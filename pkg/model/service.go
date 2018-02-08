@@ -1,7 +1,10 @@
 package model
 
 import (
-	kubeCoreV1 "k8s.io/api/core/v1"
+	json_types "git.containerum.net/ch/kube-client/pkg/model"
+	api_core "k8s.io/api/core/v1"
+
+	"github.com/gin-gonic/gin/binding"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
@@ -10,50 +13,34 @@ const (
 	serviceTypeInternal = "internal"
 )
 
-// ServicePort is an user friendly service port representation
-// Name is DNS_LABEL
-// TargetPort is an int32 or IANA_SVC_NAME
-// Protocol is TCP or UDP
-type ServicePort struct {
-	Name       string              `json:"name"`
-	Port       uint32              `json:"port"`
-	TargetPort intstr.IntOrString  `json:"target_port"`
-	Protocol   kubeCoreV1.Protocol `json:"protocol"`
-}
-
-// ServicePortFromNativeKubePort converts native
+// ParseServicePort converts native
 // cubernetes service port representation to user friendly ServicePort struct
-func ServicePortFromNativeKubePort(nativePort kubeCoreV1.ServicePort) ServicePort {
-	return ServicePort{
+func ParseServicePort(nativePort api_core.ServicePort) json_types.ServicePort {
+	targetPort := int(nativePort.TargetPort.IntVal)
+	return json_types.ServicePort{
 		Name:       nativePort.Name,
-		Port:       uint32(nativePort.Port),
-		TargetPort: nativePort.TargetPort,
-		Protocol:   nativePort.Protocol,
+		Port:       int(nativePort.Port),
+		TargetPort: targetPort,
+		Protocol:   json_types.Protocol(nativePort.Protocol),
 	}
 }
 
-// Service is an user friendly kebernetes service representation
-// CreatedAt is an unix timestamp
-type Service struct {
-	CreatedAt int64         `json:"created_at"`
-	Deploy    string        `json:"deploy"`
-	IP        []string      `json:"ip"`
-	Domain    string        `json:"domain, omitempty"`
-	Type      string        `json:"type"`
-	Ports     []ServicePort `json:"ports"`
-}
-
-// ServiceFromNativeKubeService creates
+// ParseService creates
 // user friendly service representation
-func ServiceFromNativeKubeService(native *kubeCoreV1.Service) (*Service, error) {
+func ParseService(native *api_core.Service) (*json_types.Service, error) {
 	if native == nil {
 		return nil, ErrUnableConvertService
 	}
-	service := &Service{
+
+	ports := make([]json_types.ServicePort, 0, 1)
+
+	service := &json_types.Service{
+		Name:      native.Name,
 		CreatedAt: native.GetCreationTimestamp().Unix(),
 		Deploy:    native.GetObjectMeta().GetLabels()["app"], // TODO: check if app key doesn't exists!
 		Domain:    "",                                        // TODO : add domain info!
-		Ports:     make([]ServicePort, 0, 1),
+		Ports:     ports,
+		Owner:     native.GetObjectMeta().GetLabels()["owner"],
 	}
 	if len(native.Spec.ExternalIPs) > 0 {
 		service.Type = serviceTypeExternal
@@ -64,21 +51,43 @@ func ServiceFromNativeKubeService(native *kubeCoreV1.Service) (*Service, error) 
 	}
 	for _, nativePort := range native.Spec.Ports {
 		service.Ports = append(service.Ports,
-			ServicePortFromNativeKubePort(nativePort))
+			ParseServicePort(nativePort))
 	}
 	return service, nil
 }
 
-func ParseServiceList(nativeServices *kubeCoreV1.ServiceList) ([]Service, error) {
+func ParseServiceList(nativeServices *api_core.ServiceList) ([]json_types.Service, error) {
 	if nativeServices == nil {
 		return nil, ErrUnableConvertServiceList
 	}
-	serviceList := make([]Service, 0, nativeServices.Size())
+	serviceList := make([]json_types.Service, 0, nativeServices.Size())
 	for _, nativeService := range nativeServices.Items {
 		// error can be ignored because ServiceList provides
 		// Service stucts by values
-		service, _ := ServiceFromNativeKubeService(&nativeService)
+		service, _ := ParseService(&nativeService)
 		serviceList = append(serviceList, *service)
 	}
 	return serviceList, nil
+}
+
+func MakeService(nsName string, service *json_types.Service) (*api_core.Service, error) {
+	var ports []api_core.ServicePort
+	if service.Ports != nil {
+		for _, v := range service.Ports {
+			err := binding.Validator.ValidateStruct(v)
+			if err != nil {
+				return nil, err
+			}
+			ports = append(ports, api_core.ServicePort{Name: v.Name, Protocol: api_core.Protocol(v.Protocol), Port: int32(v.Port), TargetPort: intstr.FromInt(v.TargetPort)})
+		}
+	}
+
+	var newService api_core.Service
+	newService.Spec.Selector = map[string]string{"app": service.Deploy, "owner": service.Owner}
+	newService.SetLabels(map[string]string{"app": service.Deploy, "owner": service.Owner})
+	newService.Spec.Ports = ports
+	newService.Spec.ExternalIPs = service.IP
+	newService.SetName(service.Name)
+	newService.SetNamespace(nsName)
+	return &newService, nil
 }
