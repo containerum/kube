@@ -53,19 +53,19 @@ func initRoutes(e *gin.Engine) {
 		{
 			deployment.GET("", getDeploymentList)
 			deployment.GET("/:deployment", getDeployment)
-			deployment.POST("", createDeployment)
-			deployment.PUT("/:deployment", updateDeployment)
-			deployment.PUT("/:deployment/replicas", updateDeploymentReplicas)
-			deployment.PUT("/:deployment/image", updateDeploymentImage)
-			deployment.DELETE("/:deployment", deleteDeployment)
+			deployment.Use(m.IsAdmin()).POST("", createDeployment)
+			deployment.Use(m.IsAdmin()).PUT("/:deployment", updateDeployment)
+			deployment.Use(m.IsAdmin()).PUT("/:deployment/replicas", updateDeploymentReplicas)
+			deployment.Use(m.IsAdmin()).PUT("/:deployment/image", updateDeploymentImage)
+			deployment.Use(m.IsAdmin()).DELETE("/:deployment", deleteDeployment)
 		}
 
 		secret := namespace.Group("/:namespace/secrets")
 		{
 			secret.GET("", getSecretList)
 			secret.GET("/:secret", getSecret)
-			secret.POST("", createSecret)
-			secret.DELETE("/:secret", deleteSecret)
+			secret.Use(m.IsAdmin()).POST("", createSecret)
+			secret.Use(m.IsAdmin()).DELETE("/:secret", deleteSecret)
 		}
 
 		pod := namespace.Group("/:namespace/pods")
