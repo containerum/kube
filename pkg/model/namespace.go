@@ -55,3 +55,18 @@ func MakeResourceQuota(cpu, memory api_resource.Quantity) *api_core.ResourceQuot
 		},
 	}
 }
+
+func MakeNamespace(ns json_types.Namespace) *api_core.Namespace {
+	newNs := api_core.Namespace{}
+	newNs.Kind = "Namespace"
+	newNs.APIVersion = "v1"
+	newNs.Spec = api_core.NamespaceSpec{}
+	newNs.ObjectMeta.Name = ns.Name
+	newNs.ObjectMeta.Labels = make(map[string]string)
+	newNs.ObjectMeta.Labels["name"] = ns.Name
+	if ns.Owner != nil {
+		newNs.ObjectMeta.Labels["owner"] = *ns.Owner
+	}
+
+	return &newNs
+}

@@ -12,12 +12,7 @@ const (
 
 	KubeClient = "kubernetes-client"
 
-	RequestObjectKey  = "requestObject"
-	ResponseObjectKey = "responseObject"
-	NamespaceKey      = "namespace"
-	ServiceKey        = "service"
-	ObjectNameKey     = "objectName"
-	KubeClientKey     = "kubeclient"
+	ServiceKey = "service"
 )
 
 func RegisterKubeClient(kube *kubernetes.Kube) gin.HandlerFunc {

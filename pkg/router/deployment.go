@@ -56,34 +56,30 @@ func createDeployment(c *gin.Context) {
 
 	var depl json_types.Deployment
 	if err := c.ShouldBindWith(&depl, binding.JSON); err != nil {
-		c.Error(err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, ParseErorrs(err))
 		return
 	}
 
 	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	contaiers, err := model.BuildContainers(*depl.Containers)
+	contaiers, err := model.MakeContainers(*depl.Containers)
 	if err != nil {
-		log.Errorf(deploymentCreationError, depl.Name, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, ParseErorrs(err))
 		return
 	}
 
-	newDepl, err := model.BuildDeployment(&depl, contaiers)
+	newDepl, err := model.MakeDeployment(c.Param(namespaceParam), &depl, contaiers)
 	if err != nil {
-		log.Errorf(deploymentCreationError, depl.Name, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, ParseErorrs(err))
 		return
 	}
 
 	deplAfter, err := kubecli.CreateDeployment(c.Param(namespaceParam), newDepl)
 	if err != nil {
-		log.Errorf(deploymentCreationError, depl.Name, err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, ParseErorrs(errors.New(fmt.Sprintf(deploymentCreationError, depl.Name, err))))
+		c.AbortWithStatusJSON(http.StatusInternalServerError, ParseErorrs(err))
 		return
 	}
-	c.JSON(http.StatusOK, deplAfter)
+	c.JSON(http.StatusCreated, deplAfter)
 }
 
 func deleteDeployment(c *gin.Context) {
@@ -121,27 +117,25 @@ func updateDeployment(c *gin.Context) {
 
 	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	contaiers, err := model.BuildContainers(*depl.Containers)
+	contaiers, err := model.MakeContainers(*depl.Containers)
 	if err != nil {
-		log.Errorf(deploymentUpdateError, depl.Name, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, ParseErorrs(err))
 		return
 	}
 
-	newDepl, err := model.BuildDeployment(&depl, contaiers)
+	newDepl, err := model.MakeDeployment(c.Param(namespaceParam), &depl, contaiers)
 	if err != nil {
-		log.Errorf(deploymentUpdateError, depl.Name, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, ParseErorrs(err))
 		return
 	}
 
 	deplAfter, err := kubecli.UpdateDeployment(c.Param(namespaceParam), newDepl)
 	if err != nil {
-		log.Errorf(deploymentUpdateError, depl.Name, err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, ParseErorrs(errors.New(fmt.Sprintf(deploymentUpdateError, depl.Name, err))))
+		c.AbortWithStatusJSON(http.StatusInternalServerError, ParseErorrs(err))
 		return
 	}
-	c.JSON(http.StatusOK, deplAfter)
+
+	c.JSON(http.StatusAccepted, deplAfter)
 }
 
 func updateDeploymentReplicas(c *gin.Context) {
@@ -151,7 +145,6 @@ func updateDeploymentReplicas(c *gin.Context) {
 	}).Debug("Update deployment replicas Call")
 	var replicas json_types.UpdateReplicas
 	if err := c.ShouldBindWith(&replicas, binding.JSON); err != nil {
-		c.Error(err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, ParseErorrs(err))
 		return
 	}
@@ -167,8 +160,7 @@ func updateDeploymentReplicas(c *gin.Context) {
 
 	deplAfter, err := kube.UpdateDeployment(c.Param(namespaceParam), deployment)
 	if err != nil {
-		log.Errorf(deploymentUpdateError, deployment.Name, err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, ParseErorrs(errors.New(fmt.Sprintf(deploymentUpdateError, deployment.Name, err))))
+		c.AbortWithStatusJSON(http.StatusInternalServerError, ParseErorrs(err))
 		return
 	}
 
@@ -205,15 +197,13 @@ func updateDeploymentImage(c *gin.Context) {
 	}
 
 	if updated == false {
-		log.Errorf(containerNotFoundError, image.ContainerName, deployment.Name)
 		c.AbortWithStatusJSON(http.StatusNotFound, ParseErorrs(errors.New(fmt.Sprintf(containerNotFoundError, image.ContainerName, deployment.Name))))
 		return
 	}
 
 	deplAfter, err := kube.UpdateDeployment(c.Param(namespaceParam), deployment)
 	if err != nil {
-		log.Errorf(deploymentUpdateError, deployment.Name, err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, ParseErorrs(errors.New(fmt.Sprintf(deploymentUpdateError, deployment.Name, err))))
+		c.AbortWithStatusJSON(http.StatusInternalServerError, ParseErorrs(err))
 		return
 	}
 
