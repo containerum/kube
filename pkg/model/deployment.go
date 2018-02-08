@@ -10,6 +10,9 @@ import (
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const requestCoeffUnscaled = 5
+const requestCoeffScale = 1
+
 func ParseDeploymentList(deploys interface{}) []json_types.Deployment {
 	objects := deploys.(*api_apps.DeploymentList)
 	var deployments []json_types.Deployment
@@ -109,9 +112,6 @@ func BuildContainers(containers []json_types.Container) ([]api_core.Container, e
 	}
 	return containersAfter, nil
 }
-
-const requestCoeffUnscaled = 5
-const requestCoeffScale = 1
 
 func BuildContainer(container json_types.Container) (*api_core.Container, error) {
 	//Adding mounted volumes

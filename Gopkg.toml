@@ -22,7 +22,7 @@
 
 
 [[constraint]]
-  branch = "master"
+  branch = "develop"
   name = "git.containerum.net/ch/kube-client"
 
 [[constraint]]
