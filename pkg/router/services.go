@@ -59,8 +59,7 @@ func createService(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusAccepted)
-	c.Set(m.ResponseObjectKey, svcAfter)
+	c.JSON(http.StatusAccepted, svcAfter)
 }
 
 func getService(ctx *gin.Context) {

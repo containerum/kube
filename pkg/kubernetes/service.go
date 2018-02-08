@@ -2,17 +2,17 @@ package kubernetes
 
 import (
 	log "github.com/sirupsen/logrus"
-	kubeCoreV1 "k8s.io/api/core/v1"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	api_core "k8s.io/api/core/v1"
+	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // GetService returns Service with given name
 // from provided namespace.
 // In case of trouble returns ErrUnableGetService
-func (kube *Kube) GetService(namespace, serviceName string) (*kubeCoreV1.Service, error) {
+func (kube *Kube) GetService(namespace, serviceName string) (*api_core.Service, error) {
 	nativeService, err := kube.CoreV1().
 		Services(namespace).
-		Get(serviceName, meta_v1.GetOptions{})
+		Get(serviceName, api_meta.GetOptions{})
 	if err != nil {
 		log.WithError(err).WithFields(log.Fields{
 			"Namespace": namespace,
@@ -24,7 +24,7 @@ func (kube *Kube) GetService(namespace, serviceName string) (*kubeCoreV1.Service
 }
 
 func (kube *Kube) GetServiceList(nsname string) (interface{}, error) {
-	svcAfter, err := kube.CoreV1().Services(nsname).List(meta_v1.ListOptions{})
+	svcAfter, err := kube.CoreV1().Services(nsname).List(api_meta.ListOptions{})
 	if err != nil {
 		log.WithError(err).WithField("Namespace", nsname).Error(ErrUnableGetServiceList)
 		return nil, ErrUnableGetServiceList
@@ -32,7 +32,7 @@ func (kube *Kube) GetServiceList(nsname string) (interface{}, error) {
 	return svcAfter, nil
 }
 
-func (kube *Kube) CreateService(svc *kubeCoreV1.Service) (*kubeCoreV1.Service, error) {
+func (kube *Kube) CreateService(svc *api_core.Service) (*api_core.Service, error) {
 	svcAfter, err := kube.CoreV1().Services(svc.ObjectMeta.Namespace).Create(svc)
 	if err != nil {
 		log.WithError(err).WithField("Namespace", svc.Name).Error(ErrUnableCreateService)
@@ -43,7 +43,7 @@ func (kube *Kube) CreateService(svc *kubeCoreV1.Service) (*kubeCoreV1.Service, e
 
 func (kube *Kube) DeleteService(namespace, serviceName string) error {
 	err := kube.CoreV1().Services(namespace).
-		Delete(serviceName, &meta_v1.DeleteOptions{})
+		Delete(serviceName, &api_meta.DeleteOptions{})
 	if err != nil {
 		log.WithError(err).
 			WithFields(log.Fields{
@@ -55,7 +55,7 @@ func (kube *Kube) DeleteService(namespace, serviceName string) error {
 	return nil
 }
 
-func (kube *Kube) UpdateService(service *kubeCoreV1.Service) (*kubeCoreV1.Service, error) {
+func (kube *Kube) UpdateService(service *api_core.Service) (*api_core.Service, error) {
 	newService, err := kube.CoreV1().
 		Services(service.ObjectMeta.Namespace).
 		Update(service)

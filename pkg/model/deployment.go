@@ -58,9 +58,7 @@ func ParseDeployment(deployment interface{}) json_types.Deployment {
 	}
 }
 
-func BuildDeployment(depl *json_types.Deployment, containers []api_core.Container) (*api_apps.Deployment, error) {
-	var newDepl api_apps.Deployment
-
+func MakeDeployment(nsName string, depl *json_types.Deployment, containers []api_core.Container) (*api_apps.Deployment, error) {
 	//Adding deployment volumes
 	var deplVolumes []api_core.Volume
 
@@ -81,7 +79,11 @@ func BuildDeployment(depl *json_types.Deployment, containers []api_core.Containe
 
 	repl := int32(depl.Replicas)
 
+	newDepl := api_apps.Deployment{}
+	newDepl.Kind = "Deployment"
+	newDepl.APIVersion = "apps/v1"
 	newDepl.ObjectMeta.Name = depl.Name
+	newDepl.ObjectMeta.Namespace = nsName
 	newDepl.ObjectMeta.Labels = map[string]string{"app": depl.Name, "owner": depl.Owner}
 	newDepl.Spec.Selector = &api_meta.LabelSelector{MatchLabels: map[string]string{"app": depl.Name, "owner": depl.Owner}}
 	newDepl.Spec.Replicas = &repl
@@ -93,7 +95,7 @@ func BuildDeployment(depl *json_types.Deployment, containers []api_core.Containe
 	return &newDepl, nil
 }
 
-func BuildContainers(containers []json_types.Container) ([]api_core.Container, error) {
+func MakeContainers(containers []json_types.Container) ([]api_core.Container, error) {
 	var containersAfter []api_core.Container
 	for _, container := range containers {
 		err := binding.Validator.ValidateStruct(container)
@@ -101,7 +103,7 @@ func BuildContainers(containers []json_types.Container) ([]api_core.Container, e
 			return nil, err
 		}
 
-		parsedContainer, err := BuildContainer(container)
+		parsedContainer, err := MakeContainer(container)
 		if err != nil {
 			return nil, err
 		}
@@ -113,7 +115,7 @@ func BuildContainers(containers []json_types.Container) ([]api_core.Container, e
 	return containersAfter, nil
 }
 
-func BuildContainer(container json_types.Container) (*api_core.Container, error) {
+func MakeContainer(container json_types.Container) (*api_core.Container, error) {
 	//Adding mounted volumes
 	var mounts []api_core.VolumeMount
 	if container.Volume != nil {
@@ -180,6 +182,11 @@ func BuildContainer(container json_types.Container) (*api_core.Container, error)
 	requests["cpu"] = *api_resource.NewScaledQuantity(reqCPU.AsDec().Mul(reqCPU.AsDec(), inf.NewDec(requestCoeffUnscaled, requestCoeffScale)).UnscaledBig().Int64(), api_resource.Scale(0-reqCPU.AsDec().Scale()))
 	requests["memory"] = *api_resource.NewScaledQuantity(reqMem.AsDec().Mul(reqMem.AsDec(), inf.NewDec(requestCoeffUnscaled, requestCoeffScale)).UnscaledBig().Int64(), api_resource.Scale(0-reqMem.AsDec().Scale()))
 
+	var command []string
+	if container.Command != nil {
+		command = *container.Command
+	}
+
 	return &api_core.Container{
 		Name:         container.Name,
 		Image:        container.Image,
@@ -190,6 +197,6 @@ func BuildContainer(container json_types.Container) (*api_core.Container, error)
 			Limits:   limits,
 			Requests: requests,
 		},
-		Command: *container.Command,
+		Command: command,
 	}, nil
 }

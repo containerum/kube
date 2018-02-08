@@ -44,7 +44,7 @@ func initRoutes(e *gin.Engine) {
 		{
 			service.GET("", getServiceList)
 			service.GET("/:service", getService)
-			service.Use(m.IsAdmin()).POST("/", createService)
+			service.Use(m.IsAdmin()).POST("", createService)
 			service.Use(m.IsAdmin()).DELETE("/:service", deleteService)
 			service.Use(m.IsAdmin()).PUT("/:service", updateService)
 		}
@@ -53,12 +53,21 @@ func initRoutes(e *gin.Engine) {
 		{
 			deployment.GET("", getDeploymentList)
 			deployment.GET("/:deployment", getDeployment)
-			deployment.POST("", createDeployment)
-			deployment.PUT("/:deployment", updateDeployment)
-			deployment.PUT("/:deployment/replicas", updateDeploymentReplicas)
-			deployment.PUT("/:deployment/image", updateDeploymentImage)
-			deployment.DELETE("/:deployment", deleteDeployment)
+			deployment.Use(m.IsAdmin()).POST("", createDeployment)
+			deployment.Use(m.IsAdmin()).PUT("/:deployment", updateDeployment)
+			deployment.Use(m.IsAdmin()).PUT("/:deployment/replicas", updateDeploymentReplicas)
+			deployment.Use(m.IsAdmin()).PUT("/:deployment/image", updateDeploymentImage)
+			deployment.Use(m.IsAdmin()).DELETE("/:deployment", deleteDeployment)
 		}
+
+		secret := namespace.Group("/:namespace/secrets")
+		{
+			secret.GET("", getSecretList)
+			secret.GET("/:secret", getSecret)
+			secret.Use(m.IsAdmin()).POST("", createSecret)
+			secret.Use(m.IsAdmin()).DELETE("/:secret", deleteSecret)
+		}
+
 		pod := namespace.Group("/:namespace/pods")
 		{
 			pod.GET("", getPodList)
