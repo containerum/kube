@@ -82,9 +82,9 @@ func MakeDeployment(nsName string, depl *json_types.Deployment, containers []api
 	newDepl := api_apps.Deployment{}
 	newDepl.Kind = "Deployment"
 	newDepl.APIVersion = "apps/v1"
-	newDepl.ObjectMeta.Name = depl.Name
-	newDepl.ObjectMeta.Namespace = nsName
-	newDepl.ObjectMeta.Labels = map[string]string{"app": depl.Name, "owner": depl.Owner}
+	newDepl.SetName(depl.Name)
+	newDepl.SetNamespace(nsName)
+	newDepl.SetLabels(map[string]string{"app": depl.Name, "owner": depl.Owner})
 	newDepl.Spec.Selector = &api_meta.LabelSelector{MatchLabels: map[string]string{"app": depl.Name, "owner": depl.Owner}}
 	newDepl.Spec.Replicas = &repl
 	newDepl.Spec.Template.ObjectMeta.Labels = map[string]string{"app": depl.Name, "owner": depl.Owner}

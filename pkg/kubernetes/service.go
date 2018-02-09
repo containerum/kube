@@ -10,9 +10,7 @@ import (
 // from provided namespace.
 // In case of trouble returns ErrUnableGetService
 func (kube *Kube) GetService(namespace, serviceName string) (*api_core.Service, error) {
-	nativeService, err := kube.CoreV1().
-		Services(namespace).
-		Get(serviceName, api_meta.GetOptions{})
+	nativeService, err := kube.CoreV1().Services(namespace).Get(serviceName, api_meta.GetOptions{})
 	if err != nil {
 		log.WithError(err).WithFields(log.Fields{
 			"Namespace": namespace,
@@ -36,7 +34,7 @@ func (kube *Kube) CreateService(svc *api_core.Service) (*api_core.Service, error
 	svcAfter, err := kube.CoreV1().Services(svc.ObjectMeta.Namespace).Create(svc)
 	if err != nil {
 		log.WithError(err).WithField("Namespace", svc.Name).Error(ErrUnableCreateService)
-		return nil, err
+		return nil, ErrUnableCreateService
 	}
 	return svcAfter, nil
 }
@@ -50,7 +48,7 @@ func (kube *Kube) DeleteService(namespace, serviceName string) error {
 				"Namespace": namespace,
 				"Service":   serviceName,
 			}).Error(err)
-		return err
+		return ErrUnableDeleteService
 	}
 	return nil
 }
@@ -65,7 +63,7 @@ func (kube *Kube) UpdateService(service *api_core.Service) (*api_core.Service, e
 				"Namespace": service.Namespace,
 				"Service":   service.Name,
 			}).Error(ErrUnableUpdateService)
-		return nil, err
+		return nil, ErrUnableUpdateService
 	}
 	return newService, nil
 }

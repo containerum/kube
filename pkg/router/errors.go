@@ -13,19 +13,12 @@ const (
 )
 
 const (
-	invalidCPUFormat    = "Invalid cpu quota format: %s"
-	invalidMemoryFormat = "Invalid memory quota format: %s"
-	//	namespaceCreationError      = "Namespace %s creation error: %s"
-	//	namespaceQuotaCreationError = "Namespace %s quota creation error: %s"
-	namespaceUpdateError   = "Namespace %s update error: %s"
-	namespaceNotMatchError = "Namespace %s does not match namespace %s in deployment"
-	serviceCreationError   = "Service %s creation error: %s"
-	//	secretCreationError         = "Secret %s creation error: %s"
-	//	deploymentCreationError     = "Deployment %s creation error: %s"
-	//	deploymentDeleteError       = "Deployment %s delete error: %s"
-	//	deploymentUpdateError       = "Deployment %s update error: %s"
+	invalidCPUFormat            = "Invalid cpu quota format: %s"
+	invalidMemoryFormat         = "Invalid memory quota format: %s"
+	namespaceNotMatchError      = "Namespace %s does not match namespace %s in deployment"
+	serviceCreationError        = "Service %s creation error: %s"
 	containerNotFoundError      = "Container %s is not found in deployment %s"
-	invalidUpdateDeploymentName = "Deployment name in URI (%s) does not match deployment name in deployment (%s)"
+	invalidUpdateDeploymentName = "Deployment name in URI %s does not match deployment name in deployment %s"
 )
 
 //BindError is a type for bind errors

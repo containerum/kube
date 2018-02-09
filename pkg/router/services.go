@@ -7,6 +7,7 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
+	json_types "git.containerum.net/ch/kube-client/pkg/model"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
@@ -38,24 +39,26 @@ func createService(c *gin.Context) {
 
 	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	nsname := c.Param(namespaceParam)
+	//nsname := c.Param(namespaceParam)
 
-	var svc *api_core.Service
+	var svc json_types.Service
 	if err := c.ShouldBindWith(&svc, binding.JSON); err != nil {
 		c.Error(err)
-		c.AbortWithStatusJSON(http.StatusBadRequest, err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, ParseErorrs(err))
 		return
 	}
 
-	if nsname != svc.ObjectMeta.Namespace {
-		c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf(namespaceNotMatchError, svc.ObjectMeta.Name, nsname))
-		return
-	}
+	fmt.Println("TETETETTETETE")
 
-	svcAfter, err := kubecli.CreateService(svc)
+	newSvc, err := model.MakeService(c.Param(namespaceParam), &svc)
 	if err != nil {
-		log.Errorf(serviceCreationError, svc.ObjectMeta.Name, err.Error())
-		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf(serviceCreationError, svc.ObjectMeta.Name, err.Error()))
+		c.AbortWithStatusJSON(http.StatusInternalServerError, ParseErorrs(err))
+		return
+	}
+
+	svcAfter, err := kubecli.CreateService(newSvc)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, ParseErorrs(err))
 		return
 	}
 
@@ -75,7 +78,7 @@ func getService(ctx *gin.Context) {
 		ctx.AbortWithError(http.StatusNotFound, err)
 		return
 	}
-	service, err := model.ServiceFromNativeKubeService(nativeService)
+	service, err := model.ParseService(nativeService)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return

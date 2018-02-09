@@ -5,7 +5,7 @@
   branch = "develop"
   name = "git.containerum.net/ch/kube-client"
   packages = ["pkg/model"]
-  revision = "94adee8fe5bc3586ee656c7c651cecb1fecd0e12"
+  revision = "f4dfe9393c79e76653b4e3a0a5cc5582dfb21122"
 
 [[projects]]
   name = "github.com/appleboy/gofight"
@@ -197,7 +197,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "d9133f5469342136e669e85192a26056b587f503"
+  revision = "5119cf507ed5294cc409c092980c7497ee5d6fd2"
 
 [[projects]]
   branch = "master"
@@ -256,6 +256,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ef689533413cfa8a4f9390c7a1197c173f394ed2afe2c4dce20f0b59c605bc21"
+  inputs-digest = "d0ae165594022416dfbf12c4034246b54d9661632967bf1027f549041c1faa97"
   solver-name = "gps-cdcl"
   solver-version = 1
