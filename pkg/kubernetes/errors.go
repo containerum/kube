@@ -33,4 +33,5 @@ var (
 
 	ErrUnableGetPodList = errors.New("Unable to get pod list")
 	ErrUnableGetPod     = errors.New("Unable to get pod")
+	ErrUnableDeletePod  = errors.New("Unable to delete pod")
 )

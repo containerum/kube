@@ -12,7 +12,7 @@ func (k *Kube) GetSecretList(nsName string) (*api_core.SecretList, error) {
 		log.WithError(err).WithFields(log.Fields{
 			"Namespace": nsName,
 		}).Error(ErrUnableGetSecretList)
-		return nil, ErrUnableGetSecretList
+		return nil, err
 	}
 	return secrets, nil
 }
@@ -24,7 +24,7 @@ func (k *Kube) GetSecret(nsName string, secretName string) (*api_core.Secret, er
 			"Namespace": nsName,
 			"Secret":    secretName,
 		}).Error(ErrUnableGetSecret)
-		return nil, ErrUnableGetSecret
+		return nil, err
 	}
 	return secret, nil
 }
@@ -36,7 +36,7 @@ func (k *Kube) CreateSecret(secret *api_core.Secret) (*api_core.Secret, error) {
 			"Namespace": secret.Namespace,
 			"Secret":    secret.Name,
 		}).Error(ErrUnableCreateSecret)
-		return nil, ErrUnableCreateSecret
+		return nil, err
 	}
 	return newSecret, nil
 }
@@ -48,7 +48,7 @@ func (k *Kube) DeleteSecret(nsName string, secretName string) error {
 			"Namespace": nsName,
 			"Secret":    secretName,
 		}).Error(ErrUnableDeleteSecret)
-		return ErrUnableDeleteSecret
+		return err
 	}
 	return nil
 }

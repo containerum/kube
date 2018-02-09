@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fmt"
 	"net/http"
 
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
@@ -23,46 +22,42 @@ func getServiceList(ctx *gin.Context) {
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	nativeServices, err := kube.GetServiceList(namespace)
 	if err != nil {
-		ctx.AbortWithError(http.StatusNotFound, err)
+		ctx.AbortWithStatusJSON(ParseErorrs(err))
 		return
 	}
-	services, err := model.ParseServiceList(nativeServices.(*api_core.ServiceList))
+	ret, err := model.ParseServiceList(nativeServices.(*api_core.ServiceList))
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.AbortWithStatusJSON(ParseErorrs(err))
 		return
 	}
-	ctx.JSON(http.StatusOK, services)
+	ctx.JSON(http.StatusOK, ret)
 }
 
-func createService(c *gin.Context) {
-	log.WithField("Service", c.Param(m.ServiceKey)).Debug("Create service Call")
-
-	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-
-	//nsname := c.Param(namespaceParam)
+func createService(ctx *gin.Context) {
+	log.WithField("Service", ctx.Param(m.ServiceKey)).Debug("Create service Call")
 
 	var svc json_types.Service
-	if err := c.ShouldBindWith(&svc, binding.JSON); err != nil {
-		c.Error(err)
-		c.AbortWithStatusJSON(http.StatusBadRequest, ParseErorrs(err))
+	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(ParseErorrs(err))
 		return
 	}
 
-	fmt.Println("TETETETTETETE")
-
-	newSvc, err := model.MakeService(c.Param(namespaceParam), &svc)
+	newSvc, err := model.MakeService(ctx.Param(namespaceParam), &svc)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, ParseErorrs(err))
+		ctx.AbortWithStatusJSON(ParseErorrs(err))
 		return
 	}
+
+	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
 	svcAfter, err := kubecli.CreateService(newSvc)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, ParseErorrs(err))
+		ctx.AbortWithStatusJSON(ParseErorrs(err))
 		return
 	}
 
-	c.JSON(http.StatusAccepted, svcAfter)
+	ctx.JSON(http.StatusCreated, model.ParseService(svcAfter))
 }
 
 func getService(ctx *gin.Context) {
@@ -75,15 +70,10 @@ func getService(ctx *gin.Context) {
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	nativeService, err := kube.GetService(namespace, serviceName)
 	if err != nil {
-		ctx.AbortWithError(http.StatusNotFound, err)
+		ctx.AbortWithStatusJSON(ParseErorrs(err))
 		return
 	}
-	service, err := model.ParseService(nativeService)
-	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	ctx.JSON(http.StatusOK, service)
+	ctx.JSON(http.StatusOK, model.ParseService(nativeService))
 }
 
 func deleteService(ctx *gin.Context) {
@@ -96,10 +86,10 @@ func deleteService(ctx *gin.Context) {
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	err := kube.DeleteService(namespace, serviceName)
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.AbortWithStatusJSON(ParseErorrs(err))
 		return
 	}
-	ctx.Status(http.StatusOK)
+	ctx.Status(http.StatusAccepted)
 }
 
 func updateService(ctx *gin.Context) {
@@ -110,20 +100,24 @@ func updateService(ctx *gin.Context) {
 		"Service":   serviceName,
 	}).Debug("Update service Call")
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-	var service api_core.Service
-	if err := ctx.ShouldBindWith(&service, binding.JSON); err != nil {
+	var svc json_types.Service
+	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
+		ctx.AbortWithStatusJSON(ParseErorrs(err))
 		return
 	}
-	if service.ObjectMeta.Namespace != namespace {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest,
-			fmt.Sprintf(namespaceNotMatchError, service.ObjectMeta.Namespace, namespace))
+
+	newSvc, err := model.MakeService(ctx.Param(namespaceParam), &svc)
+	if err != nil {
+		ctx.AbortWithStatusJSON(ParseErorrs(err))
+		return
 	}
-	updatedService, err := kube.UpdateService(&service)
+
+	updatedService, err := kube.UpdateService(newSvc)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	ctx.JSON(http.StatusAccepted, updatedService)
+
+	ctx.JSON(http.StatusAccepted, model.ParseService(updatedService))
 }

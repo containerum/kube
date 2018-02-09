@@ -63,6 +63,20 @@ func getPod(c *gin.Context) {
 	c.JSON(http.StatusOK, po)
 }
 
+func deletePod(c *gin.Context) {
+	log.WithFields(log.Fields{
+		"Namespace": c.Param(namespaceParam),
+		"Pod":       c.Param(podParam),
+	}).Debug("Delete pod Call")
+	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
+	err := kube.DeletePod(c.Param(namespaceParam), c.Param(podParam))
+	if err != nil {
+		c.AbortWithError(http.StatusNotFound, err)
+		return
+	}
+	c.Status(http.StatusOK)
+}
+
 func getPodLogs(c *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace": c.Param(namespaceParam),

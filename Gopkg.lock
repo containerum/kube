@@ -5,7 +5,7 @@
   branch = "develop"
   name = "git.containerum.net/ch/kube-client"
   packages = ["pkg/model"]
-  revision = "f4dfe9393c79e76653b4e3a0a5cc5582dfb21122"
+  revision = "c0e42b6636b976835d24105127b22d3065e970e2"
 
 [[projects]]
   name = "github.com/appleboy/gofight"
@@ -256,6 +256,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d0ae165594022416dfbf12c4034246b54d9661632967bf1027f549041c1faa97"
+  inputs-digest = "35a6af8ecba8462d2e69f54503c73f5d36cabdcf7030f2ef50923688d84868f2"
   solver-name = "gps-cdcl"
   solver-version = 1

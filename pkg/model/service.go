@@ -27,11 +27,7 @@ func ParseServicePort(nativePort api_core.ServicePort) json_types.ServicePort {
 
 // ParseService creates
 // user friendly service representation
-func ParseService(native *api_core.Service) (*json_types.Service, error) {
-	if native == nil {
-		return nil, ErrUnableConvertService
-	}
-
+func ParseService(native *api_core.Service) *json_types.Service {
 	ports := make([]json_types.ServicePort, 0, 1)
 
 	service := &json_types.Service{
@@ -53,7 +49,7 @@ func ParseService(native *api_core.Service) (*json_types.Service, error) {
 		service.Ports = append(service.Ports,
 			ParseServicePort(nativePort))
 	}
-	return service, nil
+	return service
 }
 
 func ParseServiceList(nativeServices *api_core.ServiceList) ([]json_types.Service, error) {
@@ -62,9 +58,7 @@ func ParseServiceList(nativeServices *api_core.ServiceList) ([]json_types.Servic
 	}
 	serviceList := make([]json_types.Service, 0, nativeServices.Size())
 	for _, nativeService := range nativeServices.Items {
-		// error can be ignored because ServiceList provides
-		// Service stucts by values
-		service, _ := ParseService(&nativeService)
+		service := ParseService(&nativeService)
 		serviceList = append(serviceList, *service)
 	}
 	return serviceList, nil
