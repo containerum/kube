@@ -206,15 +206,13 @@ func updateDeploymentImage(c *gin.Context) {
 	}
 
 	updated := false
-
-	for _, v := range deployment.Spec.Template.Spec.Containers {
+	for i, v := range deployment.Spec.Template.Spec.Containers {
 		if v.Name == image.ContainerName {
-			v.Image = image.Image
+			deployment.Spec.Template.Spec.Containers[i].Image = image.Image
 			updated = true
 			break
 		}
 	}
-
 	if updated == false {
 		c.AbortWithStatusJSON(ParseErorrs(model.NewErrorWithCode(fmt.Sprintf(containerNotFoundError, c.Param(namespaceParam), c.Param(deploymentParam)), http.StatusNotFound)))
 		return
