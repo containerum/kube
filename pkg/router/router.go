@@ -44,28 +44,28 @@ func initRoutes(e *gin.Engine) {
 		{
 			service.GET("", getServiceList)
 			service.GET("/:service", getService)
-			service.Use(m.IsAdmin()).POST("", createService)
-			service.Use(m.IsAdmin()).PUT("/:service", updateService)
-			service.Use(m.IsAdmin()).DELETE("/:service", deleteService)
+			service.POST("", createService)
+			service.PUT("/:service", updateService)
+			service.DELETE("/:service", deleteService)
 		}
 
 		deployment := namespace.Group("/:namespace/deployments")
 		{
 			deployment.GET("", getDeploymentList)
 			deployment.GET("/:deployment", getDeployment)
-			deployment.Use(m.IsAdmin()).POST("", createDeployment)
-			deployment.Use(m.IsAdmin()).PUT("/:deployment", updateDeployment)
-			deployment.Use(m.IsAdmin()).PUT("/:deployment/replicas", updateDeploymentReplicas)
-			deployment.Use(m.IsAdmin()).PUT("/:deployment/image", updateDeploymentImage)
-			deployment.Use(m.IsAdmin()).DELETE("/:deployment", deleteDeployment)
+			deployment.POST("", createDeployment)
+			deployment.PUT("/:deployment", updateDeployment)
+			deployment.PUT("/:deployment/replicas", updateDeploymentReplicas)
+			deployment.PUT("/:deployment/image", updateDeploymentImage)
+			deployment.DELETE("/:deployment", deleteDeployment)
 		}
 
 		secret := namespace.Group("/:namespace/secrets")
 		{
 			secret.GET("", getSecretList)
 			secret.GET("/:secret", getSecret)
-			secret.Use(m.IsAdmin()).POST("", createSecret)
-			secret.Use(m.IsAdmin()).DELETE("/:secret", deleteSecret)
+			secret.POST("", createSecret)
+			secret.DELETE("/:secret", deleteSecret)
 		}
 
 		pod := namespace.Group("/:namespace/pods")

@@ -29,7 +29,7 @@ func ParseResourceQuota(quota interface{}) json_types.Namespace {
 	owner := obj.GetLabels()[ownerLabel]
 	return json_types.Namespace{
 		Name:  obj.GetNamespace(),
-		Owner: &owner,
+		Owner: owner,
 		Resources: json_types.Resources{
 			Hard: json_types.Resource{
 				CPU:    cpuLimit.String(),
@@ -64,8 +64,8 @@ func MakeNamespace(ns json_types.Namespace) *api_core.Namespace {
 	newNs.ObjectMeta.Name = ns.Name
 	newNs.ObjectMeta.Labels = make(map[string]string)
 	newNs.ObjectMeta.Labels["name"] = ns.Name
-	if ns.Owner != nil {
-		newNs.ObjectMeta.Labels["owner"] = *ns.Owner
+	if ns.Owner != "" {
+		newNs.ObjectMeta.Labels["owner"] = ns.Owner
 	}
 
 	return &newNs

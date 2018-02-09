@@ -23,7 +23,7 @@ func getSecretList(c *gin.Context) {
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 	secrets, err := kube.GetSecretList(c.Param(namespaceParam))
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, ParseErorrs(err))
+		c.AbortWithStatusJSON(ParseErorrs(err))
 		return
 	}
 	c.JSON(http.StatusOK, secrets)
@@ -37,7 +37,7 @@ func getSecret(c *gin.Context) {
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 	secrets, err := kube.GetSecret(c.Param(namespaceParam), c.Param(secretParam))
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, ParseErorrs(err))
+		c.AbortWithStatusJSON(ParseErorrs(err))
 		return
 	}
 	c.JSON(http.StatusOK, secrets)
@@ -52,7 +52,7 @@ func createSecret(c *gin.Context) {
 
 	var secret *json_types.Secret
 	if err := c.ShouldBindWith(&secret, binding.JSON); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, ParseErorrs(err))
+		c.AbortWithStatusJSON(ParseErorrs(err))
 		return
 	}
 
@@ -60,11 +60,11 @@ func createSecret(c *gin.Context) {
 
 	secretAfter, err := kubecli.CreateSecret(newSecret)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, ParseErorrs(err))
+		c.AbortWithStatusJSON(ParseErorrs(err))
 		return
 	}
 
-	c.JSON(http.StatusOK, secretAfter)
+	c.JSON(http.StatusCreated, secretAfter)
 }
 
 func deleteSecret(c *gin.Context) {
@@ -75,7 +75,7 @@ func deleteSecret(c *gin.Context) {
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 	err := kube.DeleteSecret(c.Param(namespaceParam), c.Param(secretParam))
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, ParseErorrs(err))
+		c.AbortWithStatusJSON(ParseErorrs(err))
 		return
 	}
 	c.Status(http.StatusAccepted)

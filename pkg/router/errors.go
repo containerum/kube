@@ -3,7 +3,13 @@ package router
 import (
 	"fmt"
 
+	"net/http"
+
+	"strings"
+
+	"git.containerum.net/ch/kube-api/pkg/model"
 	"gopkg.in/go-playground/validator.v8"
+	"k8s.io/apimachinery/pkg/api/errors"
 )
 
 const (
@@ -13,37 +19,68 @@ const (
 )
 
 const (
-	invalidCPUFormat            = "Invalid cpu quota format: %s"
-	invalidMemoryFormat         = "Invalid memory quota format: %s"
-	namespaceNotMatchError      = "Namespace %s does not match namespace %s in deployment"
-	serviceCreationError        = "Service %s creation error: %s"
+	userIDNotProvided    = "UserID not provided"
+	userIDHeaderRequired = "X-User-ID header required"
+	invalidCPUFormat     = "Invalid cpu quota format"
+	invalidMemoryFormat  = "Invalid memory quota format"
+	alreadyExists        = "%s already exists in %s"
+	fieldError           = "Validation failed for fields: %v"
+
 	containerNotFoundError      = "Container %s is not found in deployment %s"
 	invalidUpdateDeploymentName = "Deployment name in URI %s does not match deployment name in deployment %s"
 )
 
-//BindError is a type for bind errors
-type BindError struct {
+//KubeError is a type for bind errors
+type KubeError struct {
 	Error string `json:"error"`
 }
 
-//ParseBindErorrs parses errors from message content binding
-func ParseErorrs(in error) []BindError {
-	var out []BindError
+//ParseBindErorrs parses different types of errors
+func ParseErorrs(in interface{}) (code int, out []KubeError) {
 
-	t, isValidationError := in.(validator.ValidationErrors)
+	//Error from kubernetes
+	sE, isStatusErrorCode := in.(*errors.StatusError)
+	if isStatusErrorCode {
+		switch sE.Status().Code {
+		case 409:
+			return http.StatusBadRequest, []KubeError{{Error: fmt.Sprintf(alreadyExists, sE.Status().Details.Name, sE.Status().Details.Kind)}}
+		case 422:
+			var causes []string
+			for _, c := range sE.Status().Details.Causes {
+				causes = append(causes, c.Field)
+			}
+			return http.StatusBadRequest, []KubeError{{Error: fmt.Sprintf(fieldError, strings.Join(causes, ", "))}}
+			//TODO Parse more errors
+		case 0:
+			return http.StatusInternalServerError, []KubeError{{Error: sE.Status().Message}}
+		default:
+			return int(sE.Status().Code), []KubeError{{Error: sE.Status().Message}}
+		}
+	}
 
+	//Simple error with code
+	mE, isErrorWithCode := in.(*model.Error)
+	if isErrorWithCode {
+		if mE.Code != 0 {
+			return mE.Code, []KubeError{{Error: mE.Text}}
+		}
+		return http.StatusInternalServerError, []KubeError{{Error: mE.Text}}
+	}
+
+	//Validation error
+	vE, isValidationError := in.(validator.ValidationErrors)
 	if isValidationError {
-		for _, v := range t {
+		for _, v := range vE {
 			switch v.Tag {
 			case "required":
-				out = append(out, BindError{fmt.Sprintf(fieldShouldExist, v.Name)})
+				out = append(out, KubeError{fmt.Sprintf(fieldShouldExist, v.Name)})
 			case "email":
-				out = append(out, BindError{fmt.Sprintf(fieldShouldBeEmail, v.Name)})
+				out = append(out, KubeError{fmt.Sprintf(fieldShouldBeEmail, v.Name)})
 			default:
-				out = append(out, BindError{fmt.Sprintf(fieldDefaultProblem, v.Name, v.Tag)})
+				out = append(out, KubeError{fmt.Sprintf(fieldDefaultProblem, v.Name, v.Tag)})
 			}
 		}
-		return out
+		return http.StatusBadRequest, out
 	}
-	return []BindError{{Error: in.Error()}}
+	return http.StatusInternalServerError, []KubeError{{Error: in.(error).Error()}}
 }
