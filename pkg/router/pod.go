@@ -35,11 +35,12 @@ var wsupgrader = websocket.Upgrader{
 
 func getPodList(c *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": c.Param(namespaceParam),
-		"Owner":     c.Query(ownerQuery),
+		"Namespace Param": c.Param(namespaceParam),
+		"Namespace":       c.MustGet(m.NamespaceKey).(string),
+		"Owner":           c.Query(ownerQuery),
 	}).Debug("Get pod list Call")
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-	pods, err := kube.GetPodList(c.Param(namespaceParam), c.Query(ownerQuery))
+	pods, err := kube.GetPodList(c.MustGet(m.NamespaceKey).(string), c.Query(ownerQuery))
 	if err != nil {
 		c.AbortWithError(http.StatusNotFound, err)
 		return
@@ -50,11 +51,12 @@ func getPodList(c *gin.Context) {
 
 func getPod(c *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": c.Param(namespaceParam),
-		"Pod":       c.Param(podParam),
+		"Namespace Param": c.Param(namespaceParam),
+		"Namespace":       c.MustGet(m.NamespaceKey).(string),
+		"Pod":             c.Param(podParam),
 	}).Debug("Get pod list Call")
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-	pod, err := kube.GetPod(c.Param(namespaceParam), c.Param(podParam))
+	pod, err := kube.GetPod(c.MustGet(m.NamespaceKey).(string), c.Param(podParam))
 	if err != nil {
 		c.AbortWithError(http.StatusNotFound, err)
 		return
