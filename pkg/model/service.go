@@ -1,7 +1,7 @@
 package model
 
 import (
-	json_types "git.containerum.net/ch/kube-client/pkg/model"
+	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 
 	"github.com/gin-gonic/gin/binding"
@@ -15,22 +15,22 @@ const (
 
 // ParseServicePort converts native
 // cubernetes service port representation to user friendly ServicePort struct
-func ParseServicePort(nativePort api_core.ServicePort) json_types.ServicePort {
+func ParseServicePort(nativePort api_core.ServicePort) kube_types.ServicePort {
 	targetPort := int(nativePort.TargetPort.IntVal)
-	return json_types.ServicePort{
+	return kube_types.ServicePort{
 		Name:       nativePort.Name,
 		Port:       int(nativePort.Port),
 		TargetPort: targetPort,
-		Protocol:   json_types.Protocol(nativePort.Protocol),
+		Protocol:   kube_types.Protocol(nativePort.Protocol),
 	}
 }
 
 // ParseService creates
 // user friendly service representation
-func ParseService(native *api_core.Service) *json_types.Service {
-	ports := make([]json_types.ServicePort, 0, 1)
+func ParseService(native *api_core.Service) *kube_types.Service {
+	ports := make([]kube_types.ServicePort, 0, 1)
 
-	service := &json_types.Service{
+	service := &kube_types.Service{
 		Name:      native.Name,
 		CreatedAt: native.GetCreationTimestamp().Unix(),
 		Deploy:    native.GetObjectMeta().GetLabels()["app"], // TODO: check if app key doesn't exists!
@@ -52,11 +52,11 @@ func ParseService(native *api_core.Service) *json_types.Service {
 	return service
 }
 
-func ParseServiceList(nativeServices *api_core.ServiceList) ([]json_types.Service, error) {
+func ParseServiceList(nativeServices *api_core.ServiceList) ([]kube_types.Service, error) {
 	if nativeServices == nil {
 		return nil, ErrUnableConvertServiceList
 	}
-	serviceList := make([]json_types.Service, 0, nativeServices.Size())
+	serviceList := make([]kube_types.Service, 0, nativeServices.Size())
 	for _, nativeService := range nativeServices.Items {
 		service := ParseService(&nativeService)
 		serviceList = append(serviceList, *service)
@@ -64,7 +64,7 @@ func ParseServiceList(nativeServices *api_core.ServiceList) ([]json_types.Servic
 	return serviceList, nil
 }
 
-func MakeService(nsName string, service *json_types.Service) (*api_core.Service, error) {
+func MakeService(nsName string, service *kube_types.Service) (*api_core.Service, error) {
 	var ports []api_core.ServicePort
 	if service.Ports != nil {
 		for _, v := range service.Ports {

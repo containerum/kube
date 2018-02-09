@@ -6,7 +6,7 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
-	json_types "git.containerum.net/ch/kube-client/pkg/model"
+	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
@@ -35,8 +35,9 @@ func getServiceList(ctx *gin.Context) {
 
 func createService(ctx *gin.Context) {
 	log.WithField("Service", ctx.Param(m.ServiceKey)).Debug("Create service Call")
+	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var svc json_types.Service
+	var svc kube_types.Service
 	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(ParseErorrs(err))
@@ -49,7 +50,13 @@ func createService(ctx *gin.Context) {
 		return
 	}
 
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
+	if err != nil {
+		ctx.AbortWithStatusJSON(ParseErorrs(err))
+		return
+	}
+
+	newSvc.Labels = quota.Labels
 
 	svcAfter, err := kubecli.CreateService(newSvc)
 	if err != nil {
@@ -99,8 +106,8 @@ func updateService(ctx *gin.Context) {
 		"Namespace": namespace,
 		"Service":   serviceName,
 	}).Debug("Update service Call")
-	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-	var svc json_types.Service
+	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	var svc kube_types.Service
 	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(ParseErorrs(err))
@@ -113,7 +120,17 @@ func updateService(ctx *gin.Context) {
 		return
 	}
 
-	updatedService, err := kube.UpdateService(newSvc)
+	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
+	if err != nil {
+		ctx.AbortWithStatusJSON(ParseErorrs(err))
+		return
+	}
+
+	for k, v := range quota.Labels {
+		newSvc.Labels[k] = v
+	}
+
+	updatedService, err := kubecli.UpdateService(newSvc)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return

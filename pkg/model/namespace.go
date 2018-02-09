@@ -1,7 +1,7 @@
 package model
 
 import (
-	json_types "git.containerum.net/ch/kube-client/pkg/model"
+	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_resource "k8s.io/apimachinery/pkg/api/resource"
 )
@@ -10,9 +10,9 @@ const (
 	ownerLabel = "owner"
 )
 
-func ParseResourceQuotaList(quotas interface{}) []json_types.Namespace {
+func ParseResourceQuotaList(quotas interface{}) []kube_types.Namespace {
 	objects := quotas.(*api_core.ResourceQuotaList)
-	var namespaces []json_types.Namespace
+	var namespaces []kube_types.Namespace
 	for _, quota := range objects.Items {
 		ns := ParseResourceQuota(&quota)
 		namespaces = append(namespaces, ns)
@@ -20,22 +20,23 @@ func ParseResourceQuotaList(quotas interface{}) []json_types.Namespace {
 	return namespaces
 }
 
-func ParseResourceQuota(quota interface{}) json_types.Namespace {
+func ParseResourceQuota(quota interface{}) kube_types.Namespace {
 	obj := quota.(*api_core.ResourceQuota)
 	cpuLimit := obj.Spec.Hard[api_core.ResourceLimitsCPU]
 	memoryLimit := obj.Spec.Hard[api_core.ResourceLimitsMemory]
 	cpuUsed := obj.Status.Used[api_core.ResourceLimitsCPU]
 	memoryUsed := obj.Status.Used[api_core.ResourceLimitsMemory]
 	owner := obj.GetLabels()[ownerLabel]
-	return json_types.Namespace{
-		Name:  obj.GetNamespace(),
-		Owner: owner,
-		Resources: json_types.Resources{
-			Hard: json_types.Resource{
+	return kube_types.Namespace{
+		Name:    obj.GetNamespace(),
+		Owner:   owner,
+		Created: obj.ObjectMeta.CreationTimestamp.Unix(),
+		Resources: kube_types.Resources{
+			Hard: kube_types.Resource{
 				CPU:    cpuLimit.String(),
 				Memory: memoryLimit.String(),
 			},
-			Used: &json_types.Resource{
+			Used: &kube_types.Resource{
 				CPU:    cpuUsed.String(),
 				Memory: memoryUsed.String(),
 			},
@@ -56,14 +57,13 @@ func MakeResourceQuota(cpu, memory api_resource.Quantity) *api_core.ResourceQuot
 	}
 }
 
-func MakeNamespace(ns json_types.Namespace) *api_core.Namespace {
+func MakeNamespace(ns kube_types.Namespace) *api_core.Namespace {
 	newNs := api_core.Namespace{}
 	newNs.Kind = "Namespace"
 	newNs.APIVersion = "v1"
 	newNs.Spec = api_core.NamespaceSpec{}
 	newNs.ObjectMeta.Name = ns.Name
 	newNs.ObjectMeta.Labels = make(map[string]string)
-	newNs.ObjectMeta.Labels["name"] = ns.Name
 	if ns.Owner != "" {
 		newNs.ObjectMeta.Labels["owner"] = ns.Owner
 	}

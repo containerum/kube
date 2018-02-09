@@ -6,7 +6,8 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
-	json_types "git.containerum.net/ch/kube-client/pkg/model"
+	kube_types "git.containerum.net/ch/kube-client/pkg/model"
+	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"fmt"
 
@@ -53,7 +54,9 @@ func createDeployment(ctx *gin.Context) {
 		"Namespace": ctx.Param(namespaceParam),
 	}).Debug("Create deployment Call")
 
-	var depl json_types.Deployment
+	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	var depl kube_types.Deployment
 	if err := ctx.ShouldBindWith(&depl, binding.JSON); err != nil {
 		ctx.AbortWithStatusJSON(ParseErorrs(err))
 		return
@@ -71,7 +74,17 @@ func createDeployment(ctx *gin.Context) {
 		return
 	}
 
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
+	if err != nil {
+		ctx.AbortWithStatusJSON(ParseErorrs(err))
+		return
+	}
+
+	for k, v := range quota.Labels {
+		newDepl.Labels[k] = v
+		newDepl.Spec.Template.Labels[k] = v
+	}
+	newDepl.Spec.Selector = &api_meta.LabelSelector{MatchLabels: newDepl.Labels}
 
 	deplAfter, err := kubecli.CreateDeployment(ctx.Param(namespaceParam), newDepl)
 	if err != nil {
@@ -101,7 +114,7 @@ func updateDeployment(c *gin.Context) {
 		"Deployment": c.Param(deploymentParam),
 	}).Debug("Update deployment Call")
 
-	var depl json_types.Deployment
+	var depl kube_types.Deployment
 	if err := c.ShouldBindWith(&depl, binding.JSON); err != nil {
 		c.AbortWithStatusJSON(ParseErorrs(err))
 		return
@@ -127,6 +140,15 @@ func updateDeployment(c *gin.Context) {
 		return
 	}
 
+	quota, err := kubecli.GetNamespaceQuota(c.Param(namespaceParam))
+	if err != nil {
+		c.AbortWithStatusJSON(ParseErorrs(err))
+		return
+	}
+
+	newDepl.Labels = quota.Labels
+	newDepl.Spec.Selector = &api_meta.LabelSelector{MatchLabels: quota.Labels}
+
 	deplAfter, err := kubecli.UpdateDeployment(c.Param(namespaceParam), newDepl)
 	if err != nil {
 		c.AbortWithStatusJSON(ParseErorrs(err))
@@ -141,7 +163,7 @@ func updateDeploymentReplicas(c *gin.Context) {
 		"Namespace":  c.Param(namespaceParam),
 		"Deployment": c.Param(deploymentParam),
 	}).Debug("Update deployment replicas Call")
-	var replicas json_types.UpdateReplicas
+	var replicas kube_types.UpdateReplicas
 	if err := c.ShouldBindWith(&replicas, binding.JSON); err != nil {
 		c.AbortWithStatusJSON(ParseErorrs(err))
 		return
@@ -170,9 +192,8 @@ func updateDeploymentImage(c *gin.Context) {
 		"Namespace":  c.Param(namespaceParam),
 		"Deployment": c.Param(deploymentParam),
 	}).Debug("Update deployment container image Call")
-	var image json_types.UpdateImage
+	var image kube_types.UpdateImage
 	if err := c.ShouldBindWith(&image, binding.JSON); err != nil {
-		c.Error(err)
 		c.AbortWithStatusJSON(ParseErorrs(err))
 		return
 	}

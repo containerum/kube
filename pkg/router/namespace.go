@@ -6,7 +6,7 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
-	json_types "git.containerum.net/ch/kube-client/pkg/model"
+	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -50,7 +50,7 @@ func getNamespace(c *gin.Context) {
 func сreateNamespace(c *gin.Context) {
 	log.Debug("Create namespace Call")
 
-	var ns json_types.Namespace
+	var ns kube_types.Namespace
 	if err := c.ShouldBindWith(&ns, binding.JSON); err != nil {
 		c.AbortWithStatusJSON(ParseErorrs(err))
 		return
@@ -105,19 +105,19 @@ func updateNamespace(c *gin.Context) {
 	log.WithField("Namespace", c.Param(namespaceParam)).Debug("Update namespace Call")
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var res json_types.Resource
+	var res kube_types.UpdateNamespace
 	if err := c.ShouldBindWith(&res, binding.JSON); err != nil {
 		c.AbortWithStatusJSON(ParseErorrs(err))
 		return
 	}
 
-	cpuq, err := api_resource.ParseQuantity(res.CPU)
+	cpuq, err := api_resource.ParseQuantity(res.Resources.Hard.CPU)
 	if err != nil {
 		log.Errorln(invalidCPUFormat, err)
 		c.AbortWithStatusJSON(ParseErorrs(model.NewErrorWithCode(invalidCPUFormat, http.StatusBadRequest)))
 		return
 	}
-	memoryq, err := api_resource.ParseQuantity(res.Memory)
+	memoryq, err := api_resource.ParseQuantity(res.Resources.Hard.Memory)
 	if err != nil {
 		log.Errorln(invalidMemoryFormat, err)
 		c.AbortWithStatusJSON(ParseErorrs(model.NewErrorWithCode(invalidMemoryFormat, http.StatusBadRequest)))
