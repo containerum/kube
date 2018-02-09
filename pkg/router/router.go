@@ -73,6 +73,7 @@ func initRoutes(e *gin.Engine) {
 			pod.GET("", getPodList)
 			pod.GET("/:pod", getPod)
 			pod.GET("/:pod/log", getPodLogs)
+			pod.DELETE("/:pod", deletePod)
 		}
 	}
 }

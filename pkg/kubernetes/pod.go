@@ -31,7 +31,7 @@ func (k *Kube) GetPodList(ns string, owner string) (interface{}, error) {
 			"Namespace": ns,
 			"Owner":     owner,
 		}).Error(ErrUnableGetPodList)
-		return nil, ErrUnableGetPodList
+		return nil, err
 	}
 	return pods, nil
 }
@@ -43,9 +43,21 @@ func (k *Kube) GetPod(ns string, po string) (interface{}, error) {
 			"Namespace": ns,
 			"Pod":       po,
 		}).Error(ErrUnableGetPod)
-		return nil, ErrUnableGetPod
+		return nil, err
 	}
 	return pod, nil
+}
+
+func (k *Kube) DeletePod(ns string, po string) error {
+	err := k.CoreV1().Pods(ns).Delete(po, &meta_v1.DeleteOptions{})
+	if err != nil {
+		log.WithError(err).WithFields(log.Fields{
+			"Namespace": ns,
+			"Pod":       po,
+		}).Error(ErrUnableDeletePod)
+		return err
+	}
+	return nil
 }
 
 func (k *Kube) GetPodLogs(ns string, po string, out *bytes.Buffer, opt *LogOptions) error {
