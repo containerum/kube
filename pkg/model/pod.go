@@ -29,7 +29,8 @@ func ParsePod(pod interface{}) model.Pod {
 	}
 }
 
-func getContainers(cList []api_core.Container) []model.Container {
+func getContainers(cListi interface{}) []model.Container {
+	cList := cListi.([]*api_core.Container)
 	var containers []model.Container
 	for _, c := range cList {
 		env := getEnv(c.Env)
@@ -52,7 +53,8 @@ func getContainers(cList []api_core.Container) []model.Container {
 	return containers
 }
 
-func getVolumes(vList []api_core.VolumeMount) []model.Volume {
+func getVolumes(vListi interface{}) []model.Volume {
+	vList := vListi.([]api_core.VolumeMount)
 	var volumes []model.Volume
 	for _, v := range vList {
 		volumes = append(volumes, model.Volume{
@@ -64,7 +66,8 @@ func getVolumes(vList []api_core.VolumeMount) []model.Volume {
 	return volumes
 }
 
-func getEnv(eList []api_core.EnvVar) []model.Env {
+func getEnv(eListi interface{}) []model.Env {
+	eList := eListi.([]api_core.EnvVar)
 	var envs []model.Env
 	for _, e := range eList {
 		envs = append(envs, model.Env{
