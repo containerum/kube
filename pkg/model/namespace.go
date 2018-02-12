@@ -28,8 +28,9 @@ func ParseResourceQuota(quota interface{}) kube_types.Namespace {
 	memoryUsed := obj.Status.Used[api_core.ResourceLimitsMemory]
 	owner := obj.GetLabels()[ownerLabel]
 	return kube_types.Namespace{
-		Name:  obj.GetNamespace(),
-		Owner: owner,
+		Name:    obj.GetNamespace(),
+		Owner:   owner,
+		Created: obj.ObjectMeta.CreationTimestamp.Unix(),
 		Resources: kube_types.Resources{
 			Hard: kube_types.Resource{
 				CPU:    cpuLimit.String(),
