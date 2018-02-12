@@ -6,12 +6,10 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
-	json_types "git.containerum.net/ch/kube-client/pkg/model"
+	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
-
-	api_core "k8s.io/api/core/v1"
 )
 
 func getServiceList(c *gin.Context) {
@@ -23,41 +21,48 @@ func getServiceList(c *gin.Context) {
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 	nativeServices, err := kube.GetServiceList(namespace)
 	if err != nil {
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
-	ret, err := model.ParseServiceList(nativeServices.(*api_core.ServiceList))
+	ret, err := model.ParseServiceList(nativeServices)
 	if err != nil {
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 	c.JSON(http.StatusOK, ret)
 }
 
-func createService(c *gin.Context) {
-	log.WithField("Service", c.Param(m.ServiceKey)).Debug("Create service Call")
-	var svc json_types.Service
-	if err := c.ShouldBindWith(&svc, binding.JSON); err != nil {
-		c.Error(err)
-		c.AbortWithStatusJSON(ParseErorrs(err))
+func createService(ctx *gin.Context) {
+	log.WithField("Service", ctx.Param(m.ServiceKey)).Debug("Create service Call")
+	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	var svc kube_types.Service
+	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	newSvc, err := model.MakeService(c.Param(namespaceParam), &svc)
+	newSvc, err := model.MakeService(ctx.Param(namespaceParam), &svc)
 	if err != nil {
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
+	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
+	if err != nil {
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	newSvc.Labels = quota.Labels
 
 	svcAfter, err := kubecli.CreateService(newSvc)
 	if err != nil {
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	c.JSON(http.StatusCreated, model.ParseService(svcAfter))
+	ctx.JSON(http.StatusCreated, model.ParseService(svcAfter))
 }
 
 func getService(c *gin.Context) {
@@ -71,7 +76,7 @@ func getService(c *gin.Context) {
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 	nativeService, err := kube.GetService(namespace, serviceName)
 	if err != nil {
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 	c.JSON(http.StatusOK, model.ParseService(nativeService))
@@ -87,7 +92,7 @@ func deleteService(c *gin.Context) {
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 	err := kube.DeleteService(namespace, serviceName)
 	if err != nil {
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 	c.Status(http.StatusAccepted)
@@ -100,21 +105,31 @@ func updateService(c *gin.Context) {
 		"Namespace": namespace,
 		"Service":   serviceName,
 	}).Debug("Update service Call")
-	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-	var svc json_types.Service
+	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
+	var svc kube_types.Service
 	if err := c.ShouldBindWith(&svc, binding.JSON); err != nil {
 		c.Error(err)
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	newSvc, err := model.MakeService(c.Param(namespaceParam), &svc)
 	if err != nil {
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	updatedService, err := kube.UpdateService(newSvc)
+	quota, err := kubecli.GetNamespaceQuota(c.Param(namespaceParam))
+	if err != nil {
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	for k, v := range quota.Labels {
+		newSvc.Labels[k] = v
+	}
+
+	updatedService, err := kubecli.UpdateService(newSvc)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return

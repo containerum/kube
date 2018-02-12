@@ -3,6 +3,20 @@ package model
 import (
 	"fmt"
 	"net/http"
+
+	"gopkg.in/go-playground/validator.v8"
+
+	"k8s.io/apimachinery/pkg/api/errors"
+	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+const (
+	alreadyExists       = "%s already exists in %s"
+	fieldError          = "Validation failed for field: %s"
+	fildNotFound        = "%s is not found"
+	fieldShouldBeEmail  = "%v should be email address. Please, enter your valid email"
+	fieldShouldExist    = "Field %v should be provided"
+	fieldDefaultProblem = "%v should be %v"
 )
 
 var (
@@ -16,8 +30,8 @@ var (
 )
 
 type Error struct {
-	Text string
-	Code int
+	Text string `json:"error"`
+	Code int    `json:"code,omitempty"`
 }
 
 func (e *Error) Error() string {
@@ -38,4 +52,58 @@ func NewErrorWithCode(text string, code int) *Error {
 		Text: text,
 		Code: code,
 	}
+}
+
+//ParseBindErorrs parses different types of errors
+func ParseErorrs(in interface{}) (code int, out []Error) {
+
+	//Error from kubernetes
+	sE, isStatusErrorCode := in.(*errors.StatusError)
+	if isStatusErrorCode {
+		switch sE.Status().Code {
+		case 409:
+			return http.StatusBadRequest, []Error{{Text: fmt.Sprintf(alreadyExists, sE.Status().Details.Name, sE.Status().Details.Kind)}}
+		case 422:
+			for _, c := range sE.Status().Details.Causes {
+				switch c.Type {
+				case api_meta.CauseTypeFieldValueNotFound:
+					out = append(out, Error{Text: fmt.Sprintf(fildNotFound, c.Field)})
+				case api_meta.CauseTypeFieldValueDuplicate:
+					out = append(out, Error{Text: fmt.Sprintf(alreadyExists, sE.Status().Details.Name, sE.Status().Details.Kind)})
+				default:
+					out = append(out, Error{Text: fmt.Sprintf(fieldError, c.Field)})
+				}
+			}
+			return http.StatusBadRequest, out
+			//TODO Parse more errors
+		case 0:
+			return http.StatusInternalServerError, []Error{{Text: sE.Status().Message}}
+		default:
+			return int(sE.Status().Code), []Error{{Text: sE.Status().Message}}
+		}
+	}
+
+	//Validation error
+	vE, isValidationError := in.(validator.ValidationErrors)
+	if isValidationError {
+		for _, v := range vE {
+			switch v.Tag {
+			case "required":
+				out = append(out, Error{Text: fmt.Sprintf(fieldShouldExist, v.Name)})
+			case "email":
+				out = append(out, Error{Text: fmt.Sprintf(fieldShouldBeEmail, v.Name)})
+			default:
+				out = append(out, Error{Text: fmt.Sprintf(fieldDefaultProblem, v.Name, v.Tag)})
+			}
+		}
+		return http.StatusBadRequest, out
+	}
+
+	//Simple error with code
+	mE, isErrorWithCode := in.(Error)
+	if isErrorWithCode {
+		return http.StatusInternalServerError, []Error{mE}
+	}
+
+	return http.StatusInternalServerError, []Error{{Text: in.(error).Error()}}
 }

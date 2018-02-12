@@ -6,7 +6,7 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
-	json_types "git.containerum.net/ch/kube-client/pkg/model"
+	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 
 	"fmt"
 
@@ -28,7 +28,7 @@ func getDeploymentList(c *gin.Context) {
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 	deployments, err := kube.GetDeploymentList(c.MustGet(m.NamespaceKey).(string), c.Query(ownerQuery))
 	if err != nil {
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 	c.JSON(http.StatusOK, model.ParseDeploymentList(deployments))
@@ -43,7 +43,7 @@ func getDeployment(c *gin.Context) {
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 	deployment, err := kube.GetDeployment(c.MustGet(m.NamespaceKey).(string), c.Param(deploymentParam))
 	if err != nil {
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 	c.JSON(http.StatusOK, model.ParseDeployment(deployment))
@@ -54,29 +54,36 @@ func createDeployment(ctx *gin.Context) {
 		"Namespace": ctx.Param(namespaceParam),
 	}).Debug("Create deployment Call")
 
-	var depl json_types.Deployment
-	if err := ctx.ShouldBindWith(&depl, binding.JSON); err != nil {
-		ctx.AbortWithStatusJSON(ParseErorrs(err))
-		return
-	}
-
-	contaiers, err := model.MakeContainers(*depl.Containers)
-	if err != nil {
-		ctx.AbortWithStatusJSON(ParseErorrs(err))
-		return
-	}
-
-	newDepl, err := model.MakeDeployment(ctx.Param(namespaceParam), &depl, contaiers)
-	if err != nil {
-		ctx.AbortWithStatusJSON(ParseErorrs(err))
-		return
-	}
-
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	var depl kube_types.Deployment
+	if err := ctx.ShouldBindWith(&depl, binding.JSON); err != nil {
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	contaiers, err := model.MakeContainers(depl.Containers)
+	if err != nil {
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	newDepl := model.MakeDeployment(ctx.Param(namespaceParam), &depl, contaiers)
+
+	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
+	if err != nil {
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	for k, v := range quota.Labels {
+		newDepl.Labels[k] = v
+		newDepl.Spec.Template.Labels[k] = v
+	}
 
 	deplAfter, err := kubecli.CreateDeployment(ctx.Param(namespaceParam), newDepl)
 	if err != nil {
-		ctx.AbortWithStatusJSON(ParseErorrs(err))
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 	ctx.JSON(http.StatusCreated, model.ParseDeployment(deplAfter))
@@ -90,7 +97,7 @@ func deleteDeployment(c *gin.Context) {
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 	err := kube.DeleteDeployment(c.Param(namespaceParam), c.Param(deploymentParam))
 	if err != nil {
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 	c.Status(http.StatusAccepted)
@@ -102,35 +109,39 @@ func updateDeployment(c *gin.Context) {
 		"Deployment": c.Param(deploymentParam),
 	}).Debug("Update deployment Call")
 
-	var depl json_types.Deployment
+	var depl kube_types.Deployment
 	if err := c.ShouldBindWith(&depl, binding.JSON); err != nil {
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	if c.Param(deploymentParam) != depl.Name {
 		log.Errorf(invalidUpdateDeploymentName, c.Param(deploymentParam), depl.Name)
-		c.AbortWithStatusJSON(ParseErorrs(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateDeploymentName, c.Param(deploymentParam), depl.Name), http.StatusBadRequest)))
+		c.AbortWithStatusJSON(model.ParseErorrs(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateDeploymentName, c.Param(deploymentParam), depl.Name), http.StatusBadRequest)))
 		return
 	}
 
 	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	contaiers, err := model.MakeContainers(*depl.Containers)
+	contaiers, err := model.MakeContainers(depl.Containers)
 	if err != nil {
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	newDepl, err := model.MakeDeployment(c.Param(namespaceParam), &depl, contaiers)
+	newDepl := model.MakeDeployment(c.Param(namespaceParam), &depl, contaiers)
+
+	quota, err := kubecli.GetNamespaceQuota(c.Param(namespaceParam))
 	if err != nil {
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
+
+	newDepl.Labels = quota.Labels
 
 	deplAfter, err := kubecli.UpdateDeployment(c.Param(namespaceParam), newDepl)
 	if err != nil {
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
@@ -142,16 +153,16 @@ func updateDeploymentReplicas(c *gin.Context) {
 		"Namespace":  c.Param(namespaceParam),
 		"Deployment": c.Param(deploymentParam),
 	}).Debug("Update deployment replicas Call")
-	var replicas json_types.UpdateReplicas
+	var replicas kube_types.UpdateReplicas
 	if err := c.ShouldBindWith(&replicas, binding.JSON); err != nil {
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 	deployment, err := kube.GetDeployment(c.Param(namespaceParam), c.Param(deploymentParam))
 	if err != nil {
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 	newRepl := int32(replicas.Replicas)
@@ -159,7 +170,7 @@ func updateDeploymentReplicas(c *gin.Context) {
 
 	deplAfter, err := kube.UpdateDeployment(c.Param(namespaceParam), deployment)
 	if err != nil {
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
@@ -171,38 +182,35 @@ func updateDeploymentImage(c *gin.Context) {
 		"Namespace":  c.Param(namespaceParam),
 		"Deployment": c.Param(deploymentParam),
 	}).Debug("Update deployment container image Call")
-	var image json_types.UpdateImage
+	var image kube_types.UpdateImage
 	if err := c.ShouldBindWith(&image, binding.JSON); err != nil {
-		c.Error(err)
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 	deployment, err := kube.GetDeployment(c.Param(namespaceParam), c.Param(deploymentParam))
 	if err != nil {
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	updated := false
-
 	for i, v := range deployment.Spec.Template.Spec.Containers {
-		if v.Name == image.ContainerName {
+		if v.Name == image.Container {
 			deployment.Spec.Template.Spec.Containers[i].Image = image.Image
 			updated = true
 			break
 		}
 	}
-
 	if updated == false {
-		c.AbortWithStatusJSON(ParseErorrs(model.NewErrorWithCode(fmt.Sprintf(containerNotFoundError, c.Param(namespaceParam), c.Param(deploymentParam)), http.StatusNotFound)))
+		c.AbortWithStatusJSON(model.ParseErorrs(model.NewErrorWithCode(fmt.Sprintf(containerNotFoundError, c.Param(namespaceParam), c.Param(deploymentParam)), http.StatusNotFound)))
 		return
 	}
 
 	deplAfter, err := kube.UpdateDeployment(c.Param(namespaceParam), deployment)
 	if err != nil {
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 

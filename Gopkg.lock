@@ -2,10 +2,10 @@
 
 
 [[projects]]
-  branch = "develop"
+  branch = "9-add-get-namespace-and-get-namespace-list-through-resource-service"
   name = "git.containerum.net/ch/kube-client"
   packages = ["pkg/model"]
-  revision = "c0e42b6636b976835d24105127b22d3065e970e2"
+  revision = "0fa889ed59d8f570de9104bbf87e7cfcfbd84fa5"
 
 [[projects]]
   name = "github.com/appleboy/gofight"
@@ -197,7 +197,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "5119cf507ed5294cc409c092980c7497ee5d6fd2"
+  revision = "9de5f2eaf759b4c4550b3db39fed2e9e5f86f45c"
 
 [[projects]]
   branch = "master"
@@ -239,13 +239,13 @@
   branch = "master"
   name = "k8s.io/api"
   packages = ["admissionregistration/v1alpha1","admissionregistration/v1beta1","apps/v1","apps/v1beta1","apps/v1beta2","authentication/v1","authentication/v1beta1","authorization/v1","authorization/v1beta1","autoscaling/v1","autoscaling/v2beta1","batch/v1","batch/v1beta1","batch/v2alpha1","certificates/v1beta1","core/v1","events/v1beta1","extensions/v1beta1","networking/v1","policy/v1beta1","rbac/v1","rbac/v1alpha1","rbac/v1beta1","scheduling/v1alpha1","settings/v1alpha1","storage/v1","storage/v1alpha1","storage/v1beta1"]
-  revision = "a1d6dce6736a6c75929bb75111e89077e35a5856"
+  revision = "2694da5be9c4ab4f3fd826112d4c3f71b8bf4b23"
 
 [[projects]]
   branch = "master"
   name = "k8s.io/apimachinery"
   packages = ["pkg/api/errors","pkg/api/meta","pkg/api/resource","pkg/apis/meta/v1","pkg/apis/meta/v1/unstructured","pkg/apis/meta/v1beta1","pkg/conversion","pkg/conversion/queryparams","pkg/fields","pkg/labels","pkg/runtime","pkg/runtime/schema","pkg/runtime/serializer","pkg/runtime/serializer/json","pkg/runtime/serializer/protobuf","pkg/runtime/serializer/recognizer","pkg/runtime/serializer/streaming","pkg/runtime/serializer/versioning","pkg/selection","pkg/types","pkg/util/clock","pkg/util/errors","pkg/util/framer","pkg/util/intstr","pkg/util/json","pkg/util/net","pkg/util/runtime","pkg/util/sets","pkg/util/validation","pkg/util/validation/field","pkg/util/wait","pkg/util/yaml","pkg/version","pkg/watch","third_party/forked/golang/reflect"]
-  revision = "8259d997cf059cd83dc47e5f8074b7a7d7967c09"
+  revision = "616b23029fa3dc3e0ccefd47963f5651a6543d94"
 
 [[projects]]
   name = "k8s.io/client-go"
