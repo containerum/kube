@@ -18,23 +18,24 @@ const (
 	serviceParam = "service"
 )
 
-func getServiceList(ctx *gin.Context) {
-	namespace := ctx.Param(namespaceParam)
+func getServiceList(c *gin.Context) {
+	namespace := c.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
-		"Namespace": namespace,
+		"Namespace Param": c.Param(namespaceParam),
+		"Namespace":       namespace,
 	}).Debug("Get service list call")
-	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 	nativeServices, err := kube.GetServiceList(namespace)
 	if err != nil {
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		c.AbortWithStatusJSON(ParseErorrs(err))
 		return
 	}
 	ret, err := model.ParseServiceList(nativeServices)
 	if err != nil {
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		c.AbortWithStatusJSON(ParseErorrs(err))
 		return
 	}
-	ctx.JSON(http.StatusOK, ret)
+	c.JSON(http.StatusOK, ret)
 }
 
 func createService(ctx *gin.Context) {
@@ -45,8 +46,6 @@ func createService(ctx *gin.Context) {
 	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-		return
-	}
 
 	newSvc, err := model.MakeService(ctx.Param(namespaceParam), &svc)
 	if err != nil {
@@ -72,11 +71,12 @@ func createService(ctx *gin.Context) {
 }
 
 func getService(ctx *gin.Context) {
-	namespace := ctx.Param(namespaceParam)
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	serviceName := ctx.Param(serviceParam)
 	log.WithFields(log.Fields{
-		"Namespace": namespace,
-		"Service":   serviceName,
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       namespace,
+		"Service":         serviceName,
 	}).Debug("Get service call")
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	nativeService, err := kube.GetService(namespace, serviceName)
@@ -104,6 +104,8 @@ func deleteService(ctx *gin.Context) {
 }
 
 func updateService(ctx *gin.Context) {
+	serviceName := ctx.Param(serviceParam)
+	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
 		"Namespace": ctx.Param(namespaceParam),
 		"Service":   ctx.Param(serviceParam),

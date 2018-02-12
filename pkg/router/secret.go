@@ -20,10 +20,11 @@ const (
 
 func getSecretList(c *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": c.Param(namespaceParam),
+		"Namespace Param": c.Param(namespaceParam),
+		"Namespace":       c.MustGet(m.NamespaceKey).(string),
 	}).Debug("Get secret list Call")
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-	secrets, err := kube.GetSecretList(c.Param(namespaceParam))
+	secrets, err := kube.GetSecretList(c.MustGet(m.NamespaceKey).(string))
 	if err != nil {
 		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
@@ -33,11 +34,12 @@ func getSecretList(c *gin.Context) {
 
 func getSecret(c *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": c.Param(namespaceParam),
-		"Secret":    c.Param(secretParam),
+		"Namespace Param": c.Param(namespaceParam),
+		"Namespace":       c.MustGet(m.NamespaceKey).(string),
+		"Secret":          c.Param(secretParam),
 	}).Debug("Get secret Call")
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-	secret, err := kube.GetSecret(c.Param(namespaceParam), c.Param(secretParam))
+	secret, err := kube.GetSecret(c.MustGet(m.NamespaceKey).(string), c.Param(secretParam))
 	if err != nil {
 		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return

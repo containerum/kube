@@ -9,17 +9,23 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func ParseUserHeaderData(str string) (*model.UserHeaderData, error) {
+type UserHeaderDataMap map[string]model.UserHeaderData
+
+func ParseUserHeaderData(str string) (*UserHeaderDataMap, error) {
 	data, err := base64.StdEncoding.DecodeString(str)
 	if err != nil {
 		log.WithError(err).WithField("Value", str).Warn(ErrUnableEncodeUserHeaderData)
 		return nil, ErrUnableEncodeUserHeaderData
 	}
-	var userData model.UserHeaderData
+	var userData []model.UserHeaderData
 	err = json.Unmarshal(data, &userData)
 	if err != nil {
 		log.WithError(err).WithField("Value", string(data)).Warn(ErrUnableUnmarshalUserHeaderData)
 		return nil, ErrUnableUnmarshalUserHeaderData
 	}
-	return &userData, nil
+	result := UserHeaderDataMap{}
+	for _, v := range userData {
+		result[v.ID] = v
+	}
+	return &result, nil
 }

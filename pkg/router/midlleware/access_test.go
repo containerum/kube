@@ -14,6 +14,26 @@ func init() {
 	gin.SetMode(gin.TestMode)
 }
 
+func TestContainsAccess(t *testing.T) {
+	Convey("Test containsAccess func", t, func() {
+		Convey("Check empty access in empty list", func() {
+			So(containsAccess(""), ShouldBeFalse)
+		})
+		Convey("Check empty access in read levels array", func() {
+			So(containsAccess("", readLevels...), ShouldBeFalse)
+		})
+		Convey("Check read access in empty list", func() {
+			So(containsAccess("read"), ShouldBeFalse)
+		})
+		Convey("Check read access in list without read access", func() {
+			So(containsAccess("read", levelOwner, levelWrite), ShouldBeFalse)
+		})
+		Convey("Check read access in read levels array", func() {
+			So(containsAccess("read", readLevels...), ShouldBeTrue)
+		})
+	})
+}
+
 func TestIsAdmin(t *testing.T) {
 	e := gin.New()
 	r := gofight.New()

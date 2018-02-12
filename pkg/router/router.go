@@ -24,7 +24,8 @@ func initMiddlewares(e *gin.Engine, kube *kubernetes.Kube) {
 	e.Use(ginrus.Ginrus(logrus.WithField("component", "gin"), time.RFC3339, true))
 	e.Use(gin.RecoveryWithWriter(logrus.WithField("component", "gin_recovery").WriterLevel(logrus.ErrorLevel)))
 	/* Custom */
-	e.Use(m.RequiredHeaders())
+	e.Use(m.RequiredUserHeaders())
+	e.Use(m.SetNamespace())
 	e.Use(m.RegisterKubeClient(kube))
 }
 
@@ -42,8 +43,8 @@ func initRoutes(e *gin.Engine) {
 
 		service := namespace.Group("/:namespace/services")
 		{
-			service.Use(m.IsAdmin()).GET("", getServiceList)
-			service.GET("/:service", getService)
+			service.Use(m.ReadAccess()).GET("", getServiceList)
+			service.Use(m.ReadAccess()).GET("/:service", getService)
 			service.POST("", createService)
 			service.PUT("/:service", updateService)
 			service.DELETE("/:service", deleteService)
@@ -51,8 +52,8 @@ func initRoutes(e *gin.Engine) {
 
 		deployment := namespace.Group("/:namespace/deployments")
 		{
-			deployment.Use(m.IsAdmin()).GET("", getDeploymentList)
-			deployment.GET("/:deployment", getDeployment)
+			deployment.Use(m.ReadAccess()).GET("", getDeploymentList)
+			deployment.Use(m.ReadAccess()).GET("/:deployment", getDeployment)
 			deployment.POST("", createDeployment)
 			deployment.PUT("/:deployment", updateDeployment)
 			deployment.PUT("/:deployment/replicas", updateDeploymentReplicas)
@@ -62,8 +63,8 @@ func initRoutes(e *gin.Engine) {
 
 		secret := namespace.Group("/:namespace/secrets")
 		{
-			secret.Use(m.IsAdmin()).GET("", getSecretList)
-			secret.GET("/:secret", getSecret)
+			secret.Use(m.ReadAccess()).GET("", getSecretList)
+			secret.Use(m.ReadAccess()).GET("/:secret", getSecret)
 			secret.POST("", createSecret)
 			secret.PUT("/:secret", updateSecret)
 			secret.DELETE("/:secret", deleteSecret)
@@ -80,8 +81,9 @@ func initRoutes(e *gin.Engine) {
 
 		pod := namespace.Group("/:namespace/pods")
 		{
+			pod.Use(m.ReadAccess()).GET("", getPodList)
+			pod.Use(m.ReadAccess()).GET("/:pod", getPod)
 			pod.Use(m.IsAdmin()).GET("", getPodList)
-			pod.GET("/:pod", getPod)
 			pod.GET("/:pod/log", getPodLogs)
 			pod.DELETE("/:pod", deletePod)
 		}
