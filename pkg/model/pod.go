@@ -30,7 +30,7 @@ func ParsePod(pod interface{}) model.Pod {
 }
 
 func getContainers(cListi interface{}) []model.Container {
-	cList := cListi.([]*api_core.Container)
+	cList := cListi.([]api_core.Container)
 	var containers []model.Container
 	for _, c := range cList {
 		env := getEnv(c.Env)

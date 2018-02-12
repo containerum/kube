@@ -83,7 +83,6 @@ func initRoutes(e *gin.Engine) {
 		{
 			pod.Use(m.ReadAccess()).GET("", getPodList)
 			pod.Use(m.ReadAccess()).GET("/:pod", getPod)
-			pod.Use(m.IsAdmin()).GET("", getPodList)
 			pod.GET("/:pod/log", getPodLogs)
 			pod.DELETE("/:pod", deletePod)
 		}

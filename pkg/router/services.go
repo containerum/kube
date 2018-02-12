@@ -27,12 +27,12 @@ func getServiceList(c *gin.Context) {
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 	nativeServices, err := kube.GetServiceList(namespace)
 	if err != nil {
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 	ret, err := model.ParseServiceList(nativeServices)
 	if err != nil {
-		c.AbortWithStatusJSON(ParseErorrs(err))
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 	c.JSON(http.StatusOK, ret)
@@ -44,8 +44,9 @@ func createService(ctx *gin.Context) {
 
 	var svc kube_types.Service
 	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
-		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
 
 	newSvc, err := model.MakeService(ctx.Param(namespaceParam), &svc)
 	if err != nil {
@@ -104,8 +105,6 @@ func deleteService(ctx *gin.Context) {
 }
 
 func updateService(ctx *gin.Context) {
-	serviceName := ctx.Param(serviceParam)
-	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
 		"Namespace": ctx.Param(namespaceParam),
 		"Service":   ctx.Param(serviceParam),

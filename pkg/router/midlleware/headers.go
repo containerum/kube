@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"git.containerum.net/ch/kube-api/pkg/model"
-	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 
 	"github.com/gin-gonic/gin"
 
