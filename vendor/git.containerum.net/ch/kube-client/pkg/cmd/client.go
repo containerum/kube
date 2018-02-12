@@ -12,8 +12,9 @@ import (
 //Client - rest client
 type Client struct {
 	*resty.Request
-	serverURL string
-	User      User
+	serverURL           string
+	resourceServiceAddr string
+	User                User
 }
 
 //User -
@@ -27,10 +28,13 @@ func CreateCmdClient(u User) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	// TODO: addr validation
+	resourcesAddr := os.Getenv("RESOURCE_ADDR")
 	client := &Client{
-		Request:   resty.R(),
-		serverURL: apiURL.String(),
-		User:      u,
+		Request:             resty.R(),
+		serverURL:           apiURL.String(),
+		resourceServiceAddr: resourcesAddr,
+		User:                u,
 	}
 	client.SetHeaders(map[string]string{
 		"X-User-Role": client.User.Role,

@@ -5,7 +5,7 @@
   branch = "develop"
   name = "git.containerum.net/ch/kube-client"
   packages = ["pkg/model"]
-  revision = "f89053ae4cadfc64cf1e3343e33303a3deadeb21"
+  revision = "d5fa950289c13648fe8fba30eab099c3d3ccd206"
 
 [[projects]]
   name = "github.com/appleboy/gofight"
