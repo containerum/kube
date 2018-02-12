@@ -26,6 +26,12 @@ var (
 	ErrUnableUpdateDeployment  = errors.New("Unable to update deployment")
 	ErrUnableDeleteDeployment  = errors.New("Unable to delete deployment")
 
+	ErrUnableGetIngressList = errors.New("Unable to get deployments list")
+	ErrUnableGetIngress     = errors.New("Unable to get deployment")
+	ErrUnableCreateIngress  = errors.New("Unable to create deployment")
+	ErrUnableUpdateIngress  = errors.New("Unable to update deployment")
+	ErrUnableDeleteIngress  = errors.New("Unable to delete deployment")
+
 	ErrUnableGetSecretList = errors.New("Unable to get secrets list")
 	ErrUnableGetSecret     = errors.New("Unable to get secret")
 	ErrUnableCreateSecret  = errors.New("Unable to create secret")

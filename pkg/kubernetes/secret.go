@@ -41,6 +41,18 @@ func (k *Kube) CreateSecret(secret *api_core.Secret) (*api_core.Secret, error) {
 	return newSecret, nil
 }
 
+func (k *Kube) UpdateSecret(secret *api_core.Secret) (*api_core.Secret, error) {
+	newSecret, err := k.CoreV1().Secrets(secret.Namespace).Update(secret)
+	if err != nil {
+		log.WithError(err).WithFields(log.Fields{
+			"Namespace": secret.Namespace,
+			"Secret":    secret.Name,
+		}).Error(ErrUnableCreateSecret)
+		return nil, err
+	}
+	return newSecret, nil
+}
+
 func (k *Kube) DeleteSecret(nsName string, secretName string) error {
 	err := k.CoreV1().Secrets(nsName).Delete(secretName, &api_meta.DeleteOptions{})
 	if err != nil {

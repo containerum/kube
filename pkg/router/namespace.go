@@ -17,7 +17,6 @@ import (
 const (
 	ownerQuery     = "owner"
 	namespaceParam = "namespace"
-	serviceParam   = "service"
 )
 
 func getNamespaceList(c *gin.Context) {

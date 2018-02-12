@@ -3,6 +3,8 @@ package router
 import (
 	"net/http"
 
+	"fmt"
+
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
@@ -10,6 +12,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
+)
+
+const (
+	serviceParam = "service"
 )
 
 func getServiceList(ctx *gin.Context) {
@@ -98,17 +104,21 @@ func deleteService(ctx *gin.Context) {
 }
 
 func updateService(ctx *gin.Context) {
-	serviceName := ctx.Param(serviceParam)
-	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
-		"Namespace": namespace,
-		"Service":   serviceName,
+		"Namespace": ctx.Param(namespaceParam),
+		"Service":   ctx.Param(serviceParam),
 	}).Debug("Update service Call")
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	var svc kube_types.Service
 	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	if ctx.Param(serviceParam) != svc.Name {
+		log.Errorf(invalidUpdateSecretName, ctx.Param(serviceParam), svc.Name)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateServiceName, ctx.Param(serviceParam), svc.Name), http.StatusBadRequest)))
 		return
 	}
 

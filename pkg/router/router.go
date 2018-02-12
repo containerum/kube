@@ -34,15 +34,15 @@ func initRoutes(e *gin.Engine) {
 	})
 	namespace := e.Group("/namespaces")
 	{
-		namespace.GET("", getNamespaceList)
+		namespace.Use(m.IsAdmin()).GET("", getNamespaceList)
 		namespace.GET("/:namespace", getNamespace)
-		namespace.Use(m.IsAdmin()).POST("", сreateNamespace)
-		namespace.Use(m.IsAdmin()).PUT("/:namespace", updateNamespace)
-		namespace.Use(m.IsAdmin()).DELETE("/:namespace", deleteNamespace)
+		namespace.POST("", сreateNamespace)
+		namespace.PUT("/:namespace", updateNamespace)
+		namespace.DELETE("/:namespace", deleteNamespace)
 
 		service := namespace.Group("/:namespace/services")
 		{
-			service.GET("", getServiceList)
+			service.Use(m.IsAdmin()).GET("", getServiceList)
 			service.GET("/:service", getService)
 			service.POST("", createService)
 			service.PUT("/:service", updateService)
@@ -51,7 +51,7 @@ func initRoutes(e *gin.Engine) {
 
 		deployment := namespace.Group("/:namespace/deployments")
 		{
-			deployment.GET("", getDeploymentList)
+			deployment.Use(m.IsAdmin()).GET("", getDeploymentList)
 			deployment.GET("/:deployment", getDeployment)
 			deployment.POST("", createDeployment)
 			deployment.PUT("/:deployment", updateDeployment)
@@ -62,15 +62,25 @@ func initRoutes(e *gin.Engine) {
 
 		secret := namespace.Group("/:namespace/secrets")
 		{
-			secret.GET("", getSecretList)
+			secret.Use(m.IsAdmin()).GET("", getSecretList)
 			secret.GET("/:secret", getSecret)
 			secret.POST("", createSecret)
+			secret.PUT("/:secret", updateSecret)
 			secret.DELETE("/:secret", deleteSecret)
+		}
+
+		ingress := namespace.Group("/:namespace/ingresses")
+		{
+			ingress.Use(m.IsAdmin()).GET("", getIngressList)
+			ingress.GET("/:ingress", getIngress)
+			ingress.POST("", createIngress)
+			ingress.PUT("/:ingress", updateIngress)
+			ingress.DELETE("/:ingress", deleteIngress)
 		}
 
 		pod := namespace.Group("/:namespace/pods")
 		{
-			pod.GET("", getPodList)
+			pod.Use(m.IsAdmin()).GET("", getPodList)
 			pod.GET("/:pod", getPod)
 			pod.GET("/:pod/log", getPodLogs)
 			pod.DELETE("/:pod", deletePod)
