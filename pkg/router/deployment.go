@@ -62,7 +62,7 @@ func createDeployment(ctx *gin.Context) {
 		return
 	}
 
-	contaiers, err := model.MakeContainers(*depl.Containers)
+	contaiers, err := model.MakeContainers(depl.Containers)
 	if err != nil {
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
@@ -123,7 +123,7 @@ func updateDeployment(c *gin.Context) {
 
 	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	contaiers, err := model.MakeContainers(*depl.Containers)
+	contaiers, err := model.MakeContainers(depl.Containers)
 	if err != nil {
 		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
@@ -197,7 +197,7 @@ func updateDeploymentImage(c *gin.Context) {
 
 	updated := false
 	for i, v := range deployment.Spec.Template.Spec.Containers {
-		if v.Name == image.ContainerName {
+		if v.Name == image.Container {
 			deployment.Spec.Template.Spec.Containers[i].Image = image.Image
 			updated = true
 			break
