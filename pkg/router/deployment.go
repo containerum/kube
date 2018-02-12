@@ -21,26 +21,27 @@ const (
 
 func getDeploymentList(c *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": c.Param(namespaceParam),
-		"Owner":     c.Query(ownerQuery),
+		"Namespace Param": c.Param(namespaceParam),
+		"Namespace":       c.MustGet(m.NamespaceKey).(string),
+		"Owner":           c.Query(ownerQuery),
 	}).Debug("Get deployment list Call")
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-	deployments, err := kube.GetDeploymentList(c.Param(namespaceParam), c.Query(ownerQuery))
+	deployments, err := kube.GetDeploymentList(c.MustGet(m.NamespaceKey).(string), c.Query(ownerQuery))
 	if err != nil {
 		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
-
 	c.JSON(http.StatusOK, model.ParseDeploymentList(deployments))
 }
 
 func getDeployment(c *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace":  c.Param(namespaceParam),
-		"Deployment": c.Param(deploymentParam),
+		"Namespace Param": c.Param(namespaceParam),
+		"Namespace":       c.MustGet(m.NamespaceKey).(string),
+		"Deployment":      c.Param(deploymentParam),
 	}).Debug("Get deployment Call")
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-	deployment, err := kube.GetDeployment(c.Param(namespaceParam), c.Param(deploymentParam))
+	deployment, err := kube.GetDeployment(c.MustGet(m.NamespaceKey).(string), c.Param(deploymentParam))
 	if err != nil {
 		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
@@ -61,7 +62,7 @@ func createDeployment(ctx *gin.Context) {
 		return
 	}
 
-	contaiers, err := model.MakeContainers(depl.Containers)
+	contaiers, err := model.MakeContainers(*depl.Containers)
 	if err != nil {
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
@@ -122,7 +123,7 @@ func updateDeployment(c *gin.Context) {
 
 	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	contaiers, err := model.MakeContainers(depl.Containers)
+	contaiers, err := model.MakeContainers(*depl.Containers)
 	if err != nil {
 		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
@@ -196,7 +197,7 @@ func updateDeploymentImage(c *gin.Context) {
 
 	updated := false
 	for i, v := range deployment.Spec.Template.Spec.Containers {
-		if v.Name == image.Container {
+		if v.Name == image.ContainerName {
 			deployment.Spec.Template.Spec.Containers[i].Image = image.Image
 			updated = true
 			break
