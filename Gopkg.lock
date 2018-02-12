@@ -2,10 +2,10 @@
 
 
 [[projects]]
-  branch = "develop"
+  branch = "9-add-get-namespace-and-get-namespace-list-through-resource-service"
   name = "git.containerum.net/ch/kube-client"
   packages = ["pkg/model"]
-  revision = "f89053ae4cadfc64cf1e3343e33303a3deadeb21"
+  revision = "0fa889ed59d8f570de9104bbf87e7cfcfbd84fa5"
 
 [[projects]]
   name = "github.com/appleboy/gofight"
@@ -256,6 +256,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "81be988c19228834858ac57dc31b59d99cef7ccfb82e8eac9ffc520bfdbb43b4"
+  inputs-digest = "35a6af8ecba8462d2e69f54503c73f5d36cabdcf7030f2ef50923688d84868f2"
   solver-name = "gps-cdcl"
   solver-version = 1
