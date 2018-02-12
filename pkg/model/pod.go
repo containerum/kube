@@ -74,17 +74,3 @@ func getEnv(eList []api_core.EnvVar) []model.Env {
 	}
 	return envs
 }
-
-func getDeploymentVolumes(vList []api_core.Volume) []model.DeploymentVolume {
-	var volumes []model.DeploymentVolume
-	for _, v := range vList {
-		volumes = append(volumes, model.DeploymentVolume{
-			Name: v.Name,
-			GlusterFS: model.GlusterFS{
-				Endpoint: v.VolumeSource.Glusterfs.EndpointsName,
-				Path:     v.VolumeSource.Glusterfs.Path,
-			},
-		})
-	}
-	return volumes
-}

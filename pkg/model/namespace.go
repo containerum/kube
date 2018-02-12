@@ -44,17 +44,27 @@ func ParseResourceQuota(quota interface{}) kube_types.Namespace {
 	}
 }
 
-func MakeResourceQuota(cpu, memory api_resource.Quantity) *api_core.ResourceQuota {
+func MakeResourceQuota(cpu, memory string) (*api_core.ResourceQuota, error) {
+	cpuq, err := api_resource.ParseQuantity(cpu)
+	if err != nil {
+		return nil, ErrInvalidCPUFormat
+	}
+
+	memoryq, err := api_resource.ParseQuantity(memory)
+	if err != nil {
+		return nil, ErrInvalidMemoryFormat
+	}
+
 	return &api_core.ResourceQuota{
 		Spec: api_core.ResourceQuotaSpec{
 			Hard: api_core.ResourceList{
-				api_core.ResourceRequestsCPU:    cpu,
-				api_core.ResourceLimitsCPU:      cpu,
-				api_core.ResourceRequestsMemory: memory,
-				api_core.ResourceLimitsMemory:   memory,
+				api_core.ResourceRequestsCPU:    cpuq,
+				api_core.ResourceLimitsCPU:      cpuq,
+				api_core.ResourceRequestsMemory: memoryq,
+				api_core.ResourceLimitsMemory:   memoryq,
 			},
 		},
-	}
+	}, nil
 }
 
 func MakeNamespace(ns kube_types.Namespace) *api_core.Namespace {

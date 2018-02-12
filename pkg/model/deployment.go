@@ -25,9 +25,7 @@ func ParseDeploymentList(deploys interface{}) []kube_types.Deployment {
 
 func ParseDeployment(deployment interface{}) kube_types.Deployment {
 	obj := deployment.(*api_apps.Deployment)
-	// var containers []Container
 	owner := obj.GetLabels()[ownerLabel]
-	volume := getDeploymentVolumes(obj.Spec.Template.Spec.Volumes)
 	replicas := 0
 	containers := getContainers(obj.Spec.Template.Spec.Containers)
 	updated := obj.ObjectMeta.CreationTimestamp.Unix()
@@ -41,42 +39,23 @@ func ParseDeployment(deployment interface{}) kube_types.Deployment {
 	}
 	return kube_types.Deployment{
 		Name:     obj.GetName(),
-		Owner:    owner,
+		Owner:    &owner,
 		Replicas: replicas,
 		Status: &kube_types.DeploymentStatus{
-			Created:             obj.ObjectMeta.CreationTimestamp.Unix(),
-			Updated:             updated,
+			CreatedAt:           obj.ObjectMeta.CreationTimestamp.Unix(),
+			UpdatedAt:           updated,
 			Replicas:            int(obj.Status.Replicas),
 			ReadyReplicas:       int(obj.Status.ReadyReplicas),
 			AvailableReplicas:   int(obj.Status.AvailableReplicas),
 			UpdatedReplicas:     int(obj.Status.UpdatedReplicas),
 			UnavailableReplicas: int(obj.Status.UnavailableReplicas),
 		},
-		Containers: &containers,
+		Containers: containers,
 		Hostname:   &obj.Spec.Template.Spec.Hostname,
-		Volume:     &volume,
 	}
 }
 
-func MakeDeployment(nsName string, depl *kube_types.Deployment, containers []api_core.Container) (*api_apps.Deployment, error) {
-	//Adding deployment volumes
-	var deplVolumes []api_core.Volume
-
-	if depl.Volume != nil {
-		for _, v := range *depl.Volume {
-			err := binding.Validator.ValidateStruct(v)
-			if err != nil {
-				return nil, err
-			}
-
-			var vs api_core.VolumeSource
-			vs.Glusterfs = &api_core.GlusterfsVolumeSource{}
-			vs.Glusterfs.EndpointsName = v.GlusterFS.Endpoint
-			vs.Glusterfs.Path = v.GlusterFS.Path
-			deplVolumes = append(deplVolumes, api_core.Volume{Name: v.Name, VolumeSource: vs})
-		}
-	}
-
+func MakeDeployment(nsName string, depl *kube_types.Deployment, containers []api_core.Container) *api_apps.Deployment {
 	repl := int32(depl.Replicas)
 
 	newDepl := api_apps.Deployment{}
@@ -84,19 +63,22 @@ func MakeDeployment(nsName string, depl *kube_types.Deployment, containers []api
 	newDepl.APIVersion = "apps/v1"
 	newDepl.SetName(depl.Name)
 	newDepl.SetNamespace(nsName)
-	newDepl.SetLabels(map[string]string{"app": depl.Name, "owner": depl.Owner})
-	newDepl.Spec.Selector = &api_meta.LabelSelector{MatchLabels: map[string]string{"app": depl.Name, "owner": depl.Owner}}
+	newDepl.SetLabels(map[string]string{"app": depl.Name, "owner": *depl.Owner})
+	newDepl.Spec.Selector = &api_meta.LabelSelector{MatchLabels: map[string]string{"app": depl.Name, "owner": *depl.Owner}}
 	newDepl.Spec.Replicas = &repl
 	newDepl.Spec.Template.Spec.Containers = containers
-	newDepl.Spec.Template.Spec.Volumes = deplVolumes
 	newDepl.Spec.Template.Spec.NodeSelector = map[string]string{"role": "slave"}
-	newDepl.Spec.Template.SetLabels(map[string]string{"app": depl.Name, "owner": depl.Owner})
+	newDepl.Spec.Template.SetLabels(map[string]string{"app": depl.Name, "owner": *depl.Owner})
 
-	return &newDepl, nil
+	return &newDepl
 }
 
 func MakeContainers(containers []kube_types.Container) ([]api_core.Container, error) {
 	var containersAfter []api_core.Container
+	if len(containers) == 0 {
+		return nil, ErrNoContainerInRequest
+	}
+
 	for _, container := range containers {
 		err := binding.Validator.ValidateStruct(container)
 		if err != nil {
@@ -108,9 +90,6 @@ func MakeContainers(containers []kube_types.Container) ([]api_core.Container, er
 			return nil, err
 		}
 		containersAfter = append(containersAfter, *parsedContainer)
-	}
-	if len(containersAfter) == 0 {
-		return nil, ErrNoContainerInRequest
 	}
 	return containersAfter, nil
 }
@@ -153,12 +132,7 @@ func MakeContainer(container kube_types.Container) (*api_core.Container, error) 
 			if err != nil {
 				return nil, err
 			}
-
-			var name string
-			if v.Name != nil {
-				name = *v.Name
-			}
-			ports = append(ports, api_core.ContainerPort{ContainerPort: v.Port, Protocol: api_core.Protocol(v.Protocol), Name: name})
+			ports = append(ports, api_core.ContainerPort{ContainerPort: int32(v.Port), Protocol: api_core.Protocol(v.Protocol), Name: v.Name})
 		}
 	}
 

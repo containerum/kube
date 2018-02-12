@@ -10,8 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
-
-	api_core "k8s.io/api/core/v1"
 )
 
 func getServiceList(ctx *gin.Context) {
@@ -22,12 +20,12 @@ func getServiceList(ctx *gin.Context) {
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	nativeServices, err := kube.GetServiceList(namespace)
 	if err != nil {
-		ctx.AbortWithStatusJSON(ParseErorrs(err))
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
-	ret, err := model.ParseServiceList(nativeServices.(*api_core.ServiceList))
+	ret, err := model.ParseServiceList(nativeServices)
 	if err != nil {
-		ctx.AbortWithStatusJSON(ParseErorrs(err))
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 	ctx.JSON(http.StatusOK, ret)
@@ -40,19 +38,19 @@ func createService(ctx *gin.Context) {
 	var svc kube_types.Service
 	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(ParseErorrs(err))
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	newSvc, err := model.MakeService(ctx.Param(namespaceParam), &svc)
 	if err != nil {
-		ctx.AbortWithStatusJSON(ParseErorrs(err))
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
-		ctx.AbortWithStatusJSON(ParseErorrs(err))
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
@@ -60,7 +58,7 @@ func createService(ctx *gin.Context) {
 
 	svcAfter, err := kubecli.CreateService(newSvc)
 	if err != nil {
-		ctx.AbortWithStatusJSON(ParseErorrs(err))
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
@@ -77,7 +75,7 @@ func getService(ctx *gin.Context) {
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	nativeService, err := kube.GetService(namespace, serviceName)
 	if err != nil {
-		ctx.AbortWithStatusJSON(ParseErorrs(err))
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 	ctx.JSON(http.StatusOK, model.ParseService(nativeService))
@@ -93,7 +91,7 @@ func deleteService(ctx *gin.Context) {
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	err := kube.DeleteService(namespace, serviceName)
 	if err != nil {
-		ctx.AbortWithStatusJSON(ParseErorrs(err))
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 	ctx.Status(http.StatusAccepted)
@@ -110,19 +108,19 @@ func updateService(ctx *gin.Context) {
 	var svc kube_types.Service
 	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(ParseErorrs(err))
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	newSvc, err := model.MakeService(ctx.Param(namespaceParam), &svc)
 	if err != nil {
-		ctx.AbortWithStatusJSON(ParseErorrs(err))
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
-		ctx.AbortWithStatusJSON(ParseErorrs(err))
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
