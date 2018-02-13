@@ -12,9 +12,11 @@ var (
 
 //ONLY for FIRST TESTS
 func main() {
-	client, err := cmd.CreateCmdClient(cmd.User{
-		Role: "admin",
-	})
+	client, err := cmd.CreateCmdClient(
+		cmd.ClientConfig{
+			User: cmd.User{
+				Role: "admin",
+			}})
 	if err != nil {
 		panic(err)
 	}
