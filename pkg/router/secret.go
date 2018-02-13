@@ -18,120 +18,151 @@ const (
 	secretParam = "secret"
 )
 
-func getSecretList(c *gin.Context) {
+func getSecretList(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace Param": c.Param(namespaceParam),
-		"Namespace":       c.MustGet(m.NamespaceKey).(string),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
 	}).Debug("Get secret list Call")
-	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-	secrets, err := kube.GetSecretList(c.MustGet(m.NamespaceKey).(string))
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	secrets, err := kube.GetSecretList(ctx.MustGet(m.NamespaceKey).(string))
 	if err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
-	c.JSON(http.StatusOK, model.ParseSecretList(secrets))
+
+	ret, err := model.ParseSecretList(secrets)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, ret)
 }
 
-func getSecret(c *gin.Context) {
+func getSecret(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace Param": c.Param(namespaceParam),
-		"Namespace":       c.MustGet(m.NamespaceKey).(string),
-		"Secret":          c.Param(secretParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+		"Secret":          ctx.Param(secretParam),
 	}).Debug("Get secret Call")
-	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-	secret, err := kube.GetSecret(c.MustGet(m.NamespaceKey).(string), c.Param(secretParam))
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	secret, err := kube.GetSecret(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(secretParam))
 	if err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
-	c.JSON(http.StatusOK, model.ParseSecret(secret))
+
+	ret, err := model.ParseSecret(secret)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, ret)
 }
 
-func createSecret(c *gin.Context) {
+func createSecret(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": c.Param(namespaceParam),
+		"Namespace": ctx.Param(namespaceParam),
 	}).Debug("Create secret Call")
 
-	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
 	var secret kube_types.Secret
-	if err := c.ShouldBindWith(&secret, binding.JSON); err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+	if err := ctx.ShouldBindWith(&secret, binding.JSON); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	newSecret := model.MakeSecret(c.Param(namespaceParam), secret)
-
-	quota, err := kubecli.GetNamespaceQuota(c.Param(namespaceParam))
+	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	for k, v := range quota.Labels {
-		newSecret.Labels[k] = v
-	}
+	newSecret := model.MakeSecret(ctx.Param(namespaceParam), secret, quota.Labels)
 
 	secretAfter, err := kubecli.CreateSecret(newSecret)
 	if err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	c.JSON(http.StatusCreated, model.ParseSecret(secretAfter))
+	ret, err := model.ParseSecret(secretAfter)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, ret)
 }
 
-func updateSecret(c *gin.Context) {
+func updateSecret(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": c.Param(namespaceParam),
-		"Secret":    c.Param(secretParam),
+		"Namespace": ctx.Param(namespaceParam),
+		"Secret":    ctx.Param(secretParam),
 	}).Debug("Create secret Call")
 
-	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
 	var secret kube_types.Secret
-	if err := c.ShouldBindWith(&secret, binding.JSON); err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+	if err := ctx.ShouldBindWith(&secret, binding.JSON); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	if c.Param(secretParam) != secret.Name {
-		log.Errorf(invalidUpdateSecretName, c.Param(secretParam), secret.Name)
-		c.AbortWithStatusJSON(model.ParseErorrs(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateSecretName, c.Param(secretParam), secret.Name), http.StatusBadRequest)))
-		return
-	}
-
-	newSecret := model.MakeSecret(c.Param(namespaceParam), secret)
-
-	quota, err := kubecli.GetNamespaceQuota(c.Param(namespaceParam))
+	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	for k, v := range quota.Labels {
-		newSecret.Labels[k] = v
+	if ctx.Param(secretParam) != secret.Name {
+		log.Errorf(invalidUpdateSecretName, ctx.Param(secretParam), secret.Name)
+		ctx.Error(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateSecretName, ctx.Param(secretParam), secret.Name), http.StatusBadRequest))
+		ctx.AbortWithStatusJSON(model.ParseErorrs(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateSecretName, ctx.Param(secretParam), secret.Name), http.StatusBadRequest)))
+		return
 	}
+
+	newSecret := model.MakeSecret(ctx.Param(namespaceParam), secret, quota.Labels)
 
 	secretAfter, err := kubecli.UpdateSecret(newSecret)
 	if err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	c.JSON(http.StatusCreated, model.ParseSecret(secretAfter))
+	ret, err := model.ParseSecret(secretAfter)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, ret)
 }
 
-func deleteSecret(c *gin.Context) {
+func deleteSecret(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": c.Param(namespaceParam),
-		"Secret":    c.Param(secretParam),
+		"Namespace": ctx.Param(namespaceParam),
+		"Secret":    ctx.Param(secretParam),
 	}).Debug("Delete secret Call")
-	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-	err := kube.DeleteSecret(c.Param(namespaceParam), c.Param(secretParam))
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	err := kube.DeleteSecret(ctx.Param(namespaceParam), ctx.Param(secretParam))
 	if err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
-	c.Status(http.StatusAccepted)
+	ctx.Status(http.StatusAccepted)
 }

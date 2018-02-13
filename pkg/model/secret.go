@@ -3,50 +3,80 @@ package model
 import (
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
+	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func ParseSecretList(secreti interface{}) []kube_types.Secret {
+// ParseSecretList parses kubernetes v1.SecretList to more convenient []Secret struct.
+func ParseSecretList(secreti interface{}) ([]kube_types.Secret, error) {
 	secrets := secreti.(*api_core.SecretList)
+	if secrets == nil {
+		return nil, ErrUnableConvertSecretList
+	}
 
-	var newSecrets []kube_types.Secret
+	newSecrets := make([]kube_types.Secret, 0)
 	for _, secret := range secrets.Items {
-		newSecret := ParseSecret(&secret)
+		newSecret, err := ParseSecret(&secret)
+		if err != nil {
+			return nil, err
+		}
 		newSecrets = append(newSecrets, *newSecret)
 	}
-	return newSecrets
+	return newSecrets, nil
 }
 
-func ParseSecret(secreti interface{}) *kube_types.Secret {
+// ParseSecret parses kubernetes v1.Secret to more convenient Secret struct.
+func ParseSecret(secreti interface{}) (*kube_types.Secret, error) {
 	secret := secreti.(*api_core.Secret)
+	if secret == nil {
+		return nil, ErrUnableConvertSecret
+	}
 
 	newData := make(map[string]string)
 	for k, v := range secret.Data {
 		newData[k] = string(v)
 	}
 
+	owner := secret.GetLabels()[ownerLabel]
 	createdAt := secret.CreationTimestamp.Unix()
 
-	newSecret := kube_types.Secret{}
-	newSecret.Name = secret.GetName()
-	newSecret.CreatedAt = &createdAt
-	newSecret.Data = newData
+	return &kube_types.Secret{
+		Name:      secret.GetName(),
+		CreatedAt: &createdAt,
+		Data:      newData,
+		Owner:     &owner,
+	}, nil
+}
 
+// MakeSecret creates kubernetes v1.Secret from Secret struct and namespace labels
+func MakeSecret(nsName string, secret kube_types.Secret, labels map[string]string) *api_core.Secret {
+	if labels == nil {
+		labels = make(map[string]string, 0)
+	}
+	labels[appLabel] = secret.Name
+	labels[ownerLabel] = *secret.Owner
+
+	newSecret := api_core.Secret{
+		TypeMeta: api_meta.TypeMeta{
+			Kind:       "Secret",
+			APIVersion: "v1",
+		},
+		ObjectMeta: api_meta.ObjectMeta{
+			Labels:    labels,
+			Name:      secret.Name,
+			Namespace: nsName,
+		},
+		Data: makeSecretData(secret.Data),
+		Type: "Opaque",
+	}
 	return &newSecret
 }
 
-func MakeSecret(nsName string, secret kube_types.Secret) *api_core.Secret {
-	newData := make(map[string][]byte)
-	for k, v := range secret.Data {
-		newData[k] = []byte(v)
+func makeSecretData(data map[string]string) map[string][]byte {
+	newData := make(map[string][]byte, 0)
+	if data != nil {
+		for k, v := range data {
+			newData[k] = []byte(v)
+		}
 	}
-
-	newSecret := api_core.Secret{}
-	newSecret.Kind = "Secret"
-	newSecret.APIVersion = "v1"
-	newSecret.Data = newData
-	newSecret.Type = "Opaque"
-	newSecret.SetName(secret.Name)
-	newSecret.SetNamespace(nsName)
-
-	return &newSecret
+	return newData
 }

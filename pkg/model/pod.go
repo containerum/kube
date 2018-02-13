@@ -40,10 +40,11 @@ func getContainers(cListi interface{}) []model.Container {
 		mem := c.Resources.Limits["memory"]
 
 		containers = append(containers, model.Container{
-			Name:   c.Name,
-			Image:  c.Image,
-			Env:    &env,
-			Volume: &volumes,
+			Name:    c.Name,
+			Image:   c.Image,
+			Env:     &env,
+			Volume:  &volumes,
+			Command: &c.Command,
 			Limits: model.Limits{
 				CPU:    cpu.String(),
 				Memory: mem.String(),

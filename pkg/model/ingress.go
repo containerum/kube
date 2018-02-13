@@ -3,73 +3,113 @@ package model
 import (
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_extensions "k8s.io/api/extensions/v1beta1"
+	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func ParseIngressList(ingressi interface{}) []kube_types.Ingress {
+// ParseIngressList parses kubernetes v1beta1.IngressList to more convenient []Ingress struct
+func ParseIngressList(ingressi interface{}) ([]kube_types.Ingress, error) {
 	ingresses := ingressi.(*api_extensions.IngressList)
-
-	var newIngresses []kube_types.Ingress
+	if ingresses == nil {
+		return nil, ErrUnableConvertIngressList
+	}
+	newIngresses := make([]kube_types.Ingress, 0)
 	for _, ingress := range ingresses.Items {
-		newIngress := ParseIngress(&ingress)
+		newIngress, err := ParseIngress(&ingress)
+		if err != nil {
+			return nil, err
+		}
 		newIngresses = append(newIngresses, *newIngress)
 	}
-	return newIngresses
+	return newIngresses, nil
 }
 
-func ParseIngress(ingressi interface{}) *kube_types.Ingress {
+// ParseIngress parses kubernetes v1beta1.Ingress to more convenient Ingress struct
+func ParseIngress(ingressi interface{}) (*kube_types.Ingress, error) {
 	ingress := ingressi.(*api_extensions.Ingress)
-
+	if ingress == nil {
+		return nil, ErrUnableConvertIngress
+	}
 	createdAt := ingress.CreationTimestamp.Unix()
+	owner := ingress.GetLabels()[ownerLabel]
 
-	newIngress := kube_types.Ingress{}
-	newIngress.Name = ingress.GetName()
-	newIngress.CreatedAt = &createdAt
-
-	if len(ingress.Spec.Rules) != 0 {
-		newIngress.Rule.Host = ingress.Spec.Rules[0].Host
-		if len(ingress.Spec.Rules[0].IngressRuleValue.HTTP.Paths) != 0 {
-			newIngress.Rule.Path.Path = ingress.Spec.Rules[0].IngressRuleValue.HTTP.Paths[0].Path
-			newIngress.Rule.Path.ServiceName = ingress.Spec.Rules[0].IngressRuleValue.HTTP.Paths[0].Backend.ServiceName
-			newIngress.Rule.Path.ServicePort = int(ingress.Spec.Rules[0].IngressRuleValue.HTTP.Paths[0].Backend.ServicePort.IntVal)
-		}
+	newIngress := kube_types.Ingress{
+		Name:      ingress.GetName(),
+		CreatedAt: &createdAt,
+		Owner:     &owner,
+		Rule:      *parseRule(ingress.Spec.Rules),
 	}
 	if len(ingress.Spec.TLS) != 0 {
-		newIngress.TLSSecret = ingress.Spec.TLS[0].SecretName
+		newIngress.TLSSecret = &ingress.Spec.TLS[0].SecretName
 	}
 
-	return &newIngress
+	return &newIngress, nil
 }
 
-func MakeIngress(ingress kube_types.Ingress) *api_extensions.Ingress {
-	newIngress := api_extensions.Ingress{}
-	newIngress.Kind = "Ingress"
-	newIngress.APIVersion = "extensions/v1beta1"
-	newIngress.SetName(ingress.Name)
-	newIngress.ObjectMeta.Annotations = map[string]string{"kubernetes.io/ingress.class": "nginx"}
+func parseRule(rules []api_extensions.IngressRule) *kube_types.Rule {
+	rule := kube_types.Rule{}
+	for _, v := range rules {
+		rule.Host = v.Host
+		for _, p := range v.HTTP.Paths {
+			rule.Path.Path = p.Path
+			rule.Path.ServiceName = p.Backend.ServiceName
+			rule.Path.ServicePort = int(p.Backend.ServicePort.IntVal)
+			break
+		}
+		break
+	}
+	return &rule
+}
 
-	var path api_extensions.HTTPIngressPath
-	path.Path = ingress.Rule.Path.Path
-	path.Backend.ServicePort = intstr.FromInt(ingress.Rule.Path.ServicePort)
-	path.Backend.ServiceName = ingress.Rule.Path.ServiceName
+// MakeIngress creates kubernetes v1beta1.Ingress from Ingress struct and namespace labels
+func MakeIngress(nsName string, ingress kube_types.Ingress, labels map[string]string) *api_extensions.Ingress {
+	if labels == nil {
+		labels = make(map[string]string, 0)
+	}
+	labels[appLabel] = ingress.Name
+	labels[ownerLabel] = *ingress.Owner
 
-	var rulevalue = api_extensions.HTTPIngressRuleValue{}
-	rulevalue.Paths = []api_extensions.HTTPIngressPath{path}
+	newIngress := api_extensions.Ingress{
+		TypeMeta: api_meta.TypeMeta{
+			Kind:       "Ingress",
+			APIVersion: "extensions/v1beta1",
+		},
+		ObjectMeta: api_meta.ObjectMeta{
+			Labels:      labels,
+			Name:        ingress.Name,
+			Namespace:   nsName,
+			Annotations: map[string]string{"kubernetes.io/ingress.class": "nginx"},
+		},
+		Spec: api_extensions.IngressSpec{
+			Rules: []api_extensions.IngressRule{
+				{
+					Host: ingress.Rule.Host,
+					IngressRuleValue: api_extensions.IngressRuleValue{
+						HTTP: &api_extensions.HTTPIngressRuleValue{
+							Paths: []api_extensions.HTTPIngressPath{
+								{
+									Path: ingress.Rule.Path.Path,
+									Backend: api_extensions.IngressBackend{
+										ServiceName: ingress.Rule.Path.ServiceName,
+										ServicePort: intstr.FromInt(ingress.Rule.Path.ServicePort),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
 
-	var rule api_extensions.IngressRule
-	rule.Host = ingress.Rule.Host
-	rule.HTTP = &rulevalue
-
-	newIngress.Spec.Rules = []api_extensions.IngressRule{rule}
-
-	if ingress.TLSSecret != "" {
+	if ingress.TLSSecret != nil {
 		newIngress.ObjectMeta.Annotations["kubernetes.io/tls-acme"] = "true"
-
-		var tls api_extensions.IngressTLS
-		tls.Hosts = []string{ingress.Rule.Host}
-		tls.SecretName = ingress.TLSSecret
-
-		newIngress.Spec.TLS = []api_extensions.IngressTLS{tls}
+		newIngress.Spec.TLS = []api_extensions.IngressTLS{
+			{
+				Hosts:      []string{ingress.Rule.Host},
+				SecretName: *ingress.TLSSecret,
+			},
+		}
 	}
 
 	return &newIngress

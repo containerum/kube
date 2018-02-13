@@ -33,7 +33,6 @@ func (k *Kube) GetDeployment(ns string, deploy string) (*api_apps.Deployment, er
 }
 
 func (k *Kube) CreateDeployment(ns string, depl *api_apps.Deployment) (*api_apps.Deployment, error) {
-	depl.Spec.Selector = &api_meta.LabelSelector{MatchLabels: depl.Labels}
 	deployment, err := k.AppsV1().Deployments(ns).Create(depl)
 	if err != nil {
 		log.WithError(err).WithFields(log.Fields{
@@ -58,7 +57,6 @@ func (k *Kube) DeleteDeployment(ns string, deployName string) error {
 }
 
 func (k *Kube) UpdateDeployment(ns string, depl *api_apps.Deployment) (*api_apps.Deployment, error) {
-	depl.Spec.Selector = &api_meta.LabelSelector{MatchLabels: depl.Labels}
 	deployment, err := k.AppsV1().Deployments(ns).Update(depl)
 	if err != nil {
 		log.WithError(err).WithFields(log.Fields{

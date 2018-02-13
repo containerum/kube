@@ -18,105 +18,155 @@ const (
 	ingressParam = "ingress"
 )
 
-func getIngressList(c *gin.Context) {
+func getIngressList(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": c.Param(namespaceParam),
+		"Namespace": ctx.Param(namespaceParam),
 	}).Debug("Create secret Call")
 
-	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	ingressList, err := kubecli.GetIngressList(c.Param(namespaceParam))
+	ingressList, err := kubecli.GetIngressList(ctx.Param(namespaceParam))
 	if err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	c.JSON(http.StatusOK, model.ParseIngressList(ingressList))
-}
-
-func getIngress(c *gin.Context) {
-	log.WithFields(log.Fields{
-		"Namespace": c.Param(namespaceParam),
-	}).Debug("Create secret Call")
-
-	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-
-	ingress, err := kubecli.GetIngress(c.Param(namespaceParam), c.Param(ingressParam))
+	ret, err := model.ParseIngressList(ingressList)
 	if err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	c.JSON(http.StatusOK, model.ParseIngress(ingress))
+	ctx.JSON(http.StatusOK, ret)
 }
 
-func createIngress(c *gin.Context) {
+func getIngress(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": c.Param(namespaceParam),
+		"Namespace": ctx.Param(namespaceParam),
 	}).Debug("Create secret Call")
 
-	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	ingress, err := kubecli.GetIngress(ctx.Param(namespaceParam), ctx.Param(ingressParam))
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	ret, err := model.ParseIngress(ingress)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, ret)
+}
+
+func createIngress(ctx *gin.Context) {
+	log.WithFields(log.Fields{
+		"Namespace": ctx.Param(namespaceParam),
+	}).Debug("Create secret Call")
+
+	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
 	var ingress kube_types.Ingress
-	if err := c.ShouldBindWith(&ingress, binding.JSON); err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+	if err := ctx.ShouldBindWith(&ingress, binding.JSON); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	newIngress := model.MakeIngress(ingress)
-
-	ingressAfter, err := kubecli.CreateIngress(c.Param(namespaceParam), newIngress)
+	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	c.JSON(http.StatusCreated, model.ParseIngress(ingressAfter))
+	newIngress := model.MakeIngress(ctx.Param(namespaceParam), ingress, quota.Labels)
+
+	ingressAfter, err := kubecli.CreateIngress(ctx.Param(namespaceParam), newIngress)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	ret, err := model.ParseIngress(ingressAfter)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, ret)
 }
 
-func updateIngress(c *gin.Context) {
+func updateIngress(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": c.Param(namespaceParam),
-		"Ingress":   c.Param(ingressParam),
+		"Namespace": ctx.Param(namespaceParam),
+		"Ingress":   ctx.Param(ingressParam),
 	}).Debug("Create secret Call")
 
-	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
 	var ingress kube_types.Ingress
-	if err := c.ShouldBindWith(&ingress, binding.JSON); err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+	if err := ctx.ShouldBindWith(&ingress, binding.JSON); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	if c.Param(ingressParam) != ingress.Name {
-		log.Errorf(invalidUpdateIngressName, c.Param(ingressParam), ingress.Name)
-		c.AbortWithStatusJSON(model.ParseErorrs(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateIngressName, c.Param(ingressParam), ingress.Name), http.StatusBadRequest)))
+	if ctx.Param(ingressParam) != ingress.Name {
+		log.Errorf(invalidUpdateIngressName, ctx.Param(ingressParam), ingress.Name)
+		ctx.Error(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateIngressName, ctx.Param(ingressParam), ingress.Name), http.StatusBadRequest))
+		ctx.AbortWithStatusJSON(model.ParseErorrs(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateIngressName, ctx.Param(ingressParam), ingress.Name), http.StatusBadRequest)))
 		return
 	}
 
-	newIngress := model.MakeIngress(ingress)
-
-	ingressAfter, err := kubecli.UpdateIngress(c.Param(namespaceParam), newIngress)
+	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	c.JSON(http.StatusAccepted, model.ParseIngress(ingressAfter))
+	newIngress := model.MakeIngress(ctx.Param(namespaceParam), ingress, quota.Labels)
+
+	ingressAfter, err := kubecli.UpdateIngress(ctx.Param(namespaceParam), newIngress)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	ret, err := model.ParseIngress(ingressAfter)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	ctx.JSON(http.StatusAccepted, ret)
 }
 
-func deleteIngress(c *gin.Context) {
+func deleteIngress(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": c.Param(namespaceParam),
+		"Namespace": ctx.Param(namespaceParam),
 	}).Debug("Create secret Call")
 
-	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	err := kubecli.DeleteIngress(c.Param(namespaceParam), c.Param(ingressParam))
+	err := kubecli.DeleteIngress(ctx.Param(namespaceParam), ctx.Param(ingressParam))
 	if err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	c.Status(http.StatusAccepted)
+	ctx.Status(http.StatusAccepted)
 }

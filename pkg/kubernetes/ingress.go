@@ -22,6 +22,7 @@ func (k *Kube) GetIngress(ns string, ingress string) (*api_extensions.Ingress, e
 	if err != nil {
 		log.WithError(err).WithFields(log.Fields{
 			"Namespace": ns,
+			"Ingress":   ingress,
 		}).Error(ErrUnableGetIngress)
 		return nil, err
 	}

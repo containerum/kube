@@ -19,110 +19,151 @@ const (
 	namespaceParam = "namespace"
 )
 
-func getNamespaceList(c *gin.Context) {
-	log.WithField("Owner", c.Query(ownerQuery)).Debug("Get namespace list Call")
+func getNamespaceList(ctx *gin.Context) {
+	log.WithField("Owner", ctx.Query(ownerQuery)).Debug("Get namespace list Call")
 
-	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	quotas, err := kube.GetNamespaceQuotaList(c.Query(ownerQuery))
+	quotas, err := kube.GetNamespaceQuotaList(ctx.Query(ownerQuery))
 	if err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
-	c.JSON(http.StatusOK, model.ParseResourceQuotaList(quotas))
-}
 
-func getNamespace(c *gin.Context) {
-	log.WithField("Namespace", c.Param(namespaceParam)).Debug("Get namespace Call")
-
-	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-
-	quota, err := kube.GetNamespaceQuota(c.Param(namespaceParam))
+	ret, err := model.ParseResourceQuotaList(quotas)
 	if err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
-	c.JSON(http.StatusOK, model.ParseResourceQuota(quota))
+
+	ctx.JSON(http.StatusOK, ret)
 }
 
-func сreateNamespace(c *gin.Context) {
+func getNamespace(ctx *gin.Context) {
+	log.WithField("Namespace", ctx.Param(namespaceParam)).Debug("Get namespace Call")
+
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	quota, err := kube.GetNamespaceQuota(ctx.Param(namespaceParam))
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	ret, err := model.ParseResourceQuota(quota)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, ret)
+}
+
+func сreateNamespace(ctx *gin.Context) {
 	log.Debug("Create namespace Call")
 
+	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
 	var ns kube_types.Namespace
-	if err := c.ShouldBindWith(&ns, binding.JSON); err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+	if err := ctx.ShouldBindWith(&ns, binding.JSON); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
-
-	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
 
 	nsAfter, err := kubecli.CreateNamespace(model.MakeNamespace(ns))
 	if err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	quota, err := model.MakeResourceQuota(ns.Resources.Hard.CPU, ns.Resources.Hard.Memory)
+	quota, err := model.MakeResourceQuota(ns.Resources.Hard.CPU, ns.Resources.Hard.Memory, nsAfter.Labels, nsAfter.Name)
 	if err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	quota.Labels = nsAfter.Labels
-	quota.SetNamespace(ns.Name)
-	quota.SetName("quota")
 	quotaAfter, err := kubecli.CreateNamespaceQuota(ns.Name, quota)
 	if err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	quotaAfter.Labels = nsAfter.Labels
 
-	c.JSON(http.StatusCreated, model.ParseResourceQuota(quotaAfter))
-}
-
-func deleteNamespace(c *gin.Context) {
-	log.WithField("Namespace", c.Param(namespaceParam)).Debug("Delete namespace Call")
-	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-	err := kube.DeleteNamespace(c.Param(namespaceParam))
+	ret, err := model.ParseResourceQuota(quotaAfter)
 	if err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
-	c.Status(http.StatusAccepted)
+
+	ctx.JSON(http.StatusCreated, ret)
 }
 
-func updateNamespace(c *gin.Context) {
-	log.WithField("Namespace", c.Param(namespaceParam)).Debug("Update namespace Call")
-	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
+func deleteNamespace(ctx *gin.Context) {
+	log.WithField("Namespace", ctx.Param(namespaceParam)).Debug("Delete namespace Call")
+
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	err := kube.DeleteNamespace(ctx.Param(namespaceParam))
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+	ctx.Status(http.StatusAccepted)
+}
+
+func updateNamespace(ctx *gin.Context) {
+	log.WithField("Namespace", ctx.Param(namespaceParam)).Debug("Update namespace Call")
+
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
 	var res kube_types.UpdateNamespace
-	if err := c.ShouldBindWith(&res, binding.JSON); err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+	if err := ctx.ShouldBindWith(&res, binding.JSON); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	quotaOld, err := kube.GetNamespaceQuota(c.Param(namespaceParam))
+	quotaOld, err := kube.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	quota, err := model.MakeResourceQuota(res.Resources.Hard.CPU, res.Resources.Hard.Memory)
+	quota, err := model.MakeResourceQuota(res.Resources.Hard.CPU, res.Resources.Hard.Memory, quotaOld.Labels, quotaOld.Name)
 	if err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	quota.Labels = quotaOld.Labels
-	quota.SetNamespace(c.Param(namespaceParam))
+	quota.SetNamespace(ctx.Param(namespaceParam))
 	quota.SetName("quota")
-	quotaAfter, err := kube.UpdateNamespaceQuota(c.Param(namespaceParam), quota)
+	quotaAfter, err := kube.UpdateNamespaceQuota(ctx.Param(namespaceParam), quota)
 	if err != nil {
-		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	c.JSON(http.StatusAccepted, model.ParseResourceQuota(quotaAfter))
+	ret, err := model.ParseResourceQuota(quotaAfter)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	ctx.JSON(http.StatusAccepted, ret)
 }

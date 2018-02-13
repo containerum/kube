@@ -33,7 +33,10 @@ func (kube *Kube) GetServiceList(nsname string) (interface{}, error) {
 func (kube *Kube) CreateService(svc *api_core.Service) (*api_core.Service, error) {
 	svcAfter, err := kube.CoreV1().Services(svc.ObjectMeta.Namespace).Create(svc)
 	if err != nil {
-		log.WithError(err).WithField("Namespace", svc.Name).Error(ErrUnableCreateService)
+		log.WithError(err).WithFields(log.Fields{
+			"Namespace": svc.Namespace,
+			"Service":   svc.Name,
+		}).Error(ErrUnableCreateService)
 		return nil, err
 	}
 	return svcAfter, nil
