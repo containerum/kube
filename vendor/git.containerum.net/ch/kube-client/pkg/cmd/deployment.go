@@ -1,12 +1,17 @@
 package cmd
 
 import (
+	"git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/kube-client/pkg/model"
 )
 
 const (
-	deploymentPath  = "/namespaces/{namespace}/deployments/{deployment}"
-	deploymentsPath = "/namespaces/{namespace}/deployments"
+	kubeAPIdeploymentPath  = "/namespaces/{namespace}/deployments/{deployment}"
+	kubeAPIdeploymentsPath = "/namespaces/{namespace}/deployments"
+
+	resourceDeploymentPath = "namespace/{namespace}/deployment/{deployment}"
+	resourceImagePath      = resourceDeploymentPath + "/image"
+	resourceReplicasPath   = resourceDeploymentPath + "/replicas"
 )
 
 // GetDeployment -- consumes a namespace and a deployment names,
@@ -17,7 +22,7 @@ func (client *Client) GetDeployment(namespace, deployment string) (model.Deploym
 			"namespace":  namespace,
 			"deployment": deployment,
 		}).SetResult(model.Deployment{}).
-		Get(client.serverURL + deploymentPath)
+		Get(client.serverURL + kubeAPIdeploymentPath)
 	if err != nil {
 		return model.Deployment{}, err
 	}
@@ -31,9 +36,63 @@ func (client *Client) GetDeploymentList(namespace string) ([]model.Deployment, e
 		SetPathParams(map[string]string{
 			"namespace": namespace,
 		}).SetResult([]model.Deployment{}).
-		Get(client.serverURL + deploymentsPath)
+		Get(client.serverURL + kubeAPIdeploymentsPath)
 	if err != nil {
 		return nil, err
 	}
 	return *resp.Result().(*[]model.Deployment), nil
+}
+
+// DeleteDeployment -- consumes a namespace, a deployment,
+// an user role and an ID
+func (client *Client) DeleteDeployment(namespace, deployment, userID, userRole string) error {
+	_, err := client.Request.
+		SetPathParams(map[string]string{
+			"namespace":  namespace,
+			"deployment": deployment,
+		}).SetHeaders(map[string]string{
+		user.UserIDHeader:   userID,
+		user.UserRoleHeader: userRole,
+	}).Delete(client.resourceServiceAddr + resourceDeploymentPath)
+	return err
+}
+
+// CreateDeployment -- consumes a namespace, an user ID and a Role,
+// returns nil if OK
+func (client *Client) CreateDeployment(namespace string, deployment model.Deployment) error {
+	_, err := client.Request.
+		SetPathParams(map[string]string{
+			"namespace": namespace,
+		}).SetBody(deployment).
+		Post(client.resourceServiceAddr + "/namespace/{namespace}/deployment")
+	return err
+}
+
+func (client *Client) SetContainerImage(namespace, deployment string, updateImage model.UpdateImage) error {
+	_, err := client.Request.
+		SetPathParams(map[string]string{
+			"namespace":  namespace,
+			"deployment": deployment,
+		}).SetBody(updateImage).
+		Put(client.resourceServiceAddr + resourceImagePath)
+	return err
+}
+
+func (client *Client) ReplaceDeployment(namespace string, deployment model.Deployment) error {
+	_, err := client.Request.
+		SetPathParams(map[string]string{
+			"namespace":  namespace,
+			"deployment": deployment.Name,
+		}).SetBody(deployment).
+		Put(client.resourceServiceAddr + resourceDeploymentPath)
+	return err
+}
+
+func (client *Client) SetReplicas(namespace, deployment string, replicas int) error {
+	_, err := client.Request.SetPathParams(map[string]string{
+		"namespace":  namespace,
+		"deployment": deployment,
+	}).SetBody(model.UpdateReplicas{replicas}).
+		Put(client.resourceServiceAddr + resourceReplicasPath)
+	return err
 }

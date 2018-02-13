@@ -3,6 +3,8 @@ package router
 import (
 	"net/http"
 
+	"fmt"
+
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
@@ -27,7 +29,7 @@ func getSecretList(c *gin.Context) {
 		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
-	c.JSON(http.StatusOK, secrets)
+	c.JSON(http.StatusOK, model.ParseSecretList(secrets))
 }
 
 func getSecret(c *gin.Context) {
@@ -37,12 +39,12 @@ func getSecret(c *gin.Context) {
 		"Secret":          c.Param(secretParam),
 	}).Debug("Get secret Call")
 	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-	secrets, err := kube.GetSecret(c.MustGet(m.NamespaceKey).(string), c.Param(secretParam))
+	secret, err := kube.GetSecret(c.MustGet(m.NamespaceKey).(string), c.Param(secretParam))
 	if err != nil {
 		c.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
-	c.JSON(http.StatusOK, secrets)
+	c.JSON(http.StatusOK, model.ParseSecret(secret))
 }
 
 func createSecret(c *gin.Context) {
@@ -76,7 +78,48 @@ func createSecret(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, secretAfter)
+	c.JSON(http.StatusCreated, model.ParseSecret(secretAfter))
+}
+
+func updateSecret(c *gin.Context) {
+	log.WithFields(log.Fields{
+		"Namespace": c.Param(namespaceParam),
+		"Secret":    c.Param(secretParam),
+	}).Debug("Create secret Call")
+
+	kubecli := c.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	var secret kube_types.Secret
+	if err := c.ShouldBindWith(&secret, binding.JSON); err != nil {
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	if c.Param(secretParam) != secret.Name {
+		log.Errorf(invalidUpdateSecretName, c.Param(secretParam), secret.Name)
+		c.AbortWithStatusJSON(model.ParseErorrs(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateSecretName, c.Param(secretParam), secret.Name), http.StatusBadRequest)))
+		return
+	}
+
+	newSecret := model.MakeSecret(c.Param(namespaceParam), secret)
+
+	quota, err := kubecli.GetNamespaceQuota(c.Param(namespaceParam))
+	if err != nil {
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	for k, v := range quota.Labels {
+		newSecret.Labels[k] = v
+	}
+
+	secretAfter, err := kubecli.UpdateSecret(newSecret)
+	if err != nil {
+		c.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	c.JSON(http.StatusCreated, model.ParseSecret(secretAfter))
 }
 
 func deleteSecret(c *gin.Context) {

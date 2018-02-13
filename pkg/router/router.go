@@ -35,7 +35,7 @@ func initRoutes(e *gin.Engine) {
 	})
 	namespace := e.Group("/namespaces")
 	{
-		namespace.GET("", getNamespaceList)
+		namespace.Use(m.IsAdmin()).GET("", getNamespaceList)
 		namespace.GET("/:namespace", getNamespace)
 		namespace.POST("", сreateNamespace)
 		namespace.PUT("/:namespace", updateNamespace)
@@ -66,7 +66,17 @@ func initRoutes(e *gin.Engine) {
 			secret.Use(m.ReadAccess()).GET("", getSecretList)
 			secret.Use(m.ReadAccess()).GET("/:secret", getSecret)
 			secret.POST("", createSecret)
+			secret.PUT("/:secret", updateSecret)
 			secret.DELETE("/:secret", deleteSecret)
+		}
+
+		ingress := namespace.Group("/:namespace/ingresses")
+		{
+			ingress.Use(m.IsAdmin()).GET("", getIngressList)
+			ingress.GET("/:ingress", getIngress)
+			ingress.POST("", createIngress)
+			ingress.PUT("/:ingress", updateIngress)
+			ingress.DELETE("/:ingress", deleteIngress)
 		}
 
 		pod := namespace.Group("/:namespace/pods")
