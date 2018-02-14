@@ -47,7 +47,7 @@ func (k *Kube) UpdateSecret(secret *api_core.Secret) (*api_core.Secret, error) {
 		log.WithError(err).WithFields(log.Fields{
 			"Namespace": secret.Namespace,
 			"Secret":    secret.Name,
-		}).Error(ErrUnableCreateSecret)
+		}).Error(ErrUnableUpdateSecret)
 		return nil, err
 	}
 	return newSecret, nil

@@ -6,6 +6,15 @@ import (
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+func (kube *Kube) GetServiceList(nsname string) (interface{}, error) {
+	svcAfter, err := kube.CoreV1().Services(nsname).List(api_meta.ListOptions{})
+	if err != nil {
+		log.WithError(err).WithField("Namespace", nsname).Error(ErrUnableGetServiceList)
+		return nil, err
+	}
+	return svcAfter, nil
+}
+
 // GetService returns Service with given name
 // from provided namespace.
 // In case of trouble returns ErrUnableGetService
@@ -19,15 +28,6 @@ func (kube *Kube) GetService(namespace, serviceName string) (*api_core.Service, 
 		return nil, err
 	}
 	return nativeService, nil
-}
-
-func (kube *Kube) GetServiceList(nsname string) (interface{}, error) {
-	svcAfter, err := kube.CoreV1().Services(nsname).List(api_meta.ListOptions{})
-	if err != nil {
-		log.WithError(err).WithField("Namespace", nsname).Error(ErrUnableGetServiceList)
-		return nil, err
-	}
-	return svcAfter, nil
 }
 
 func (kube *Kube) CreateService(svc *api_core.Service) (*api_core.Service, error) {
@@ -50,7 +50,7 @@ func (kube *Kube) DeleteService(namespace, serviceName string) error {
 			WithFields(log.Fields{
 				"Namespace": namespace,
 				"Service":   serviceName,
-			}).Error(err)
+			}).Error(ErrUnableDeleteService)
 		return err
 	}
 	return nil

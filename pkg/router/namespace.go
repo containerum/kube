@@ -98,6 +98,22 @@ func сreateNamespace(ctx *gin.Context) {
 
 	quotaAfter.Labels = nsAfter.Labels
 
+	if ns.GlusterIP != nil {
+		_, err = kubecli.CreateService(model.MakeGlustercFSService(ns.Name))
+		if err != nil {
+			ctx.Error(err)
+			ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+			return
+		}
+
+		_, err = kubecli.CreateEndpoint(model.MakeEndpoint(ns.Name, *ns.GlusterIP))
+		if err != nil {
+			ctx.Error(err)
+			ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+			return
+		}
+	}
+
 	ret, err := model.ParseResourceQuota(quotaAfter)
 	if err != nil {
 		ctx.Error(err)
@@ -119,6 +135,7 @@ func deleteNamespace(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
+
 	ctx.Status(http.StatusAccepted)
 }
 

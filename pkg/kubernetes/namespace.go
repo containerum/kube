@@ -15,7 +15,7 @@ func (k *Kube) GetNamespaceQuotaList(owner string) (*api_core.ResourceQuotaList,
 		LabelSelector: getOwnerLabel(owner),
 	})
 	if err != nil {
-		log.WithError(err).WithField("Owner", owner).Error(ErrUnableGetNamespaceQuotaList)
+		log.WithError(err).WithField("Owner", owner).Error(ErrUnableGetNamespaceList)
 		return nil, err
 	}
 	return quotas, nil
@@ -24,7 +24,7 @@ func (k *Kube) GetNamespaceQuotaList(owner string) (*api_core.ResourceQuotaList,
 func (k *Kube) GetNamespaceQuota(ns string) (*api_core.ResourceQuota, error) {
 	quota, err := k.CoreV1().ResourceQuotas(ns).Get(quotaName, api_meta.GetOptions{})
 	if err != nil {
-		log.WithError(err).WithField("Namespace", ns).Error(ErrUnableGetNamespaceQuota)
+		log.WithError(err).WithField("Namespace", ns).Error(ErrUnableGetNamespace)
 		return nil, err
 	}
 	return quota, nil

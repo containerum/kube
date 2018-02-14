@@ -14,6 +14,9 @@ const (
 	serviceTypeInternal = "internal"
 )
 
+const glusterServiceName = "ch-glusterfs"
+const glusterServicePortName = "ch-glusterfs-internal"
+
 // ParseServiceList parses kubernetes v1.ServiceList to more convenient Service struct.
 func ParseServiceList(ns interface{}) ([]kube_types.Service, error) {
 	nativeServices := ns.(*api_core.ServiceList)
@@ -121,4 +124,26 @@ func makeServicePorts(ports []kube_types.Port) ([]api_core.ServicePort, error) {
 		}
 	}
 	return serviceports, nil
+}
+
+func MakeGlustercFSService(ns string) *api_core.Service {
+	return &api_core.Service{
+		TypeMeta: api_meta.TypeMeta{
+			Kind:       "Service",
+			APIVersion: "v1",
+		},
+		ObjectMeta: api_meta.ObjectMeta{
+			Name:      glusterServiceName,
+			Namespace: ns,
+		},
+		Spec: api_core.ServiceSpec{
+			Ports: []api_core.ServicePort{
+				{
+					Port:     1,
+					Name:     glusterServicePortName,
+					Protocol: "TCP",
+				},
+			},
+		},
+	}
 }

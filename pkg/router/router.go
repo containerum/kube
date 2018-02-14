@@ -79,6 +79,13 @@ func initRoutes(e *gin.Engine) {
 			ingress.DELETE("/:ingress", deleteIngress)
 		}
 
+		endpoint := namespace.Group("/:namespace/endpoints")
+		{
+			endpoint.Use(m.IsAdmin()).GET("", getEndpointList)
+			endpoint.Use(m.IsAdmin()).GET("/:endpoint", getEndpoint)
+			endpoint.Use(m.IsAdmin()).DELETE("/:endpoint", deleteEndpoint)
+		}
+
 		pod := namespace.Group("/:namespace/pods")
 		{
 			pod.Use(m.ReadAccess()).GET("", getPodList)
