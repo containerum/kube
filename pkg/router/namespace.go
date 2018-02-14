@@ -85,6 +85,12 @@ func сreateNamespace(ctx *gin.Context) {
 	quota, err := model.MakeResourceQuota(ns.Resources.Hard.CPU, ns.Resources.Hard.Memory, nsAfter.Labels, nsAfter.Name)
 	if err != nil {
 		ctx.Error(err)
+
+		if err := kubecli.DeleteNamespace(nsAfter.Name); err != nil {
+			ctx.Error(err)
+			ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		}
+
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
@@ -92,6 +98,12 @@ func сreateNamespace(ctx *gin.Context) {
 	quotaAfter, err := kubecli.CreateNamespaceQuota(ns.Name, quota)
 	if err != nil {
 		ctx.Error(err)
+
+		if err := kubecli.DeleteNamespace(nsAfter.Name); err != nil {
+			ctx.Error(err)
+			ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		}
+
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
