@@ -86,6 +86,7 @@ func MakeService(nsName string, service *kube_types.Service, labels map[string]s
 	}
 	labels[appLabel] = service.Name
 	labels[ownerLabel] = *service.Owner
+	labels[nameLabel] = service.Name
 
 	newService := api_core.Service{
 		TypeMeta: api_meta.TypeMeta{

@@ -1,6 +1,10 @@
 package model
 
 import (
+	"fmt"
+
+	"crypto/sha256"
+
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	"github.com/gin-gonic/gin/binding"
 	"gopkg.in/inf.v0"
@@ -84,6 +88,7 @@ func MakeDeployment(nsName string, depl *kube_types.Deployment, labels map[strin
 	}
 	labels[appLabel] = depl.Name
 	labels[ownerLabel] = *depl.Owner
+	labels[nameLabel] = depl.Name
 
 	deployment := api_apps.Deployment{
 		TypeMeta: api_meta.TypeMeta{
@@ -106,7 +111,7 @@ func MakeDeployment(nsName string, depl *kube_types.Deployment, labels map[strin
 					NodeSelector: map[string]string{
 						"role": "slave",
 					},
-					Volumes: makeTemplateVolumes(volumes),
+					Volumes: makeTemplateVolumes(volumes, *depl.Owner),
 				},
 				ObjectMeta: api_meta.ObjectMeta{
 					Labels: labels,
@@ -257,7 +262,7 @@ func makeContainerResourceQuota(cpu string, memory string) (*api_core.ResourceRe
 	}, nil
 }
 
-func makeTemplateVolumes(volumes []string) []api_core.Volume {
+func makeTemplateVolumes(volumes []string, owner string) []api_core.Volume {
 	tvolumes := make([]api_core.Volume, 0)
 	if volumes != nil {
 		for _, v := range volumes {
@@ -266,7 +271,7 @@ func makeTemplateVolumes(volumes []string) []api_core.Volume {
 				VolumeSource: api_core.VolumeSource{
 					Glusterfs: &api_core.GlusterfsVolumeSource{
 						EndpointsName: glusterFSEndpoint,
-						Path:          v,
+						Path:          fmt.Sprintf("cli_%x", (sha256.Sum256([]byte(v + owner)))),
 					},
 				},
 			}

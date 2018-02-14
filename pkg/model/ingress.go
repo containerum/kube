@@ -68,6 +68,7 @@ func MakeIngress(nsName string, ingress kube_types.Ingress, labels map[string]st
 	}
 	labels[appLabel] = ingress.Name
 	labels[ownerLabel] = *ingress.Owner
+	labels[nameLabel] = ingress.Name
 
 	newIngress := api_extensions.Ingress{
 		TypeMeta: api_meta.TypeMeta{

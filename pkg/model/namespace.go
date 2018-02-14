@@ -10,6 +10,7 @@ import (
 const (
 	ownerLabel = "owner"
 	appLabel   = "app"
+	nameLabel  = "name"
 )
 
 // ParseResourceQuotaList parses kubernetes v1.ResourceQuotaList to more convenient []Namespace struct.

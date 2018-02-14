@@ -54,6 +54,7 @@ func MakeSecret(nsName string, secret kube_types.Secret, labels map[string]strin
 	}
 	labels[appLabel] = secret.Name
 	labels[ownerLabel] = *secret.Owner
+	labels[nameLabel] = secret.Name
 
 	newSecret := api_core.Secret{
 		TypeMeta: api_meta.TypeMeta{
