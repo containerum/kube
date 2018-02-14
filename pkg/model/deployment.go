@@ -13,6 +13,8 @@ import (
 const requestCoeffUnscaled = 5
 const requestCoeffScale = 1
 
+const glusterFSEndpoint = "ch-glusterfs"
+
 // ParseDeploymentList parses kubernetes v1.DeploymentList to more convenient []Deployment struct
 func ParseDeploymentList(deploys interface{}) ([]kube_types.Deployment, error) {
 	objects := deploys.(*api_apps.DeploymentList)
@@ -72,7 +74,7 @@ func ParseDeployment(deployment interface{}) (*kube_types.Deployment, error) {
 //MakeDeployment creates kubernetes v1.Deployment from Deployment struct and namespace labels
 func MakeDeployment(nsName string, depl *kube_types.Deployment, labels map[string]string) (*api_apps.Deployment, error) {
 	repl := int32(depl.Replicas)
-	containers, err := makeContainers(depl.Containers)
+	containers, volumes, err := makeContainers(depl.Containers)
 	if err != nil {
 		return nil, err
 	}
@@ -104,6 +106,7 @@ func MakeDeployment(nsName string, depl *kube_types.Deployment, labels map[strin
 					NodeSelector: map[string]string{
 						"role": "slave",
 					},
+					Volumes: makeTemplateVolumes(volumes),
 				},
 				ObjectMeta: api_meta.ObjectMeta{
 					Labels: labels,
@@ -115,16 +118,17 @@ func MakeDeployment(nsName string, depl *kube_types.Deployment, labels map[strin
 	return &deployment, nil
 }
 
-func makeContainers(containers []kube_types.Container) ([]api_core.Container, error) {
+func makeContainers(containers []kube_types.Container) ([]api_core.Container, []string, error) {
 	var containersAfter []api_core.Container
 	if len(containers) == 0 {
-		return nil, ErrNoContainerInRequest
+		return nil, nil, ErrNoContainerInRequest
 	}
 
+	volumes := make([]string, 0)
 	for _, c := range containers {
 		err := binding.Validator.ValidateStruct(c)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		container := api_core.Container{
@@ -134,16 +138,17 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, er
 		}
 
 		if c.Volume != nil {
-			if vm, err := makeContainerVolumes(*c.Volume); err != nil {
-				return nil, err
+			if vm, vnames, err := makeContainerVolumes(*c.Volume); err != nil {
+				return nil, nil, err
 			} else {
+				volumes = append(volumes, vnames...)
 				container.VolumeMounts = vm
 			}
 		}
 
 		if c.Env != nil {
 			if ev, err := makeContainerEnv(*c.Env); err != nil {
-				return nil, err
+				return nil, nil, err
 			} else {
 				container.Env = ev
 			}
@@ -151,40 +156,42 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, er
 
 		if c.Ports != nil {
 			if cp, err := makeContainerPorts(*c.Ports); err != nil {
-				return nil, err
+				return nil, nil, err
 			} else {
 				container.Ports = cp
 			}
 		}
 
 		if rq, err := makeContainerResourceQuota(c.Limits.CPU, c.Limits.Memory); err != nil {
-			return nil, err
+			return nil, nil, err
 		} else {
 			container.Resources = *rq
 		}
 
 		containersAfter = append(containersAfter, container)
 	}
-	return containersAfter, nil
+	return containersAfter, volumes, nil
 }
 
-func makeContainerVolumes(volumes []kube_types.Volume) ([]api_core.VolumeMount, error) {
+func makeContainerVolumes(volumes []kube_types.Volume) ([]api_core.VolumeMount, []string, error) {
 	mounts := make([]api_core.VolumeMount, 0)
+	vnames := make([]string, 0)
 	if volumes != nil {
 		for _, v := range volumes {
 			err := binding.Validator.ValidateStruct(v)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 
 			var subpath string
 			if v.SubPath != nil {
 				subpath = *v.SubPath
 			}
+			vnames = append(vnames, v.Name)
 			mounts = append(mounts, api_core.VolumeMount{Name: v.Name, MountPath: v.MountPath, SubPath: subpath})
 		}
 	}
-	return mounts, nil
+	return mounts, vnames, nil
 }
 
 func makeContainerEnv(env []kube_types.Env) ([]api_core.EnvVar, error) {
@@ -248,4 +255,23 @@ func makeContainerResourceQuota(cpu string, memory string) (*api_core.ResourceRe
 		Limits:   limits,
 		Requests: requests,
 	}, nil
+}
+
+func makeTemplateVolumes(volumes []string) []api_core.Volume {
+	tvolumes := make([]api_core.Volume, 0)
+	if volumes != nil {
+		for _, v := range volumes {
+			newVolume := api_core.Volume{
+				Name: v,
+				VolumeSource: api_core.VolumeSource{
+					Glusterfs: &api_core.GlusterfsVolumeSource{
+						EndpointsName: glusterFSEndpoint,
+						Path:          v,
+					},
+				},
+			}
+			tvolumes = append(tvolumes, newVolume)
+		}
+	}
+	return tvolumes
 }
