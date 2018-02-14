@@ -76,7 +76,7 @@ func deletePod(c *gin.Context) {
 		c.AbortWithError(http.StatusNotFound, err)
 		return
 	}
-	c.Status(http.StatusOK)
+	c.Status(http.StatusAccepted)
 }
 
 func getPodLogs(c *gin.Context) {

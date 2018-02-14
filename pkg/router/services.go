@@ -40,6 +40,32 @@ func getServiceList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
+func getService(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	serviceName := ctx.Param(serviceParam)
+	log.WithFields(log.Fields{
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       namespace,
+		"Service":         serviceName,
+	}).Debug("Get service call")
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	nativeService, err := kube.GetService(namespace, serviceName)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	ret, err := model.ParseService(nativeService)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, ret)
+}
+
 func createService(ctx *gin.Context) {
 	log.WithField("Service", ctx.Param(m.ServiceKey)).Debug("Create service Call")
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -82,32 +108,6 @@ func createService(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, ret)
-}
-
-func getService(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
-	serviceName := ctx.Param(serviceParam)
-	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Service":         serviceName,
-	}).Debug("Get service call")
-	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-	nativeService, err := kube.GetService(namespace, serviceName)
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-		return
-	}
-
-	ret, err := model.ParseService(nativeService)
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-		return
-	}
-
-	ctx.JSON(http.StatusOK, ret)
 }
 
 func updateService(ctx *gin.Context) {

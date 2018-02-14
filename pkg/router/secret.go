@@ -149,7 +149,7 @@ func updateSecret(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, ret)
+	ctx.JSON(http.StatusAccepted, ret)
 }
 
 func deleteSecret(ctx *gin.Context) {
