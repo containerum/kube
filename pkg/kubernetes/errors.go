@@ -36,10 +36,10 @@ var (
 	ErrUnableUpdateSecret  = errors.New("Unable to update secret")
 	ErrUnableDeleteSecret  = errors.New("Unable to delete secret")
 
-	ErrUnableGetEndpointList = errors.New("Unable to get service list")
-	ErrUnableGetEndpoint     = errors.New("Unable to get service")
-	ErrUnableCreateEndpoint  = errors.New("Unable to create service")
-	ErrUnableDeleteEndpoint  = errors.New("Unable to delete service")
+	ErrUnableGetEndpointList = errors.New("Unable to get endpoints list")
+	ErrUnableGetEndpoint     = errors.New("Unable to get endpoint")
+	ErrUnableCreateEndpoint  = errors.New("Unable to create endpoint")
+	ErrUnableDeleteEndpoint  = errors.New("Unable to delete endpoint")
 
 	ErrUnableGetPodList = errors.New("Unable to get pod list")
 	ErrUnableGetPod     = errors.New("Unable to get pod")
