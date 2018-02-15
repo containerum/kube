@@ -16,7 +16,7 @@ func ParsePodList(pods interface{}) []model.Pod {
 
 func ParsePod(pod interface{}) model.Pod {
 	obj := pod.(*api_core.Pod)
-	owner := obj.GetLabels()[ownerLabel]
+	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
 	containers := getContainers(obj.Spec.Containers)
 	return model.Pod{
 		Name:       obj.GetName(),

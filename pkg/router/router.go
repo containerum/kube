@@ -82,8 +82,10 @@ func initRoutes(e *gin.Engine) {
 		endpoint := namespace.Group("/:namespace/endpoints")
 		{
 			endpoint.Use(m.IsAdmin()).GET("", getEndpointList)
-			endpoint.Use(m.IsAdmin()).GET("/:endpoint", getEndpoint)
-			endpoint.Use(m.IsAdmin()).DELETE("/:endpoint", deleteEndpoint)
+			endpoint.GET("/:endpoint", getEndpoint)
+			endpoint.POST("", createEndpoint)
+			endpoint.PUT("/:endpoint", updateEndpoint)
+			endpoint.DELETE("/:endpoint", deleteEndpoint)
 		}
 
 		pod := namespace.Group("/:namespace/pods")

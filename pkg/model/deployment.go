@@ -1,9 +1,8 @@
 package model
 
 import (
-	"fmt"
-
 	"crypto/sha256"
+	"fmt"
 
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	"github.com/gin-gonic/gin/binding"
@@ -45,7 +44,7 @@ func ParseDeployment(deployment interface{}) (*kube_types.Deployment, error) {
 		return nil, ErrUnableConvertDeployment
 	}
 
-	owner := obj.GetLabels()[ownerLabel]
+	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
 	replicas := 0
 	containers := getContainers(obj.Spec.Template.Spec.Containers)
 	updated := obj.ObjectMeta.CreationTimestamp.Unix()

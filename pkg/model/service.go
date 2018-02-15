@@ -5,6 +5,8 @@ import (
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"strconv"
+
 	"github.com/gin-gonic/gin/binding"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -14,8 +16,9 @@ const (
 	serviceTypeInternal = "internal"
 )
 
-const glusterServiceName = "ch-glusterfs"
-const glusterServicePortName = "ch-glusterfs-internal"
+const (
+	hiddenLabel = "hidden"
+)
 
 // ParseServiceList parses kubernetes v1.ServiceList to more convenient Service struct.
 func ParseServiceList(ns interface{}) ([]kube_types.Service, error) {
@@ -30,7 +33,10 @@ func ParseServiceList(ns interface{}) ([]kube_types.Service, error) {
 		if err != nil {
 			return nil, err
 		}
-		serviceList = append(serviceList, *service)
+
+		if !service.Hidden {
+			serviceList = append(serviceList, *service)
+		}
 	}
 	return serviceList, nil
 }
@@ -39,13 +45,13 @@ func ParseServiceList(ns interface{}) ([]kube_types.Service, error) {
 func ParseService(srv interface{}) (*kube_types.Service, error) {
 	native := srv.(*api_core.Service)
 	if native == nil {
-		return nil, ErrUnableConvertServiceList
+		return nil, ErrUnableConvertService
 	}
 
 	ports := make([]kube_types.Port, 0, 1)
 
 	createdAt := native.GetCreationTimestamp().Unix()
-	owner := native.GetLabels()[ownerLabel]
+	owner := native.GetObjectMeta().GetLabels()[ownerLabel]
 
 	service := &kube_types.Service{
 		Name:      native.Name,
@@ -65,6 +71,11 @@ func ParseService(srv interface{}) (*kube_types.Service, error) {
 		service.Ports = append(service.Ports,
 			parseServicePort(nativePort))
 	}
+
+	if s, err := strconv.ParseBool(native.GetObjectMeta().GetLabels()[hiddenLabel]); err == nil {
+		service.Hidden = s
+	}
+
 	return service, nil
 }
 
@@ -87,6 +98,7 @@ func MakeService(nsName string, service *kube_types.Service, labels map[string]s
 	labels[appLabel] = service.Name
 	labels[ownerLabel] = *service.Owner
 	labels[nameLabel] = service.Name
+	labels[hiddenLabel] = strconv.FormatBool(service.Hidden)
 
 	newService := api_core.Service{
 		TypeMeta: api_meta.TypeMeta{
@@ -99,9 +111,13 @@ func MakeService(nsName string, service *kube_types.Service, labels map[string]s
 			Namespace: nsName,
 		},
 		Spec: api_core.ServiceSpec{
-			Selector:    labels,
-			ExternalIPs: *service.IP,
+			Selector: labels,
+			Type:     "ClusterIP",
 		},
+	}
+
+	if service.IP != nil {
+		newService.Spec.ExternalIPs = *service.IP
 	}
 
 	if sp, err := makeServicePorts(service.Ports); err != nil {
@@ -121,30 +137,13 @@ func makeServicePorts(ports []kube_types.Port) ([]api_core.ServicePort, error) {
 			if err != nil {
 				return nil, err
 			}
-			serviceports = append(serviceports, api_core.ServicePort{Name: v.Name, Protocol: api_core.Protocol(v.Protocol), Port: int32(v.Port), TargetPort: intstr.FromInt(*v.TargetPort)})
+
+			var targetport intstr.IntOrString
+			if v.TargetPort != nil {
+				targetport = intstr.FromInt(*v.TargetPort)
+			}
+			serviceports = append(serviceports, api_core.ServicePort{Name: v.Name, Protocol: api_core.Protocol(v.Protocol), Port: int32(v.Port), TargetPort: targetport})
 		}
 	}
 	return serviceports, nil
-}
-
-func MakeGlustercFSService(ns string) *api_core.Service {
-	return &api_core.Service{
-		TypeMeta: api_meta.TypeMeta{
-			Kind:       "Service",
-			APIVersion: "v1",
-		},
-		ObjectMeta: api_meta.ObjectMeta{
-			Name:      glusterServiceName,
-			Namespace: ns,
-		},
-		Spec: api_core.ServiceSpec{
-			Ports: []api_core.ServicePort{
-				{
-					Port:     1,
-					Name:     glusterServicePortName,
-					Protocol: "TCP",
-				},
-			},
-		},
-	}
 }

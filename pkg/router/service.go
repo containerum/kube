@@ -91,8 +91,6 @@ func createService(ctx *gin.Context) {
 		return
 	}
 
-	newSvc.Labels = quota.Labels
-
 	svcAfter, err := kubecli.CreateService(newSvc)
 	if err != nil {
 		ctx.Error(err)

@@ -29,11 +29,11 @@ func (k *Kube) GetIngress(ns string, ingress string) (*api_extensions.Ingress, e
 	return ingressAfter, nil
 }
 
-func (k *Kube) CreateIngress(ns string, ingress *api_extensions.Ingress) (*api_extensions.Ingress, error) {
-	ingressAfter, err := k.ExtensionsV1beta1().Ingresses(ns).Create(ingress)
+func (k *Kube) CreateIngress(ingress *api_extensions.Ingress) (*api_extensions.Ingress, error) {
+	ingressAfter, err := k.ExtensionsV1beta1().Ingresses(ingress.Namespace).Create(ingress)
 	if err != nil {
 		log.WithError(err).WithFields(log.Fields{
-			"Namespace": ns,
+			"Namespace": ingress.Namespace,
 			"Ingress":   ingress.Name,
 		}).Error(ErrUnableCreateIngress)
 		return nil, err
@@ -41,11 +41,11 @@ func (k *Kube) CreateIngress(ns string, ingress *api_extensions.Ingress) (*api_e
 	return ingressAfter, nil
 }
 
-func (k *Kube) UpdateIngress(ns string, ingress *api_extensions.Ingress) (*api_extensions.Ingress, error) {
-	ingressAfter, err := k.ExtensionsV1beta1().Ingresses(ns).Update(ingress)
+func (k *Kube) UpdateIngress(ingress *api_extensions.Ingress) (*api_extensions.Ingress, error) {
+	ingressAfter, err := k.ExtensionsV1beta1().Ingresses(ingress.Namespace).Update(ingress)
 	if err != nil {
 		log.WithError(err).WithFields(log.Fields{
-			"Namespace": ns,
+			"Namespace": ingress.Namespace,
 			"Ingress":   ingress.Name,
 		}).Error(ErrUnableUpdateIngress)
 		return nil, err

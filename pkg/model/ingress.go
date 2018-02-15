@@ -31,7 +31,7 @@ func ParseIngress(ingressi interface{}) (*kube_types.Ingress, error) {
 		return nil, ErrUnableConvertIngress
 	}
 	createdAt := ingress.CreationTimestamp.Unix()
-	owner := ingress.GetLabels()[ownerLabel]
+	owner := ingress.GetObjectMeta().GetLabels()[ownerLabel]
 
 	newIngress := kube_types.Ingress{
 		Name:      ingress.GetName(),

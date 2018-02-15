@@ -41,6 +41,18 @@ func (kube *Kube) CreateEndpoint(endpoint *api_core.Endpoints) (*api_core.Endpoi
 	return endpointAfter, nil
 }
 
+func (kube *Kube) UpdateEndpoint(endpoint *api_core.Endpoints) (*api_core.Endpoints, error) {
+	endpointAfter, err := kube.CoreV1().Endpoints(endpoint.Namespace).Update(endpoint)
+	if err != nil {
+		log.WithError(err).WithFields(log.Fields{
+			"Namespace": endpoint.Namespace,
+			"Endpoint":  endpoint.Name,
+		}).Error(ErrUnableCreateEndpoint)
+		return nil, err
+	}
+	return endpointAfter, nil
+}
+
 func (kube *Kube) DeleteEndpoint(namespace, endpoint string) error {
 	err := kube.CoreV1().Endpoints(namespace).Delete(endpoint, &api_meta.DeleteOptions{})
 	if err != nil {

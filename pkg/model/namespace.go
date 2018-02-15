@@ -44,7 +44,7 @@ func ParseResourceQuota(quota interface{}) (*kube_types.Namespace, error) {
 	memoryLimit := obj.Spec.Hard[api_core.ResourceLimitsMemory]
 	cpuUsed := obj.Status.Used[api_core.ResourceLimitsCPU]
 	memoryUsed := obj.Status.Used[api_core.ResourceLimitsMemory]
-	owner := obj.GetLabels()[ownerLabel]
+	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
 	return &kube_types.Namespace{
 		Name:    obj.GetNamespace(),
 		Owner:   owner,

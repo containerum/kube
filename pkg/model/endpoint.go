@@ -1,17 +1,95 @@
 package model
 
 import (
+	json_types "git.containerum.net/ch/json-types/kube-api"
+	kube_types "git.containerum.net/ch/kube-client/pkg/model"
+	"github.com/gin-gonic/gin/binding"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func MakeEndpoint(nsName string, ips []string) *api_core.Endpoints {
+// ParseEndpointList parses kubernetes v1.EndpointsList to more convenient []Endpoint struct
+func ParseEndpointList(endpointi interface{}) ([]json_types.Endpoint, error) {
+	endpoints := endpointi.(*api_core.EndpointsList)
+	if endpoints == nil {
+		return nil, ErrUnableConvertEndpointList
+	}
+	newEndpoints := make([]json_types.Endpoint, 0)
+	for _, ingress := range endpoints.Items {
+		newEndpoint, err := ParseEndpoint(&ingress)
+		if err != nil {
+			return nil, err
+		}
+		newEndpoints = append(newEndpoints, *newEndpoint)
+	}
+	return newEndpoints, nil
+}
+
+// ParseEndpoint parses kubernetes v1.Endpoint to more convenient Endpoint struct
+func ParseEndpoint(endpointi interface{}) (*json_types.Endpoint, error) {
+	endpoint := endpointi.(*api_core.Endpoints)
+	if endpoint == nil {
+		return nil, ErrUnableConvertServiceList
+	}
+
+	ports := make([]json_types.Port, 0)
+	addresses := make([]string, 0)
+
+	createdAt := endpoint.GetCreationTimestamp().Unix()
+	owner := endpoint.GetObjectMeta().GetLabels()[ownerLabel]
+
+	newEndpoint := &json_types.Endpoint{
+		Name:      endpoint.Name,
+		CreatedAt: &createdAt,
+		Ports:     ports,
+		Owner:     &owner,
+		Addresses: addresses,
+	}
+
+	if len(endpoint.Subsets) != 0 {
+		for _, nativePort := range endpoint.Subsets[0].Ports {
+			newEndpoint.Ports = append(newEndpoint.Ports,
+				parseEndpointPort(nativePort))
+		}
+
+		for _, v := range endpoint.Subsets[0].Addresses {
+			newEndpoint.Addresses = append(newEndpoint.Addresses, v.IP)
+		}
+	}
+
+	return newEndpoint, nil
+}
+
+func parseEndpointPort(np interface{}) json_types.Port {
+	nativePort := np.(api_core.EndpointPort)
+	return json_types.Port{
+		Name:     nativePort.Name,
+		Port:     int(nativePort.Port),
+		Protocol: kube_types.Protocol(nativePort.Protocol),
+	}
+}
+
+// MakeEndpoint creates kubernetes v1.Endpoint from Endpoint struct and namespace labels
+func MakeEndpoint(nsName string, endpoint json_types.Endpoint, labels map[string]string) (*api_core.Endpoints, error) {
 	ipaddrs := []api_core.EndpointAddress{}
 
-	for _, v := range ips {
+	for _, v := range endpoint.Addresses {
 		ipaddrs = append(ipaddrs, api_core.EndpointAddress{
 			IP: v,
 		})
+	}
+
+	if labels == nil {
+		labels = make(map[string]string, 0)
+	}
+
+	labels[appLabel] = endpoint.Name
+	labels[ownerLabel] = *endpoint.Owner
+	labels[nameLabel] = endpoint.Name
+
+	ports, err := makeEndpointPorts(endpoint.Ports)
+	if err != nil {
+		return nil, err
 	}
 
 	return &api_core.Endpoints{
@@ -20,19 +98,29 @@ func MakeEndpoint(nsName string, ips []string) *api_core.Endpoints {
 			APIVersion: "v1",
 		},
 		ObjectMeta: api_meta.ObjectMeta{
-			Name:      glusterServiceName,
+			Labels:    labels,
+			Name:      endpoint.Name,
 			Namespace: nsName,
 		},
 		Subsets: []api_core.EndpointSubset{
 			{
 				Addresses: ipaddrs,
-				Ports: []api_core.EndpointPort{
-					{
-						Port:     1,
-						Protocol: "TCP",
-					},
-				},
+				Ports:     ports,
 			},
 		},
+	}, nil
+}
+
+func makeEndpointPorts(ports []json_types.Port) ([]api_core.EndpointPort, error) {
+	endpointports := make([]api_core.EndpointPort, 0)
+	if ports != nil {
+		for _, v := range ports {
+			err := binding.Validator.ValidateStruct(v)
+			if err != nil {
+				return nil, err
+			}
+			endpointports = append(endpointports, api_core.EndpointPort{Name: v.Name, Protocol: api_core.Protocol(v.Protocol), Port: int32(v.Port)})
+		}
 	}
+	return endpointports, nil
 }

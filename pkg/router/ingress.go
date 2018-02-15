@@ -89,7 +89,7 @@ func createIngress(ctx *gin.Context) {
 
 	newIngress := model.MakeIngress(ctx.Param(namespaceParam), ingress, quota.Labels)
 
-	ingressAfter, err := kubecli.CreateIngress(ctx.Param(namespaceParam), newIngress)
+	ingressAfter, err := kubecli.CreateIngress(newIngress)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
@@ -137,7 +137,7 @@ func updateIngress(ctx *gin.Context) {
 
 	newIngress := model.MakeIngress(ctx.Param(namespaceParam), ingress, quota.Labels)
 
-	ingressAfter, err := kubecli.UpdateIngress(ctx.Param(namespaceParam), newIngress)
+	ingressAfter, err := kubecli.UpdateIngress(newIngress)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))

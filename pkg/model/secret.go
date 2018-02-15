@@ -36,7 +36,7 @@ func ParseSecret(secreti interface{}) (*kube_types.Secret, error) {
 		newData[k] = string(v)
 	}
 
-	owner := secret.GetLabels()[ownerLabel]
+	owner := secret.GetObjectMeta().GetLabels()[ownerLabel]
 	createdAt := secret.CreationTimestamp.Unix()
 
 	return &kube_types.Secret{

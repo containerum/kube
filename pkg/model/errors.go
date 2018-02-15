@@ -37,6 +37,8 @@ var (
 	ErrUnableConvertIngress          = NewErrorWithCode("Unable to decode ingress", http.StatusInternalServerError)
 	ErrUnableConvertDeploymentList   = NewErrorWithCode("Unable to decode deployment list", http.StatusInternalServerError)
 	ErrUnableConvertDeployment       = NewErrorWithCode("Unable to decode deployment", http.StatusInternalServerError)
+	ErrUnableConvertEndpointList     = NewErrorWithCode("Unable to decode services list", http.StatusInternalServerError)
+	ErrUnableConvertEndpoint         = NewErrorWithCode("Unable to decode service", http.StatusInternalServerError)
 )
 
 type Error struct {

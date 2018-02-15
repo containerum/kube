@@ -9,4 +9,5 @@ const (
 	invalidUpdateIngressName    = "Ingress name in URI %s does not match ingress name in request %s"
 	invalidUpdateSecretName     = "Secret name in URI %s does not match secret name in request %s"
 	invalidUpdateServiceName    = "Service name in URI %s does not match service name in request %s"
+	invalidUpdateEndpointName   = "Endpoint name in URI %s does not match endpoint name in request %s"
 )
