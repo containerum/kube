@@ -5,10 +5,10 @@ import (
 
 	"fmt"
 
+	json_types "git.containerum.net/ch/json-types/kube-api"
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
-	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
@@ -75,7 +75,7 @@ func createEndpoint(ctx *gin.Context) {
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var endpoint kube_types.Endpoint
+	var endpoint json_types.Endpoint
 	if err := ctx.ShouldBindWith(&endpoint, binding.JSON); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
@@ -121,7 +121,7 @@ func updateEndpoint(ctx *gin.Context) {
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var endpoint kube_types.Endpoint
+	var endpoint json_types.Endpoint
 	if err := ctx.ShouldBindWith(&endpoint, binding.JSON); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))

@@ -2,7 +2,6 @@ package model
 
 import (
 	json_types "git.containerum.net/ch/json-types/kube-api"
-	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	"github.com/gin-gonic/gin/binding"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -65,7 +64,7 @@ func parseEndpointPort(np interface{}) json_types.Port {
 	return json_types.Port{
 		Name:     nativePort.Name,
 		Port:     int(nativePort.Port),
-		Protocol: kube_types.Protocol(nativePort.Protocol),
+		Protocol: json_types.Protocol(nativePort.Protocol),
 	}
 }
 
