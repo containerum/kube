@@ -7,7 +7,6 @@ import (
 
 	"strconv"
 
-	"github.com/gin-gonic/gin/binding"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
@@ -91,7 +90,7 @@ func parseServicePort(np interface{}) kube_types.Port {
 }
 
 // MakeService creates kubernetes v1.Service from Service struct and namespace labels
-func MakeService(nsName string, service *kube_types.Service, labels map[string]string) (*api_core.Service, error) {
+func MakeService(nsName string, service *kube_types.Service, labels map[string]string) *api_core.Service {
 	if labels == nil {
 		labels = make(map[string]string, 0)
 	}
@@ -113,6 +112,7 @@ func MakeService(nsName string, service *kube_types.Service, labels map[string]s
 		Spec: api_core.ServiceSpec{
 			Selector: labels,
 			Type:     "ClusterIP",
+			Ports:    makeServicePorts(service.Ports),
 		},
 	}
 
@@ -120,24 +120,13 @@ func MakeService(nsName string, service *kube_types.Service, labels map[string]s
 		newService.Spec.ExternalIPs = *service.IP
 	}
 
-	if sp, err := makeServicePorts(service.Ports); err != nil {
-		return nil, err
-	} else {
-		newService.Spec.Ports = sp
-	}
-
-	return &newService, nil
+	return &newService
 }
 
-func makeServicePorts(ports []kube_types.Port) ([]api_core.ServicePort, error) {
+func makeServicePorts(ports []kube_types.Port) []api_core.ServicePort {
 	var serviceports []api_core.ServicePort
 	if ports != nil {
 		for _, v := range ports {
-			err := binding.Validator.ValidateStruct(v)
-			if err != nil {
-				return nil, err
-			}
-
 			var targetport intstr.IntOrString
 			if v.TargetPort != nil {
 				targetport = intstr.FromInt(*v.TargetPort)
@@ -145,5 +134,5 @@ func makeServicePorts(ports []kube_types.Port) ([]api_core.ServicePort, error) {
 			serviceports = append(serviceports, api_core.ServicePort{Name: v.Name, Protocol: api_core.Protocol(v.Protocol), Port: int32(v.Port), TargetPort: targetport})
 		}
 	}
-	return serviceports, nil
+	return serviceports
 }

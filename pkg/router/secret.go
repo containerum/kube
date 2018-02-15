@@ -85,9 +85,7 @@ func createSecret(ctx *gin.Context) {
 		return
 	}
 
-	newSecret := model.MakeSecret(ctx.Param(namespaceParam), secret, quota.Labels)
-
-	secretAfter, err := kubecli.CreateSecret(newSecret)
+	secretAfter, err := kubecli.CreateSecret(model.MakeSecret(ctx.Param(namespaceParam), secret, quota.Labels))
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
@@ -133,9 +131,7 @@ func updateSecret(ctx *gin.Context) {
 		return
 	}
 
-	newSecret := model.MakeSecret(ctx.Param(namespaceParam), secret, quota.Labels)
-
-	secretAfter, err := kubecli.UpdateSecret(newSecret)
+	secretAfter, err := kubecli.UpdateSecret(model.MakeSecret(ctx.Param(namespaceParam), secret, quota.Labels))
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))

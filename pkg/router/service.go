@@ -84,14 +84,7 @@ func createService(ctx *gin.Context) {
 		return
 	}
 
-	newSvc, err := model.MakeService(ctx.Param(namespaceParam), &svc, quota.Labels)
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-		return
-	}
-
-	svcAfter, err := kubecli.CreateService(newSvc)
+	svcAfter, err := kubecli.CreateService(model.MakeService(ctx.Param(namespaceParam), &svc, quota.Labels))
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
@@ -135,14 +128,7 @@ func updateService(ctx *gin.Context) {
 		return
 	}
 
-	newSvc, err := model.MakeService(ctx.Param(namespaceParam), &svc, quota.Labels)
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-		return
-	}
-
-	updatedService, err := kubecli.UpdateService(newSvc)
+	updatedService, err := kubecli.UpdateService(model.MakeService(ctx.Param(namespaceParam), &svc, quota.Labels))
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithError(http.StatusInternalServerError, err)

@@ -89,14 +89,7 @@ func createEndpoint(ctx *gin.Context) {
 		return
 	}
 
-	newEndpoint, err := model.MakeEndpoint(ctx.Param(namespaceParam), endpoint, quota.Labels)
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-		return
-	}
-
-	endpointAfter, err := kubecli.CreateEndpoint(newEndpoint)
+	endpointAfter, err := kubecli.CreateEndpoint(model.MakeEndpoint(ctx.Param(namespaceParam), endpoint, quota.Labels))
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
@@ -142,14 +135,7 @@ func updateEndpoint(ctx *gin.Context) {
 		return
 	}
 
-	newEndpoint, err := model.MakeEndpoint(ctx.Param(namespaceParam), endpoint, quota.Labels)
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-		return
-	}
-
-	endpointAfter, err := kubecli.UpdateEndpoint(newEndpoint)
+	endpointAfter, err := kubecli.UpdateEndpoint(model.MakeEndpoint(ctx.Param(namespaceParam), endpoint, quota.Labels))
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))

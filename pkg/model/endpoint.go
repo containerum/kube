@@ -2,7 +2,6 @@ package model
 
 import (
 	json_types "git.containerum.net/ch/json-types/kube-api"
-	"github.com/gin-gonic/gin/binding"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -69,7 +68,7 @@ func parseEndpointPort(np interface{}) json_types.Port {
 }
 
 // MakeEndpoint creates kubernetes v1.Endpoint from Endpoint struct and namespace labels
-func MakeEndpoint(nsName string, endpoint json_types.Endpoint, labels map[string]string) (*api_core.Endpoints, error) {
+func MakeEndpoint(nsName string, endpoint json_types.Endpoint, labels map[string]string) *api_core.Endpoints {
 	ipaddrs := []api_core.EndpointAddress{}
 
 	for _, v := range endpoint.Addresses {
@@ -86,11 +85,6 @@ func MakeEndpoint(nsName string, endpoint json_types.Endpoint, labels map[string
 	labels[ownerLabel] = *endpoint.Owner
 	labels[nameLabel] = endpoint.Name
 
-	ports, err := makeEndpointPorts(endpoint.Ports)
-	if err != nil {
-		return nil, err
-	}
-
 	return &api_core.Endpoints{
 		TypeMeta: api_meta.TypeMeta{
 			Kind:       "Endpoints",
@@ -104,22 +98,18 @@ func MakeEndpoint(nsName string, endpoint json_types.Endpoint, labels map[string
 		Subsets: []api_core.EndpointSubset{
 			{
 				Addresses: ipaddrs,
-				Ports:     ports,
+				Ports:     makeEndpointPorts(endpoint.Ports),
 			},
 		},
-	}, nil
+	}
 }
 
-func makeEndpointPorts(ports []json_types.Port) ([]api_core.EndpointPort, error) {
+func makeEndpointPorts(ports []json_types.Port) []api_core.EndpointPort {
 	endpointports := make([]api_core.EndpointPort, 0)
 	if ports != nil {
 		for _, v := range ports {
-			err := binding.Validator.ValidateStruct(v)
-			if err != nil {
-				return nil, err
-			}
 			endpointports = append(endpointports, api_core.EndpointPort{Name: v.Name, Protocol: api_core.Protocol(v.Protocol), Port: int32(v.Port)})
 		}
 	}
-	return endpointports, nil
+	return endpointports
 }

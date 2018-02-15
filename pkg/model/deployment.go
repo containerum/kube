@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
-	"github.com/gin-gonic/gin/binding"
 	"gopkg.in/inf.v0"
 	api_apps "k8s.io/api/apps/v1"
 	api_core "k8s.io/api/core/v1"
@@ -130,11 +129,6 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, []
 
 	volumes := make([]string, 0)
 	for _, c := range containers {
-		err := binding.Validator.ValidateStruct(c)
-		if err != nil {
-			return nil, nil, err
-		}
-
 		container := api_core.Container{
 			Name:    c.Name,
 			Image:   c.Image,
@@ -142,28 +136,17 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, []
 		}
 
 		if c.Volume != nil {
-			if vm, vnames, err := makeContainerVolumes(*c.Volume); err != nil {
-				return nil, nil, err
-			} else {
-				volumes = append(volumes, vnames...)
-				container.VolumeMounts = vm
-			}
+			vm, vnames := makeContainerVolumes(*c.Volume)
+			volumes = append(volumes, vnames...)
+			container.VolumeMounts = vm
 		}
 
 		if c.Env != nil {
-			if ev, err := makeContainerEnv(*c.Env); err != nil {
-				return nil, nil, err
-			} else {
-				container.Env = ev
-			}
+			container.Env = makeContainerEnv(*c.Env)
 		}
 
 		if c.Ports != nil {
-			if cp, err := makeContainerPorts(*c.Ports); err != nil {
-				return nil, nil, err
-			} else {
-				container.Ports = cp
-			}
+			container.Ports = makeContainerPorts(*c.Ports)
 		}
 
 		if rq, err := makeContainerResourceQuota(c.Limits.CPU, c.Limits.Memory); err != nil {
@@ -177,16 +160,11 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, []
 	return containersAfter, volumes, nil
 }
 
-func makeContainerVolumes(volumes []kube_types.Volume) ([]api_core.VolumeMount, []string, error) {
+func makeContainerVolumes(volumes []kube_types.Volume) ([]api_core.VolumeMount, []string) {
 	mounts := make([]api_core.VolumeMount, 0)
 	vnames := make([]string, 0)
 	if volumes != nil {
 		for _, v := range volumes {
-			err := binding.Validator.ValidateStruct(v)
-			if err != nil {
-				return nil, nil, err
-			}
-
 			var subpath string
 			if v.SubPath != nil {
 				subpath = *v.SubPath
@@ -195,35 +173,27 @@ func makeContainerVolumes(volumes []kube_types.Volume) ([]api_core.VolumeMount, 
 			mounts = append(mounts, api_core.VolumeMount{Name: v.Name, MountPath: v.MountPath, SubPath: subpath})
 		}
 	}
-	return mounts, vnames, nil
+	return mounts, vnames
 }
 
-func makeContainerEnv(env []kube_types.Env) ([]api_core.EnvVar, error) {
+func makeContainerEnv(env []kube_types.Env) []api_core.EnvVar {
 	envvar := make([]api_core.EnvVar, 0)
 	if env != nil {
 		for _, v := range env {
-			err := binding.Validator.ValidateStruct(v)
-			if err != nil {
-				return nil, err
-			}
 			envvar = append(envvar, api_core.EnvVar{Name: v.Name, Value: v.Value})
 		}
 	}
-	return envvar, nil
+	return envvar
 }
 
-func makeContainerPorts(ports []kube_types.Port) ([]api_core.ContainerPort, error) {
+func makeContainerPorts(ports []kube_types.Port) []api_core.ContainerPort {
 	contports := make([]api_core.ContainerPort, 0)
 	if ports != nil {
 		for _, v := range ports {
-			err := binding.Validator.ValidateStruct(v)
-			if err != nil {
-				return nil, err
-			}
 			contports = append(contports, api_core.ContainerPort{ContainerPort: int32(v.Port), Protocol: api_core.Protocol(v.Protocol), Name: v.Name})
 		}
 	}
-	return contports, nil
+	return contports
 }
 
 func makeContainerCommands(commands *[]string) []string {
