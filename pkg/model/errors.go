@@ -122,7 +122,11 @@ func ParseErorrs(in interface{}) (code int, out []Error) {
 	//Simple error with code
 	mE, isErrorWithCode := in.(Error)
 	if isErrorWithCode {
-		return http.StatusInternalServerError, []Error{mE}
+		if mE.Code != 0 {
+			return mE.Code, []Error{mE}
+		} else {
+			return http.StatusInternalServerError, []Error{mE}
+		}
 	}
 
 	return http.StatusInternalServerError, []Error{{Text: in.(error).Error()}}

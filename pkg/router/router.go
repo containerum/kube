@@ -32,7 +32,7 @@ func initMiddlewares(e *gin.Engine, kube *kubernetes.Kube) {
 
 func initRoutes(e *gin.Engine) {
 	e.NoRoute(func(c *gin.Context) {
-		c.Status(404)
+		c.Status(http.StatusNotFound)
 	})
 	namespace := e.Group("/namespaces")
 	{

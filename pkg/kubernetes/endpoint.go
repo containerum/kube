@@ -47,7 +47,7 @@ func (kube *Kube) UpdateEndpoint(endpoint *api_core.Endpoints) (*api_core.Endpoi
 		log.WithError(err).WithFields(log.Fields{
 			"Namespace": endpoint.Namespace,
 			"Endpoint":  endpoint.Name,
-		}).Error(ErrUnableCreateEndpoint)
+		}).Error(ErrUnableUpdateEndpoint)
 		return nil, err
 	}
 	return endpointAfter, nil

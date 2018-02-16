@@ -19,7 +19,7 @@ type NamespaceWithOwner struct {
 }
 
 // ParseResourceQuotaList parses kubernetes v1.ResourceQuotaList to more convenient []Namespace struct.
-// (resource quouta contains all fields that parent namespcae contains)
+// (resource quouta contains all fields that parent namespace contains)
 func ParseResourceQuotaList(quotas interface{}) ([]NamespaceWithOwner, error) {
 	objects := quotas.(*api_core.ResourceQuotaList)
 	if objects == nil {

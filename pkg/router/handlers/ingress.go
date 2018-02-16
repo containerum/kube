@@ -26,7 +26,6 @@ func GetIngressList(ctx *gin.Context) {
 
 	ingressList, err := kubecli.GetIngressList(ctx.Param(namespaceParam))
 	if err != nil {
-		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
@@ -50,7 +49,6 @@ func GetIngress(ctx *gin.Context) {
 
 	ingress, err := kubecli.GetIngress(ctx.Param(namespaceParam), ctx.Param(ingressParam))
 	if err != nil {
-		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
@@ -74,21 +72,21 @@ func CreateIngress(ctx *gin.Context) {
 
 	var ingress model.IngressWithOwner
 	if err := ctx.ShouldBindWith(&ingress, binding.JSON); err != nil {
-		ctx.Error(err)
+		log.WithError(err).WithFields(log.Fields{
+			"Namespace": ctx.Param(namespaceParam),
+		}).Warning(kubernetes.ErrUnableCreateIngress)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
-		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	ingressAfter, err := kubecli.CreateIngress(model.MakeIngress(ctx.Param(namespaceParam), ingress, quota.Labels))
 	if err != nil {
-		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
@@ -113,28 +111,31 @@ func UpdateIngress(ctx *gin.Context) {
 
 	var ingress model.IngressWithOwner
 	if err := ctx.ShouldBindWith(&ingress, binding.JSON); err != nil {
-		ctx.Error(err)
+		log.WithError(err).WithFields(log.Fields{
+			"Namespace": ctx.Param(namespaceParam),
+			"Ingress":   ctx.Param(secretParam),
+		}).Warning(kubernetes.ErrUnableUpdateIngress)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	if ctx.Param(ingressParam) != ingress.Name {
-		log.Errorf(invalidUpdateIngressName, ctx.Param(ingressParam), ingress.Name)
-		ctx.Error(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateIngressName, ctx.Param(ingressParam), ingress.Name), http.StatusBadRequest))
+		log.WithError(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateIngressName, ctx.Param(ingressParam), ingress.Name), http.StatusBadRequest)).WithFields(log.Fields{
+			"Namespace": ctx.Param(namespaceParam),
+			"Ingress":   ctx.Param(secretParam),
+		}).Warning(kubernetes.ErrUnableUpdateIngress)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateIngressName, ctx.Param(ingressParam), ingress.Name), http.StatusBadRequest)))
 		return
 	}
 
 	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
-		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	ingressAfter, err := kubecli.UpdateIngress(model.MakeIngress(ctx.Param(namespaceParam), ingress, quota.Labels))
 	if err != nil {
-		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
@@ -158,7 +159,6 @@ func DeleteIngress(ctx *gin.Context) {
 
 	err := kubecli.DeleteIngress(ctx.Param(namespaceParam), ctx.Param(ingressParam))
 	if err != nil {
-		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}

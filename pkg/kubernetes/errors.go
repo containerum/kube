@@ -39,6 +39,7 @@ var (
 	ErrUnableGetEndpointList = errors.New("Unable to get endpoints list")
 	ErrUnableGetEndpoint     = errors.New("Unable to get endpoint")
 	ErrUnableCreateEndpoint  = errors.New("Unable to create endpoint")
+	ErrUnableUpdateEndpoint  = errors.New("Unable to update endpoint")
 	ErrUnableDeleteEndpoint  = errors.New("Unable to delete endpoint")
 
 	ErrUnableGetPodList = errors.New("Unable to get pod list")

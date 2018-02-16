@@ -11,6 +11,7 @@ type PodWithOwner struct {
 	Owner string `json:"owner,omitempty" binding:"required,uuid"`
 }
 
+// ParseResourceQuotaList parses kubernetes v1.PodList to more convenient []Pod struct.
 func ParsePodList(pods interface{}) []PodWithOwner {
 	objects := pods.(*api_core.PodList)
 	var pos []PodWithOwner
@@ -20,6 +21,7 @@ func ParsePodList(pods interface{}) []PodWithOwner {
 	return pos
 }
 
+// ParsePod parses kubernetes v1.PodList to more convenient Pod struct.
 func ParsePod(pod interface{}) PodWithOwner {
 	obj := pod.(*api_core.Pod)
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
@@ -64,7 +66,7 @@ func getContainers(cListi interface{}) []model.Container {
 
 func getVolumes(vListi interface{}) []model.Volume {
 	vList := vListi.([]api_core.VolumeMount)
-	var volumes []model.Volume
+	volumes := make([]model.Volume, 0)
 	for _, v := range vList {
 		volumes = append(volumes, model.Volume{
 			Name:      v.Name,
@@ -77,7 +79,7 @@ func getVolumes(vListi interface{}) []model.Volume {
 
 func getEnv(eListi interface{}) []model.Env {
 	eList := eListi.([]api_core.EnvVar)
-	var envs []model.Env
+	envs := make([]model.Env, 0)
 	for _, e := range eList {
 		envs = append(envs, model.Env{
 			Name:  e.Name,

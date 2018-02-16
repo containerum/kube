@@ -22,10 +22,11 @@ func GetSecretList(ctx *gin.Context) {
 		"Namespace Param": ctx.Param(namespaceParam),
 		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
 	}).Debug("Get secret list Call")
+
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
 	secrets, err := kube.GetSecretList(ctx.MustGet(m.NamespaceKey).(string))
 	if err != nil {
-		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
@@ -46,7 +47,9 @@ func GetSecret(ctx *gin.Context) {
 		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
 		"Secret":          ctx.Param(secretParam),
 	}).Debug("Get secret Call")
+
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
 	secret, err := kube.GetSecret(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(secretParam))
 	if err != nil {
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
@@ -72,14 +75,15 @@ func CreateSecret(ctx *gin.Context) {
 
 	var secret model.SecretWithOwner
 	if err := ctx.ShouldBindWith(&secret, binding.JSON); err != nil {
-		ctx.Error(err)
+		log.WithError(err).WithFields(log.Fields{
+			"Namespace": ctx.Param(namespaceParam),
+		}).Warning(kubernetes.ErrUnableCreateSecret)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
-		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
@@ -111,28 +115,31 @@ func UpdateSecret(ctx *gin.Context) {
 
 	var secret model.SecretWithOwner
 	if err := ctx.ShouldBindWith(&secret, binding.JSON); err != nil {
-		ctx.Error(err)
+		log.WithError(err).WithFields(log.Fields{
+			"Namespace": ctx.Param(namespaceParam),
+			"Secret":    ctx.Param(secretParam),
+		}).Warning(kubernetes.ErrUnableUpdateSecret)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
-		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	if ctx.Param(secretParam) != secret.Name {
-		log.Errorf(invalidUpdateSecretName, ctx.Param(secretParam), secret.Name)
-		ctx.Error(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateSecretName, ctx.Param(secretParam), secret.Name), http.StatusBadRequest))
+		log.WithError(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateSecretName, ctx.Param(secretParam), secret.Name), http.StatusBadRequest)).WithFields(log.Fields{
+			"Namespace": ctx.Param(namespaceParam),
+			"Secret":    ctx.Param(secretParam),
+		}).Warning(kubernetes.ErrUnableUpdateSecret)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateSecretName, ctx.Param(secretParam), secret.Name), http.StatusBadRequest)))
 		return
 	}
 
 	secretAfter, err := kubecli.UpdateSecret(model.MakeSecret(ctx.Param(namespaceParam), secret, quota.Labels))
 	if err != nil {
-		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
@@ -155,7 +162,6 @@ func DeleteSecret(ctx *gin.Context) {
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	err := kube.DeleteSecret(ctx.Param(namespaceParam), ctx.Param(secretParam))
 	if err != nil {
-		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
