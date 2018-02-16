@@ -33,72 +33,76 @@ var wsupgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func GetPodList(c *gin.Context) {
+func GetPodList(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace Param": c.Param(namespaceParam),
-		"Namespace":       c.MustGet(m.NamespaceKey).(string),
-		"Owner":           c.Query(ownerQuery),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+		"Owner":           ctx.Query(ownerQuery),
 	}).Debug("Get pod list Call")
-	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-	pods, err := kube.GetPodList(c.MustGet(m.NamespaceKey).(string), c.Query(ownerQuery))
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	pods, err := kube.GetPodList(ctx.MustGet(m.NamespaceKey).(string), ctx.Query(ownerQuery))
 	if err != nil {
-		c.AbortWithError(http.StatusNotFound, err)
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(http.StatusNotFound, err)
 		return
 	}
 	podList := model.ParsePodList(pods)
-	c.JSON(http.StatusOK, podList)
+	ctx.JSON(http.StatusOK, podList)
 }
 
-func GetPod(c *gin.Context) {
+func GetPod(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace Param": c.Param(namespaceParam),
-		"Namespace":       c.MustGet(m.NamespaceKey).(string),
-		"Pod":             c.Param(podParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+		"Pod":             ctx.Param(podParam),
 	}).Debug("Get pod list Call")
-	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-	pod, err := kube.GetPod(c.MustGet(m.NamespaceKey).(string), c.Param(podParam))
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	pod, err := kube.GetPod(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(podParam))
 	if err != nil {
-		c.AbortWithError(http.StatusNotFound, err)
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(http.StatusNotFound, err)
 		return
 	}
 	po := model.ParsePod(pod)
-	c.JSON(http.StatusOK, po)
+	ctx.JSON(http.StatusOK, po)
 }
 
-func DeletePod(c *gin.Context) {
+func DeletePod(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": c.Param(namespaceParam),
-		"Pod":       c.Param(podParam),
+		"Namespace": ctx.Param(namespaceParam),
+		"Pod":       ctx.Param(podParam),
 	}).Debug("Delete pod Call")
-	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-	err := kube.DeletePod(c.Param(namespaceParam), c.Param(podParam))
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	err := kube.DeletePod(ctx.Param(namespaceParam), ctx.Param(podParam))
 	if err != nil {
-		c.AbortWithError(http.StatusNotFound, err)
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(http.StatusNotFound, err)
 		return
 	}
-	c.Status(http.StatusAccepted)
+	ctx.Status(http.StatusAccepted)
 }
 
-func GetPodLogs(c *gin.Context) {
+func GetPodLogs(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": c.Param(namespaceParam),
-		"Pod":       c.Param(podParam),
-		"Follow":    c.Query(followQuery),
-		"Tail":      c.Query(tailQuery),
-		"Container": c.Query(containerQuery),
-		"Previous":  c.Query(previousQuery),
+		"Namespace": ctx.Param(namespaceParam),
+		"Pod":       ctx.Param(podParam),
+		"Follow":    ctx.Query(followQuery),
+		"Tail":      ctx.Query(tailQuery),
+		"Container": ctx.Query(containerQuery),
+		"Previous":  ctx.Query(previousQuery),
 	}).Debug("Get pod logs Call")
 
-	conn, err := wsupgrader.Upgrade(c.Writer, c.Request, nil)
+	conn, err := wsupgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
+		ctx.Error(err)
 		log.WithError(err).Error("unable to upgrade http to socket")
 		return
 	}
 	stream := new(bytes.Buffer)
-	kube := c.MustGet(m.KubeClient).(*kubernetes.Kube)
-	logOpt := makeLogOption(c)
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	logOpt := makeLogOption(ctx)
 
-	go kube.GetPodLogs(c.Param(namespaceParam), c.Param(podParam), stream, &logOpt)
+	go kube.GetPodLogs(ctx.Param(namespaceParam), ctx.Param(podParam), stream, &logOpt)
 	go writeLogs(conn, stream, &logOpt.StopFollow)
 }
 

@@ -70,7 +70,8 @@ func CreateNamespace(ctx *gin.Context) {
 
 	var ns model.NamespaceWithOwner
 	if err := ctx.ShouldBindWith(&ns, binding.JSON); err != nil {
-		log.WithError(err).Warning(kubernetes.ErrUnableCreateNamespace)
+		log.Warning(kubernetes.ErrUnableCreateNamespace)
+		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
@@ -85,9 +86,9 @@ func CreateNamespace(ctx *gin.Context) {
 	if err != nil {
 		ctx.Error(err)
 
-		if err := kubecli.DeleteNamespace(nsAfter.Name); err != nil {
-			ctx.Error(err)
-			ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		if delerr := kubecli.DeleteNamespace(nsAfter.Name); delerr != nil {
+			ctx.Error(delerr)
+			ctx.AbortWithStatusJSON(model.ParseErorrs(delerr))
 		}
 
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
@@ -96,10 +97,11 @@ func CreateNamespace(ctx *gin.Context) {
 
 	quotaAfter, err := kubecli.CreateNamespaceQuota(ns.Name, quota)
 	if err != nil {
+		ctx.Error(err)
 
-		if err := kubecli.DeleteNamespace(nsAfter.Name); err != nil {
-			ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-			return
+		if delerr := kubecli.DeleteNamespace(nsAfter.Name); delerr != nil {
+			ctx.Error(delerr)
+			ctx.AbortWithStatusJSON(model.ParseErorrs(delerr))
 		}
 
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
@@ -125,6 +127,7 @@ func DeleteNamespace(ctx *gin.Context) {
 
 	err := kube.DeleteNamespace(ctx.Param(namespaceParam))
 	if err != nil {
+		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
@@ -139,15 +142,17 @@ func UpdateNamespace(ctx *gin.Context) {
 
 	var res kube_types.UpdateNamespace
 	if err := ctx.ShouldBindWith(&res, binding.JSON); err != nil {
-		log.WithError(err).WithFields(log.Fields{
+		log.WithFields(log.Fields{
 			"Namespace": ctx.Param(namespaceParam),
 		}).Warning(kubernetes.ErrUnableUpdateNamespaceQuota)
+		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	quotaOld, err := kube.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
+		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
@@ -164,6 +169,7 @@ func UpdateNamespace(ctx *gin.Context) {
 	quota.SetName("quota")
 	quotaAfter, err := kube.UpdateNamespaceQuota(ctx.Param(namespaceParam), quota)
 	if err != nil {
+		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}

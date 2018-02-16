@@ -11,7 +11,7 @@ type PodWithOwner struct {
 	Owner string `json:"owner,omitempty" binding:"required,uuid"`
 }
 
-// ParseResourceQuotaList parses kubernetes v1.PodList to more convenient []Pod struct.
+// ParsePodList parses kubernetes v1.PodList to more convenient []Pod struct.
 func ParsePodList(pods interface{}) []PodWithOwner {
 	objects := pods.(*api_core.PodList)
 	var pos []PodWithOwner

@@ -28,6 +28,7 @@ func GetEndpointList(ctx *gin.Context) {
 
 	endpoints, err := kube.GetEndpointList(ctx.MustGet(m.NamespaceKey).(string))
 	if err != nil {
+		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
@@ -53,6 +54,7 @@ func GetEndpoint(ctx *gin.Context) {
 
 	endpoint, err := kube.GetEndpoint(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(endpointParam))
 	if err != nil {
+		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
@@ -76,21 +78,24 @@ func CreateEndpoint(ctx *gin.Context) {
 
 	var endpoint json_types.Endpoint
 	if err := ctx.ShouldBindWith(&endpoint, binding.JSON); err != nil {
-		log.WithError(err).WithFields(log.Fields{
+		log.WithFields(log.Fields{
 			"Namespace": ctx.Param(namespaceParam),
 		}).Warning(kubernetes.ErrUnableCreateEndpoint)
+		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
+		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	endpointAfter, err := kubecli.CreateEndpoint(model.MakeEndpoint(ctx.Param(namespaceParam), endpoint, quota.Labels))
 	if err != nil {
+		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
@@ -115,31 +120,35 @@ func UpdateEndpoint(ctx *gin.Context) {
 
 	var endpoint json_types.Endpoint
 	if err := ctx.ShouldBindWith(&endpoint, binding.JSON); err != nil {
-		log.WithError(err).WithFields(log.Fields{
+		log.WithFields(log.Fields{
 			"Namespace": ctx.Param(namespaceParam),
 			"Endpoint":  ctx.Param(endpointParam),
 		}).Warning(kubernetes.ErrUnableUpdateEndpoint)
+		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
+		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
 	if ctx.Param(endpointParam) != endpoint.Name {
-		log.WithError(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateEndpointName, ctx.Param(endpointParam), endpoint.Name), http.StatusBadRequest)).WithFields(log.Fields{
+		log.WithFields(log.Fields{
 			"Namespace": ctx.Param(namespaceParam),
 			"Endpoint":  ctx.Param(endpointParam),
 		}).Warning(kubernetes.ErrUnableUpdateEndpoint)
+		ctx.Error(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateEndpointName, ctx.Param(endpointParam), endpoint.Name), http.StatusBadRequest))
 		ctx.AbortWithStatusJSON(model.ParseErorrs(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateEndpointName, ctx.Param(endpointParam), endpoint.Name), http.StatusBadRequest)))
 		return
 	}
 
 	endpointAfter, err := kubecli.UpdateEndpoint(model.MakeEndpoint(ctx.Param(namespaceParam), endpoint, quota.Labels))
 	if err != nil {
+		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
@@ -164,6 +173,7 @@ func DeleteEndpoint(ctx *gin.Context) {
 
 	err := kube.DeleteEndpoint(ctx.Param(namespaceParam), ctx.Param(endpointParam))
 	if err != nil {
+		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}

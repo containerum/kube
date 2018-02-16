@@ -20,7 +20,7 @@ const (
 )
 
 var (
-	readLevels []AccessLevel = []AccessLevel{
+	readLevels = []AccessLevel{
 		levelOwner,
 		levelWrite,
 		levelReadDelete,

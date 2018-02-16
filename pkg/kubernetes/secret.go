@@ -9,7 +9,7 @@ import (
 func (k *Kube) GetSecretList(nsName string) (*api_core.SecretList, error) {
 	secrets, err := k.CoreV1().Secrets(nsName).List(api_meta.ListOptions{})
 	if err != nil {
-		log.WithError(err).WithFields(log.Fields{
+		log.WithFields(log.Fields{
 			"Namespace": nsName,
 		}).Error(ErrUnableGetSecretList)
 		return nil, err
@@ -20,7 +20,7 @@ func (k *Kube) GetSecretList(nsName string) (*api_core.SecretList, error) {
 func (k *Kube) GetSecret(nsName string, secretName string) (*api_core.Secret, error) {
 	secret, err := k.CoreV1().Secrets(nsName).Get(secretName, api_meta.GetOptions{})
 	if err != nil {
-		log.WithError(err).WithFields(log.Fields{
+		log.WithFields(log.Fields{
 			"Namespace": nsName,
 			"Secret":    secretName,
 		}).Error(ErrUnableGetSecret)
@@ -32,7 +32,7 @@ func (k *Kube) GetSecret(nsName string, secretName string) (*api_core.Secret, er
 func (k *Kube) CreateSecret(secret *api_core.Secret) (*api_core.Secret, error) {
 	newSecret, err := k.CoreV1().Secrets(secret.Namespace).Create(secret)
 	if err != nil {
-		log.WithError(err).WithFields(log.Fields{
+		log.WithFields(log.Fields{
 			"Namespace": secret.Namespace,
 			"Secret":    secret.Name,
 		}).Error(ErrUnableCreateSecret)
@@ -44,7 +44,7 @@ func (k *Kube) CreateSecret(secret *api_core.Secret) (*api_core.Secret, error) {
 func (k *Kube) UpdateSecret(secret *api_core.Secret) (*api_core.Secret, error) {
 	newSecret, err := k.CoreV1().Secrets(secret.Namespace).Update(secret)
 	if err != nil {
-		log.WithError(err).WithFields(log.Fields{
+		log.WithFields(log.Fields{
 			"Namespace": secret.Namespace,
 			"Secret":    secret.Name,
 		}).Error(ErrUnableUpdateSecret)
@@ -56,7 +56,7 @@ func (k *Kube) UpdateSecret(secret *api_core.Secret) (*api_core.Secret, error) {
 func (k *Kube) DeleteSecret(nsName string, secretName string) error {
 	err := k.CoreV1().Secrets(nsName).Delete(secretName, &api_meta.DeleteOptions{})
 	if err != nil {
-		log.WithError(err).WithFields(log.Fields{
+		log.WithFields(log.Fields{
 			"Namespace": nsName,
 			"Secret":    secretName,
 		}).Error(ErrUnableDeleteSecret)

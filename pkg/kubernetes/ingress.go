@@ -9,7 +9,7 @@ import (
 func (k *Kube) GetIngressList(ns string) (*api_extensions.IngressList, error) {
 	ingressList, err := k.ExtensionsV1beta1().Ingresses(ns).List(api_meta.ListOptions{})
 	if err != nil {
-		log.WithError(err).WithFields(log.Fields{
+		log.WithFields(log.Fields{
 			"Namespace": ns,
 		}).Error(ErrUnableGetIngressList)
 		return nil, err
@@ -20,7 +20,7 @@ func (k *Kube) GetIngressList(ns string) (*api_extensions.IngressList, error) {
 func (k *Kube) GetIngress(ns string, ingress string) (*api_extensions.Ingress, error) {
 	ingressAfter, err := k.ExtensionsV1beta1().Ingresses(ns).Get(ingress, api_meta.GetOptions{})
 	if err != nil {
-		log.WithError(err).WithFields(log.Fields{
+		log.WithFields(log.Fields{
 			"Namespace": ns,
 			"Ingress":   ingress,
 		}).Error(ErrUnableGetIngress)
@@ -32,7 +32,7 @@ func (k *Kube) GetIngress(ns string, ingress string) (*api_extensions.Ingress, e
 func (k *Kube) CreateIngress(ingress *api_extensions.Ingress) (*api_extensions.Ingress, error) {
 	ingressAfter, err := k.ExtensionsV1beta1().Ingresses(ingress.Namespace).Create(ingress)
 	if err != nil {
-		log.WithError(err).WithFields(log.Fields{
+		log.WithFields(log.Fields{
 			"Namespace": ingress.Namespace,
 			"Ingress":   ingress.Name,
 		}).Error(ErrUnableCreateIngress)
@@ -44,7 +44,7 @@ func (k *Kube) CreateIngress(ingress *api_extensions.Ingress) (*api_extensions.I
 func (k *Kube) UpdateIngress(ingress *api_extensions.Ingress) (*api_extensions.Ingress, error) {
 	ingressAfter, err := k.ExtensionsV1beta1().Ingresses(ingress.Namespace).Update(ingress)
 	if err != nil {
-		log.WithError(err).WithFields(log.Fields{
+		log.WithFields(log.Fields{
 			"Namespace": ingress.Namespace,
 			"Ingress":   ingress.Name,
 		}).Error(ErrUnableUpdateIngress)
@@ -56,7 +56,7 @@ func (k *Kube) UpdateIngress(ingress *api_extensions.Ingress) (*api_extensions.I
 func (k *Kube) DeleteIngress(ns string, ingress string) error {
 	err := k.ExtensionsV1beta1().Ingresses(ns).Delete(ingress, &api_meta.DeleteOptions{})
 	if err != nil {
-		log.WithError(err).WithFields(log.Fields{
+		log.WithFields(log.Fields{
 			"Namespace": ns,
 			"Ingress":   ingress,
 		}).Error(ErrUnableDeleteIngress)
