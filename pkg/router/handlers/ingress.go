@@ -1,4 +1,4 @@
-package router
+package handlers
 
 import (
 	"net/http"
@@ -18,7 +18,7 @@ const (
 	ingressParam = "ingress"
 )
 
-func getIngressList(ctx *gin.Context) {
+func GetIngressList(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace": ctx.Param(namespaceParam),
 	}).Debug("Create secret Call")
@@ -42,7 +42,7 @@ func getIngressList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-func getIngress(ctx *gin.Context) {
+func GetIngress(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace": ctx.Param(namespaceParam),
 	}).Debug("Create secret Call")
@@ -66,7 +66,7 @@ func getIngress(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-func createIngress(ctx *gin.Context) {
+func CreateIngress(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace": ctx.Param(namespaceParam),
 	}).Debug("Create secret Call")
@@ -104,7 +104,7 @@ func createIngress(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
-func updateIngress(ctx *gin.Context) {
+func UpdateIngress(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace": ctx.Param(namespaceParam),
 		"Ingress":   ctx.Param(ingressParam),
@@ -150,7 +150,7 @@ func updateIngress(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, ret)
 }
 
-func deleteIngress(ctx *gin.Context) {
+func DeleteIngress(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace": ctx.Param(namespaceParam),
 	}).Debug("Create secret Call")

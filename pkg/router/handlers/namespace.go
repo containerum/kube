@@ -1,4 +1,4 @@
-package router
+package handlers
 
 import (
 	"net/http"
@@ -19,7 +19,7 @@ const (
 	namespaceParam = "namespace"
 )
 
-func getNamespaceList(ctx *gin.Context) {
+func GetNamespaceList(ctx *gin.Context) {
 	log.WithField("Owner", ctx.Query(ownerQuery)).Debug("Get namespace list Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -41,7 +41,7 @@ func getNamespaceList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-func getNamespace(ctx *gin.Context) {
+func GetNamespace(ctx *gin.Context) {
 	log.WithField("Namespace", ctx.Param(namespaceParam)).Debug("Get namespace Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -63,7 +63,7 @@ func getNamespace(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-func сreateNamespace(ctx *gin.Context) {
+func CreateNamespace(ctx *gin.Context) {
 	log.Debug("Create namespace Call")
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -120,7 +120,7 @@ func сreateNamespace(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
-func deleteNamespace(ctx *gin.Context) {
+func DeleteNamespace(ctx *gin.Context) {
 	log.WithField("Namespace", ctx.Param(namespaceParam)).Debug("Delete namespace Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -135,7 +135,7 @@ func deleteNamespace(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
-func updateNamespace(ctx *gin.Context) {
+func UpdateNamespace(ctx *gin.Context) {
 	log.WithField("Namespace", ctx.Param(namespaceParam)).Debug("Update namespace Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)

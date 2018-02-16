@@ -1,4 +1,4 @@
-package router
+package handlers
 
 const (
 	userIDNotProvided    = "UserID not provided"

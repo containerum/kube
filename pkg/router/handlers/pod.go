@@ -1,4 +1,4 @@
-package router
+package handlers
 
 import (
 	"bytes"
@@ -33,7 +33,7 @@ var wsupgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func getPodList(c *gin.Context) {
+func GetPodList(c *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace Param": c.Param(namespaceParam),
 		"Namespace":       c.MustGet(m.NamespaceKey).(string),
@@ -49,7 +49,7 @@ func getPodList(c *gin.Context) {
 	c.JSON(http.StatusOK, podList)
 }
 
-func getPod(c *gin.Context) {
+func GetPod(c *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace Param": c.Param(namespaceParam),
 		"Namespace":       c.MustGet(m.NamespaceKey).(string),
@@ -65,7 +65,7 @@ func getPod(c *gin.Context) {
 	c.JSON(http.StatusOK, po)
 }
 
-func deletePod(c *gin.Context) {
+func DeletePod(c *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace": c.Param(namespaceParam),
 		"Pod":       c.Param(podParam),
@@ -79,7 +79,7 @@ func deletePod(c *gin.Context) {
 	c.Status(http.StatusAccepted)
 }
 
-func getPodLogs(c *gin.Context) {
+func GetPodLogs(c *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace": c.Param(namespaceParam),
 		"Pod":       c.Param(podParam),

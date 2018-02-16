@@ -1,39 +1,37 @@
-package router
+package handlers
 
 import (
 	"net/http"
 
 	"fmt"
 
-	json_types "git.containerum.net/ch/json-types/kube-api"
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
+	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
 )
 
 const (
-	endpointParam = "endpoint"
+	secretParam = "secret"
 )
 
-func getEndpointList(ctx *gin.Context) {
+func GetSecretList(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
 		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
-	}).Debug("Get endpoints list Call")
-
+	}).Debug("Get secret list Call")
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-
-	endpoints, err := kube.GetEndpointList(ctx.MustGet(m.NamespaceKey).(string))
+	secrets, err := kube.GetSecretList(ctx.MustGet(m.NamespaceKey).(string))
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	ret, err := model.ParseEndpointList(endpoints)
+	ret, err := model.ParseSecretList(secrets)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
@@ -43,22 +41,20 @@ func getEndpointList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-func getEndpoint(ctx *gin.Context) {
+func GetSecret(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
 		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
-		"Endpoint":        ctx.Param(endpointParam),
-	}).Debug("Get endpoint Call")
-
+		"Secret":          ctx.Param(secretParam),
+	}).Debug("Get secret Call")
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-
-	endpoint, err := kube.GetEndpoint(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(endpointParam))
+	secret, err := kube.GetSecret(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(secretParam))
 	if err != nil {
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	ret, err := model.ParseEndpoint(endpoint)
+	ret, err := model.ParseSecret(secret)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
@@ -68,15 +64,15 @@ func getEndpoint(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-func createEndpoint(ctx *gin.Context) {
+func CreateSecret(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace": ctx.Param(namespaceParam),
-	}).Debug("Create endpoint Call")
+	}).Debug("Create secret Call")
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var endpoint json_types.Endpoint
-	if err := ctx.ShouldBindWith(&endpoint, binding.JSON); err != nil {
+	var secret kube_types.Secret
+	if err := ctx.ShouldBindWith(&secret, binding.JSON); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
@@ -89,14 +85,14 @@ func createEndpoint(ctx *gin.Context) {
 		return
 	}
 
-	endpointAfter, err := kubecli.CreateEndpoint(model.MakeEndpoint(ctx.Param(namespaceParam), endpoint, quota.Labels))
+	secretAfter, err := kubecli.CreateSecret(model.MakeSecret(ctx.Param(namespaceParam), secret, quota.Labels))
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	ret, err := model.ParseEndpoint(endpointAfter)
+	ret, err := model.ParseSecret(secretAfter)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
@@ -106,16 +102,16 @@ func createEndpoint(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
-func updateEndpoint(ctx *gin.Context) {
+func UpdateSecret(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace": ctx.Param(namespaceParam),
-		"Endpoint":  ctx.Param(endpointParam),
-	}).Debug("Create endpoint Call")
+		"Secret":    ctx.Param(secretParam),
+	}).Debug("Create secret Call")
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var endpoint json_types.Endpoint
-	if err := ctx.ShouldBindWith(&endpoint, binding.JSON); err != nil {
+	var secret kube_types.Secret
+	if err := ctx.ShouldBindWith(&secret, binding.JSON); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
@@ -128,44 +124,41 @@ func updateEndpoint(ctx *gin.Context) {
 		return
 	}
 
-	if ctx.Param(endpointParam) != endpoint.Name {
-		log.Errorf(invalidUpdateEndpointName, ctx.Param(endpointParam), endpoint.Name)
-		ctx.Error(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateEndpointName, ctx.Param(endpointParam), endpoint.Name), http.StatusBadRequest))
-		ctx.AbortWithStatusJSON(model.ParseErorrs(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateEndpointName, ctx.Param(endpointParam), endpoint.Name), http.StatusBadRequest)))
+	if ctx.Param(secretParam) != secret.Name {
+		log.Errorf(invalidUpdateSecretName, ctx.Param(secretParam), secret.Name)
+		ctx.Error(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateSecretName, ctx.Param(secretParam), secret.Name), http.StatusBadRequest))
+		ctx.AbortWithStatusJSON(model.ParseErorrs(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateSecretName, ctx.Param(secretParam), secret.Name), http.StatusBadRequest)))
 		return
 	}
 
-	endpointAfter, err := kubecli.UpdateEndpoint(model.MakeEndpoint(ctx.Param(namespaceParam), endpoint, quota.Labels))
+	secretAfter, err := kubecli.UpdateSecret(model.MakeSecret(ctx.Param(namespaceParam), secret, quota.Labels))
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	ret, err := model.ParseEndpoint(endpointAfter)
+	ret, err := model.ParseSecret(secretAfter)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, ret)
+	ctx.JSON(http.StatusAccepted, ret)
 }
 
-func deleteEndpoint(ctx *gin.Context) {
+func DeleteSecret(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace": ctx.Param(namespaceParam),
-		"Endpoint":  ctx.Param(endpointParam),
-	}).Debug("Delete endpoint Call")
-
+		"Secret":    ctx.Param(secretParam),
+	}).Debug("Delete secret Call")
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-
-	err := kube.DeleteEndpoint(ctx.Param(namespaceParam), ctx.Param(endpointParam))
+	err := kube.DeleteSecret(ctx.Param(namespaceParam), ctx.Param(secretParam))
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
-
 	ctx.Status(http.StatusAccepted)
 }

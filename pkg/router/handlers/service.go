@@ -1,4 +1,4 @@
-package router
+package handlers
 
 import (
 	"net/http"
@@ -18,7 +18,7 @@ const (
 	serviceParam = "service"
 )
 
-func getServiceList(ctx *gin.Context) {
+func GetServiceList(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
@@ -40,7 +40,7 @@ func getServiceList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-func getService(ctx *gin.Context) {
+func GetService(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	serviceName := ctx.Param(serviceParam)
 	log.WithFields(log.Fields{
@@ -66,7 +66,7 @@ func getService(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-func createService(ctx *gin.Context) {
+func CreateService(ctx *gin.Context) {
 	log.WithField("Service", ctx.Param(m.ServiceKey)).Debug("Create service Call")
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
@@ -101,7 +101,7 @@ func createService(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
-func updateService(ctx *gin.Context) {
+func UpdateService(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace": ctx.Param(namespaceParam),
 		"Service":   ctx.Param(serviceParam),
@@ -145,7 +145,7 @@ func updateService(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, ret)
 }
 
-func deleteService(ctx *gin.Context) {
+func DeleteService(ctx *gin.Context) {
 	namespace := ctx.Param(namespaceParam)
 	serviceName := ctx.Param(serviceParam)
 	log.WithFields(log.Fields{

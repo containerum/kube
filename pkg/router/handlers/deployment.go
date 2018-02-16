@@ -1,4 +1,4 @@
-package router
+package handlers
 
 import (
 	"net/http"
@@ -19,7 +19,7 @@ const (
 	deploymentParam = "deployment"
 )
 
-func getDeploymentList(ctx *gin.Context) {
+func GetDeploymentList(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
 		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
@@ -43,7 +43,7 @@ func getDeploymentList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-func getDeployment(ctx *gin.Context) {
+func GetDeployment(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
 		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
@@ -66,7 +66,7 @@ func getDeployment(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-func createDeployment(ctx *gin.Context) {
+func CreateDeployment(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace": ctx.Param(namespaceParam),
 	}).Debug("Create deployment Call")
@@ -110,7 +110,7 @@ func createDeployment(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
-func deleteDeployment(ctx *gin.Context) {
+func DeleteDeployment(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace":  ctx.Param(namespaceParam),
 		"Deployment": ctx.Param(deploymentParam),
@@ -125,7 +125,7 @@ func deleteDeployment(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
-func updateDeployment(ctx *gin.Context) {
+func UpdateDeployment(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace":  ctx.Param(namespaceParam),
 		"Deployment": ctx.Param(deploymentParam),
@@ -178,7 +178,7 @@ func updateDeployment(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, ret)
 }
 
-func updateDeploymentReplicas(ctx *gin.Context) {
+func UpdateDeploymentReplicas(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace":  ctx.Param(namespaceParam),
 		"Deployment": ctx.Param(deploymentParam),
@@ -217,7 +217,7 @@ func updateDeploymentReplicas(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, ret)
 }
 
-func updateDeploymentImage(ctx *gin.Context) {
+func UpdateDeploymentImage(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace":  ctx.Param(namespaceParam),
 		"Deployment": ctx.Param(deploymentParam),
