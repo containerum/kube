@@ -73,7 +73,7 @@ func CreateDeployment(ctx *gin.Context) {
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var deployReq kube_types.Deployment
+	var deployReq model.DeploymentWithOwner
 	if err := ctx.ShouldBindWith(&deployReq, binding.JSON); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
@@ -133,7 +133,7 @@ func UpdateDeployment(ctx *gin.Context) {
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var deployReq kube_types.Deployment
+	var deployReq model.DeploymentWithOwner
 	if err := ctx.ShouldBindWith(&deployReq, binding.JSON); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))

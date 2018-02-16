@@ -10,6 +10,12 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
+type ServiceWithOwner struct {
+	kube_types.Service
+	Owner  string `json:"owner,omitempty" binding:"required,uuid"`
+	Hidden bool   `json:"hidden,omitempty"`
+}
+
 const (
 	serviceTypeExternal = "external"
 	serviceTypeInternal = "internal"
@@ -20,13 +26,13 @@ const (
 )
 
 // ParseServiceList parses kubernetes v1.ServiceList to more convenient Service struct.
-func ParseServiceList(ns interface{}) ([]kube_types.Service, error) {
+func ParseServiceList(ns interface{}) ([]ServiceWithOwner, error) {
 	nativeServices := ns.(*api_core.ServiceList)
 	if nativeServices == nil {
 		return nil, ErrUnableConvertServiceList
 	}
 
-	serviceList := make([]kube_types.Service, 0, nativeServices.Size())
+	serviceList := make([]ServiceWithOwner, 0, nativeServices.Size())
 	for _, nativeService := range nativeServices.Items {
 		service, err := ParseService(&nativeService)
 		if err != nil {
@@ -41,7 +47,7 @@ func ParseServiceList(ns interface{}) ([]kube_types.Service, error) {
 }
 
 // ParseService parses kubernetes v1.Service to more convenient Service struct.
-func ParseService(srv interface{}) (*kube_types.Service, error) {
+func ParseService(srv interface{}) (*ServiceWithOwner, error) {
 	native := srv.(*api_core.Service)
 	if native == nil {
 		return nil, ErrUnableConvertService
@@ -52,12 +58,14 @@ func ParseService(srv interface{}) (*kube_types.Service, error) {
 	createdAt := native.GetCreationTimestamp().Unix()
 	owner := native.GetObjectMeta().GetLabels()[ownerLabel]
 
-	service := &kube_types.Service{
-		Name:      native.Name,
-		CreatedAt: &createdAt,
-		Deploy:    native.GetObjectMeta().GetLabels()[appLabel], // TODO: check if app key doesn't exists!
-		Ports:     ports,
-		Owner:     &owner,
+	service := ServiceWithOwner{
+		Service: kube_types.Service{
+			Name:      native.Name,
+			CreatedAt: &createdAt,
+			Deploy:    native.GetObjectMeta().GetLabels()[appLabel], // TODO: check if app key doesn't exists!
+			Ports:     ports,
+		},
+		Owner: owner,
 	}
 	if len(native.Spec.ExternalIPs) > 0 {
 		service.Type = serviceTypeExternal
@@ -75,7 +83,7 @@ func ParseService(srv interface{}) (*kube_types.Service, error) {
 		service.Hidden = s
 	}
 
-	return service, nil
+	return &service, nil
 }
 
 func parseServicePort(np interface{}) kube_types.Port {
@@ -90,12 +98,12 @@ func parseServicePort(np interface{}) kube_types.Port {
 }
 
 // MakeService creates kubernetes v1.Service from Service struct and namespace labels
-func MakeService(nsName string, service *kube_types.Service, labels map[string]string) *api_core.Service {
+func MakeService(nsName string, service ServiceWithOwner, labels map[string]string) *api_core.Service {
 	if labels == nil {
 		labels = make(map[string]string, 0)
 	}
 	labels[appLabel] = service.Name
-	labels[ownerLabel] = *service.Owner
+	labels[ownerLabel] = service.Owner
 	labels[nameLabel] = service.Name
 	labels[hiddenLabel] = strconv.FormatBool(service.Hidden)
 

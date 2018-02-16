@@ -8,7 +8,6 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
-	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
@@ -70,7 +69,7 @@ func CreateService(ctx *gin.Context) {
 	log.WithField("Service", ctx.Param(m.ServiceKey)).Debug("Create service Call")
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var svc kube_types.Service
+	var svc model.ServiceWithOwner
 	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
@@ -84,7 +83,7 @@ func CreateService(ctx *gin.Context) {
 		return
 	}
 
-	svcAfter, err := kubecli.CreateService(model.MakeService(ctx.Param(namespaceParam), &svc, quota.Labels))
+	svcAfter, err := kubecli.CreateService(model.MakeService(ctx.Param(namespaceParam), svc, quota.Labels))
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
@@ -107,7 +106,7 @@ func UpdateService(ctx *gin.Context) {
 		"Service":   ctx.Param(serviceParam),
 	}).Debug("Update service Call")
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-	var svc kube_types.Service
+	var svc model.ServiceWithOwner
 	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
@@ -128,7 +127,7 @@ func UpdateService(ctx *gin.Context) {
 		return
 	}
 
-	updatedService, err := kubecli.UpdateService(model.MakeService(ctx.Param(namespaceParam), &svc, quota.Labels))
+	updatedService, err := kubecli.UpdateService(model.MakeService(ctx.Param(namespaceParam), svc, quota.Labels))
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithError(http.StatusInternalServerError, err)

@@ -17,14 +17,19 @@ const requestCoeffScale = 1
 
 const glusterFSEndpoint = "ch-glusterfs"
 
+type DeploymentWithOwner struct {
+	kube_types.Deployment
+	Owner string `json:"owner,omitempty" binding:"required,uuid"`
+}
+
 // ParseDeploymentList parses kubernetes v1.DeploymentList to more convenient []Deployment struct
-func ParseDeploymentList(deploys interface{}) ([]kube_types.Deployment, error) {
+func ParseDeploymentList(deploys interface{}) ([]DeploymentWithOwner, error) {
 	objects := deploys.(*api_apps.DeploymentList)
 	if objects == nil {
 		return nil, ErrUnableConvertDeploymentList
 	}
 
-	deployments := make([]kube_types.Deployment, 0)
+	deployments := make([]DeploymentWithOwner, 0)
 	for _, deployment := range objects.Items {
 		deployment, err := ParseDeployment(&deployment)
 		if err != nil {
@@ -37,7 +42,7 @@ func ParseDeploymentList(deploys interface{}) ([]kube_types.Deployment, error) {
 }
 
 // ParseDeployment parses kubernetes v1.Deployment to more convenient Deployment struct
-func ParseDeployment(deployment interface{}) (*kube_types.Deployment, error) {
+func ParseDeployment(deployment interface{}) (*DeploymentWithOwner, error) {
 	obj := deployment.(*api_apps.Deployment)
 	if obj == nil {
 		return nil, ErrUnableConvertDeployment
@@ -55,26 +60,28 @@ func ParseDeployment(deployment interface{}) (*kube_types.Deployment, error) {
 			updated = t
 		}
 	}
-	return &kube_types.Deployment{
-		Name:     obj.GetName(),
-		Owner:    &owner,
-		Replicas: replicas,
-		Status: &kube_types.DeploymentStatus{
-			CreatedAt:           obj.ObjectMeta.CreationTimestamp.Unix(),
-			UpdatedAt:           updated,
-			Replicas:            int(obj.Status.Replicas),
-			ReadyReplicas:       int(obj.Status.ReadyReplicas),
-			AvailableReplicas:   int(obj.Status.AvailableReplicas),
-			UpdatedReplicas:     int(obj.Status.UpdatedReplicas),
-			UnavailableReplicas: int(obj.Status.UnavailableReplicas),
+	return &DeploymentWithOwner{
+		Deployment: kube_types.Deployment{
+			Name:     obj.GetName(),
+			Replicas: replicas,
+			Status: &kube_types.DeploymentStatus{
+				CreatedAt:           obj.ObjectMeta.CreationTimestamp.Unix(),
+				UpdatedAt:           updated,
+				Replicas:            int(obj.Status.Replicas),
+				ReadyReplicas:       int(obj.Status.ReadyReplicas),
+				AvailableReplicas:   int(obj.Status.AvailableReplicas),
+				UpdatedReplicas:     int(obj.Status.UpdatedReplicas),
+				UnavailableReplicas: int(obj.Status.UnavailableReplicas),
+			},
+			Containers: containers,
+			Hostname:   &obj.Spec.Template.Spec.Hostname,
 		},
-		Containers: containers,
-		Hostname:   &obj.Spec.Template.Spec.Hostname,
+		Owner: owner,
 	}, nil
 }
 
 //MakeDeployment creates kubernetes v1.Deployment from Deployment struct and namespace labels
-func MakeDeployment(nsName string, depl *kube_types.Deployment, labels map[string]string) (*api_apps.Deployment, error) {
+func MakeDeployment(nsName string, depl *DeploymentWithOwner, labels map[string]string) (*api_apps.Deployment, error) {
 	repl := int32(depl.Replicas)
 	containers, volumes, err := makeContainers(depl.Containers)
 	if err != nil {
@@ -85,7 +92,7 @@ func MakeDeployment(nsName string, depl *kube_types.Deployment, labels map[strin
 		labels = make(map[string]string, 0)
 	}
 	labels[appLabel] = depl.Name
-	labels[ownerLabel] = *depl.Owner
+	labels[ownerLabel] = depl.Owner
 	labels[nameLabel] = depl.Name
 
 	deployment := api_apps.Deployment{
@@ -109,7 +116,7 @@ func MakeDeployment(nsName string, depl *kube_types.Deployment, labels map[strin
 					NodeSelector: map[string]string{
 						"role": "slave",
 					},
-					Volumes: makeTemplateVolumes(volumes, *depl.Owner),
+					Volumes: makeTemplateVolumes(volumes, depl.Owner),
 				},
 				ObjectMeta: api_meta.ObjectMeta{
 					Labels: labels,

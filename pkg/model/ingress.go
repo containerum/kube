@@ -7,13 +7,18 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
+type IngressWithOwner struct {
+	kube_types.Ingress
+	Owner string `json:"owner,omitempty" binding:"required,uuid"`
+}
+
 // ParseIngressList parses kubernetes v1beta1.IngressList to more convenient []Ingress struct
-func ParseIngressList(ingressi interface{}) ([]kube_types.Ingress, error) {
+func ParseIngressList(ingressi interface{}) ([]IngressWithOwner, error) {
 	ingresses := ingressi.(*api_extensions.IngressList)
 	if ingresses == nil {
 		return nil, ErrUnableConvertIngressList
 	}
-	newIngresses := make([]kube_types.Ingress, 0)
+	newIngresses := make([]IngressWithOwner, 0)
 	for _, ingress := range ingresses.Items {
 		newIngress, err := ParseIngress(&ingress)
 		if err != nil {
@@ -25,7 +30,7 @@ func ParseIngressList(ingressi interface{}) ([]kube_types.Ingress, error) {
 }
 
 // ParseIngress parses kubernetes v1beta1.Ingress to more convenient Ingress struct
-func ParseIngress(ingressi interface{}) (*kube_types.Ingress, error) {
+func ParseIngress(ingressi interface{}) (*IngressWithOwner, error) {
 	ingress := ingressi.(*api_extensions.Ingress)
 	if ingress == nil {
 		return nil, ErrUnableConvertIngress
@@ -33,11 +38,13 @@ func ParseIngress(ingressi interface{}) (*kube_types.Ingress, error) {
 	createdAt := ingress.CreationTimestamp.Unix()
 	owner := ingress.GetObjectMeta().GetLabels()[ownerLabel]
 
-	newIngress := kube_types.Ingress{
-		Name:      ingress.GetName(),
-		CreatedAt: &createdAt,
-		Owner:     &owner,
-		Rule:      *parseRule(ingress.Spec.Rules),
+	newIngress := IngressWithOwner{
+		Ingress: kube_types.Ingress{
+			Name:      ingress.GetName(),
+			CreatedAt: &createdAt,
+			Rule:      *parseRule(ingress.Spec.Rules),
+		},
+		Owner: owner,
 	}
 	if len(ingress.Spec.TLS) != 0 {
 		newIngress.TLSSecret = &ingress.Spec.TLS[0].SecretName
@@ -62,12 +69,12 @@ func parseRule(rules []api_extensions.IngressRule) *kube_types.Rule {
 }
 
 // MakeIngress creates kubernetes v1beta1.Ingress from Ingress struct and namespace labels
-func MakeIngress(nsName string, ingress kube_types.Ingress, labels map[string]string) *api_extensions.Ingress {
+func MakeIngress(nsName string, ingress IngressWithOwner, labels map[string]string) *api_extensions.Ingress {
 	if labels == nil {
 		labels = make(map[string]string, 0)
 	}
 	labels[appLabel] = ingress.Name
-	labels[ownerLabel] = *ingress.Owner
+	labels[ownerLabel] = ingress.Owner
 	labels[nameLabel] = ingress.Name
 
 	newIngress := api_extensions.Ingress{

@@ -13,17 +13,23 @@ const (
 	nameLabel  = "name"
 )
 
+type NamespaceWithOwner struct {
+	kube_types.Namespace
+	Owner string `json:"owner,omitempty" binding:"required,uuid"`
+}
+
 // ParseResourceQuotaList parses kubernetes v1.ResourceQuotaList to more convenient []Namespace struct.
 // (resource quouta contains all fields that parent namespcae contains)
-func ParseResourceQuotaList(quotas interface{}) ([]kube_types.Namespace, error) {
+func ParseResourceQuotaList(quotas interface{}) ([]NamespaceWithOwner, error) {
 	objects := quotas.(*api_core.ResourceQuotaList)
 	if objects == nil {
 		return nil, ErrUnableConvertNamespaceList
 	}
 
-	namespaces := make([]kube_types.Namespace, 0)
+	namespaces := make([]NamespaceWithOwner, 0)
 	for _, quota := range objects.Items {
 		ns, err := ParseResourceQuota(&quota)
+
 		if err != nil {
 			return nil, err
 		}
@@ -33,8 +39,8 @@ func ParseResourceQuotaList(quotas interface{}) ([]kube_types.Namespace, error) 
 }
 
 // ParseResourceQuota parses kubernetes v1.ResourceQuota to more convenient Namespace struct.
-// (resource quouta contains all fields that parent namespcae contains)
-func ParseResourceQuota(quota interface{}) (*kube_types.Namespace, error) {
+// (resource quouta contains all fields that parent namespace contains)
+func ParseResourceQuota(quota interface{}) (*NamespaceWithOwner, error) {
 	obj := quota.(*api_core.ResourceQuota)
 	if obj == nil {
 		return nil, ErrUnableConvertNamespace
@@ -45,18 +51,21 @@ func ParseResourceQuota(quota interface{}) (*kube_types.Namespace, error) {
 	cpuUsed := obj.Status.Used[api_core.ResourceLimitsCPU]
 	memoryUsed := obj.Status.Used[api_core.ResourceLimitsMemory]
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
-	return &kube_types.Namespace{
-		Name:    obj.GetNamespace(),
-		Owner:   owner,
-		Created: obj.ObjectMeta.CreationTimestamp.Unix(),
-		Resources: kube_types.Resources{
-			Hard: kube_types.Resource{
-				CPU:    cpuLimit.String(),
-				Memory: memoryLimit.String(),
-			},
-			Used: &kube_types.Resource{
-				CPU:    cpuUsed.String(),
-				Memory: memoryUsed.String(),
+
+	return &NamespaceWithOwner{
+		Owner: owner,
+		Namespace: kube_types.Namespace{
+			Name:    obj.GetNamespace(),
+			Created: obj.ObjectMeta.CreationTimestamp.Unix(),
+			Resources: kube_types.Resources{
+				Hard: kube_types.Resource{
+					CPU:    cpuLimit.String(),
+					Memory: memoryLimit.String(),
+				},
+				Used: &kube_types.Resource{
+					CPU:    cpuUsed.String(),
+					Memory: memoryUsed.String(),
+				},
 			},
 		},
 	}, nil
@@ -95,7 +104,7 @@ func MakeResourceQuota(cpu, memory string, labels map[string]string, ns string) 
 }
 
 // MakeNamespace creates kubernetes v1.Namespace from Namespace struct
-func MakeNamespace(ns kube_types.Namespace) *api_core.Namespace {
+func MakeNamespace(ns NamespaceWithOwner) *api_core.Namespace {
 	newNs := api_core.Namespace{
 		TypeMeta: api_meta.TypeMeta{
 			Kind:       "Namespace",

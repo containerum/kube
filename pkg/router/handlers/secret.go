@@ -8,7 +8,6 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
-	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
@@ -71,7 +70,7 @@ func CreateSecret(ctx *gin.Context) {
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var secret kube_types.Secret
+	var secret model.SecretWithOwner
 	if err := ctx.ShouldBindWith(&secret, binding.JSON); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
@@ -110,7 +109,7 @@ func UpdateSecret(ctx *gin.Context) {
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var secret kube_types.Secret
+	var secret model.SecretWithOwner
 	if err := ctx.ShouldBindWith(&secret, binding.JSON); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))

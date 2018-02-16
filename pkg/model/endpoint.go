@@ -36,11 +36,11 @@ func ParseEndpoint(endpointi interface{}) (*json_types.Endpoint, error) {
 	createdAt := endpoint.GetCreationTimestamp().Unix()
 	owner := endpoint.GetObjectMeta().GetLabels()[ownerLabel]
 
-	newEndpoint := &json_types.Endpoint{
+	newEndpoint := json_types.Endpoint{
 		Name:      endpoint.Name,
+		Owner:     &owner,
 		CreatedAt: &createdAt,
 		Ports:     ports,
-		Owner:     &owner,
 		Addresses: addresses,
 	}
 
@@ -55,7 +55,7 @@ func ParseEndpoint(endpointi interface{}) (*json_types.Endpoint, error) {
 		}
 	}
 
-	return newEndpoint, nil
+	return &newEndpoint, nil
 }
 
 func parseEndpointPort(np interface{}) json_types.Port {

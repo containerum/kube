@@ -6,14 +6,19 @@ import (
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type SecretWithOwner struct {
+	kube_types.Secret
+	Owner string `json:"owner,omitempty" binding:"required,uuid"`
+}
+
 // ParseSecretList parses kubernetes v1.SecretList to more convenient []Secret struct.
-func ParseSecretList(secreti interface{}) ([]kube_types.Secret, error) {
+func ParseSecretList(secreti interface{}) ([]SecretWithOwner, error) {
 	secrets := secreti.(*api_core.SecretList)
 	if secrets == nil {
 		return nil, ErrUnableConvertSecretList
 	}
 
-	newSecrets := make([]kube_types.Secret, 0)
+	newSecrets := make([]SecretWithOwner, 0)
 	for _, secret := range secrets.Items {
 		newSecret, err := ParseSecret(&secret)
 		if err != nil {
@@ -25,7 +30,7 @@ func ParseSecretList(secreti interface{}) ([]kube_types.Secret, error) {
 }
 
 // ParseSecret parses kubernetes v1.Secret to more convenient Secret struct.
-func ParseSecret(secreti interface{}) (*kube_types.Secret, error) {
+func ParseSecret(secreti interface{}) (*SecretWithOwner, error) {
 	secret := secreti.(*api_core.Secret)
 	if secret == nil {
 		return nil, ErrUnableConvertSecret
@@ -39,21 +44,23 @@ func ParseSecret(secreti interface{}) (*kube_types.Secret, error) {
 	owner := secret.GetObjectMeta().GetLabels()[ownerLabel]
 	createdAt := secret.CreationTimestamp.Unix()
 
-	return &kube_types.Secret{
-		Name:      secret.GetName(),
-		CreatedAt: &createdAt,
-		Data:      newData,
-		Owner:     &owner,
+	return &SecretWithOwner{
+		Secret: kube_types.Secret{
+			Name:      secret.GetName(),
+			CreatedAt: &createdAt,
+			Data:      newData,
+		},
+		Owner: owner,
 	}, nil
 }
 
 // MakeSecret creates kubernetes v1.Secret from Secret struct and namespace labels
-func MakeSecret(nsName string, secret kube_types.Secret, labels map[string]string) *api_core.Secret {
+func MakeSecret(nsName string, secret SecretWithOwner, labels map[string]string) *api_core.Secret {
 	if labels == nil {
 		labels = make(map[string]string, 0)
 	}
 	labels[appLabel] = secret.Name
-	labels[ownerLabel] = *secret.Owner
+	labels[ownerLabel] = secret.Owner
 	labels[nameLabel] = secret.Name
 
 	newSecret := api_core.Secret{

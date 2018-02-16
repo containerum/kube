@@ -68,7 +68,7 @@ func CreateNamespace(ctx *gin.Context) {
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var ns kube_types.Namespace
+	var ns model.NamespaceWithOwner
 	if err := ctx.ShouldBindWith(&ns, binding.JSON); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))

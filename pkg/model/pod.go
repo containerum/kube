@@ -2,30 +2,38 @@ package model
 
 import (
 	"git.containerum.net/ch/kube-client/pkg/model"
+	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 )
 
-func ParsePodList(pods interface{}) []model.Pod {
+type PodWithOwner struct {
+	kube_types.Pod
+	Owner string `json:"owner,omitempty" binding:"required,uuid"`
+}
+
+func ParsePodList(pods interface{}) []PodWithOwner {
 	objects := pods.(*api_core.PodList)
-	var pos []model.Pod
+	var pos []PodWithOwner
 	for _, po := range objects.Items {
 		pos = append(pos, ParsePod(&po))
 	}
 	return pos
 }
 
-func ParsePod(pod interface{}) model.Pod {
+func ParsePod(pod interface{}) PodWithOwner {
 	obj := pod.(*api_core.Pod)
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
 	containers := getContainers(obj.Spec.Containers)
-	return model.Pod{
-		Name:       obj.GetName(),
-		Owner:      &owner,
-		Containers: containers,
-		Hostname:   &obj.Spec.Hostname,
-		Status: &model.PodStatus{
-			Phase: string(obj.Status.Phase),
+	return PodWithOwner{
+		Pod: model.Pod{
+			Name:       obj.GetName(),
+			Containers: containers,
+			Hostname:   &obj.Spec.Hostname,
+			Status: &model.PodStatus{
+				Phase: string(obj.Status.Phase),
+			},
 		},
+		Owner: owner,
 	}
 }
 
