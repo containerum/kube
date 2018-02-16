@@ -12,8 +12,9 @@ import (
 
 type ServiceWithOwner struct {
 	kube_types.Service
-	Owner  string `json:"owner,omitempty" binding:"required,uuid"`
-	Hidden bool   `json:"hidden,omitempty"`
+	Owner      string `json:"owner,omitempty" binding:"required,uuid"`
+	Hidden     bool   `json:"hidden,omitempty"`
+	NoSelector bool   `json:"no_selector,omitempty"`
 }
 
 const (
@@ -118,10 +119,13 @@ func MakeService(nsName string, service ServiceWithOwner, labels map[string]stri
 			Namespace: nsName,
 		},
 		Spec: api_core.ServiceSpec{
-			Selector: labels,
-			Type:     "ClusterIP",
-			Ports:    makeServicePorts(service.Ports),
+			Type:  "ClusterIP",
+			Ports: makeServicePorts(service.Ports),
 		},
+	}
+
+	if !service.NoSelector {
+		newService.Spec.Selector = labels
 	}
 
 	if service.IP != nil {
