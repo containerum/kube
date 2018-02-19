@@ -10,4 +10,5 @@ const (
 	invalidUpdateSecretName     = "Secret name in URI %s does not match secret name in request %s"
 	invalidUpdateServiceName    = "Service name in URI %s does not match service name in request %s"
 	invalidUpdateEndpointName   = "Endpoint name in URI %s does not match endpoint name in request %s"
+	invalidUpdateConfigMapName  = "Config map name in URI %s does not match config map name in request %s"
 )

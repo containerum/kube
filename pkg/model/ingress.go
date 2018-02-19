@@ -1,10 +1,13 @@
 package model
 
 import (
+	"fmt"
+
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_extensions "k8s.io/api/extensions/v1beta1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	api_validation "k8s.io/apimachinery/pkg/util/validation"
 )
 
 type IngressWithOwner struct {
@@ -69,7 +72,12 @@ func parseRule(rules []api_extensions.IngressRule) *kube_types.Rule {
 }
 
 // MakeIngress creates kubernetes v1beta1.Ingress from Ingress struct and namespace labels
-func MakeIngress(nsName string, ingress IngressWithOwner, labels map[string]string) *api_extensions.Ingress {
+func MakeIngress(nsName string, ingress IngressWithOwner, labels map[string]string) (*api_extensions.Ingress, []error) {
+	err := validateIngress(ingress.Ingress)
+	if err != nil {
+		return nil, err
+	}
+
 	if labels == nil {
 		labels = make(map[string]string, 0)
 	}
@@ -119,6 +127,19 @@ func MakeIngress(nsName string, ingress IngressWithOwner, labels map[string]stri
 			},
 		}
 	}
+	return &newIngress, nil
+}
 
-	return &newIngress
+func validateIngress(ingress kube_types.Ingress) []error {
+	errors := []error{}
+	if len(api_validation.IsDNS1123Subdomain(ingress.Name)) > 0 {
+		errors = append(errors, NewError(fmt.Sprintf(invalidName, ingress.Name)))
+	}
+	if len(api_validation.IsInRange(ingress.Rule.Path.ServicePort, minport, maxport)) > 0 {
+		errors = append(errors, NewError(fmt.Sprintf(invalidPort, ingress.Rule.Path.ServicePort, minport, maxport)))
+	}
+	if len(errors) > 0 {
+		return errors
+	}
+	return nil
 }

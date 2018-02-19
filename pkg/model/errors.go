@@ -19,26 +19,41 @@ const (
 	fieldShouldExist    = "Field %v should be provided"
 	fieldDefaultProblem = "%v should be %v"
 	fieldTypeProblem    = "Invaid type for field %v (should be %v)"
+	invalidReplicas     = "Invalid replicas number: %v. It must be between 1 and %v"
+	invalidPort         = "Invalid port: %v. It must be between %v and %v"
+	invalidName         = "Invalid name: %v. It must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character"
+	invalidCPUQuota     = "Invalid CPU quota: %v. It must be between %v and %v"
+	invalidMemoryQuota  = "Invalid memory quota: %v. It must be between %v and %v"
 )
 
 var (
-	ErrInvalidCPUFormat              = NewErrorWithCode("Invalid cpu quota format", http.StatusBadRequest)
-	ErrInvalidMemoryFormat           = NewErrorWithCode("Invalid memory quota format", http.StatusBadRequest)
-	ErrNoContainerInRequest          = NewErrorWithCode("No container in request", http.StatusNotFound)
+	ErrInvalidCPUFormat     = NewErrorWithCode("Invalid cpu quota format", http.StatusBadRequest)
+	ErrInvalidMemoryFormat  = NewErrorWithCode("Invalid memory quota format", http.StatusBadRequest)
+	ErrNoContainerInRequest = NewErrorWithCode("No container in request", http.StatusNotFound)
+
 	ErrUnableEncodeUserHeaderData    = NewErrorWithCode("Unbale to encode user header data", http.StatusInternalServerError)
 	ErrUnableUnmarshalUserHeaderData = NewErrorWithCode("Unable to unmarshal user header data", http.StatusInternalServerError)
-	ErrUnableConvertServiceList      = NewErrorWithCode("Unable to decode services list", http.StatusInternalServerError)
-	ErrUnableConvertService          = NewErrorWithCode("Unable to decode service", http.StatusInternalServerError)
-	ErrUnableConvertNamespaceList    = NewErrorWithCode("Unable to decode namespaces list", http.StatusInternalServerError)
-	ErrUnableConvertNamespace        = NewErrorWithCode("Unable to decode namespace", http.StatusInternalServerError)
-	ErrUnableConvertSecretList       = NewErrorWithCode("Unable to decode secrets list", http.StatusInternalServerError)
-	ErrUnableConvertSecret           = NewErrorWithCode("Unable to decode secret", http.StatusInternalServerError)
-	ErrUnableConvertIngressList      = NewErrorWithCode("Unable to decode ingresses list", http.StatusInternalServerError)
-	ErrUnableConvertIngress          = NewErrorWithCode("Unable to decode ingress", http.StatusInternalServerError)
-	ErrUnableConvertDeploymentList   = NewErrorWithCode("Unable to decode deployment list", http.StatusInternalServerError)
-	ErrUnableConvertDeployment       = NewErrorWithCode("Unable to decode deployment", http.StatusInternalServerError)
-	ErrUnableConvertEndpointList     = NewErrorWithCode("Unable to decode services list", http.StatusInternalServerError)
-	ErrUnableConvertEndpoint         = NewErrorWithCode("Unable to decode service", http.StatusInternalServerError)
+
+	ErrUnableConvertServiceList = NewErrorWithCode("Unable to decode services list", http.StatusInternalServerError)
+	ErrUnableConvertService     = NewErrorWithCode("Unable to decode service", http.StatusInternalServerError)
+
+	ErrUnableConvertNamespaceList = NewErrorWithCode("Unable to decode namespaces list", http.StatusInternalServerError)
+	ErrUnableConvertNamespace     = NewErrorWithCode("Unable to decode namespace", http.StatusInternalServerError)
+
+	ErrUnableConvertSecretList = NewErrorWithCode("Unable to decode secrets list", http.StatusInternalServerError)
+	ErrUnableConvertSecret     = NewErrorWithCode("Unable to decode secret", http.StatusInternalServerError)
+
+	ErrUnableConvertIngressList = NewErrorWithCode("Unable to decode ingresses list", http.StatusInternalServerError)
+	ErrUnableConvertIngress     = NewErrorWithCode("Unable to decode ingress", http.StatusInternalServerError)
+
+	ErrUnableConvertDeploymentList = NewErrorWithCode("Unable to decode deployment list", http.StatusInternalServerError)
+	ErrUnableConvertDeployment     = NewErrorWithCode("Unable to decode deployment", http.StatusInternalServerError)
+
+	ErrUnableConvertEndpointList = NewErrorWithCode("Unable to decode services list", http.StatusInternalServerError)
+	ErrUnableConvertEndpoint     = NewErrorWithCode("Unable to decode service", http.StatusInternalServerError)
+
+	ErrUnableConvertConfigMapList = NewErrorWithCode("Unable to decode config maps list", http.StatusInternalServerError)
+	ErrUnableConvertConfigMap     = NewErrorWithCode("Unable to decode config map", http.StatusInternalServerError)
 )
 
 type Error struct {
@@ -120,13 +135,22 @@ func ParseErorrs(in interface{}) (code int, out []Error) {
 	}
 
 	//Simple error with code
-	mE, isErrorWithCode := in.(Error)
+	mE, isErrorWithCode := in.(*Error)
 	if isErrorWithCode {
 		if mE.Code != 0 {
-			return mE.Code, []Error{mE}
+			return mE.Code, []Error{{Text: mE.Text}}
 		} else {
-			return http.StatusInternalServerError, []Error{mE}
+			return http.StatusInternalServerError, []Error{{Text: mE.Text}}
 		}
+	}
+
+	//Errors array
+	aE, isErrorArray := in.([]error)
+	if isErrorArray {
+		for _, v := range aE {
+			out = append(out, Error{Text: v.Error()})
+		}
+		return http.StatusBadRequest, out
 	}
 
 	return http.StatusInternalServerError, []Error{{Text: in.(error).Error()}}

@@ -1,9 +1,12 @@
 package model
 
 import (
+	"fmt"
+
 	json_types "git.containerum.net/ch/json-types/kube-api"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	api_validation "k8s.io/apimachinery/pkg/util/validation"
 )
 
 // ParseEndpointList parses kubernetes v1.EndpointsList to more convenient []Endpoint struct
@@ -27,7 +30,7 @@ func ParseEndpointList(endpointi interface{}) ([]json_types.Endpoint, error) {
 func ParseEndpoint(endpointi interface{}) (*json_types.Endpoint, error) {
 	endpoint := endpointi.(*api_core.Endpoints)
 	if endpoint == nil {
-		return nil, ErrUnableConvertServiceList
+		return nil, ErrUnableConvertEndpoint
 	}
 
 	ports := make([]json_types.Port, 0)
@@ -68,9 +71,13 @@ func parseEndpointPort(np interface{}) json_types.Port {
 }
 
 // MakeEndpoint creates kubernetes v1.Endpoint from Endpoint struct and namespace labels
-func MakeEndpoint(nsName string, endpoint json_types.Endpoint, labels map[string]string) *api_core.Endpoints {
-	ipaddrs := []api_core.EndpointAddress{}
+func MakeEndpoint(nsName string, endpoint json_types.Endpoint, labels map[string]string) (*api_core.Endpoints, []error) {
+	err := validateEndpoint(endpoint)
+	if err != nil {
+		return nil, err
+	}
 
+	ipaddrs := []api_core.EndpointAddress{}
 	for _, v := range endpoint.Addresses {
 		ipaddrs = append(ipaddrs, api_core.EndpointAddress{
 			IP: v,
@@ -85,7 +92,7 @@ func MakeEndpoint(nsName string, endpoint json_types.Endpoint, labels map[string
 	labels[ownerLabel] = *endpoint.Owner
 	labels[nameLabel] = endpoint.Name
 
-	return &api_core.Endpoints{
+	newEndpoint := api_core.Endpoints{
 		TypeMeta: api_meta.TypeMeta{
 			Kind:       "Endpoints",
 			APIVersion: "v1",
@@ -102,6 +109,8 @@ func MakeEndpoint(nsName string, endpoint json_types.Endpoint, labels map[string
 			},
 		},
 	}
+
+	return &newEndpoint, nil
 }
 
 func makeEndpointPorts(ports []json_types.Port) []api_core.EndpointPort {
@@ -112,4 +121,21 @@ func makeEndpointPorts(ports []json_types.Port) []api_core.EndpointPort {
 		}
 	}
 	return endpointports
+}
+
+func validateEndpoint(endpoint json_types.Endpoint) []error {
+	errors := []error{}
+
+	if len(api_validation.IsDNS1123Subdomain(endpoint.Name)) > 0 {
+		errors = append(errors, NewError(fmt.Sprintf(invalidName, endpoint.Name)))
+	}
+	for _, v := range endpoint.Ports {
+		if len(api_validation.IsInRange(v.Port, minport, maxport)) > 0 {
+			errors = append(errors, NewError(fmt.Sprintf(invalidPort, v.Port, minport, maxport)))
+		}
+	}
+	if len(errors) > 0 {
+		return errors
+	}
+	return nil
 }

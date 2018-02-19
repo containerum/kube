@@ -10,12 +10,22 @@ import (
 	api_core "k8s.io/api/core/v1"
 	api_resource "k8s.io/apimachinery/pkg/api/resource"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	api_validation "k8s.io/apimachinery/pkg/util/validation"
 )
 
 const requestCoeffUnscaled = 5
 const requestCoeffScale = 1
 
 const glusterFSEndpoint = "ch-glusterfs"
+
+const (
+	minDeployCPU    = "10m"
+	minDeployMemory = "10Mi"
+	maxDeployCPU    = "4"
+	maxDeployMemory = "4Gi"
+
+	maxDeployReplicas = 10
+)
 
 type DeploymentWithOwner struct {
 	kube_types.Deployment
@@ -81,7 +91,12 @@ func ParseDeployment(deployment interface{}) (*DeploymentWithOwner, error) {
 }
 
 //MakeDeployment creates kubernetes v1.Deployment from Deployment struct and namespace labels
-func MakeDeployment(nsName string, depl *DeploymentWithOwner, labels map[string]string) (*api_apps.Deployment, error) {
+func MakeDeployment(nsName string, depl *DeploymentWithOwner, labels map[string]string) (*api_apps.Deployment, []error) {
+	err := validateDeployment(depl.Deployment)
+	if err != nil {
+		return nil, err
+	}
+
 	repl := int32(depl.Replicas)
 	containers, volumes, err := makeContainers(depl.Containers)
 	if err != nil {
@@ -128,10 +143,10 @@ func MakeDeployment(nsName string, depl *DeploymentWithOwner, labels map[string]
 	return &deployment, nil
 }
 
-func makeContainers(containers []kube_types.Container) ([]api_core.Container, []string, error) {
+func makeContainers(containers []kube_types.Container) ([]api_core.Container, []string, []error) {
 	var containersAfter []api_core.Container
 	if len(containers) == 0 {
-		return nil, nil, ErrNoContainerInRequest
+		return nil, nil, []error{ErrNoContainerInRequest}
 	}
 
 	volumes := make([]string, 0)
@@ -157,13 +172,19 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, []
 		}
 
 		if rq, err := makeContainerResourceQuota(c.Limits.CPU, c.Limits.Memory); err != nil {
-			return nil, nil, err
+			return nil, nil, []error{err}
 		} else {
 			container.Resources = *rq
 		}
 
+		err := validateContainer(c, *container.Resources.Limits.Cpu(), *container.Resources.Limits.Memory())
+		if err != nil {
+			return nil, nil, err
+		}
+
 		containersAfter = append(containersAfter, container)
 	}
+
 	return containersAfter, volumes, nil
 }
 
@@ -255,4 +276,44 @@ func makeTemplateVolumes(volumes []string, owner string) []api_core.Volume {
 		}
 	}
 	return tvolumes
+}
+
+func validateDeployment(deploy kube_types.Deployment) []error {
+	errors := []error{}
+	if len(api_validation.IsDNS1123Subdomain(deploy.Name)) > 0 {
+		errors = append(errors, NewError(fmt.Sprintf(invalidName, deploy.Name)))
+	}
+	if len(api_validation.IsInRange(deploy.Replicas, 1, maxDeployReplicas)) > 0 {
+		errors = append(errors, NewError(fmt.Sprintf(invalidReplicas, deploy.Replicas, maxDeployReplicas)))
+	}
+	if len(errors) > 0 {
+		return errors
+	}
+	return nil
+}
+
+func validateContainer(container kube_types.Container, cpu, mem api_resource.Quantity) []error {
+	errors := []error{}
+
+	mincpu, _ := api_resource.ParseQuantity(minDeployCPU)
+	maxcpu, _ := api_resource.ParseQuantity(maxDeployCPU)
+	minmem, _ := api_resource.ParseQuantity(minDeployMemory)
+	maxmem, _ := api_resource.ParseQuantity(maxDeployMemory)
+
+	if len(api_validation.IsDNS1123Subdomain(container.Name)) > 0 {
+		errors = append(errors, NewError(fmt.Sprintf(invalidName, container.Name)))
+	}
+
+	if cpu.Cmp(mincpu) == -1 || cpu.Cmp(maxcpu) == 1 {
+		errors = append(errors, NewError(fmt.Sprintf(invalidCPUQuota, cpu.String(), minDeployCPU, maxDeployCPU)))
+	}
+
+	if mem.Cmp(minmem) == -1 || mem.Cmp(maxmem) == 1 {
+		errors = append(errors, NewError(fmt.Sprintf(invalidMemoryQuota, mem.String(), minDeployMemory, maxDeployMemory)))
+	}
+
+	if len(errors) > 0 {
+		return errors
+	}
+	return nil
 }

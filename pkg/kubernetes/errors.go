@@ -42,6 +42,12 @@ var (
 	ErrUnableUpdateEndpoint  = errors.New("Unable to update endpoint")
 	ErrUnableDeleteEndpoint  = errors.New("Unable to delete endpoint")
 
+	ErrUnableGetConfigMapList = errors.New("Unable to get config maps list")
+	ErrUnableGetConfigMap     = errors.New("Unable to config map")
+	ErrUnableCreateConfigMap  = errors.New("Unable to create config map")
+	ErrUnableUpdateConfigMap  = errors.New("Unable to update config map")
+	ErrUnableDeleteConfigMap  = errors.New("Unable to delete config map")
+
 	ErrUnableGetPodList = errors.New("Unable to get pod list")
 	ErrUnableGetPod     = errors.New("Unable to get pod")
 	ErrUnableDeletePod  = errors.New("Unable to delete pod")

@@ -90,10 +90,12 @@ func CreateDeployment(ctx *gin.Context) {
 		return
 	}
 
-	deployment, err := model.MakeDeployment(ctx.Param(namespaceParam), &deployReq, quota.Labels)
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+	deployment, errors := model.MakeDeployment(ctx.Param(namespaceParam), &deployReq, quota.Labels)
+	if errors != nil {
+		for _, v := range errors {
+			ctx.Error(v)
+		}
+		ctx.AbortWithStatusJSON(model.ParseErorrs(errors))
 		return
 	}
 
@@ -164,10 +166,12 @@ func UpdateDeployment(ctx *gin.Context) {
 		return
 	}
 
-	deployment, err := model.MakeDeployment(ctx.Param(namespaceParam), &deployReq, quota.Labels)
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+	deployment, errors := model.MakeDeployment(ctx.Param(namespaceParam), &deployReq, quota.Labels)
+	if errors != nil {
+		for _, v := range errors {
+			ctx.Error(v)
+		}
+		ctx.AbortWithStatusJSON(model.ParseErorrs(errors))
 		return
 	}
 

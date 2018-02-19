@@ -4,10 +4,18 @@ import (
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	api_validation "k8s.io/apimachinery/pkg/util/validation"
 
 	"strconv"
 
+	"fmt"
+
 	"k8s.io/apimachinery/pkg/util/intstr"
+)
+
+const (
+	minport = 10000
+	maxport = 65535
 )
 
 type ServiceWithOwner struct {
@@ -99,7 +107,12 @@ func parseServicePort(np interface{}) kube_types.Port {
 }
 
 // MakeService creates kubernetes v1.Service from Service struct and namespace labels
-func MakeService(nsName string, service ServiceWithOwner, labels map[string]string) *api_core.Service {
+func MakeService(nsName string, service ServiceWithOwner, labels map[string]string) (*api_core.Service, []error) {
+	err := validateService(service.Service)
+	if err != nil {
+		return nil, err
+	}
+
 	if labels == nil {
 		labels = make(map[string]string, 0)
 	}
@@ -132,7 +145,7 @@ func MakeService(nsName string, service ServiceWithOwner, labels map[string]stri
 		newService.Spec.ExternalIPs = *service.IP
 	}
 
-	return &newService
+	return &newService, nil
 }
 
 func makeServicePorts(ports []kube_types.Port) []api_core.ServicePort {
@@ -147,4 +160,20 @@ func makeServicePorts(ports []kube_types.Port) []api_core.ServicePort {
 		}
 	}
 	return serviceports
+}
+
+func validateService(service kube_types.Service) []error {
+	errors := []error{}
+	if len(api_validation.IsDNS1123Subdomain(service.Name)) > 0 {
+		errors = append(errors, NewError(fmt.Sprintf(invalidName, service.Name)))
+	}
+	for _, v := range service.Ports {
+		if len(api_validation.IsInRange(v.Port, minport, maxport)) > 0 {
+			errors = append(errors, NewError(fmt.Sprintf(invalidPort, v.Port, minport, maxport)))
+		}
+	}
+	if len(errors) > 0 {
+		return errors
+	}
+	return nil
 }

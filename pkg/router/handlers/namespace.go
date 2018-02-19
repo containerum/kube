@@ -76,22 +76,33 @@ func CreateNamespace(ctx *gin.Context) {
 		return
 	}
 
-	nsAfter, err := kubecli.CreateNamespace(model.MakeNamespace(ns))
+	newNamespace, err := model.MakeNamespace(ns)
 	if err != nil {
+		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	quota, err := model.MakeResourceQuota(ns.Resources.Hard.CPU, ns.Resources.Hard.Memory, nsAfter.Labels, nsAfter.Name)
+	nsAfter, err := kubecli.CreateNamespace(newNamespace)
 	if err != nil {
 		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	quota, errors := model.MakeResourceQuota(ns.Resources.Hard.CPU, ns.Resources.Hard.Memory, nsAfter.Labels, nsAfter.Name)
+	if errors != nil {
+		for _, v := range errors {
+			ctx.Error(v)
+		}
 
 		if delerr := kubecli.DeleteNamespace(nsAfter.Name); delerr != nil {
 			ctx.Error(delerr)
 			ctx.AbortWithStatusJSON(model.ParseErorrs(delerr))
+			return
 		}
 
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		ctx.AbortWithStatusJSON(model.ParseErorrs(errors))
 		return
 	}
 
@@ -102,6 +113,7 @@ func CreateNamespace(ctx *gin.Context) {
 		if delerr := kubecli.DeleteNamespace(nsAfter.Name); delerr != nil {
 			ctx.Error(delerr)
 			ctx.AbortWithStatusJSON(model.ParseErorrs(delerr))
+			return
 		}
 
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
@@ -138,7 +150,7 @@ func DeleteNamespace(ctx *gin.Context) {
 func UpdateNamespace(ctx *gin.Context) {
 	log.WithField("Namespace", ctx.Param(namespaceParam)).Debug("Update namespace Call")
 
-	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
 	var res kube_types.UpdateNamespace
 	if err := ctx.ShouldBindWith(&res, binding.JSON); err != nil {
@@ -150,24 +162,26 @@ func UpdateNamespace(ctx *gin.Context) {
 		return
 	}
 
-	quotaOld, err := kube.GetNamespaceQuota(ctx.Param(namespaceParam))
+	quotaOld, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	quota, err := model.MakeResourceQuota(res.Resources.Hard.CPU, res.Resources.Hard.Memory, quotaOld.Labels, quotaOld.Name)
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+	quota, errors := model.MakeResourceQuota(res.Resources.Hard.CPU, res.Resources.Hard.Memory, quotaOld.Labels, quotaOld.Name)
+	if errors != nil {
+		for _, v := range errors {
+			ctx.Error(v)
+		}
+		ctx.AbortWithStatusJSON(model.ParseErorrs(errors))
 		return
 	}
 
 	quota.Labels = quotaOld.Labels
 	quota.SetNamespace(ctx.Param(namespaceParam))
 	quota.SetName("quota")
-	quotaAfter, err := kube.UpdateNamespaceQuota(ctx.Param(namespaceParam), quota)
+	quotaAfter, err := kubecli.UpdateNamespaceQuota(ctx.Param(namespaceParam), quota)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))

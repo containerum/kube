@@ -1,9 +1,14 @@
 package model
 
 import (
+	"fmt"
+
+	"net/http"
+
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	api_validation "k8s.io/apimachinery/pkg/util/validation"
 )
 
 type SecretWithOwner struct {
@@ -55,7 +60,12 @@ func ParseSecret(secreti interface{}) (*SecretWithOwner, error) {
 }
 
 // MakeSecret creates kubernetes v1.Secret from Secret struct and namespace labels
-func MakeSecret(nsName string, secret SecretWithOwner, labels map[string]string) *api_core.Secret {
+func MakeSecret(nsName string, secret SecretWithOwner, labels map[string]string) (*api_core.Secret, error) {
+	err := validateSecret(secret.Secret)
+	if err != nil {
+		return nil, err
+	}
+
 	if labels == nil {
 		labels = make(map[string]string, 0)
 	}
@@ -76,7 +86,8 @@ func MakeSecret(nsName string, secret SecretWithOwner, labels map[string]string)
 		Data: makeSecretData(secret.Data),
 		Type: "Opaque",
 	}
-	return &newSecret
+
+	return &newSecret, nil
 }
 
 func makeSecretData(data map[string]string) map[string][]byte {
@@ -87,4 +98,11 @@ func makeSecretData(data map[string]string) map[string][]byte {
 		}
 	}
 	return newData
+}
+
+func validateSecret(secret kube_types.Secret) error {
+	if len(api_validation.IsDNS1123Subdomain(secret.Name)) > 0 {
+		return NewErrorWithCode(fmt.Sprintf(invalidName, secret.Name), http.StatusBadRequest)
+	}
+	return nil
 }

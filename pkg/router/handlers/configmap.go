@@ -5,7 +5,6 @@ import (
 
 	"fmt"
 
-	json_types "git.containerum.net/ch/json-types/kube-api"
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
@@ -15,25 +14,25 @@ import (
 )
 
 const (
-	endpointParam = "endpoint"
+	configMapParam = "configmap"
 )
 
-func GetEndpointList(ctx *gin.Context) {
+func GetConfigMapList(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
 		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
-	}).Debug("Get endpoints list Call")
+	}).Debug("Get config maps list Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	endpoints, err := kube.GetEndpointList(ctx.MustGet(m.NamespaceKey).(string))
+	cm, err := kube.GetConfigMapList(ctx.MustGet(m.NamespaceKey).(string))
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	ret, err := model.ParseEndpointList(endpoints)
+	ret, err := model.ParseConfigMapList(cm)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
@@ -43,23 +42,23 @@ func GetEndpointList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-func GetEndpoint(ctx *gin.Context) {
+func GetConfigMap(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
 		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
-		"Endpoint":        ctx.Param(endpointParam),
-	}).Debug("Get endpoint Call")
+		"ConfigMap":       ctx.Param(configMapParam),
+	}).Debug("Get config map Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	endpoint, err := kube.GetEndpoint(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(endpointParam))
+	cm, err := kube.GetConfigMap(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(configMapParam))
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	ret, err := model.ParseEndpoint(endpoint)
+	ret, err := model.ParseConfigMap(cm)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
@@ -69,18 +68,18 @@ func GetEndpoint(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-func CreateEndpoint(ctx *gin.Context) {
+func CreateConfigMap(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace": ctx.Param(namespaceParam),
-	}).Debug("Create endpoint Call")
+	}).Debug("Create config map Call")
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var endpoint json_types.Endpoint
-	if err := ctx.ShouldBindWith(&endpoint, binding.JSON); err != nil {
+	var cm model.ConfigMapWithOwner
+	if err := ctx.ShouldBindWith(&cm, binding.JSON); err != nil {
 		log.WithFields(log.Fields{
 			"Namespace": ctx.Param(namespaceParam),
-		}).Warning(kubernetes.ErrUnableCreateEndpoint)
+		}).Warning(kubernetes.ErrUnableCreateConfigMap)
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
@@ -93,23 +92,21 @@ func CreateEndpoint(ctx *gin.Context) {
 		return
 	}
 
-	newEndpoint, errors := model.MakeEndpoint(ctx.Param(namespaceParam), endpoint, quota.Labels)
-	if errors != nil {
-		for _, v := range errors {
-			ctx.Error(v)
-		}
-		ctx.AbortWithStatusJSON(model.ParseErorrs(errors))
-		return
-	}
-
-	endpointAfter, err := kubecli.CreateEndpoint(newEndpoint)
+	newCm, err := model.MakeConfigMap(ctx.Param(namespaceParam), cm, quota.Labels)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	ret, err := model.ParseEndpoint(endpointAfter)
+	cmAfter, err := kubecli.CreateConfigMap(newCm)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	ret, err := model.ParseConfigMap(cmAfter)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
@@ -119,20 +116,20 @@ func CreateEndpoint(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
-func UpdateEndpoint(ctx *gin.Context) {
+func UpdateConfigMap(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace": ctx.Param(namespaceParam),
-		"Endpoint":  ctx.Param(endpointParam),
-	}).Debug("Create endpoint Call")
+		"ConfigMap": ctx.Param(configMapParam),
+	}).Debug("Create config map Call")
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var endpoint json_types.Endpoint
-	if err := ctx.ShouldBindWith(&endpoint, binding.JSON); err != nil {
+	var cm model.ConfigMapWithOwner
+	if err := ctx.ShouldBindWith(&cm, binding.JSON); err != nil {
 		log.WithFields(log.Fields{
 			"Namespace": ctx.Param(namespaceParam),
-			"Endpoint":  ctx.Param(endpointParam),
-		}).Warning(kubernetes.ErrUnableUpdateEndpoint)
+			"ConfigMap": ctx.Param(configMapParam),
+		}).Warning(kubernetes.ErrUnableUpdateConfigMap)
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
@@ -145,56 +142,51 @@ func UpdateEndpoint(ctx *gin.Context) {
 		return
 	}
 
-	if ctx.Param(endpointParam) != endpoint.Name {
+	if ctx.Param(configMapParam) != cm.Name {
 		log.WithFields(log.Fields{
 			"Namespace": ctx.Param(namespaceParam),
-			"Endpoint":  ctx.Param(endpointParam),
-		}).Warning(kubernetes.ErrUnableUpdateEndpoint)
-		ctx.Error(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateEndpointName, ctx.Param(endpointParam), endpoint.Name), http.StatusBadRequest))
-		ctx.AbortWithStatusJSON(model.ParseErorrs(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateEndpointName, ctx.Param(endpointParam), endpoint.Name), http.StatusBadRequest)))
+			"ConfigMap": ctx.Param(configMapParam),
+		}).Warning(kubernetes.ErrUnableUpdateConfigMap)
+		ctx.Error(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateConfigMapName, ctx.Param(configMapParam), cm.Name), http.StatusBadRequest))
+		ctx.AbortWithStatusJSON(model.ParseErorrs(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateConfigMapName, ctx.Param(configMapParam), cm.Name), http.StatusBadRequest)))
 		return
 	}
 
-	newEndpoint, errors := model.MakeEndpoint(ctx.Param(namespaceParam), endpoint, quota.Labels)
-	if errors != nil {
-		for _, v := range errors {
-			ctx.Error(v)
-		}
-		ctx.AbortWithStatusJSON(model.ParseErorrs(errors))
-		return
-	}
-
-	endpointAfter, err := kubecli.UpdateEndpoint(newEndpoint)
+	newCm, err := model.MakeConfigMap(ctx.Param(namespaceParam), cm, quota.Labels)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	ret, err := model.ParseEndpoint(endpointAfter)
+	cmAfter, err := kubecli.UpdateConfigMap(newCm)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, ret)
+	ret, err := model.ParseConfigMap(cmAfter)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		return
+	}
+
+	ctx.JSON(http.StatusAccepted, ret)
 }
 
-func DeleteEndpoint(ctx *gin.Context) {
+func DeleteConfigMap(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace": ctx.Param(namespaceParam),
-		"Endpoint":  ctx.Param(endpointParam),
-	}).Debug("Delete endpoint Call")
-
+		"ConfigMap": ctx.Param(configMapParam),
+	}).Debug("Delete config map Call")
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-
-	err := kube.DeleteEndpoint(ctx.Param(namespaceParam), ctx.Param(endpointParam))
+	err := kube.DeleteConfigMap(ctx.Param(namespaceParam), ctx.Param(configMapParam))
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
 		return
 	}
-
 	ctx.Status(http.StatusAccepted)
 }

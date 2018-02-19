@@ -89,6 +89,15 @@ func initRoutes(e *gin.Engine) {
 			endpoint.DELETE("/:endpoint", h.DeleteEndpoint)
 		}
 
+		configmap := namespace.Group("/:namespace/configmaps")
+		{
+			configmap.Use(m.IsAdmin()).GET("", h.GetConfigMapList)
+			configmap.GET("/:configmap", h.GetConfigMap)
+			configmap.POST("", h.CreateConfigMap)
+			configmap.PUT("/:configmap", h.UpdateConfigMap)
+			configmap.DELETE("/:configmap", h.DeleteConfigMap)
+		}
+
 		pod := namespace.Group("/:namespace/pods")
 		{
 			pod.Use(m.ReadAccess()).GET("", h.GetPodList)
