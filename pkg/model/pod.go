@@ -1,6 +1,8 @@
 package model
 
 import (
+	"strconv"
+
 	"git.containerum.net/ch/kube-client/pkg/model"
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
@@ -25,7 +27,7 @@ func ParsePodList(pods interface{}) []PodWithOwner {
 func ParsePod(pod interface{}) PodWithOwner {
 	obj := pod.(*api_core.Pod)
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
-	containers := getContainers(obj.Spec.Containers)
+	containers := getContainers(obj.Spec.Containers, nil)
 	return PodWithOwner{
 		Pod: model.Pod{
 			Name:       obj.GetName(),
@@ -39,22 +41,23 @@ func ParsePod(pod interface{}) PodWithOwner {
 	}
 }
 
-func getContainers(cListi interface{}) []model.Container {
+func getContainers(cListi interface{}, mode map[string]int32) []model.Container {
 	cList := cListi.([]api_core.Container)
 	var containers []model.Container
 	for _, c := range cList {
 		env := getEnv(c.Env)
-		volumes := getVolumes(c.VolumeMounts)
+		volumes, configMaps := getVolumes(c.VolumeMounts, mode)
 
 		cpu := c.Resources.Limits["cpu"]
 		mem := c.Resources.Limits["memory"]
 
 		containers = append(containers, model.Container{
-			Name:    c.Name,
-			Image:   c.Image,
-			Env:     &env,
-			Volume:  &volumes,
-			Command: &c.Command,
+			Name:      c.Name,
+			Image:     c.Image,
+			Env:       &env,
+			Volume:    &volumes,
+			ConfigMap: &configMaps,
+			Command:   &c.Command,
 			Limits: model.Limits{
 				CPU:    cpu.String(),
 				Memory: mem.String(),
@@ -64,17 +67,32 @@ func getContainers(cListi interface{}) []model.Container {
 	return containers
 }
 
-func getVolumes(vListi interface{}) []model.Volume {
+func getVolumes(vListi interface{}, mode map[string]int32) ([]model.Volume, []model.Volume) {
 	vList := vListi.([]api_core.VolumeMount)
 	volumes := make([]model.Volume, 0)
+	configMaps := make([]model.Volume, 0)
 	for _, v := range vList {
-		volumes = append(volumes, model.Volume{
+
+		subpath := v.SubPath
+		newvol := model.Volume{
 			Name:      v.Name,
 			MountPath: v.MountPath,
-			SubPath:   &v.SubPath,
-		})
+		}
+
+		if subpath != "" {
+			newvol.SubPath = &subpath
+		}
+
+		mode, ok := mode[v.Name]
+		if ok {
+			formated := strconv.FormatInt(int64(mode), 8)
+			newvol.Mode = &formated
+			configMaps = append(configMaps, newvol)
+		} else {
+			volumes = append(volumes, newvol)
+		}
 	}
-	return volumes
+	return volumes, configMaps
 }
 
 func getEnv(eListi interface{}) []model.Env {

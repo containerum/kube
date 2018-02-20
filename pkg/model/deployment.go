@@ -4,6 +4,8 @@ import (
 	"crypto/sha256"
 	"fmt"
 
+	"strconv"
+
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	"gopkg.in/inf.v0"
 	api_apps "k8s.io/api/apps/v1"
@@ -60,7 +62,7 @@ func ParseDeployment(deployment interface{}) (*DeploymentWithOwner, error) {
 
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
 	replicas := 0
-	containers := getContainers(obj.Spec.Template.Spec.Containers)
+	containers := getContainers(obj.Spec.Template.Spec.Containers, getVolumeMode(obj.Spec.Template.Spec.Volumes))
 	updated := obj.ObjectMeta.CreationTimestamp.Unix()
 	if r := obj.Spec.Replicas; r != nil {
 		replicas = int(*r)
@@ -90,6 +92,16 @@ func ParseDeployment(deployment interface{}) (*DeploymentWithOwner, error) {
 	}, nil
 }
 
+func getVolumeMode(volumes []api_core.Volume) map[string]int32 {
+	volumemap := make(map[string]int32, 0)
+	for _, v := range volumes {
+		if v.ConfigMap != nil {
+			volumemap[v.Name] = *v.ConfigMap.DefaultMode
+		}
+	}
+	return volumemap
+}
+
 //MakeDeployment creates kubernetes v1.Deployment from Deployment struct and namespace labels
 func MakeDeployment(nsName string, depl *DeploymentWithOwner, labels map[string]string) (*api_apps.Deployment, []error) {
 	err := validateDeployment(depl.Deployment)
@@ -98,7 +110,7 @@ func MakeDeployment(nsName string, depl *DeploymentWithOwner, labels map[string]
 	}
 
 	repl := int32(depl.Replicas)
-	containers, volumes, err := makeContainers(depl.Containers)
+	containers, volumes, cmaps, err := makeContainers(depl.Containers)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +143,7 @@ func MakeDeployment(nsName string, depl *DeploymentWithOwner, labels map[string]
 					NodeSelector: map[string]string{
 						"role": "slave",
 					},
-					Volumes: makeTemplateVolumes(volumes, depl.Owner),
+					Volumes: makeTemplateVolumes(volumes, cmaps, depl.Owner),
 				},
 				ObjectMeta: api_meta.ObjectMeta{
 					Labels: labels,
@@ -143,13 +155,14 @@ func MakeDeployment(nsName string, depl *DeploymentWithOwner, labels map[string]
 	return &deployment, nil
 }
 
-func makeContainers(containers []kube_types.Container) ([]api_core.Container, []string, []error) {
+func makeContainers(containers []kube_types.Container) ([]api_core.Container, []string, map[string]int64, []error) {
 	var containersAfter []api_core.Container
 	if len(containers) == 0 {
-		return nil, nil, []error{ErrNoContainerInRequest}
+		return nil, nil, nil, []error{ErrNoContainerInRequest}
 	}
 
 	volumes := make([]string, 0)
+	cmaps := make(map[string]int64, 0)
 	for _, c := range containers {
 		container := api_core.Container{
 			Name:    c.Name,
@@ -157,9 +170,12 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, []
 			Command: makeContainerCommands(c.Command),
 		}
 
-		if c.Volume != nil {
-			vm, vnames := makeContainerVolumes(*c.Volume)
+		if c.Volume != nil || c.ConfigMap != nil {
+			vm, vnames, cmnames := makeContainerVolumes(c.Volume, c.ConfigMap)
 			volumes = append(volumes, vnames...)
+			for k, v := range cmnames {
+				cmaps[k] = v
+			}
 			container.VolumeMounts = vm
 		}
 
@@ -172,28 +188,29 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, []
 		}
 
 		if rq, err := makeContainerResourceQuota(c.Limits.CPU, c.Limits.Memory); err != nil {
-			return nil, nil, []error{err}
+			return nil, nil, nil, []error{err}
 		} else {
 			container.Resources = *rq
 		}
 
 		err := validateContainer(c, *container.Resources.Limits.Cpu(), *container.Resources.Limits.Memory())
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, nil, err
 		}
 
 		containersAfter = append(containersAfter, container)
 	}
-
-	return containersAfter, volumes, nil
+	return containersAfter, volumes, cmaps, nil
 }
 
-func makeContainerVolumes(volumes []kube_types.Volume) ([]api_core.VolumeMount, []string) {
+func makeContainerVolumes(volumes *[]kube_types.Volume, configMaps *[]kube_types.Volume) ([]api_core.VolumeMount, []string, map[string]int64) {
 	mounts := make([]api_core.VolumeMount, 0)
 	vnames := make([]string, 0)
+	cmnames := make(map[string]int64, 0)
 	if volumes != nil {
-		for _, v := range volumes {
+		for _, v := range *volumes {
 			var subpath string
+
 			if v.SubPath != nil {
 				subpath = *v.SubPath
 			}
@@ -201,7 +218,25 @@ func makeContainerVolumes(volumes []kube_types.Volume) ([]api_core.VolumeMount, 
 			mounts = append(mounts, api_core.VolumeMount{Name: v.Name, MountPath: v.MountPath, SubPath: subpath})
 		}
 	}
-	return mounts, vnames
+	if configMaps != nil {
+		for _, v := range *configMaps {
+			var subpath string
+			if v.SubPath != nil {
+				subpath = *v.SubPath
+			}
+
+			mode := int64(0644)
+			if v.Mode != nil {
+				if newMode, err := strconv.ParseInt(*v.Mode, 8, 32); err == nil {
+					mode = newMode
+				}
+			}
+			cmnames[v.Name] = mode
+			mounts = append(mounts, api_core.VolumeMount{Name: v.Name, MountPath: v.MountPath, SubPath: subpath})
+		}
+	}
+
+	return mounts, vnames, cmnames
 }
 
 func makeContainerEnv(env []kube_types.Env) []api_core.EnvVar {
@@ -259,9 +294,9 @@ func makeContainerResourceQuota(cpu string, memory string) (*api_core.ResourceRe
 	}, nil
 }
 
-func makeTemplateVolumes(volumes []string, owner string) []api_core.Volume {
+func makeTemplateVolumes(volumes []string, cmaps map[string]int64, owner string) []api_core.Volume {
 	tvolumes := make([]api_core.Volume, 0)
-	if volumes != nil {
+	if len(volumes) != 0 {
 		for _, v := range volumes {
 			newVolume := api_core.Volume{
 				Name: v,
@@ -269,6 +304,23 @@ func makeTemplateVolumes(volumes []string, owner string) []api_core.Volume {
 					Glusterfs: &api_core.GlusterfsVolumeSource{
 						EndpointsName: glusterFSEndpoint,
 						Path:          fmt.Sprintf("cli_%x", (sha256.Sum256([]byte(v + owner)))),
+					},
+				},
+			}
+			tvolumes = append(tvolumes, newVolume)
+		}
+	}
+	if len(cmaps) != 0 {
+		for k, v := range cmaps {
+			mode := int32(v)
+			newVolume := api_core.Volume{
+				Name: k,
+				VolumeSource: api_core.VolumeSource{
+					ConfigMap: &api_core.ConfigMapVolumeSource{
+						LocalObjectReference: api_core.LocalObjectReference{
+							Name: k,
+						},
+						DefaultMode: &mode,
 					},
 				},
 			}
