@@ -12,8 +12,9 @@ const (
 
 	KubeClient = "kubernetes-client"
 
-	NamespaceKey = "namespace"
-	ServiceKey   = "service"
+	NamespaceKey      = "namespace"
+	NamespaceLabelKey = "namespace-key"
+	ServiceKey        = "service"
 )
 
 func RegisterKubeClient(kube *kubernetes.Kube) gin.HandlerFunc {
@@ -25,5 +26,6 @@ func RegisterKubeClient(kube *kubernetes.Kube) gin.HandlerFunc {
 func SetNamespace() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set(NamespaceKey, c.Param(namespaceParam))
+		c.Set(NamespaceLabelKey, "")
 	}
 }
