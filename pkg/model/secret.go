@@ -29,7 +29,10 @@ func ParseSecretList(secreti interface{}) ([]SecretWithOwner, error) {
 		if err != nil {
 			return nil, err
 		}
-		newSecrets = append(newSecrets, *newSecret)
+
+		if newSecret.Owner != "" {
+			newSecrets = append(newSecrets, *newSecret)
+		}
 	}
 	return newSecrets, nil
 }
