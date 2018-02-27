@@ -1,157 +1,69 @@
 package model
 
 import (
-	"encoding/json"
-	"fmt"
-	"net/http"
+	"errors"
 
-	"gopkg.in/go-playground/validator.v8"
-
-	"k8s.io/apimachinery/pkg/api/errors"
+	ch "git.containerum.net/ch/kube-client/pkg/cherry"
+	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
+	api_errors "k8s.io/apimachinery/pkg/api/errors"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
-	alreadyExists       = "%s already exists in %s"
-	fieldError          = "Validation failed for field: %s"
-	fildNotFound        = "%s is not found"
-	fieldShouldBeEmail  = "%v should be email address. Please, enter your valid email"
-	fieldShouldExist    = "Field %v should be provided"
-	fieldDefaultProblem = "%v should be %v"
-	fieldTypeProblem    = "Invaid type for field %v (should be %v)"
-	invalidReplicas     = "Invalid replicas number: %v. It must be between 1 and %v"
-	invalidPort         = "Invalid port: %v. It must be between %v and %v"
-	invalidName         = "Invalid name: %v. It must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character"
-	invalidCPUQuota     = "Invalid CPU quota: %v. It must be between %v and %v"
-	invalidMemoryQuota  = "Invalid memory quota: %v. It must be between %v and %v"
+	fieldShouldExist   = "Field %v should be provided"
+	invalidReplicas    = "Invalid replicas number: %v. It must be between 1 and %v"
+	invalidPort        = "Invalid port: %v. It must be between %v and %v"
+	invalidProtocol    = "Invalid protocol: %v. It must be TCP or UDP"
+	noOwner            = "Owner should be provided"
+	invalidOwner       = "Owner should be UUID"
+	NoContainer        = "Container %v is not found in deployment"
+	invalidName        = "Invalid name: %v. It must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character"
+	invalidCPUQuota    = "Invalid CPU quota: %v. It must be between %v and %v"
+	invalidMemoryQuota = "Invalid memory quota: %v. It must be between %v and %v"
 )
 
 var (
-	ErrInvalidCPUFormat     = NewErrorWithCode("Invalid cpu quota format", http.StatusBadRequest)
-	ErrInvalidMemoryFormat  = NewErrorWithCode("Invalid memory quota format", http.StatusBadRequest)
-	ErrNoContainerInRequest = NewErrorWithCode("No container in request", http.StatusNotFound)
+	ErrInvalidCPUFormat     = errors.New("Invalid cpu quota format")
+	ErrInvalidMemoryFormat  = errors.New("Invalid memory quota format")
+	ErrNoContainerInRequest = errors.New("No container in request")
+	ErrContainerNotFound    = errors.New("Container not found")
 
-	ErrUnableEncodeUserHeaderData    = NewErrorWithCode("Unbale to encode user header data", http.StatusInternalServerError)
-	ErrUnableUnmarshalUserHeaderData = NewErrorWithCode("Unable to unmarshal user header data", http.StatusInternalServerError)
+	ErrUnableEncodeUserHeaderData    = errors.New("Unbale to encode user header data")
+	ErrUnableUnmarshalUserHeaderData = errors.New("Unable to unmarshal user header data")
 
-	ErrUnableConvertServiceList = NewErrorWithCode("Unable to decode services list", http.StatusInternalServerError)
-	ErrUnableConvertService     = NewErrorWithCode("Unable to decode service", http.StatusInternalServerError)
+	ErrUnableConvertServiceList = errors.New("Unable to decode services list")
+	ErrUnableConvertService     = errors.New("Unable to decode service")
 
-	ErrUnableConvertNamespaceList = NewErrorWithCode("Unable to decode namespaces list", http.StatusInternalServerError)
-	ErrUnableConvertNamespace     = NewErrorWithCode("Unable to decode namespace", http.StatusInternalServerError)
+	ErrUnableConvertNamespaceList = errors.New("Unable to decode namespaces list")
+	ErrUnableConvertNamespace     = errors.New("Unable to decode namespace")
 
-	ErrUnableConvertSecretList = NewErrorWithCode("Unable to decode secrets list", http.StatusInternalServerError)
-	ErrUnableConvertSecret     = NewErrorWithCode("Unable to decode secret", http.StatusInternalServerError)
+	ErrUnableConvertSecretList = errors.New("Unable to decode secrets list")
+	ErrUnableConvertSecret     = errors.New("Unable to decode secret")
 
-	ErrUnableConvertIngressList = NewErrorWithCode("Unable to decode ingresses list", http.StatusInternalServerError)
-	ErrUnableConvertIngress     = NewErrorWithCode("Unable to decode ingress", http.StatusInternalServerError)
+	ErrUnableConvertIngressList = errors.New("Unable to decode ingresses list")
+	ErrUnableConvertIngress     = errors.New("Unable to decode ingress")
 
-	ErrUnableConvertDeploymentList = NewErrorWithCode("Unable to decode deployment list", http.StatusInternalServerError)
-	ErrUnableConvertDeployment     = NewErrorWithCode("Unable to decode deployment", http.StatusInternalServerError)
+	ErrUnableConvertDeploymentList = errors.New("Unable to decode deployment list")
+	ErrUnableConvertDeployment     = errors.New("Unable to decode deployment")
 
-	ErrUnableConvertEndpointList = NewErrorWithCode("Unable to decode services list", http.StatusInternalServerError)
-	ErrUnableConvertEndpoint     = NewErrorWithCode("Unable to decode service", http.StatusInternalServerError)
+	ErrUnableConvertEndpointList = errors.New("Unable to decode services list")
+	ErrUnableConvertEndpoint     = errors.New("Unable to decode service")
 
-	ErrUnableConvertConfigMapList = NewErrorWithCode("Unable to decode config maps list", http.StatusInternalServerError)
-	ErrUnableConvertConfigMap     = NewErrorWithCode("Unable to decode config map", http.StatusInternalServerError)
+	ErrUnableConvertConfigMapList = errors.New("Unable to decode config maps list")
+	ErrUnableConvertConfigMap     = errors.New("Unable to decode config map")
 )
 
-type Error struct {
-	Text string `json:"error"`
-	Code int    `json:"code,omitempty"`
-}
-
-func (e *Error) Error() string {
-	if e.Code == 0 {
-		return e.Text
-	}
-	return fmt.Sprintf("description: %s, code: %d", e.Text, e.Code)
-}
-
-// NewError creates new simple error without code
-func NewError(text string) *Error {
-	return &Error{
-		Text: text,
-	}
-}
-
-// NewErrorWithCode creates new simple error with code
-func NewErrorWithCode(text string, code int) *Error {
-	return &Error{
-		Text: text,
-		Code: code,
-	}
-}
-
-// ParseErorrs parses different types of errors
-func ParseErorrs(in interface{}) (code int, out []Error) {
-
-	//Error from kubernetes
-	sE, isStatusErrorCode := in.(*errors.StatusError)
+func ParseResourceError(in interface{}, defaulterr *ch.Err) *ch.Err {
+	sE, isStatusErrorCode := in.(*api_errors.StatusError)
 	if isStatusErrorCode {
-		switch sE.Status().Code {
-		case 409:
-			return http.StatusBadRequest, []Error{{Text: fmt.Sprintf(alreadyExists, sE.Status().Details.Name, sE.Status().Details.Kind)}}
-		case 422:
-			for _, c := range sE.Status().Details.Causes {
-				switch c.Type {
-				case api_meta.CauseTypeFieldValueNotFound:
-					out = append(out, Error{Text: fmt.Sprintf(fildNotFound, c.Field)})
-				case api_meta.CauseTypeFieldValueDuplicate:
-					out = append(out, Error{Text: fmt.Sprintf(alreadyExists, sE.Status().Details.Name, sE.Status().Details.Kind)})
-				default:
-					out = append(out, Error{Text: fmt.Sprintf(fieldError, c.Field)})
-				}
-			}
-			return http.StatusBadRequest, out
-			//TODO Parse more errors
-		case 0:
-			return http.StatusInternalServerError, []Error{{Text: sE.Status().Message}}
+		switch sE.ErrStatus.Reason {
+		case api_meta.StatusReasonNotFound:
+			return cherry.ErrResourceNotExist()
+		case api_meta.StatusReasonAlreadyExists:
+			return cherry.ErrResourceAlreadyExists()
 		default:
-			return int(sE.Status().Code), []Error{{Text: sE.Status().Message}}
+			return defaulterr
 		}
 	}
-
-	//Validation error
-	vE, isValidationError := in.(validator.ValidationErrors)
-	if isValidationError {
-		for _, v := range vE {
-			switch v.Tag {
-			case "required":
-				out = append(out, Error{Text: fmt.Sprintf(fieldShouldExist, v.Name)})
-			case "email":
-				out = append(out, Error{Text: fmt.Sprintf(fieldShouldBeEmail, v.Name)})
-			default:
-				out = append(out, Error{Text: fmt.Sprintf(fieldDefaultProblem, v.Name, v.Tag)})
-			}
-		}
-		return http.StatusBadRequest, out
-	}
-
-	//Unmarshall type error
-	uE, isUnmarshalTypeError := in.(*json.UnmarshalTypeError)
-	if isUnmarshalTypeError {
-		return http.StatusBadRequest, []Error{{Text: fmt.Sprintf(fieldTypeProblem, uE.Field, uE.Type.String())}}
-	}
-
-	//Simple error with code
-	mE, isErrorWithCode := in.(*Error)
-	if isErrorWithCode {
-		if mE.Code != 0 {
-			return mE.Code, []Error{{Text: mE.Text}}
-		} else {
-			return http.StatusInternalServerError, []Error{{Text: mE.Text}}
-		}
-	}
-
-	//Errors array
-	aE, isErrorArray := in.([]error)
-	if isErrorArray {
-		for _, v := range aE {
-			out = append(out, Error{Text: v.Error()})
-		}
-		return http.StatusBadRequest, out
-	}
-
-	return http.StatusInternalServerError, []Error{{Text: in.(error).Error()}}
+	return defaulterr
 }

@@ -6,9 +6,8 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
+	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
-
-	"fmt"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -29,14 +28,14 @@ func GetDeploymentList(ctx *gin.Context) {
 	deployments, err := kube.GetDeploymentList(ctx.MustGet(m.NamespaceKey).(string), ctx.Query(ownerQuery))
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		cherry.ErrUnableGetResourcesList().Gonic(ctx)
 		return
 	}
 
 	ret, err := model.ParseDeploymentList(deployments)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		cherry.ErrUnableGetResourcesList().Gonic(ctx)
 		return
 	}
 
@@ -53,14 +52,14 @@ func GetDeployment(ctx *gin.Context) {
 	deployment, err := kube.GetDeployment(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(deploymentParam))
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableGetResource()).Gonic(ctx)
 		return
 	}
 
 	ret, err := model.ParseDeployment(deployment)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		cherry.ErrUnableGetResource().Gonic(ctx)
 		return
 	}
 	ctx.JSON(http.StatusOK, ret)
@@ -71,63 +70,40 @@ func CreateDeployment(ctx *gin.Context) {
 		"Namespace": ctx.Param(namespaceParam),
 	}).Debug("Create deployment Call")
 
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
 	var deployReq model.DeploymentWithOwner
 	if err := ctx.ShouldBindWith(&deployReq, binding.JSON); err != nil {
-		log.WithFields(log.Fields{
-			"Namespace": ctx.Param(namespaceParam),
-		}).Warning(kubernetes.ErrUnableCreateDeployment)
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		cherry.ErrRequestValidationFailed().Gonic(ctx)
 		return
 	}
 
-	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
+	quota, err := kube.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableCreateResource()).Gonic(ctx)
 		return
 	}
 
-	deployment, errors := model.MakeDeployment(ctx.Param(namespaceParam), &deployReq, quota.Labels)
-	if errors != nil {
-		for _, v := range errors {
-			ctx.Error(v)
-		}
-		ctx.AbortWithStatusJSON(model.ParseErorrs(errors))
+	deployment, errs := model.MakeDeployment(ctx.Param(namespaceParam), deployReq, quota.Labels)
+	if errs != nil {
+		cherry.ErrRequestValidationFailed().AddDetailsErr(errs...).Gonic(ctx)
 		return
 	}
 
-	deployAfter, err := kubecli.CreateDeployment(ctx.Param(namespaceParam), deployment)
+	deployAfter, err := kube.CreateDeployment(ctx.Param(namespaceParam), deployment)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableCreateResource()).Gonic(ctx)
 		return
 	}
 
 	ret, err := model.ParseDeployment(deployAfter)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-		return
 	}
 	ctx.JSON(http.StatusCreated, ret)
-}
-
-func DeleteDeployment(ctx *gin.Context) {
-	log.WithFields(log.Fields{
-		"Namespace":  ctx.Param(namespaceParam),
-		"Deployment": ctx.Param(deploymentParam),
-	}).Debug("Delete deployment Call")
-	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-	err := kube.DeleteDeployment(ctx.Param(namespaceParam), ctx.Param(deploymentParam))
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-		return
-	}
-	ctx.Status(http.StatusAccepted)
 }
 
 func UpdateDeployment(ctx *gin.Context) {
@@ -136,57 +112,48 @@ func UpdateDeployment(ctx *gin.Context) {
 		"Deployment": ctx.Param(deploymentParam),
 	}).Debug("Update deployment Call")
 
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
 	var deployReq model.DeploymentWithOwner
 	if err := ctx.ShouldBindWith(&deployReq, binding.JSON); err != nil {
-		log.WithFields(log.Fields{
-			"Namespace":  ctx.Param(namespaceParam),
-			"Deployment": ctx.Param(deploymentParam),
-		}).Warning(kubernetes.ErrUnableUpdateDeployment)
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		cherry.ErrRequestValidationFailed().Gonic(ctx)
 		return
 	}
 
-	if ctx.Param(deploymentParam) != deployReq.Name {
-		log.WithFields(log.Fields{
-			"Namespace":  ctx.Param(namespaceParam),
-			"Deployment": ctx.Param(deploymentParam),
-		}).Warning(kubernetes.ErrUnableUpdateEndpoint)
-		ctx.Error(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateDeploymentName, ctx.Param(deploymentParam), deployReq.Name), http.StatusBadRequest))
-		ctx.AbortWithStatusJSON(model.ParseErorrs(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateDeploymentName, ctx.Param(deploymentParam), deployReq.Name), http.StatusBadRequest)))
-		return
-	}
-
-	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
+	quota, err := kube.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
 		return
 	}
 
-	deployment, errors := model.MakeDeployment(ctx.Param(namespaceParam), &deployReq, quota.Labels)
-	if errors != nil {
-		for _, v := range errors {
-			ctx.Error(v)
-		}
-		ctx.AbortWithStatusJSON(model.ParseErorrs(errors))
-		return
-	}
-
-	deployAfter, err := kubecli.UpdateDeployment(ctx.Param(namespaceParam), deployment)
+	oldDeploy, err := kube.GetDeployment(ctx.Param(namespaceParam), ctx.Param(deploymentParam))
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
+		return
+	}
+
+	deployReq.Name = ctx.Param(deploymentParam)
+	deployReq.Owner = oldDeploy.GetObjectMeta().GetLabels()["owner"]
+
+	deployment, errs := model.MakeDeployment(ctx.Param(namespaceParam), deployReq, quota.Labels)
+	if errs != nil {
+		cherry.ErrRequestValidationFailed().AddDetailsErr(errs...).Gonic(ctx)
+		return
+	}
+
+	deployAfter, err := kube.UpdateDeployment(ctx.Param(namespaceParam), deployment)
+	if err != nil {
+		ctx.Error(err)
+		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
 		return
 	}
 
 	ret, err := model.ParseDeployment(deployAfter)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-		return
 	}
 
 	ctx.JSON(http.StatusAccepted, ret)
@@ -199,37 +166,33 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 	}).Debug("Update deployment replicas Call")
 	var replicas kube_types.UpdateReplicas
 	if err := ctx.ShouldBindWith(&replicas, binding.JSON); err != nil {
-		log.WithFields(log.Fields{
-			"Namespace":  ctx.Param(namespaceParam),
-			"Deployment": ctx.Param(deploymentParam),
-		}).Warning(kubernetes.ErrUnableUpdateDeployment)
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		cherry.ErrRequestValidationFailed().Gonic(ctx)
 		return
 	}
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	deployment, err := kube.GetDeployment(ctx.Param(namespaceParam), ctx.Param(deploymentParam))
+
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
 		return
 	}
+
 	newRepl := int32(replicas.Replicas)
 	deployment.Spec.Replicas = &newRepl
 
 	deployAfter, err := kube.UpdateDeployment(ctx.Param(namespaceParam), deployment)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
 		return
 	}
 
 	ret, err := model.ParseDeployment(deployAfter)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-		return
 	}
 
 	ctx.JSON(http.StatusAccepted, ret)
@@ -242,50 +205,52 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 	}).Debug("Update deployment container image Call")
 	var image kube_types.UpdateImage
 	if err := ctx.ShouldBindWith(&image, binding.JSON); err != nil {
-		log.WithFields(log.Fields{
-			"Namespace":  ctx.Param(namespaceParam),
-			"Deployment": ctx.Param(deploymentParam),
-		}).Warning(kubernetes.ErrUnableUpdateDeployment)
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		cherry.ErrRequestValidationFailed().Gonic(ctx)
 		return
 	}
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
 	deployment, err := kube.GetDeployment(ctx.Param(namespaceParam), ctx.Param(deploymentParam))
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
 		return
 	}
 
-	updated := false
-	for i, v := range deployment.Spec.Template.Spec.Containers {
-		if v.Name == image.Container {
-			deployment.Spec.Template.Spec.Containers[i].Image = image.Image
-			updated = true
-			break
-		}
-	}
-	if updated == false {
-		ctx.Error(model.NewErrorWithCode(fmt.Sprintf(containerNotFoundError, ctx.Param(namespaceParam), ctx.Param(deploymentParam)), http.StatusNotFound))
-		ctx.AbortWithStatusJSON(model.ParseErorrs(model.NewErrorWithCode(fmt.Sprintf(containerNotFoundError, ctx.Param(namespaceParam), ctx.Param(deploymentParam)), http.StatusNotFound)))
+	deploymentUpd, err := model.UpdateImage(deployment, image.Container, image.Image)
+	if err != nil {
+		cherry.ErrUnableUpdateResource().AddDetailsErr(err).Gonic(ctx)
 		return
 	}
 
-	deployAfter, err := kube.UpdateDeployment(ctx.Param(namespaceParam), deployment)
+	deployAfter, err := kube.UpdateDeployment(ctx.Param(namespaceParam), deploymentUpd)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
 		return
 	}
 
 	ret, err := model.ParseDeployment(deployAfter)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-		return
 	}
 
 	ctx.JSON(http.StatusAccepted, ret)
+}
+
+func DeleteDeployment(ctx *gin.Context) {
+	log.WithFields(log.Fields{
+		"Namespace":  ctx.Param(namespaceParam),
+		"Deployment": ctx.Param(deploymentParam),
+	}).Debug("Delete deployment Call")
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	err := kube.DeleteDeployment(ctx.Param(namespaceParam), ctx.Param(deploymentParam))
+	if err != nil {
+		ctx.Error(err)
+		model.ParseResourceError(err, cherry.ErrUnableDeleteResource()).Gonic(ctx)
+		return
+	}
+	ctx.Status(http.StatusAccepted)
 }

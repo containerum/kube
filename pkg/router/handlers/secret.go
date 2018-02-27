@@ -3,11 +3,10 @@ package handlers
 import (
 	"net/http"
 
-	"fmt"
-
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
+	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
@@ -28,14 +27,14 @@ func GetSecretList(ctx *gin.Context) {
 	secrets, err := kube.GetSecretList(ctx.MustGet(m.NamespaceKey).(string))
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		cherry.ErrUnableGetResourcesList().Gonic(ctx)
 		return
 	}
 
 	ret, err := model.ParseSecretList(secrets)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		cherry.ErrUnableGetResourcesList().Gonic(ctx)
 		return
 	}
 
@@ -54,14 +53,14 @@ func GetSecret(ctx *gin.Context) {
 	secret, err := kube.GetSecret(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(secretParam))
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableGetResource()).Gonic(ctx)
 		return
 	}
 
 	ret, err := model.ParseSecret(secret)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		cherry.ErrUnableGetResource().Gonic(ctx)
 		return
 	}
 
@@ -77,40 +76,34 @@ func CreateSecret(ctx *gin.Context) {
 
 	var secret model.SecretWithOwner
 	if err := ctx.ShouldBindWith(&secret, binding.JSON); err != nil {
-		log.WithFields(log.Fields{
-			"Namespace": ctx.Param(namespaceParam),
-		}).Warning(kubernetes.ErrUnableCreateSecret)
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		cherry.ErrRequestValidationFailed().Gonic(ctx)
 		return
 	}
 
 	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableCreateResource()).Gonic(ctx)
 		return
 	}
 
-	newSecret, err := model.MakeSecret(ctx.Param(namespaceParam), secret, quota.Labels)
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+	newSecret, errs := model.MakeSecret(ctx.Param(namespaceParam), secret, quota.Labels)
+	if errs != nil {
+		cherry.ErrRequestValidationFailed().AddDetailsErr(errs...).Gonic(ctx)
 		return
 	}
 
 	secretAfter, err := kubecli.CreateSecret(newSecret)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableCreateResource()).Gonic(ctx)
 		return
 	}
 
 	ret, err := model.ParseSecret(secretAfter)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-		return
 	}
 
 	ctx.JSON(http.StatusCreated, ret)
@@ -126,51 +119,36 @@ func UpdateSecret(ctx *gin.Context) {
 
 	var secret model.SecretWithOwner
 	if err := ctx.ShouldBindWith(&secret, binding.JSON); err != nil {
-		log.WithFields(log.Fields{
-			"Namespace": ctx.Param(namespaceParam),
-			"Secret":    ctx.Param(secretParam),
-		}).Warning(kubernetes.ErrUnableUpdateSecret)
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		cherry.ErrRequestValidationFailed().Gonic(ctx)
 		return
 	}
 
 	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
 		return
 	}
 
-	if ctx.Param(secretParam) != secret.Name {
-		log.WithFields(log.Fields{
-			"Namespace": ctx.Param(namespaceParam),
-			"Secret":    ctx.Param(secretParam),
-		}).Warning(kubernetes.ErrUnableUpdateSecret)
-		ctx.Error(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateSecretName, ctx.Param(secretParam), secret.Name), http.StatusBadRequest))
-		ctx.AbortWithStatusJSON(model.ParseErorrs(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateSecretName, ctx.Param(secretParam), secret.Name), http.StatusBadRequest)))
-		return
-	}
+	secret.Name = ctx.Param(secretParam)
 
-	newSecret, err := model.MakeSecret(ctx.Param(namespaceParam), secret, quota.Labels)
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+	newSecret, errs := model.MakeSecret(ctx.Param(namespaceParam), secret, quota.Labels)
+	if errs != nil {
+		cherry.ErrRequestValidationFailed().AddDetailsErr(errs...).Gonic(ctx)
 		return
 	}
 
 	secretAfter, err := kubecli.CreateSecret(newSecret)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
 		return
 	}
 
 	ret, err := model.ParseSecret(secretAfter)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-		return
 	}
 
 	ctx.JSON(http.StatusAccepted, ret)
@@ -185,7 +163,7 @@ func DeleteSecret(ctx *gin.Context) {
 	err := kube.DeleteSecret(ctx.Param(namespaceParam), ctx.Param(secretParam))
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableDeleteResource()).Gonic(ctx)
 		return
 	}
 	ctx.Status(http.StatusAccepted)

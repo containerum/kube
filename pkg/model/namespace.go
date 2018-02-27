@@ -1,8 +1,8 @@
 package model
 
 import (
+	"errors"
 	"fmt"
-	"net/http"
 
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
@@ -26,7 +26,7 @@ const (
 
 type NamespaceWithOwner struct {
 	kube_types.Namespace
-	Owner string `json:"owner,omitempty" binding:"omitempty,uuid"`
+	Owner string `json:"owner,omitempty"`
 }
 
 // ParseResourceQuotaList parses kubernetes v1.ResourceQuotaList to more convenient []Namespace struct.
@@ -40,7 +40,6 @@ func ParseResourceQuotaList(quotas interface{}) ([]NamespaceWithOwner, error) {
 	namespaces := make([]NamespaceWithOwner, 0)
 	for _, quota := range objects.Items {
 		ns, err := ParseResourceQuota(&quota)
-
 		if err != nil {
 			return nil, err
 		}
@@ -63,11 +62,13 @@ func ParseResourceQuota(quota interface{}) (*NamespaceWithOwner, error) {
 	memoryUsed := obj.Status.Used[api_core.ResourceLimitsMemory]
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
 
+	//	createdAt := obj.ObjectMeta.CreationTimestamp.Unix()
+
 	return &NamespaceWithOwner{
 		Owner: owner,
 		Namespace: kube_types.Namespace{
-			Name:    obj.GetNamespace(),
-			Created: obj.ObjectMeta.CreationTimestamp.Unix(),
+			Label: obj.GetNamespace(),
+			//TODO			CreatedAt: &createdAt,
 			Resources: kube_types.Resources{
 				Hard: kube_types.Resource{
 					CPU:    cpuLimit.String(),
@@ -77,43 +78,6 @@ func ParseResourceQuota(quota interface{}) (*NamespaceWithOwner, error) {
 					CPU:    cpuUsed.String(),
 					Memory: memoryUsed.String(),
 				},
-			},
-		},
-	}, nil
-}
-
-// MakeResourceQuota creates kubernetes v1.ResourceQuota from cpu, memory, labels and namespace name
-func MakeResourceQuota(cpu, memory string, labels map[string]string, ns string) (*api_core.ResourceQuota, []error) {
-	cpuq, err := api_resource.ParseQuantity(cpu)
-	if err != nil {
-		return nil, []error{ErrInvalidCPUFormat}
-	}
-	memoryq, err := api_resource.ParseQuantity(memory)
-	if err != nil {
-		return nil, []error{ErrInvalidMemoryFormat}
-	}
-
-	errors := validateResourceQuota(cpuq, memoryq)
-	if errors != nil {
-		return nil, errors
-	}
-
-	return &api_core.ResourceQuota{
-		TypeMeta: api_meta.TypeMeta{
-			Kind:       "ResourceQuota",
-			APIVersion: "v1",
-		},
-		ObjectMeta: api_meta.ObjectMeta{
-			Labels:    labels,
-			Name:      "quota",
-			Namespace: ns,
-		},
-		Spec: api_core.ResourceQuotaSpec{
-			Hard: api_core.ResourceList{
-				api_core.ResourceRequestsCPU:    cpuq,
-				api_core.ResourceLimitsCPU:      cpuq,
-				api_core.ResourceRequestsMemory: memoryq,
-				api_core.ResourceLimitsMemory:   memoryq,
 			},
 		},
 	}, nil
@@ -133,7 +97,7 @@ func MakeNamespace(ns NamespaceWithOwner) (*api_core.Namespace, error) {
 		},
 		ObjectMeta: api_meta.ObjectMeta{
 			Labels: map[string]string{},
-			Name:   ns.Name,
+			Name:   ns.Label,
 		},
 		Spec: api_core.NamespaceSpec{},
 	}
@@ -145,14 +109,52 @@ func MakeNamespace(ns NamespaceWithOwner) (*api_core.Namespace, error) {
 }
 
 func validateNamespace(ns kube_types.Namespace) error {
-	if len(api_validation.IsDNS1123Subdomain(ns.Name)) > 0 {
-		return NewErrorWithCode(fmt.Sprintf(invalidName, ns.Name), http.StatusBadRequest)
+	if len(api_validation.IsDNS1123Subdomain(ns.Label)) > 0 {
+		return errors.New(fmt.Sprintf(invalidName, ns.Label))
 	}
 	return nil
 }
 
+// MakeResourceQuota creates kubernetes v1.ResourceQuota from cpu, memory, labels and namespace name
+func MakeResourceQuota(ns string, labels map[string]string, resources kube_types.Resource) (*api_core.ResourceQuota, []error) {
+	cpuq, err := api_resource.ParseQuantity(resources.CPU)
+	if err != nil {
+		return nil, []error{ErrInvalidCPUFormat}
+	}
+	memoryq, err := api_resource.ParseQuantity(resources.Memory)
+	if err != nil {
+		return nil, []error{ErrInvalidMemoryFormat}
+	}
+
+	errors := validateResourceQuota(cpuq, memoryq)
+	if errors != nil {
+		return nil, errors
+	}
+
+	newRq := api_core.ResourceQuota{
+		TypeMeta: api_meta.TypeMeta{
+			Kind:       "ResourceQuota",
+			APIVersion: "v1",
+		},
+		ObjectMeta: api_meta.ObjectMeta{
+			Labels:    labels,
+			Name:      "quota",
+			Namespace: ns,
+		},
+		Spec: api_core.ResourceQuotaSpec{
+			Hard: api_core.ResourceList{
+				api_core.ResourceRequestsCPU:    cpuq,
+				api_core.ResourceLimitsCPU:      cpuq,
+				api_core.ResourceRequestsMemory: memoryq,
+				api_core.ResourceLimitsMemory:   memoryq,
+			},
+		},
+	}
+	return &newRq, nil
+}
+
 func validateResourceQuota(cpu, mem api_resource.Quantity) []error {
-	errors := []error{}
+	errs := []error{}
 
 	mincpu, _ := api_resource.ParseQuantity(minNamespaceCPU)
 	maxcpu, _ := api_resource.ParseQuantity(maxNamespaceCPU)
@@ -160,15 +162,15 @@ func validateResourceQuota(cpu, mem api_resource.Quantity) []error {
 	maxmem, _ := api_resource.ParseQuantity(maxNamespaceMemory)
 
 	if cpu.Cmp(mincpu) == -1 || cpu.Cmp(maxcpu) == 1 {
-		errors = append(errors, NewError(fmt.Sprintf(invalidCPUQuota, cpu.String(), minNamespaceCPU, maxNamespaceCPU)))
+		errs = append(errs, errors.New(fmt.Sprintf(invalidCPUQuota, cpu.String(), minNamespaceCPU, maxNamespaceCPU)))
 	}
 
 	if mem.Cmp(minmem) == -1 || mem.Cmp(maxmem) == 1 {
-		errors = append(errors, NewError(fmt.Sprintf(invalidMemoryQuota, mem.String(), minNamespaceMemory, maxNamespaceMemory)))
+		errs = append(errs, errors.New(fmt.Sprintf(invalidMemoryQuota, mem.String(), minNamespaceMemory, maxNamespaceMemory)))
 	}
 
-	if len(errors) > 0 {
-		return errors
+	if len(errs) > 0 {
+		return errs
 	}
 	return nil
 }

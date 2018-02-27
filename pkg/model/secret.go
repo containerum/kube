@@ -1,9 +1,8 @@
 package model
 
 import (
+	"errors"
 	"fmt"
-
-	"net/http"
 
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
@@ -13,7 +12,7 @@ import (
 
 type SecretWithOwner struct {
 	kube_types.Secret
-	Owner string `json:"owner,omitempty" binding:"required,uuid"`
+	Owner string `json:"owner,omitempty"`
 }
 
 // ParseSecretList parses kubernetes v1.SecretList to more convenient []Secret struct.
@@ -63,8 +62,8 @@ func ParseSecret(secreti interface{}) (*SecretWithOwner, error) {
 }
 
 // MakeSecret creates kubernetes v1.Secret from Secret struct and namespace labels
-func MakeSecret(nsName string, secret SecretWithOwner, labels map[string]string) (*api_core.Secret, error) {
-	err := validateSecret(secret.Secret)
+func MakeSecret(nsName string, secret SecretWithOwner, labels map[string]string) (*api_core.Secret, []error) {
+	err := validateSecret(secret)
 	if err != nil {
 		return nil, err
 	}
@@ -103,9 +102,18 @@ func makeSecretData(data map[string]string) map[string][]byte {
 	return newData
 }
 
-func validateSecret(secret kube_types.Secret) error {
+func validateSecret(secret SecretWithOwner) []error {
+	errs := []error{}
+
+	if secret.Owner == "" {
+		errs = append(errs, errors.New(noOwner))
+	}
 	if len(api_validation.IsDNS1123Subdomain(secret.Name)) > 0 {
-		return NewErrorWithCode(fmt.Sprintf(invalidName, secret.Name), http.StatusBadRequest)
+		errs = append(errs, errors.New(fmt.Sprintf(invalidName, secret.Name)))
+	}
+
+	if len(errs) > 0 {
+		return errs
 	}
 	return nil
 }

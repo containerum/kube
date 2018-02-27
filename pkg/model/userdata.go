@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 
 	"git.containerum.net/ch/kube-client/pkg/model"
-
 	log "github.com/sirupsen/logrus"
 )
 

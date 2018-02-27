@@ -1,6 +1,8 @@
 package model
 
 import (
+	"errors"
+
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,21 +16,16 @@ import (
 )
 
 const (
-	minport = 10000
+	minport = 11000
 	maxport = 65535
 )
 
 type ServiceWithOwner struct {
 	kube_types.Service
-	Owner      string `json:"owner,omitempty" binding:"required,uuid"`
+	Owner      string `json:"owner,omitempty"`
 	Hidden     bool   `json:"hidden,omitempty"`
 	NoSelector bool   `json:"no_selector,omitempty"`
 }
-
-const (
-	serviceTypeExternal = "external"
-	serviceTypeInternal = "internal"
-)
 
 const (
 	hiddenLabel = "hidden"
@@ -62,7 +59,7 @@ func ParseService(srv interface{}) (*ServiceWithOwner, error) {
 		return nil, ErrUnableConvertService
 	}
 
-	ports := make([]kube_types.Port, 0, 1)
+	ports := make([]kube_types.ServicePort, 0, 1)
 
 	createdAt := native.GetCreationTimestamp().Unix()
 	owner := native.GetObjectMeta().GetLabels()[ownerLabel]
@@ -77,11 +74,9 @@ func ParseService(srv interface{}) (*ServiceWithOwner, error) {
 		Owner: owner,
 	}
 	if len(native.Spec.ExternalIPs) > 0 {
-		service.Type = serviceTypeExternal
-		service.IP = &native.Spec.ExternalIPs
+		service.IPs = native.Spec.ExternalIPs
 	} else {
-		service.Type = serviceTypeInternal
-		service.IP = &[]string{}
+		service.IPs = []string{}
 	}
 	for _, nativePort := range native.Spec.Ports {
 		service.Ports = append(service.Ports,
@@ -95,10 +90,10 @@ func ParseService(srv interface{}) (*ServiceWithOwner, error) {
 	return &service, nil
 }
 
-func parseServicePort(np interface{}) kube_types.Port {
+func parseServicePort(np interface{}) kube_types.ServicePort {
 	nativePort := np.(api_core.ServicePort)
 	targetPort := int(nativePort.TargetPort.IntVal)
-	return kube_types.Port{
+	return kube_types.ServicePort{
 		Name:       nativePort.Name,
 		Port:       int(nativePort.Port),
 		TargetPort: &targetPort,
@@ -108,7 +103,7 @@ func parseServicePort(np interface{}) kube_types.Port {
 
 // MakeService creates kubernetes v1.Service from Service struct and namespace labels
 func MakeService(nsName string, service ServiceWithOwner, labels map[string]string) (*api_core.Service, []error) {
-	err := validateService(service.Service)
+	err := validateService(service)
 	if err != nil {
 		return nil, err
 	}
@@ -127,9 +122,10 @@ func MakeService(nsName string, service ServiceWithOwner, labels map[string]stri
 			APIVersion: "v1",
 		},
 		ObjectMeta: api_meta.ObjectMeta{
-			Labels:    labels,
-			Name:      service.Name,
-			Namespace: nsName,
+			Labels:          labels,
+			Name:            service.Name,
+			Namespace:       nsName,
+			ResourceVersion: "TEST",
 		},
 		Spec: api_core.ServiceSpec{
 			Type:  "ClusterIP",
@@ -141,14 +137,14 @@ func MakeService(nsName string, service ServiceWithOwner, labels map[string]stri
 		newService.Spec.Selector = labels
 	}
 
-	if service.IP != nil {
-		newService.Spec.ExternalIPs = *service.IP
+	if service.IPs != nil {
+		newService.Spec.ExternalIPs = service.IPs
 	}
 
 	return &newService, nil
 }
 
-func makeServicePorts(ports []kube_types.Port) []api_core.ServicePort {
+func makeServicePorts(ports []kube_types.ServicePort) []api_core.ServicePort {
 	var serviceports []api_core.ServicePort
 	if ports != nil {
 		for _, v := range ports {
@@ -162,18 +158,31 @@ func makeServicePorts(ports []kube_types.Port) []api_core.ServicePort {
 	return serviceports
 }
 
-func validateService(service kube_types.Service) []error {
-	errors := []error{}
+func validateService(service ServiceWithOwner) []error {
+	errs := []error{}
+
+	if service.Owner == "" {
+		errs = append(errs, errors.New(noOwner))
+	}
 	if len(api_validation.IsDNS1123Subdomain(service.Name)) > 0 {
-		errors = append(errors, NewError(fmt.Sprintf(invalidName, service.Name)))
+		errs = append(errs, errors.New(fmt.Sprintf(invalidName, service.Name)))
+	}
+	if service.Ports == nil || len(service.Ports) == 0 {
+		errs = append(errs, errors.New(fmt.Sprintf(fieldShouldExist, "Ports")))
 	}
 	for _, v := range service.Ports {
+		if len(api_validation.IsDNS1123Subdomain(v.Name)) > 0 {
+			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name)))
+		}
+		if v.Protocol != kube_types.UDP && v.Protocol != kube_types.TCP {
+			errs = append(errs, errors.New(fmt.Sprintf(invalidProtocol, v.Protocol)))
+		}
 		if len(api_validation.IsInRange(v.Port, minport, maxport)) > 0 {
-			errors = append(errors, NewError(fmt.Sprintf(invalidPort, v.Port, minport, maxport)))
+			errs = append(errs, errors.New(fmt.Sprintf(invalidPort, v.Port, minport, maxport)))
 		}
 	}
-	if len(errors) > 0 {
-		return errors
+	if len(errs) > 0 {
+		return errs
 	}
 	return nil
 }

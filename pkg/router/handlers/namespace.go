@@ -6,7 +6,7 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
-	kube_types "git.containerum.net/ch/kube-client/pkg/model"
+	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -27,14 +27,14 @@ func GetNamespaceList(ctx *gin.Context) {
 	quotas, err := kube.GetNamespaceQuotaList(ctx.Query(ownerQuery))
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		cherry.ErrUnableGetResourcesList().Gonic(ctx)
 		return
 	}
 
 	ret, err := model.ParseResourceQuotaList(quotas)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		cherry.ErrUnableGetResourcesList().Gonic(ctx)
 		return
 	}
 
@@ -49,14 +49,14 @@ func GetNamespace(ctx *gin.Context) {
 	quota, err := kube.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableGetResource()).Gonic(ctx)
 		return
 	}
 
 	ret, err := model.ParseResourceQuota(quota)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		cherry.ErrUnableGetResource().Gonic(ctx)
 		return
 	}
 
@@ -66,70 +66,88 @@ func GetNamespace(ctx *gin.Context) {
 func CreateNamespace(ctx *gin.Context) {
 	log.Debug("Create namespace Call")
 
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
 	var ns model.NamespaceWithOwner
 	if err := ctx.ShouldBindWith(&ns, binding.JSON); err != nil {
-		log.Warning(kubernetes.ErrUnableCreateNamespace)
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		cherry.ErrRequestValidationFailed().Gonic(ctx)
 		return
 	}
 
-	newNamespace, err := model.MakeNamespace(ns)
+	newNs, err := model.MakeNamespace(ns)
+	if err != nil {
+		cherry.ErrRequestValidationFailed().AddDetailsErr(err).Gonic(ctx)
+		return
+	}
+
+	newQuota, errs := model.MakeResourceQuota(ns.Label, newNs.Labels, ns.Resources.Hard)
+	if errs != nil {
+		cherry.ErrRequestValidationFailed().AddDetailsErr(errs...).Gonic(ctx)
+		return
+	}
+
+	_, err = kube.CreateNamespace(newNs)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableCreateResource()).Gonic(ctx)
 		return
 	}
 
-	nsAfter, err := kubecli.CreateNamespace(newNamespace)
+	quotaCreated, err := kube.CreateNamespaceQuota(ns.Label, newQuota)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableCreateResource()).Gonic(ctx)
 		return
 	}
 
-	quota, errors := model.MakeResourceQuota(ns.Resources.Hard.CPU, ns.Resources.Hard.Memory, nsAfter.Labels, nsAfter.Name)
-	if errors != nil {
-		for _, v := range errors {
-			ctx.Error(v)
-		}
-
-		if delerr := kubecli.DeleteNamespace(nsAfter.Name); delerr != nil {
-			ctx.Error(delerr)
-			ctx.AbortWithStatusJSON(model.ParseErorrs(delerr))
-			return
-		}
-
-		ctx.AbortWithStatusJSON(model.ParseErorrs(errors))
-		return
-	}
-
-	quotaAfter, err := kubecli.CreateNamespaceQuota(ns.Name, quota)
+	ret, err := model.ParseResourceQuota(quotaCreated)
 	if err != nil {
 		ctx.Error(err)
+	}
 
-		if delerr := kubecli.DeleteNamespace(nsAfter.Name); delerr != nil {
-			ctx.Error(delerr)
-			ctx.AbortWithStatusJSON(model.ParseErorrs(delerr))
-			return
-		}
+	ctx.JSON(http.StatusCreated, ret)
+}
 
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+func UpdateNamespace(ctx *gin.Context) {
+	log.WithField("Namespace", ctx.Param(namespaceParam)).Debug("Update namespace Call")
+
+	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	var res model.NamespaceWithOwner
+	if err := ctx.ShouldBindWith(&res, binding.JSON); err != nil {
+		ctx.Error(err)
+		cherry.ErrRequestValidationFailed().Gonic(ctx)
 		return
 	}
 
-	quotaAfter.Labels = nsAfter.Labels
+	quotaOld, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
+	if err != nil {
+		ctx.Error(err)
+		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
+		return
+	}
+
+	quota, errs := model.MakeResourceQuota(quotaOld.Namespace, quotaOld.Labels, res.Resources.Hard)
+	if errs != nil {
+		cherry.ErrRequestValidationFailed().AddDetailsErr(errs...).Gonic(ctx)
+		return
+	}
+
+	quotaAfter, err := kubecli.UpdateNamespaceQuota(ctx.Param(namespaceParam), quota)
+	if err != nil {
+		ctx.Error(err)
+		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
+		return
+	}
 
 	ret, err := model.ParseResourceQuota(quotaAfter)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-		return
 	}
 
-	ctx.JSON(http.StatusCreated, ret)
+	ctx.JSON(http.StatusAccepted, ret)
+
 }
 
 func DeleteNamespace(ctx *gin.Context) {
@@ -140,60 +158,9 @@ func DeleteNamespace(ctx *gin.Context) {
 	err := kube.DeleteNamespace(ctx.Param(namespaceParam))
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableDeleteResource()).Gonic(ctx)
 		return
 	}
 
 	ctx.Status(http.StatusAccepted)
-}
-
-func UpdateNamespace(ctx *gin.Context) {
-	log.WithField("Namespace", ctx.Param(namespaceParam)).Debug("Update namespace Call")
-
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-
-	var res kube_types.UpdateNamespace
-	if err := ctx.ShouldBindWith(&res, binding.JSON); err != nil {
-		log.WithFields(log.Fields{
-			"Namespace": ctx.Param(namespaceParam),
-		}).Warning(kubernetes.ErrUnableUpdateNamespaceQuota)
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-		return
-	}
-
-	quotaOld, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-		return
-	}
-
-	quota, errors := model.MakeResourceQuota(res.Resources.Hard.CPU, res.Resources.Hard.Memory, quotaOld.Labels, quotaOld.Name)
-	if errors != nil {
-		for _, v := range errors {
-			ctx.Error(v)
-		}
-		ctx.AbortWithStatusJSON(model.ParseErorrs(errors))
-		return
-	}
-
-	quota.Labels = quotaOld.Labels
-	quota.SetNamespace(ctx.Param(namespaceParam))
-	quota.SetName("quota")
-	quotaAfter, err := kubecli.UpdateNamespaceQuota(ctx.Param(namespaceParam), quota)
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-		return
-	}
-
-	ret, err := model.ParseResourceQuota(quotaAfter)
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-		return
-	}
-
-	ctx.JSON(http.StatusAccepted, ret)
 }

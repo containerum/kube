@@ -1,8 +1,8 @@
 package model
 
 import (
+	"errors"
 	"fmt"
-	"net/http"
 
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
@@ -12,7 +12,7 @@ import (
 
 type ConfigMapWithOwner struct {
 	kube_types.ConfigMap
-	Owner string `json:"owner,omitempty" binding:"required,uuid"`
+	Owner string `json:"owner,omitempty"`
 }
 
 // ParseConfigMapList parses kubernetes v1.ConfigMapList to more convenient []ConfigMap struct.
@@ -59,8 +59,8 @@ func ParseConfigMap(cmi interface{}) (*ConfigMapWithOwner, error) {
 }
 
 // MakeConfigMap creates kubernetes v1.ConfigMap from ConfigMap struct and namespace labels
-func MakeConfigMap(nsName string, cm ConfigMapWithOwner, labels map[string]string) (*api_core.ConfigMap, error) {
-	err := validateConfigMap(cm.ConfigMap)
+func MakeConfigMap(nsName string, cm ConfigMapWithOwner, labels map[string]string) (*api_core.ConfigMap, []error) {
+	err := validateConfigMap(cm)
 	if err != nil {
 		return nil, err
 	}
@@ -88,9 +88,16 @@ func MakeConfigMap(nsName string, cm ConfigMapWithOwner, labels map[string]strin
 	return &newCm, nil
 }
 
-func validateConfigMap(cm kube_types.ConfigMap) error {
+func validateConfigMap(cm ConfigMapWithOwner) []error {
+	errs := []error{}
+	if cm.Owner == "" {
+		errs = append(errs, errors.New(noOwner))
+	}
 	if len(api_validation.IsDNS1123Subdomain(cm.Name)) > 0 {
-		return NewErrorWithCode(fmt.Sprintf(invalidName, cm.Name), http.StatusBadRequest)
+		errs = append(errs, errors.New(fmt.Sprintf(invalidName, cm.Name)))
+	}
+	if len(errs) > 0 {
+		return errs
 	}
 	return nil
 }

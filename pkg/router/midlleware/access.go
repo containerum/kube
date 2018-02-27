@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"git.containerum.net/ch/kube-api/pkg/model"
+	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
 	kubeModel "git.containerum.net/ch/kube-client/pkg/model"
 
 	"github.com/gin-gonic/gin"
@@ -35,7 +36,7 @@ const (
 func IsAdmin() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if role := c.GetHeader(userRoleXHeader); role != "admin" {
-			c.AbortWithStatus(http.StatusForbidden)
+			cherry.ErrAdminRequired().Gonic(c)
 			return
 		}
 	}

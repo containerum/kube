@@ -11,6 +11,7 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
 
+	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
@@ -43,7 +44,7 @@ func GetPodList(ctx *gin.Context) {
 	pods, err := kube.GetPodList(ctx.MustGet(m.NamespaceKey).(string), ctx.Query(ownerQuery))
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusNotFound, err)
+		cherry.ErrUnableGetResourcesList().Gonic(ctx)
 		return
 	}
 	podList := model.ParsePodList(pods)
@@ -60,7 +61,7 @@ func GetPod(ctx *gin.Context) {
 	pod, err := kube.GetPod(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(podParam))
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusNotFound, err)
+		model.ParseResourceError(err, cherry.ErrUnableGetResource()).Gonic(ctx)
 		return
 	}
 	po := model.ParsePod(pod)
@@ -76,7 +77,7 @@ func DeletePod(ctx *gin.Context) {
 	err := kube.DeletePod(ctx.Param(namespaceParam), ctx.Param(podParam))
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusNotFound, err)
+		model.ParseResourceError(err, cherry.ErrUnableDeleteResource()).Gonic(ctx)
 		return
 	}
 	ctx.Status(http.StatusAccepted)

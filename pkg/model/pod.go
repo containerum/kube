@@ -10,7 +10,7 @@ import (
 
 type PodWithOwner struct {
 	kube_types.Pod
-	Owner string `json:"owner,omitempty" binding:"required,uuid"`
+	Owner string `json:"owner,omitempty"`
 }
 
 // ParsePodList parses kubernetes v1.PodList to more convenient []Pod struct.
@@ -52,13 +52,13 @@ func getContainers(cListi interface{}, mode map[string]int32) []model.Container 
 		mem := c.Resources.Limits["memory"]
 
 		containers = append(containers, model.Container{
-			Name:      c.Name,
-			Image:     c.Image,
-			Env:       &env,
-			Volume:    &volumes,
-			ConfigMap: &configMaps,
-			Command:   &c.Command,
-			Limits: model.Limits{
+			Name:         c.Name,
+			Image:        c.Image,
+			Env:          env,
+			VolumeMounts: volumes,
+			ConfigMaps:   configMaps,
+			Commands:     c.Command,
+			Limits: model.Resource{
 				CPU:    cpu.String(),
 				Memory: mem.String(),
 			},
@@ -67,14 +67,14 @@ func getContainers(cListi interface{}, mode map[string]int32) []model.Container 
 	return containers
 }
 
-func getVolumes(vListi interface{}, mode map[string]int32) ([]model.Volume, []model.Volume) {
+func getVolumes(vListi interface{}, mode map[string]int32) ([]model.ContainerVolume, []model.ContainerVolume) {
 	vList := vListi.([]api_core.VolumeMount)
-	volumes := make([]model.Volume, 0)
-	configMaps := make([]model.Volume, 0)
+	volumes := make([]model.ContainerVolume, 0)
+	configMaps := make([]model.ContainerVolume, 0)
 	for _, v := range vList {
 
 		subpath := v.SubPath
-		newvol := model.Volume{
+		newvol := model.ContainerVolume{
 			Name:      v.Name,
 			MountPath: v.MountPath,
 		}

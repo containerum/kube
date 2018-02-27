@@ -3,11 +3,10 @@ package handlers
 import (
 	"net/http"
 
-	"fmt"
-
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
+	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
@@ -27,13 +26,13 @@ func GetServiceList(ctx *gin.Context) {
 	nativeServices, err := kube.GetServiceList(namespace)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		cherry.ErrUnableGetResourcesList().Gonic(ctx)
 		return
 	}
 	ret, err := model.ParseServiceList(nativeServices)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		cherry.ErrUnableGetResourcesList().Gonic(ctx)
 		return
 	}
 	ctx.JSON(http.StatusOK, ret)
@@ -51,14 +50,14 @@ func GetService(ctx *gin.Context) {
 	nativeService, err := kube.GetService(namespace, serviceName)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableGetResource()).Gonic(ctx)
 		return
 	}
 
 	ret, err := model.ParseService(nativeService)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		cherry.ErrUnableGetResource().Gonic(ctx)
 		return
 	}
 
@@ -71,42 +70,34 @@ func CreateService(ctx *gin.Context) {
 
 	var svc model.ServiceWithOwner
 	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
-		log.WithFields(log.Fields{
-			"Namespace": ctx.Param(namespaceParam),
-		}).Warning(kubernetes.ErrUnableCreateService)
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		cherry.ErrUnableCreateResource().Gonic(ctx)
 		return
 	}
 
 	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableCreateResource()).Gonic(ctx)
 		return
 	}
 
-	newSvc, errors := model.MakeService(ctx.Param(namespaceParam), svc, quota.Labels)
-	if errors != nil {
-		for _, v := range errors {
-			ctx.Error(v)
-		}
-		ctx.AbortWithStatusJSON(model.ParseErorrs(errors))
+	newSvc, errs := model.MakeService(ctx.Param(namespaceParam), svc, quota.Labels)
+	if errs != nil {
+		cherry.ErrRequestValidationFailed().AddDetailsErr(errs...).Gonic(ctx)
 		return
 	}
 
 	svcAfter, err := kubecli.CreateService(newSvc)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableCreateResource()).Gonic(ctx)
 		return
 	}
 
 	ret, err := model.ParseService(svcAfter)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-		return
 	}
 
 	ctx.JSON(http.StatusCreated, ret)
@@ -120,40 +111,35 @@ func UpdateService(ctx *gin.Context) {
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	var svc model.ServiceWithOwner
 	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
-		log.WithFields(log.Fields{
-			"Namespace": ctx.Param(namespaceParam),
-			"Service":   ctx.Param(serviceParam),
-		}).Warning(kubernetes.ErrUnableUpdateService)
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-		return
-	}
-
-	if ctx.Param(serviceParam) != svc.Name {
-		log.WithFields(log.Fields{
-			"Namespace": ctx.Param(namespaceParam),
-			"Service":   ctx.Param(serviceParam),
-		}).Warning(kubernetes.ErrUnableUpdateService)
-		ctx.Error(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateServiceName, ctx.Param(serviceParam), svc.Name), http.StatusBadRequest))
-		ctx.AbortWithStatusJSON(model.ParseErorrs(model.NewErrorWithCode(fmt.Sprintf(invalidUpdateServiceName, ctx.Param(serviceParam), svc.Name), http.StatusBadRequest)))
+		cherry.ErrUnableUpdateResource().Gonic(ctx)
 		return
 	}
 
 	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
 		return
 	}
 
-	newSvc, errors := model.MakeService(ctx.Param(namespaceParam), svc, quota.Labels)
-	if errors != nil {
-		for _, v := range errors {
-			ctx.Error(v)
-		}
-		ctx.AbortWithStatusJSON(model.ParseErorrs(errors))
+	svc.Name = ctx.Param(serviceParam)
+
+	oldSvc, err := kubecli.GetService(ctx.Param(namespaceParam), ctx.Param(serviceParam))
+	if err != nil {
+		ctx.Error(err)
+		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
 		return
 	}
+
+	newSvc, errs := model.MakeService(ctx.Param(namespaceParam), svc, quota.Labels)
+	if errs != nil {
+		cherry.ErrRequestValidationFailed().AddDetailsErr(errs...).Gonic(ctx)
+		return
+	}
+
+	newSvc.ResourceVersion = oldSvc.ResourceVersion
+	newSvc.Spec.ClusterIP = oldSvc.Spec.ClusterIP
 
 	updatedService, err := kubecli.UpdateService(newSvc)
 	if err != nil {
@@ -165,8 +151,6 @@ func UpdateService(ctx *gin.Context) {
 	ret, err := model.ParseService(updatedService)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
-		return
 	}
 
 	ctx.JSON(http.StatusAccepted, ret)
@@ -183,7 +167,7 @@ func DeleteService(ctx *gin.Context) {
 	err := kube.DeleteService(namespace, serviceName)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(model.ParseErorrs(err))
+		model.ParseResourceError(err, cherry.ErrUnableDeleteResource()).Gonic(ctx)
 		return
 	}
 	ctx.Status(http.StatusAccepted)

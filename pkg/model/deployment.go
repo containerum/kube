@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
+	"github.com/pkg/errors"
 	"gopkg.in/inf.v0"
 	api_apps "k8s.io/api/apps/v1"
 	api_core "k8s.io/api/core/v1"
@@ -31,14 +32,14 @@ const (
 
 type DeploymentWithOwner struct {
 	kube_types.Deployment
-	Owner string `json:"owner,omitempty" binding:"required,uuid"`
+	Owner string `json:"owner,omitempty"`
 }
 
 // ParseDeploymentList parses kubernetes v1.DeploymentList to more convenient []Deployment struct
 func ParseDeploymentList(deploys interface{}) ([]DeploymentWithOwner, error) {
 	objects := deploys.(*api_apps.DeploymentList)
 	if objects == nil {
-		return nil, ErrUnableConvertDeploymentList
+		//		return nil, ErrUnableConvertDeploymentList
 	}
 
 	deployments := make([]DeploymentWithOwner, 0)
@@ -57,7 +58,7 @@ func ParseDeploymentList(deploys interface{}) ([]DeploymentWithOwner, error) {
 func ParseDeployment(deployment interface{}) (*DeploymentWithOwner, error) {
 	obj := deployment.(*api_apps.Deployment)
 	if obj == nil {
-		return nil, ErrUnableConvertDeployment
+		//		return nil, ErrUnableConvertDeployment
 	}
 
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
@@ -86,7 +87,6 @@ func ParseDeployment(deployment interface{}) (*DeploymentWithOwner, error) {
 				UnavailableReplicas: int(obj.Status.UnavailableReplicas),
 			},
 			Containers: containers,
-			Hostname:   &obj.Spec.Template.Spec.Hostname,
 		},
 		Owner: owner,
 	}, nil
@@ -103,8 +103,8 @@ func getVolumeMode(volumes []api_core.Volume) map[string]int32 {
 }
 
 //MakeDeployment creates kubernetes v1.Deployment from Deployment struct and namespace labels
-func MakeDeployment(nsName string, depl *DeploymentWithOwner, labels map[string]string) (*api_apps.Deployment, []error) {
-	err := validateDeployment(depl.Deployment)
+func MakeDeployment(nsName string, depl DeploymentWithOwner, labels map[string]string) (*api_apps.Deployment, []error) {
+	err := validateDeployment(depl)
 	if err != nil {
 		return nil, err
 	}
@@ -157,9 +157,6 @@ func MakeDeployment(nsName string, depl *DeploymentWithOwner, labels map[string]
 
 func makeContainers(containers []kube_types.Container) ([]api_core.Container, []string, map[string]int64, []error) {
 	var containersAfter []api_core.Container
-	if len(containers) == 0 {
-		return nil, nil, nil, []error{ErrNoContainerInRequest}
-	}
 
 	volumes := make([]string, 0)
 	cmaps := make(map[string]int64, 0)
@@ -167,11 +164,11 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, []
 		container := api_core.Container{
 			Name:    c.Name,
 			Image:   c.Image,
-			Command: makeContainerCommands(c.Command),
+			Command: makeContainerCommands(c.Commands),
 		}
 
-		if c.Volume != nil || c.ConfigMap != nil {
-			vm, vnames, cmnames := makeContainerVolumes(c.Volume, c.ConfigMap)
+		if c.VolumeMounts != nil || c.ConfigMaps != nil {
+			vm, vnames, cmnames := makeContainerVolumes(c.VolumeMounts, c.ConfigMaps)
 			volumes = append(volumes, vnames...)
 			for k, v := range cmnames {
 				cmaps[k] = v
@@ -180,11 +177,11 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, []
 		}
 
 		if c.Env != nil {
-			container.Env = makeContainerEnv(*c.Env)
+			container.Env = makeContainerEnv(c.Env)
 		}
 
 		if c.Ports != nil {
-			container.Ports = makeContainerPorts(*c.Ports)
+			container.Ports = makeContainerPorts(c.Ports)
 		}
 
 		if rq, err := makeContainerResourceQuota(c.Limits.CPU, c.Limits.Memory); err != nil {
@@ -203,12 +200,12 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, []
 	return containersAfter, volumes, cmaps, nil
 }
 
-func makeContainerVolumes(volumes *[]kube_types.Volume, configMaps *[]kube_types.Volume) ([]api_core.VolumeMount, []string, map[string]int64) {
+func makeContainerVolumes(volumes []kube_types.ContainerVolume, configMaps []kube_types.ContainerVolume) ([]api_core.VolumeMount, []string, map[string]int64) {
 	mounts := make([]api_core.VolumeMount, 0)
 	vnames := make([]string, 0)
 	cmnames := make(map[string]int64, 0)
 	if volumes != nil {
-		for _, v := range *volumes {
+		for _, v := range volumes {
 			var subpath string
 
 			if v.SubPath != nil {
@@ -219,7 +216,7 @@ func makeContainerVolumes(volumes *[]kube_types.Volume, configMaps *[]kube_types
 		}
 	}
 	if configMaps != nil {
-		for _, v := range *configMaps {
+		for _, v := range configMaps {
 			var subpath string
 			if v.SubPath != nil {
 				subpath = *v.SubPath
@@ -249,7 +246,7 @@ func makeContainerEnv(env []kube_types.Env) []api_core.EnvVar {
 	return envvar
 }
 
-func makeContainerPorts(ports []kube_types.Port) []api_core.ContainerPort {
+func makeContainerPorts(ports []kube_types.ContainerPort) []api_core.ContainerPort {
 	contports := make([]api_core.ContainerPort, 0)
 	if ports != nil {
 		for _, v := range ports {
@@ -259,10 +256,10 @@ func makeContainerPorts(ports []kube_types.Port) []api_core.ContainerPort {
 	return contports
 }
 
-func makeContainerCommands(commands *[]string) []string {
+func makeContainerCommands(commands []string) []string {
 	contcommands := make([]string, 0)
 	if commands != nil {
-		contcommands = *commands
+		contcommands = commands
 	}
 	return contcommands
 }
@@ -292,6 +289,24 @@ func makeContainerResourceQuota(cpu string, memory string) (*api_core.ResourceRe
 		Limits:   limits,
 		Requests: requests,
 	}, nil
+}
+
+func UpdateImage(deployment interface{}, containername, newimage string) (*api_apps.Deployment, error) {
+	deploy := deployment.(*api_apps.Deployment)
+
+	updated := false
+	for i, v := range deploy.Spec.Template.Spec.Containers {
+		if v.Name == containername {
+			deploy.Spec.Template.Spec.Containers[i].Image = newimage
+			updated = true
+			break
+		}
+	}
+	if updated == false {
+		return nil, ErrContainerNotFound
+	}
+
+	return deploy, nil
 }
 
 func makeTemplateVolumes(volumes []string, cmaps map[string]int64, owner string) []api_core.Volume {
@@ -330,22 +345,28 @@ func makeTemplateVolumes(volumes []string, cmaps map[string]int64, owner string)
 	return tvolumes
 }
 
-func validateDeployment(deploy kube_types.Deployment) []error {
-	errors := []error{}
+func validateDeployment(deploy DeploymentWithOwner) []error {
+	errs := []error{}
+	if deploy.Owner == "" {
+		errs = append(errs, errors.New(noOwner))
+	}
 	if len(api_validation.IsDNS1123Subdomain(deploy.Name)) > 0 {
-		errors = append(errors, NewError(fmt.Sprintf(invalidName, deploy.Name)))
+		errs = append(errs, errors.New(fmt.Sprintf(invalidName, deploy.Name)))
 	}
 	if len(api_validation.IsInRange(deploy.Replicas, 1, maxDeployReplicas)) > 0 {
-		errors = append(errors, NewError(fmt.Sprintf(invalidReplicas, deploy.Replicas, maxDeployReplicas)))
+		errs = append(errs, errors.New(fmt.Sprintf(invalidReplicas, deploy.Replicas, maxDeployReplicas)))
 	}
-	if len(errors) > 0 {
-		return errors
+	if deploy.Containers == nil || len(deploy.Containers) == 0 {
+		errs = append(errs, errors.New(fmt.Sprintf(fieldShouldExist, "Containers")))
+	}
+	if len(errs) > 0 {
+		return errs
 	}
 	return nil
 }
 
 func validateContainer(container kube_types.Container, cpu, mem api_resource.Quantity) []error {
-	errors := []error{}
+	errs := []error{}
 
 	mincpu, _ := api_resource.ParseQuantity(minDeployCPU)
 	maxcpu, _ := api_resource.ParseQuantity(maxDeployCPU)
@@ -353,19 +374,58 @@ func validateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 	maxmem, _ := api_resource.ParseQuantity(maxDeployMemory)
 
 	if len(api_validation.IsDNS1123Subdomain(container.Name)) > 0 {
-		errors = append(errors, NewError(fmt.Sprintf(invalidName, container.Name)))
+		errs = append(errs, errors.New(fmt.Sprintf(invalidName, container.Name)))
 	}
 
 	if cpu.Cmp(mincpu) == -1 || cpu.Cmp(maxcpu) == 1 {
-		errors = append(errors, NewError(fmt.Sprintf(invalidCPUQuota, cpu.String(), minDeployCPU, maxDeployCPU)))
+		errs = append(errs, errors.New(fmt.Sprintf(invalidCPUQuota, cpu.String(), minDeployCPU, maxDeployCPU)))
 	}
 
 	if mem.Cmp(minmem) == -1 || mem.Cmp(maxmem) == 1 {
-		errors = append(errors, NewError(fmt.Sprintf(invalidMemoryQuota, mem.String(), minDeployMemory, maxDeployMemory)))
+		errs = append(errs, errors.New(fmt.Sprintf(invalidMemoryQuota, mem.String(), minDeployMemory, maxDeployMemory)))
 	}
 
-	if len(errors) > 0 {
-		return errors
+	for _, v := range container.Ports {
+		if len(api_validation.IsDNS1123Subdomain(v.Name)) > 0 {
+			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name)))
+		}
+		if v.Protocol != kube_types.UDP && v.Protocol != kube_types.TCP {
+			errs = append(errs, errors.New(fmt.Sprintf(invalidProtocol, v.Protocol)))
+		}
+		if len(api_validation.IsValidPortNum(v.Port)) > 0 {
+			errs = append(errs, errors.New(fmt.Sprintf(invalidPort, v.Port, minport, maxport)))
+		}
+	}
+
+	for _, v := range container.Env {
+		if v.Value == "" {
+			errs = append(errs, errors.New(fmt.Sprintf(fieldShouldExist, "Env: Value")))
+		}
+		if v.Name == "" {
+			errs = append(errs, errors.New(fmt.Sprintf(fieldShouldExist, "Env: Name")))
+		}
+	}
+
+	for _, v := range container.VolumeMounts {
+		if len(api_validation.IsDNS1123Subdomain(v.Name)) > 0 {
+			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name)))
+		}
+		if v.MountPath == "" {
+			errs = append(errs, errors.New(fmt.Sprintf(fieldShouldExist, "Volume: Mount path")))
+		}
+	}
+
+	for _, v := range container.ConfigMaps {
+		if len(api_validation.IsDNS1123Subdomain(v.Name)) > 0 {
+			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name)))
+		}
+		if v.MountPath == "" {
+			errs = append(errs, errors.New(fmt.Sprintf(fieldShouldExist, "Config: Map mount path")))
+		}
+	}
+
+	if len(errs) > 0 {
+		return errs
 	}
 	return nil
 }
