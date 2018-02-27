@@ -143,6 +143,12 @@
   revision = "24818f796faf91cd76ec7bddd72458fbced7a6c1"
 
 [[projects]]
+  name = "github.com/google/uuid"
+  packages = ["."]
+  revision = "064e2069ce9c359c118179501254f67d7d37ba24"
+  version = "0.2"
+
+[[projects]]
   name = "github.com/googleapis/gnostic"
   packages = [
     "OpenAPIv2",
@@ -507,6 +513,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "eab852c2c479ee75981ff3085992e02594963da98670e8203e4ea0e4af716175"
+  inputs-digest = "9540df4ae7555f005ca1c2a7ae0c0792060245bdcbd84c6b39592e3f5e23f806"
   solver-name = "gps-cdcl"
   solver-version = 1
