@@ -1,31 +1,32 @@
 package model
 
+// Protocol -- represents port protocol type
 type Protocol string
+
+// ServiceType -- represents service type
 type ServiceType string
 
 const (
+	// UDP net protocol
 	UDP Protocol = "UDP"
+	// TCP net protocol
 	TCP Protocol = "TCP"
 )
 
-const (
-	External ServiceType = "external"
-	Internal ServiceType = "internal"
-)
-
+// Service --
 type Service struct {
-	Name      string      `json:"name" binding:"required"`
-	Owner     *string     `json:"owner,omitempty" binding:"required"`
-	CreatedAt *int64      `json:"created_at,omitempty"`
-	Deploy    string      `json:"deploy" binding:"required"`
-	IP        *[]string   `json:"ip,omitempty"`
-	Type      ServiceType `json:"type" binding:"required"`
-	Ports     []Port      `json:"ports" binding:"required"`
+	Name      string        `json:"name"`
+	CreatedAt *int64        `json:"created_at,omitempty"`
+	Deploy    string        `json:"deploy,omitempty"`
+	IPs       []string      `json:"ips,omitempty"`
+	Domain    string        `json:"domain,omitempty"`
+	Ports     []ServicePort `json:"ports"`
 }
 
-type Port struct {
-	Name       string   `json:"name" binding:"required"`
-	Port       int      `json:"port" binding:"required"`
+// ServicePort -- represent service port
+type ServicePort struct {
+	Name       string   `json:"name"`
+	Port       int      `json:"port"`
 	TargetPort *int     `json:"target_port,omitempty"`
-	Protocol   Protocol `json:"protocol" binding:"required"`
+	Protocol   Protocol `json:"protocol"`
 }
