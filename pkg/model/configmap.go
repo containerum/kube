@@ -100,7 +100,7 @@ func validateConfigMap(cm ConfigMapWithOwner) []error {
 	if len(api_validation.IsDNS1123Subdomain(cm.Name)) > 0 {
 		errs = append(errs, fmt.Errorf(invalidName, cm.Name))
 	}
-	for k, _ := range cm.Data {
+	for k := range cm.Data {
 		if len(api_validation.IsConfigMapKey(k)) > 0 {
 			errs = append(errs, fmt.Errorf(invalidKey, k))
 		}
