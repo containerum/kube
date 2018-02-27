@@ -39,7 +39,7 @@ type DeploymentWithOwner struct {
 func ParseDeploymentList(deploys interface{}) ([]DeploymentWithOwner, error) {
 	objects := deploys.(*api_apps.DeploymentList)
 	if objects == nil {
-		//		return nil, ErrUnableConvertDeploymentList
+		return nil, ErrUnableConvertDeploymentList
 	}
 
 	deployments := make([]DeploymentWithOwner, 0)
@@ -58,7 +58,7 @@ func ParseDeploymentList(deploys interface{}) ([]DeploymentWithOwner, error) {
 func ParseDeployment(deployment interface{}) (*DeploymentWithOwner, error) {
 	obj := deployment.(*api_apps.Deployment)
 	if obj == nil {
-		//		return nil, ErrUnableConvertDeployment
+		return nil, ErrUnableConvertDeployment
 	}
 
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
@@ -291,19 +291,19 @@ func makeContainerResourceQuota(cpu string, memory string) (*api_core.ResourceRe
 	}, nil
 }
 
-func UpdateImage(deployment interface{}, containername, newimage string) (*api_apps.Deployment, error) {
+func UpdateImage(deployment interface{}, containerName, newimage string) (*api_apps.Deployment, error) {
 	deploy := deployment.(*api_apps.Deployment)
 
 	updated := false
 	for i, v := range deploy.Spec.Template.Spec.Containers {
-		if v.Name == containername {
+		if v.Name == containerName {
 			deploy.Spec.Template.Spec.Containers[i].Image = newimage
 			updated = true
 			break
 		}
 	}
 	if updated == false {
-		return nil, ErrContainerNotFound
+		return nil, errors.New(fmt.Sprintf(NoContainer, containerName))
 	}
 
 	return deploy, nil
