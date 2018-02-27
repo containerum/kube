@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 
+	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
 	"github.com/gin-gonic/gin/binding"
 )
 
@@ -27,14 +28,14 @@ func GetNamespaceList(ctx *gin.Context) {
 	quotas, err := kube.GetNamespaceQuotaList(ctx.Query(ownerQuery))
 	if err != nil {
 		ctx.Error(err)
-		cherry.ErrUnableGetResourcesList().Gonic(ctx)
+		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
 	ret, err := model.ParseResourceQuotaList(quotas)
 	if err != nil {
 		ctx.Error(err)
-		cherry.ErrUnableGetResourcesList().Gonic(ctx)
+		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
@@ -49,14 +50,14 @@ func GetNamespace(ctx *gin.Context) {
 	quota, err := kube.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableGetResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableGetResource()), ctx)
 		return
 	}
 
 	ret, err := model.ParseResourceQuota(quota)
 	if err != nil {
 		ctx.Error(err)
-		cherry.ErrUnableGetResource().Gonic(ctx)
+		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
 		return
 	}
 
@@ -71,33 +72,33 @@ func CreateNamespace(ctx *gin.Context) {
 	var ns model.NamespaceWithOwner
 	if err := ctx.ShouldBindWith(&ns, binding.JSON); err != nil {
 		ctx.Error(err)
-		cherry.ErrRequestValidationFailed().Gonic(ctx)
+		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	newNs, err := model.MakeNamespace(ns)
 	if err != nil {
-		cherry.ErrRequestValidationFailed().AddDetailsErr(err).Gonic(ctx)
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	newQuota, errs := model.MakeResourceQuota(ns.Label, newNs.Labels, ns.Resources.Hard)
 	if errs != nil {
-		cherry.ErrRequestValidationFailed().AddDetailsErr(errs...).Gonic(ctx)
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	_, err = kube.CreateNamespace(newNs)
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableCreateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
 	quotaCreated, err := kube.CreateNamespaceQuota(ns.Label, newQuota)
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableCreateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -117,27 +118,27 @@ func UpdateNamespace(ctx *gin.Context) {
 	var res model.NamespaceWithOwner
 	if err := ctx.ShouldBindWith(&res, binding.JSON); err != nil {
 		ctx.Error(err)
-		cherry.ErrRequestValidationFailed().Gonic(ctx)
+		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	quotaOld, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	quota, errs := model.MakeResourceQuota(quotaOld.Namespace, quotaOld.Labels, res.Resources.Hard)
 	if errs != nil {
-		cherry.ErrRequestValidationFailed().AddDetailsErr(errs...).Gonic(ctx)
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	quotaAfter, err := kubecli.UpdateNamespaceQuota(ctx.Param(namespaceParam), quota)
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -158,7 +159,7 @@ func DeleteNamespace(ctx *gin.Context) {
 	err := kube.DeleteNamespace(ctx.Param(namespaceParam))
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableDeleteResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
 		return
 	}
 

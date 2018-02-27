@@ -7,6 +7,7 @@ import (
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
 	kubeModel "git.containerum.net/ch/kube-client/pkg/model"
 
+	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
 	"github.com/gin-gonic/gin"
 )
 
@@ -34,9 +35,9 @@ const (
 )
 
 func IsAdmin() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if role := c.GetHeader(userRoleXHeader); role != "admin" {
-			cherry.ErrAdminRequired().Gonic(c)
+	return func(ctx *gin.Context) {
+		if role := ctx.GetHeader(userRoleXHeader); role != "admin" {
+			gonic.Gonic(cherry.ErrAdminRequired(), ctx)
 			return
 		}
 	}

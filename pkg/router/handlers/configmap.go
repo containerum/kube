@@ -6,6 +6,7 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
+	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -27,14 +28,14 @@ func GetConfigMapList(ctx *gin.Context) {
 	cm, err := kube.GetConfigMapList(ctx.MustGet(m.NamespaceKey).(string))
 	if err != nil {
 		ctx.Error(err)
-		cherry.ErrUnableGetResourcesList().Gonic(ctx)
+		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
 	ret, err := model.ParseConfigMapList(cm)
 	if err != nil {
 		ctx.Error(err)
-		cherry.ErrUnableGetResourcesList().Gonic(ctx)
+		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
@@ -53,14 +54,14 @@ func GetConfigMap(ctx *gin.Context) {
 	cm, err := kube.GetConfigMap(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(configMapParam))
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableGetResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableGetResource()), ctx)
 		return
 	}
 
 	ret, err := model.ParseConfigMap(cm)
 	if err != nil {
 		ctx.Error(err)
-		cherry.ErrUnableGetResource().Gonic(ctx)
+		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
 		return
 	}
 
@@ -77,27 +78,27 @@ func CreateConfigMap(ctx *gin.Context) {
 	var cm model.ConfigMapWithOwner
 	if err := ctx.ShouldBindWith(&cm, binding.JSON); err != nil {
 		ctx.Error(err)
-		cherry.ErrRequestValidationFailed().Gonic(ctx)
+		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	quota, err := kube.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableCreateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
 	newCm, errs := model.MakeConfigMap(ctx.Param(namespaceParam), cm, quota.Labels)
 	if errs != nil {
-		cherry.ErrRequestValidationFailed().AddDetailsErr(errs...).Gonic(ctx)
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	cmAfter, err := kube.CreateConfigMap(newCm)
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableCreateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -120,14 +121,14 @@ func UpdateConfigMap(ctx *gin.Context) {
 	var cm model.ConfigMapWithOwner
 	if err := ctx.ShouldBindWith(&cm, binding.JSON); err != nil {
 		ctx.Error(err)
-		cherry.ErrRequestValidationFailed().Gonic(ctx)
+		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -135,14 +136,14 @@ func UpdateConfigMap(ctx *gin.Context) {
 
 	newCm, errs := model.MakeConfigMap(ctx.Param(namespaceParam), cm, quota.Labels)
 	if errs != nil {
-		cherry.ErrRequestValidationFailed().AddDetailsErr(errs...).Gonic(ctx)
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	cmAfter, err := kubecli.UpdateConfigMap(newCm)
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -163,7 +164,7 @@ func DeleteConfigMap(ctx *gin.Context) {
 	err := kube.DeleteConfigMap(ctx.Param(namespaceParam), ctx.Param(configMapParam))
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableDeleteResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
 		return
 	}
 	ctx.Status(http.StatusAccepted)

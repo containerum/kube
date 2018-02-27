@@ -9,6 +9,7 @@ import (
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 
+	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
@@ -28,14 +29,14 @@ func GetDeploymentList(ctx *gin.Context) {
 	deployments, err := kube.GetDeploymentList(ctx.MustGet(m.NamespaceKey).(string), ctx.Query(ownerQuery))
 	if err != nil {
 		ctx.Error(err)
-		cherry.ErrUnableGetResourcesList().Gonic(ctx)
+		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
 	ret, err := model.ParseDeploymentList(deployments)
 	if err != nil {
 		ctx.Error(err)
-		cherry.ErrUnableGetResourcesList().Gonic(ctx)
+		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
@@ -52,14 +53,14 @@ func GetDeployment(ctx *gin.Context) {
 	deployment, err := kube.GetDeployment(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(deploymentParam))
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableGetResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableGetResource()), ctx)
 		return
 	}
 
 	ret, err := model.ParseDeployment(deployment)
 	if err != nil {
 		ctx.Error(err)
-		cherry.ErrUnableGetResource().Gonic(ctx)
+		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
 		return
 	}
 	ctx.JSON(http.StatusOK, ret)
@@ -75,27 +76,27 @@ func CreateDeployment(ctx *gin.Context) {
 	var deployReq model.DeploymentWithOwner
 	if err := ctx.ShouldBindWith(&deployReq, binding.JSON); err != nil {
 		ctx.Error(err)
-		cherry.ErrRequestValidationFailed().Gonic(ctx)
+		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	quota, err := kube.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableCreateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
 	deployment, errs := model.MakeDeployment(ctx.Param(namespaceParam), deployReq, quota.Labels)
 	if errs != nil {
-		cherry.ErrRequestValidationFailed().AddDetailsErr(errs...).Gonic(ctx)
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	deployAfter, err := kube.CreateDeployment(ctx.Param(namespaceParam), deployment)
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableCreateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -117,21 +118,21 @@ func UpdateDeployment(ctx *gin.Context) {
 	var deployReq model.DeploymentWithOwner
 	if err := ctx.ShouldBindWith(&deployReq, binding.JSON); err != nil {
 		ctx.Error(err)
-		cherry.ErrRequestValidationFailed().Gonic(ctx)
+		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	quota, err := kube.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	oldDeploy, err := kube.GetDeployment(ctx.Param(namespaceParam), ctx.Param(deploymentParam))
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -140,14 +141,14 @@ func UpdateDeployment(ctx *gin.Context) {
 
 	deployment, errs := model.MakeDeployment(ctx.Param(namespaceParam), deployReq, quota.Labels)
 	if errs != nil {
-		cherry.ErrRequestValidationFailed().AddDetailsErr(errs...).Gonic(ctx)
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	deployAfter, err := kube.UpdateDeployment(ctx.Param(namespaceParam), deployment)
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -167,7 +168,7 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 	var replicas kube_types.UpdateReplicas
 	if err := ctx.ShouldBindWith(&replicas, binding.JSON); err != nil {
 		ctx.Error(err)
-		cherry.ErrRequestValidationFailed().Gonic(ctx)
+		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
@@ -176,7 +177,7 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -186,7 +187,7 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 	deployAfter, err := kube.UpdateDeployment(ctx.Param(namespaceParam), deployment)
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -206,7 +207,7 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 	var image kube_types.UpdateImage
 	if err := ctx.ShouldBindWith(&image, binding.JSON); err != nil {
 		ctx.Error(err)
-		cherry.ErrRequestValidationFailed().Gonic(ctx)
+		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
@@ -215,20 +216,20 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 	deployment, err := kube.GetDeployment(ctx.Param(namespaceParam), ctx.Param(deploymentParam))
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	deploymentUpd, err := model.UpdateImage(deployment, image.Container, image.Image)
 	if err != nil {
-		cherry.ErrUnableUpdateResource().AddDetailsErr(err).Gonic(ctx)
+		gonic.Gonic(cherry.ErrUnableUpdateResource().AddDetailsErr(err), ctx)
 		return
 	}
 
 	deployAfter, err := kube.UpdateDeployment(ctx.Param(namespaceParam), deploymentUpd)
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -249,7 +250,7 @@ func DeleteDeployment(ctx *gin.Context) {
 	err := kube.DeleteDeployment(ctx.Param(namespaceParam), ctx.Param(deploymentParam))
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableDeleteResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
 		return
 	}
 	ctx.Status(http.StatusAccepted)

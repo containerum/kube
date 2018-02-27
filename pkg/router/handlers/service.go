@@ -6,7 +6,9 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
+	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
@@ -26,13 +28,13 @@ func GetServiceList(ctx *gin.Context) {
 	nativeServices, err := kube.GetServiceList(namespace)
 	if err != nil {
 		ctx.Error(err)
-		cherry.ErrUnableGetResourcesList().Gonic(ctx)
+		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 	ret, err := model.ParseServiceList(nativeServices)
 	if err != nil {
 		ctx.Error(err)
-		cherry.ErrUnableGetResourcesList().Gonic(ctx)
+		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 	ctx.JSON(http.StatusOK, ret)
@@ -50,14 +52,14 @@ func GetService(ctx *gin.Context) {
 	nativeService, err := kube.GetService(namespace, serviceName)
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableGetResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableGetResource()), ctx)
 		return
 	}
 
 	ret, err := model.ParseService(nativeService)
 	if err != nil {
 		ctx.Error(err)
-		cherry.ErrUnableGetResource().Gonic(ctx)
+		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
 		return
 	}
 
@@ -71,27 +73,27 @@ func CreateService(ctx *gin.Context) {
 	var svc model.ServiceWithOwner
 	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
 		ctx.Error(err)
-		cherry.ErrUnableCreateResource().Gonic(ctx)
+		gonic.Gonic(cherry.ErrUnableCreateResource(), ctx)
 		return
 	}
 
 	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableCreateResource()).Gonic(ctx)
+		gonic.Gonic(cherry.ErrUnableCreateResource(), ctx)
 		return
 	}
 
 	newSvc, errs := model.MakeService(ctx.Param(namespaceParam), svc, quota.Labels)
 	if errs != nil {
-		cherry.ErrRequestValidationFailed().AddDetailsErr(errs...).Gonic(ctx)
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	svcAfter, err := kubecli.CreateService(newSvc)
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableCreateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -112,14 +114,14 @@ func UpdateService(ctx *gin.Context) {
 	var svc model.ServiceWithOwner
 	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
 		ctx.Error(err)
-		cherry.ErrUnableUpdateResource().Gonic(ctx)
+		gonic.Gonic(cherry.ErrUnableUpdateResource(), ctx)
 		return
 	}
 
 	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -128,13 +130,13 @@ func UpdateService(ctx *gin.Context) {
 	oldSvc, err := kubecli.GetService(ctx.Param(namespaceParam), ctx.Param(serviceParam))
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	newSvc, errs := model.MakeService(ctx.Param(namespaceParam), svc, quota.Labels)
 	if errs != nil {
-		cherry.ErrRequestValidationFailed().AddDetailsErr(errs...).Gonic(ctx)
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
@@ -167,7 +169,7 @@ func DeleteService(ctx *gin.Context) {
 	err := kube.DeleteService(namespace, serviceName)
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableDeleteResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
 		return
 	}
 	ctx.Status(http.StatusAccepted)

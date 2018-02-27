@@ -7,6 +7,7 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
+	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -28,14 +29,14 @@ func GetEndpointList(ctx *gin.Context) {
 	endpoints, err := kube.GetEndpointList(ctx.MustGet(m.NamespaceKey).(string))
 	if err != nil {
 		ctx.Error(err)
-		cherry.ErrUnableGetResourcesList().Gonic(ctx)
+		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
 	ret, err := model.ParseEndpointList(endpoints)
 	if err != nil {
 		ctx.Error(err)
-		cherry.ErrUnableGetResourcesList().Gonic(ctx)
+		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
@@ -54,14 +55,14 @@ func GetEndpoint(ctx *gin.Context) {
 	endpoint, err := kube.GetEndpoint(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(endpointParam))
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableGetResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableGetResource()), ctx)
 		return
 	}
 
 	ret, err := model.ParseEndpoint(endpoint)
 	if err != nil {
 		ctx.Error(err)
-		cherry.ErrUnableGetResource().Gonic(ctx)
+		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
 		return
 	}
 
@@ -77,27 +78,27 @@ func CreateEndpoint(ctx *gin.Context) {
 
 	var endpoint json_types.Endpoint
 	if err := ctx.ShouldBindWith(&endpoint, binding.JSON); err != nil {
-		cherry.ErrRequestValidationFailed().Gonic(ctx)
+		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableCreateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
 	newEndpoint, errs := model.MakeEndpoint(ctx.Param(namespaceParam), endpoint, quota.Labels)
 	if errs != nil {
-		cherry.ErrRequestValidationFailed().AddDetailsErr(errs...).Gonic(ctx)
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	endpointAfter, err := kubecli.CreateEndpoint(newEndpoint)
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableCreateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -120,14 +121,14 @@ func UpdateEndpoint(ctx *gin.Context) {
 	var endpoint json_types.Endpoint
 	if err := ctx.ShouldBindWith(&endpoint, binding.JSON); err != nil {
 		ctx.Error(err)
-		cherry.ErrRequestValidationFailed().Gonic(ctx)
+		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -135,14 +136,14 @@ func UpdateEndpoint(ctx *gin.Context) {
 
 	newEndpoint, errs := model.MakeEndpoint(ctx.Param(namespaceParam), endpoint, quota.Labels)
 	if errs != nil {
-		cherry.ErrRequestValidationFailed().AddDetailsErr(errs...).Gonic(ctx)
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	endpointAfter, err := kubecli.UpdateEndpoint(newEndpoint)
 	if err != nil {
 		ctx.Error(err)
-		model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -164,7 +165,7 @@ func DeleteEndpoint(ctx *gin.Context) {
 
 	err := kube.DeleteEndpoint(ctx.Param(namespaceParam), ctx.Param(endpointParam))
 	if err != nil {
-		model.ParseResourceError(err, cherry.ErrUnableDeleteResource()).Gonic(ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
 		return
 	}
 
