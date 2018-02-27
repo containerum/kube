@@ -11,7 +11,7 @@ func (k *Kube) GetDeploymentList(ns string, owner string) (*api_apps.DeploymentL
 		LabelSelector: getOwnerLabel(owner),
 	})
 	if err != nil {
-		log.WithError(err).WithFields(log.Fields{
+		log.WithFields(log.Fields{
 			"Namespace": ns,
 			"Owner":     owner,
 		}).Error(ErrUnableGetDeploymentList)
@@ -23,7 +23,7 @@ func (k *Kube) GetDeploymentList(ns string, owner string) (*api_apps.DeploymentL
 func (k *Kube) GetDeployment(ns string, deploy string) (*api_apps.Deployment, error) {
 	deployment, err := k.AppsV1().Deployments(ns).Get(deploy, api_meta.GetOptions{})
 	if err != nil {
-		log.WithError(err).WithFields(log.Fields{
+		log.WithFields(log.Fields{
 			"Namespace":  ns,
 			"Deployment": deploy,
 		}).Error(ErrUnableGetDeployment)
@@ -33,10 +33,9 @@ func (k *Kube) GetDeployment(ns string, deploy string) (*api_apps.Deployment, er
 }
 
 func (k *Kube) CreateDeployment(ns string, depl *api_apps.Deployment) (*api_apps.Deployment, error) {
-	depl.Spec.Selector = &api_meta.LabelSelector{MatchLabels: depl.Labels}
 	deployment, err := k.AppsV1().Deployments(ns).Create(depl)
 	if err != nil {
-		log.WithError(err).WithFields(log.Fields{
+		log.WithFields(log.Fields{
 			"Namespace":  ns,
 			"Deployment": depl.Name,
 		}).Error(ErrUnableCreateDeployment)
@@ -48,7 +47,7 @@ func (k *Kube) CreateDeployment(ns string, depl *api_apps.Deployment) (*api_apps
 func (k *Kube) DeleteDeployment(ns string, deployName string) error {
 	err := k.AppsV1().Deployments(ns).Delete(deployName, &api_meta.DeleteOptions{})
 	if err != nil {
-		log.WithError(err).WithFields(log.Fields{
+		log.WithFields(log.Fields{
 			"Namespace":  ns,
 			"Deployment": deployName,
 		}).Error(ErrUnableDeleteDeployment)
@@ -58,10 +57,9 @@ func (k *Kube) DeleteDeployment(ns string, deployName string) error {
 }
 
 func (k *Kube) UpdateDeployment(ns string, depl *api_apps.Deployment) (*api_apps.Deployment, error) {
-	depl.Spec.Selector = &api_meta.LabelSelector{MatchLabels: depl.Labels}
 	deployment, err := k.AppsV1().Deployments(ns).Update(depl)
 	if err != nil {
-		log.WithError(err).WithFields(log.Fields{
+		log.WithFields(log.Fields{
 			"Namespace":  ns,
 			"Deployment": depl.Name,
 		}).Error(ErrUnableUpdateDeployment)

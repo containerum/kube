@@ -9,7 +9,6 @@ import (
 
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/router"
-
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )

@@ -2,12 +2,13 @@ package middleware
 
 import (
 	"errors"
-	"net/http"
 
 	"git.containerum.net/ch/kube-api/pkg/model"
 
 	"github.com/gin-gonic/gin"
 
+	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
+	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -26,7 +27,7 @@ func RequiredUserHeaders() gin.HandlerFunc {
 		/* Check User-Role and User-Namespace, X-User-Volume */
 		if isUser, err := checkIsUserRole(c.GetHeader(userRoleXHeader)); err != nil {
 			log.WithField("Value", c.GetHeader(userRoleXHeader)).WithError(err).Warn("Check User-Role Error")
-			c.AbortWithStatus(http.StatusForbidden)
+			gonic.Gonic(cherry.ErrRequiredHeadersNotProvided(), c)
 		} else {
 			//User-Role: user, check User-Namespace, X-User-Volume
 			if isUser {
@@ -34,12 +35,12 @@ func RequiredUserHeaders() gin.HandlerFunc {
 				userVol, errVol := checkUserVolume(c.GetHeader(userVolumeXHeader))
 				if errNs != nil {
 					log.WithField("Value", c.GetHeader(userNamespaceXHeader)).WithError(errNs).Warn("Check User-Namespace header Error")
-					c.AbortWithStatus(http.StatusForbidden)
+					gonic.Gonic(cherry.ErrRequiredHeadersNotProvided(), c)
 					return
 				}
 				if errVol != nil {
 					log.WithField("Value", c.GetHeader(userVolumeXHeader)).WithError(errVol).Warn("Check User-Volume header Error")
-					c.AbortWithStatus(http.StatusForbidden)
+					gonic.Gonic(cherry.ErrRequiredHeadersNotProvided(), c)
 					return
 				}
 				c.Set(UserNamespaces, userNs)

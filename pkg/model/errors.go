@@ -1,109 +1,78 @@
 package model
 
 import (
-	"fmt"
-	"net/http"
+	"errors"
 
-	"gopkg.in/go-playground/validator.v8"
-
-	"k8s.io/apimachinery/pkg/api/errors"
+	ch "git.containerum.net/ch/kube-client/pkg/cherry"
+	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
+	"github.com/google/uuid"
+	api_errors "k8s.io/apimachinery/pkg/api/errors"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
-	alreadyExists       = "%s already exists in %s"
-	fieldError          = "Validation failed for field: %s"
-	fildNotFound        = "%s is not found"
-	fieldShouldBeEmail  = "%v should be email address. Please, enter your valid email"
-	fieldShouldExist    = "Field %v should be provided"
-	fieldDefaultProblem = "%v should be %v"
+	fieldShouldExist   = "Field %v should be provided"
+	invalidReplicas    = "Invalid replicas number: %v. It must be between 1 and %v"
+	invalidPort        = "Invalid port: %v. It must be between %v and %v"
+	invalidProtocol    = "Invalid protocol: %v. It must be TCP or UDP"
+	noOwner            = "Owner should be provided"
+	invalidOwner       = "Owner should be UUID"
+	NoContainer        = "Container %v is not found in deployment"
+	invalidName        = "Invalid name: %v. It must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character"
+	invalidKey         = "Invalid key: %v. It must consist of alphanumeric characters, '-', '_' or '.'"
+	invalidIP          = "Invalid IP: %v. It must be a valid IP address, (e.g. 10.9.8.7)"
+	invalidCPUQuota    = "Invalid CPU quota: %v. It must be between %v and %v"
+	invalidMemoryQuota = "Invalid memory quota: %v. It must be between %v and %v"
 )
 
 var (
-	ErrInvalidCPUFormat              = NewErrorWithCode("Invalid cpu quota format", http.StatusBadRequest)
-	ErrInvalidMemoryFormat           = NewErrorWithCode("Invalid memory quota format", http.StatusBadRequest)
-	ErrNoContainerInRequest          = NewErrorWithCode("No container in request", http.StatusNotFound)
-	ErrUnableEncodeUserHeaderData    = NewErrorWithCode("Unbale to encode user header data", http.StatusInternalServerError)
-	ErrUnableUnmarshalUserHeaderData = NewErrorWithCode("Unable unmarshal user header data", http.StatusInternalServerError)
-	ErrUnableConvertServiceList      = NewErrorWithCode("unable decode service list", http.StatusInternalServerError)
-	ErrUnableConvertService          = NewErrorWithCode("unable convert cubernetes service to user representation", http.StatusInternalServerError)
+	ErrInvalidCPUFormat    = errors.New("Invalid cpu quota format")
+	ErrInvalidMemoryFormat = errors.New("Invalid memory quota format")
+
+	ErrUnableEncodeUserHeaderData    = errors.New("Unbale to encode user header data")
+	ErrUnableUnmarshalUserHeaderData = errors.New("Unable to unmarshal user header data")
+
+	ErrUnableConvertServiceList = errors.New("Unable to decode services list")
+	ErrUnableConvertService     = errors.New("Unable to decode service")
+
+	ErrUnableConvertNamespaceList = errors.New("Unable to decode namespaces list")
+	ErrUnableConvertNamespace     = errors.New("Unable to decode namespace")
+
+	ErrUnableConvertSecretList = errors.New("Unable to decode secrets list")
+	ErrUnableConvertSecret     = errors.New("Unable to decode secret")
+
+	ErrUnableConvertIngressList = errors.New("Unable to decode ingresses list")
+	ErrUnableConvertIngress     = errors.New("Unable to decode ingress")
+
+	ErrUnableConvertDeploymentList = errors.New("Unable to decode deployment list")
+	ErrUnableConvertDeployment     = errors.New("Unable to decode deployment")
+
+	ErrUnableConvertEndpointList = errors.New("Unable to decode services list")
+	ErrUnableConvertEndpoint     = errors.New("Unable to decode service")
+
+	ErrUnableConvertConfigMapList = errors.New("Unable to decode config maps list")
+	ErrUnableConvertConfigMap     = errors.New("Unable to decode config map")
 )
 
-type Error struct {
-	Text string `json:"error"`
-	Code int    `json:"code,omitempty"`
-}
-
-func (e *Error) Error() string {
-	if e.Code == 0 {
-		return e.Text
-	}
-	return fmt.Sprintf("description: %s, code: %d", e.Text, e.Code)
-}
-
-func NewError(text string) *Error {
-	return &Error{
-		Text: text,
-	}
-}
-
-func NewErrorWithCode(text string, code int) *Error {
-	return &Error{
-		Text: text,
-		Code: code,
-	}
-}
-
-//ParseBindErorrs parses different types of errors
-func ParseErorrs(in interface{}) (code int, out []Error) {
-
-	//Error from kubernetes
-	sE, isStatusErrorCode := in.(*errors.StatusError)
+func ParseResourceError(in interface{}, defaulterr *ch.Err) *ch.Err {
+	sE, isStatusErrorCode := in.(*api_errors.StatusError)
 	if isStatusErrorCode {
-		switch sE.Status().Code {
-		case 409:
-			return http.StatusBadRequest, []Error{{Text: fmt.Sprintf(alreadyExists, sE.Status().Details.Name, sE.Status().Details.Kind)}}
-		case 422:
-			for _, c := range sE.Status().Details.Causes {
-				switch c.Type {
-				case api_meta.CauseTypeFieldValueNotFound:
-					out = append(out, Error{Text: fmt.Sprintf(fildNotFound, c.Field)})
-				case api_meta.CauseTypeFieldValueDuplicate:
-					out = append(out, Error{Text: fmt.Sprintf(alreadyExists, sE.Status().Details.Name, sE.Status().Details.Kind)})
-				default:
-					out = append(out, Error{Text: fmt.Sprintf(fieldError, c.Field)})
-				}
-			}
-			return http.StatusBadRequest, out
-			//TODO Parse more errors
-		case 0:
-			return http.StatusInternalServerError, []Error{{Text: sE.Status().Message}}
+		switch sE.ErrStatus.Reason {
+		case api_meta.StatusReasonNotFound:
+			return cherry.ErrResourceNotExist()
+		case api_meta.StatusReasonAlreadyExists:
+			return cherry.ErrResourceAlreadyExists()
 		default:
-			return int(sE.Status().Code), []Error{{Text: sE.Status().Message}}
+			return defaulterr
 		}
 	}
+	return defaulterr
+}
 
-	//Validation error
-	vE, isValidationError := in.(validator.ValidationErrors)
-	if isValidationError {
-		for _, v := range vE {
-			switch v.Tag {
-			case "required":
-				out = append(out, Error{Text: fmt.Sprintf(fieldShouldExist, v.Name)})
-			case "email":
-				out = append(out, Error{Text: fmt.Sprintf(fieldShouldBeEmail, v.Name)})
-			default:
-				out = append(out, Error{Text: fmt.Sprintf(fieldDefaultProblem, v.Name, v.Tag)})
-			}
-		}
-		return http.StatusBadRequest, out
+func IsValidUUID(u string) bool {
+	_, err := uuid.Parse(u)
+	if err != nil {
+		return false
 	}
-
-	//Simple error with code
-	mE, isErrorWithCode := in.(Error)
-	if isErrorWithCode {
-		return http.StatusInternalServerError, []Error{mE}
-	}
-
-	return http.StatusInternalServerError, []Error{{Text: in.(error).Error()}}
+	return true
 }
