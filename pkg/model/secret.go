@@ -112,11 +112,11 @@ func validateSecret(secret SecretWithOwner) []error {
 		}
 	}
 	if len(api_validation.IsDNS1123Subdomain(secret.Name)) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, secret.Name)))
+		errs = append(errs, fmt.Errorf(invalidName, secret.Name))
 	}
 	for k, _ := range secret.Data {
 		if len(api_validation.IsConfigMapKey(k)) > 0 {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidKey, k)))
+			errs = append(errs, fmt.Errorf(invalidKey, k))
 		}
 	}
 	if len(errs) > 0 {

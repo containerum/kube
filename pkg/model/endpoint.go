@@ -134,28 +134,28 @@ func validateEndpoint(endpoint json_types.Endpoint) []error {
 		}
 	}
 	if len(api_validation.IsDNS1123Subdomain(endpoint.Name)) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, endpoint.Name)))
+		errs = append(errs, fmt.Errorf(invalidName, endpoint.Name))
 	}
 	if endpoint.Addresses == nil || len(endpoint.Addresses) == 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(fieldShouldExist, "Addresses")))
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Addresses"))
 	}
 	for _, v := range endpoint.Addresses {
 		if len(api_validation.IsValidIP(v)) > 0 {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidIP, v)))
+			errs = append(errs, fmt.Errorf(invalidIP, v))
 		}
 	}
 	if endpoint.Ports == nil || len(endpoint.Ports) == 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(fieldShouldExist, "Ports")))
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Ports"))
 	}
 	for _, v := range endpoint.Ports {
 		if len(api_validation.IsValidPortName(v.Name)) > 0 {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name)))
+			errs = append(errs, fmt.Errorf(invalidName, v.Name))
 		}
 		if v.Protocol != "TCP" && v.Protocol != "UDP" {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidProtocol, v.Protocol)))
+			errs = append(errs, fmt.Errorf(invalidProtocol, v.Protocol))
 		}
 		if len(api_validation.IsValidPortNum(v.Port)) > 0 {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidPort, v.Port, 1, maxport)))
+			errs = append(errs, fmt.Errorf(invalidPort, v.Port, 1, maxport))
 		}
 	}
 	if len(errs) > 0 {

@@ -182,24 +182,24 @@ func validateIngress(ingress IngressWithOwner) []error {
 		}
 	}
 	if len(api_validation.IsDNS1123Subdomain(ingress.Name)) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, ingress.Name)))
+		errs = append(errs, fmt.Errorf(invalidName, ingress.Name))
 	}
 	if ingress.Rules == nil || len(ingress.Rules) == 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(fieldShouldExist, "Rules")))
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Rules"))
 	}
 	for _, v := range ingress.Rules {
 		if v.Path == nil || len(v.Path) == 0 {
-			errs = append(errs, errors.New(fmt.Sprintf(fieldShouldExist, "Path")))
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "Path"))
 		}
 		for _, p := range v.Path {
 			if len(api_validation.IsDNS1123Subdomain(p.ServiceName)) > 0 {
-				errs = append(errs, errors.New(fmt.Sprintf(invalidName, p.ServiceName)))
+				errs = append(errs, fmt.Errorf(invalidName, p.ServiceName))
 			}
 			if len(api_validation.IsValidPortNum(p.ServicePort)) > 0 {
-				errs = append(errs, errors.New(fmt.Sprintf(invalidPort, p.ServicePort, 1, maxport)))
+				errs = append(errs, fmt.Errorf(invalidPort, p.ServicePort, 1, maxport))
 			}
 			if p.Path == "" {
-				errs = append(errs, errors.New(fmt.Sprintf(fieldShouldExist, "Path")))
+				errs = append(errs, fmt.Errorf(fieldShouldExist, "Path"))
 			}
 		}
 	}

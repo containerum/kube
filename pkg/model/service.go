@@ -168,20 +168,20 @@ func validateService(service ServiceWithOwner) []error {
 		}
 	}
 	if len(api_validation.IsDNS1123Subdomain(service.Name)) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, service.Name)))
+		errs = append(errs, fmt.Errorf(invalidName, service.Name))
 	}
 	if service.Ports == nil || len(service.Ports) == 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(fieldShouldExist, "Ports")))
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Ports"))
 	}
 	for _, v := range service.Ports {
 		if len(api_validation.IsValidPortName(v.Name)) > 0 {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name)))
+			errs = append(errs, fmt.Errorf(invalidName, v.Name))
 		}
 		if v.Protocol != kube_types.UDP && v.Protocol != kube_types.TCP {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidProtocol, v.Protocol)))
+			errs = append(errs, fmt.Errorf(invalidProtocol, v.Protocol))
 		}
 		if len(api_validation.IsInRange(v.Port, minport, maxport)) > 0 {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidPort, v.Port, minport, maxport)))
+			errs = append(errs, fmt.Errorf(invalidPort, v.Port, minport, maxport))
 		}
 	}
 	if len(errs) > 0 {

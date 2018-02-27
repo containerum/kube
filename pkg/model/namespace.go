@@ -112,7 +112,7 @@ func validateNamespace(ns NamespaceWithOwner) []error {
 	errs := []error{}
 
 	if len(api_validation.IsDNS1123Subdomain(ns.Label)) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, ns.Label)))
+		errs = append(errs, fmt.Errorf(invalidName, ns.Label))
 	}
 	if ns.Owner != "" && !IsValidUUID(ns.Owner) {
 		errs = append(errs, errors.New(invalidOwner))
@@ -171,11 +171,11 @@ func validateResourceQuota(cpu, mem api_resource.Quantity) []error {
 	maxmem, _ := api_resource.ParseQuantity(maxNamespaceMemory)
 
 	if cpu.Cmp(mincpu) == -1 || cpu.Cmp(maxcpu) == 1 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidCPUQuota, cpu.String(), minNamespaceCPU, maxNamespaceCPU)))
+		errs = append(errs, fmt.Errorf(invalidCPUQuota, cpu.String(), minNamespaceCPU, maxNamespaceCPU))
 	}
 
 	if mem.Cmp(minmem) == -1 || mem.Cmp(maxmem) == 1 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidMemoryQuota, mem.String(), minNamespaceMemory, maxNamespaceMemory)))
+		errs = append(errs, fmt.Errorf(invalidMemoryQuota, mem.String(), minNamespaceMemory, maxNamespaceMemory))
 	}
 
 	if len(errs) > 0 {

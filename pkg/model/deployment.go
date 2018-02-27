@@ -303,7 +303,7 @@ func UpdateImage(deployment interface{}, containerName, newimage string) (*api_a
 		}
 	}
 	if updated == false {
-		return nil, errors.New(fmt.Sprintf(NoContainer, containerName))
+		return nil, fmt.Errorf(NoContainer, containerName)
 	}
 
 	return deploy, nil
@@ -355,13 +355,13 @@ func validateDeployment(deploy DeploymentWithOwner) []error {
 		}
 	}
 	if len(api_validation.IsDNS1123Subdomain(deploy.Name)) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, deploy.Name)))
+		errs = append(errs, fmt.Errorf(invalidName, deploy.Name))
 	}
 	if len(api_validation.IsInRange(deploy.Replicas, 1, maxDeployReplicas)) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidReplicas, deploy.Replicas, maxDeployReplicas)))
+		errs = append(errs, fmt.Errorf(invalidReplicas, deploy.Replicas, maxDeployReplicas))
 	}
 	if deploy.Containers == nil || len(deploy.Containers) == 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(fieldShouldExist, "Containers")))
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Containers"))
 	}
 	if len(errs) > 0 {
 		return errs
@@ -378,53 +378,53 @@ func validateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 	maxmem, _ := api_resource.ParseQuantity(maxDeployMemory)
 
 	if len(api_validation.IsDNS1123Subdomain(container.Name)) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, container.Name)))
+		errs = append(errs, fmt.Errorf(invalidName, container.Name))
 	}
 
 	if cpu.Cmp(mincpu) == -1 || cpu.Cmp(maxcpu) == 1 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidCPUQuota, cpu.String(), minDeployCPU, maxDeployCPU)))
+		errs = append(errs, fmt.Errorf(invalidCPUQuota, cpu.String(), minDeployCPU, maxDeployCPU))
 	}
 
 	if mem.Cmp(minmem) == -1 || mem.Cmp(maxmem) == 1 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidMemoryQuota, mem.String(), minDeployMemory, maxDeployMemory)))
+		errs = append(errs, fmt.Errorf(invalidMemoryQuota, mem.String(), minDeployMemory, maxDeployMemory))
 	}
 
 	for _, v := range container.Ports {
 		if len(api_validation.IsValidPortName(v.Name)) > 0 {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name)))
+			errs = append(errs, fmt.Errorf(invalidName, v.Name))
 		}
 		if v.Protocol != kube_types.UDP && v.Protocol != kube_types.TCP {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidProtocol, v.Protocol)))
+			errs = append(errs, fmt.Errorf(invalidProtocol, v.Protocol))
 		}
 		if len(api_validation.IsValidPortNum(v.Port)) > 0 {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidPort, v.Port, minport, maxport)))
+			errs = append(errs, fmt.Errorf(invalidPort, v.Port, minport, maxport))
 		}
 	}
 
 	for _, v := range container.Env {
 		if len(api_validation.IsEnvVarName(v.Value)) > 0 {
-			errs = append(errs, errors.New(fmt.Sprintf(fieldShouldExist, "Env: Value")))
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "Env: Value"))
 		}
 		if v.Name == "" {
-			errs = append(errs, errors.New(fmt.Sprintf(fieldShouldExist, "Env: Name")))
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "Env: Name"))
 		}
 	}
 
 	for _, v := range container.VolumeMounts {
 		if len(api_validation.IsDNS1123Subdomain(v.Name)) > 0 {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name)))
+			errs = append(errs, fmt.Errorf(invalidName, v.Name))
 		}
 		if v.MountPath == "" {
-			errs = append(errs, errors.New(fmt.Sprintf(fieldShouldExist, "Volume: Mount path")))
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "Volume: Mount path"))
 		}
 	}
 
 	for _, v := range container.ConfigMaps {
 		if len(api_validation.IsDNS1123Subdomain(v.Name)) > 0 {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name)))
+			errs = append(errs, fmt.Errorf(invalidName, v.Name))
 		}
 		if v.MountPath == "" {
-			errs = append(errs, errors.New(fmt.Sprintf(fieldShouldExist, "Config: Map mount path")))
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "Config: Map mount path"))
 		}
 	}
 
