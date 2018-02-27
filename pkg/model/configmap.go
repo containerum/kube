@@ -92,9 +92,18 @@ func validateConfigMap(cm ConfigMapWithOwner) []error {
 	errs := []error{}
 	if cm.Owner == "" {
 		errs = append(errs, errors.New(noOwner))
+	} else {
+		if !IsValidUUID(cm.Owner) {
+			errs = append(errs, errors.New(invalidOwner))
+		}
 	}
 	if len(api_validation.IsDNS1123Subdomain(cm.Name)) > 0 {
 		errs = append(errs, errors.New(fmt.Sprintf(invalidName, cm.Name)))
+	}
+	for k, _ := range cm.Data {
+		if len(api_validation.IsConfigMapKey(k)) > 0 {
+			errs = append(errs, errors.New(fmt.Sprintf(invalidKey, k)))
+		}
 	}
 	if len(errs) > 0 {
 		return errs

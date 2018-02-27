@@ -349,6 +349,10 @@ func validateDeployment(deploy DeploymentWithOwner) []error {
 	errs := []error{}
 	if deploy.Owner == "" {
 		errs = append(errs, errors.New(noOwner))
+	} else {
+		if !IsValidUUID(deploy.Owner) {
+			errs = append(errs, errors.New(invalidOwner))
+		}
 	}
 	if len(api_validation.IsDNS1123Subdomain(deploy.Name)) > 0 {
 		errs = append(errs, errors.New(fmt.Sprintf(invalidName, deploy.Name)))
@@ -386,7 +390,7 @@ func validateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 	}
 
 	for _, v := range container.Ports {
-		if len(api_validation.IsDNS1123Subdomain(v.Name)) > 0 {
+		if len(api_validation.IsValidPortName(v.Name)) > 0 {
 			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name)))
 		}
 		if v.Protocol != kube_types.UDP && v.Protocol != kube_types.TCP {
@@ -398,7 +402,7 @@ func validateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 	}
 
 	for _, v := range container.Env {
-		if v.Value == "" {
+		if len(api_validation.IsEnvVarName(v.Value)) > 0 {
 			errs = append(errs, errors.New(fmt.Sprintf(fieldShouldExist, "Env: Value")))
 		}
 		if v.Name == "" {

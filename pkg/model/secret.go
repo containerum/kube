@@ -104,14 +104,21 @@ func makeSecretData(data map[string]string) map[string][]byte {
 
 func validateSecret(secret SecretWithOwner) []error {
 	errs := []error{}
-
 	if secret.Owner == "" {
 		errs = append(errs, errors.New(noOwner))
+	} else {
+		if !IsValidUUID(secret.Owner) {
+			errs = append(errs, errors.New(invalidOwner))
+		}
 	}
 	if len(api_validation.IsDNS1123Subdomain(secret.Name)) > 0 {
 		errs = append(errs, errors.New(fmt.Sprintf(invalidName, secret.Name)))
 	}
-
+	for k, _ := range secret.Data {
+		if len(api_validation.IsConfigMapKey(k)) > 0 {
+			errs = append(errs, errors.New(fmt.Sprintf(invalidKey, k)))
+		}
+	}
 	if len(errs) > 0 {
 		return errs
 	}

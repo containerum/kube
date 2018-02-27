@@ -140,7 +140,7 @@ func UpdateSecret(ctx *gin.Context) {
 		return
 	}
 
-	secretAfter, err := kubecli.CreateSecret(newSecret)
+	secretAfter, err := kubecli.UpdateSecret(newSecret)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)

@@ -174,9 +174,12 @@ func makeIngressRules(rules []kube_types.Rule) ([]api_extensions.IngressRule, []
 
 func validateIngress(ingress IngressWithOwner) []error {
 	errs := []error{}
-
 	if ingress.Owner == "" {
 		errs = append(errs, errors.New(noOwner))
+	} else {
+		if !IsValidUUID(ingress.Owner) {
+			errs = append(errs, errors.New(invalidOwner))
+		}
 	}
 	if len(api_validation.IsDNS1123Subdomain(ingress.Name)) > 0 {
 		errs = append(errs, errors.New(fmt.Sprintf(invalidName, ingress.Name)))

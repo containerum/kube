@@ -5,6 +5,7 @@ import (
 
 	ch "git.containerum.net/ch/kube-client/pkg/cherry"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
+	"github.com/google/uuid"
 	api_errors "k8s.io/apimachinery/pkg/api/errors"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -18,6 +19,8 @@ const (
 	invalidOwner       = "Owner should be UUID"
 	NoContainer        = "Container %v is not found in deployment"
 	invalidName        = "Invalid name: %v. It must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character"
+	invalidKey         = "Invalid key: %v. It must consist of alphanumeric characters, '-', '_' or '.'"
+	invalidIP          = "Invalid IP: %v. It must be a valid IP address, (e.g. 10.9.8.7)"
 	invalidCPUQuota    = "Invalid CPU quota: %v. It must be between %v and %v"
 	invalidMemoryQuota = "Invalid memory quota: %v. It must be between %v and %v"
 )
@@ -64,4 +67,12 @@ func ParseResourceError(in interface{}, defaulterr *ch.Err) *ch.Err {
 		}
 	}
 	return defaulterr
+}
+
+func IsValidUUID(u string) bool {
+	_, err := uuid.Parse(u)
+	if err != nil {
+		return false
+	}
+	return true
 }

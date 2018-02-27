@@ -84,8 +84,8 @@ func ParseResourceQuota(quota interface{}) (*NamespaceWithOwner, error) {
 }
 
 // MakeNamespace creates kubernetes v1.Namespace from Namespace struct
-func MakeNamespace(ns NamespaceWithOwner) (*api_core.Namespace, error) {
-	err := validateNamespace(ns.Namespace)
+func MakeNamespace(ns NamespaceWithOwner) (*api_core.Namespace, []error) {
+	err := validateNamespace(ns)
 	if err != nil {
 		return nil, err
 	}
@@ -108,9 +108,18 @@ func MakeNamespace(ns NamespaceWithOwner) (*api_core.Namespace, error) {
 	return &newNs, nil
 }
 
-func validateNamespace(ns kube_types.Namespace) error {
+func validateNamespace(ns NamespaceWithOwner) []error {
+	errs := []error{}
+
 	if len(api_validation.IsDNS1123Subdomain(ns.Label)) > 0 {
-		return errors.New(fmt.Sprintf(invalidName, ns.Label))
+		errs = append(errs, errors.New(fmt.Sprintf(invalidName, ns.Label)))
+	}
+	if ns.Owner != "" && !IsValidUUID(ns.Owner) {
+		errs = append(errs, errors.New(invalidOwner))
+	}
+
+	if len(errs) > 0 {
+		return errs
 	}
 	return nil
 }

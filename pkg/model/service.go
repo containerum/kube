@@ -160,9 +160,12 @@ func makeServicePorts(ports []kube_types.ServicePort) []api_core.ServicePort {
 
 func validateService(service ServiceWithOwner) []error {
 	errs := []error{}
-
 	if service.Owner == "" {
 		errs = append(errs, errors.New(noOwner))
+	} else {
+		if !IsValidUUID(service.Owner) {
+			errs = append(errs, errors.New(invalidOwner))
+		}
 	}
 	if len(api_validation.IsDNS1123Subdomain(service.Name)) > 0 {
 		errs = append(errs, errors.New(fmt.Sprintf(invalidName, service.Name)))
@@ -171,7 +174,7 @@ func validateService(service ServiceWithOwner) []error {
 		errs = append(errs, errors.New(fmt.Sprintf(fieldShouldExist, "Ports")))
 	}
 	for _, v := range service.Ports {
-		if len(api_validation.IsDNS1123Subdomain(v.Name)) > 0 {
+		if len(api_validation.IsValidPortName(v.Name)) > 0 {
 			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name)))
 		}
 		if v.Protocol != kube_types.UDP && v.Protocol != kube_types.TCP {

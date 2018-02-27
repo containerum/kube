@@ -128,6 +128,10 @@ func validateEndpoint(endpoint json_types.Endpoint) []error {
 	errs := []error{}
 	if endpoint.Owner == nil {
 		errs = append(errs, errors.New(noOwner))
+	} else {
+		if !IsValidUUID(*endpoint.Owner) {
+			errs = append(errs, errors.New(invalidOwner))
+		}
 	}
 	if len(api_validation.IsDNS1123Subdomain(endpoint.Name)) > 0 {
 		errs = append(errs, errors.New(fmt.Sprintf(invalidName, endpoint.Name)))
@@ -135,11 +139,16 @@ func validateEndpoint(endpoint json_types.Endpoint) []error {
 	if endpoint.Addresses == nil || len(endpoint.Addresses) == 0 {
 		errs = append(errs, errors.New(fmt.Sprintf(fieldShouldExist, "Addresses")))
 	}
+	for _, v := range endpoint.Addresses {
+		if len(api_validation.IsValidIP(v)) > 0 {
+			errs = append(errs, errors.New(fmt.Sprintf(invalidIP, v)))
+		}
+	}
 	if endpoint.Ports == nil || len(endpoint.Ports) == 0 {
 		errs = append(errs, errors.New(fmt.Sprintf(fieldShouldExist, "Ports")))
 	}
 	for _, v := range endpoint.Ports {
-		if len(api_validation.IsDNS1123Subdomain(v.Name)) > 0 {
+		if len(api_validation.IsValidPortName(v.Name)) > 0 {
 			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name)))
 		}
 		if v.Protocol != "TCP" && v.Protocol != "UDP" {

@@ -76,9 +76,9 @@ func CreateNamespace(ctx *gin.Context) {
 		return
 	}
 
-	newNs, err := model.MakeNamespace(ns)
-	if err != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+	newNs, errs := model.MakeNamespace(ns)
+	if errs != nil {
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
@@ -88,7 +88,7 @@ func CreateNamespace(ctx *gin.Context) {
 		return
 	}
 
-	_, err = kube.CreateNamespace(newNs)
+	_, err := kube.CreateNamespace(newNs)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
