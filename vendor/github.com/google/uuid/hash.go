@@ -12,11 +12,11 @@ import (
 
 // Well known namespace IDs and UUIDs
 var (
-	NameSpace_DNS  = MustParse("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
-	NameSpace_URL  = MustParse("6ba7b811-9dad-11d1-80b4-00c04fd430c8")
-	NameSpace_OID  = MustParse("6ba7b812-9dad-11d1-80b4-00c04fd430c8")
-	NameSpace_X500 = MustParse("6ba7b814-9dad-11d1-80b4-00c04fd430c8")
-	NIL            UUID // empty UUID, all zeros
+	NameSpaceDNS  = Must(Parse("6ba7b810-9dad-11d1-80b4-00c04fd430c8"))
+	NameSpaceURL  = Must(Parse("6ba7b811-9dad-11d1-80b4-00c04fd430c8"))
+	NameSpaceOID  = Must(Parse("6ba7b812-9dad-11d1-80b4-00c04fd430c8"))
+	NameSpaceX500 = Must(Parse("6ba7b814-9dad-11d1-80b4-00c04fd430c8"))
+	Nil           UUID // empty UUID, all zeros
 )
 
 // NewHash returns a new UUID derived from the hash of space concatenated with
@@ -27,7 +27,7 @@ var (
 func NewHash(h hash.Hash, space UUID, data []byte, version int) UUID {
 	h.Reset()
 	h.Write(space[:])
-	h.Write([]byte(data))
+	h.Write(data)
 	s := h.Sum(nil)
 	var uuid UUID
 	copy(uuid[:], s)

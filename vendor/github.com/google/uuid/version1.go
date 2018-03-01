@@ -13,7 +13,7 @@ import (
 // or SetNodeInterface then it will be set automatically.  If the NodeID cannot
 // be set NewUUID returns nil.  If clock sequence has not been set by
 // SetClockSequence then it will be set automatically.  If GetTime fails to
-// return the current NewUUID returns nil.
+// return the current NewUUID returns nil and an error.
 //
 // In most cases, New should be used.
 func NewUUID() (UUID, error) {
@@ -29,26 +29,16 @@ func NewUUID() (UUID, error) {
 		return uuid, err
 	}
 
-	time_low := uint32(now & 0xffffffff)
-	time_mid := uint16((now >> 32) & 0xffff)
-	time_hi := uint16((now >> 48) & 0x0fff)
-	time_hi |= 0x1000 // Version 1
+	timeLow := uint32(now & 0xffffffff)
+	timeMid := uint16((now >> 32) & 0xffff)
+	timeHi := uint16((now >> 48) & 0x0fff)
+	timeHi |= 0x1000 // Version 1
 
-	binary.BigEndian.PutUint32(uuid[0:], time_low)
-	binary.BigEndian.PutUint16(uuid[4:], time_mid)
-	binary.BigEndian.PutUint16(uuid[6:], time_hi)
+	binary.BigEndian.PutUint32(uuid[0:], timeLow)
+	binary.BigEndian.PutUint16(uuid[4:], timeMid)
+	binary.BigEndian.PutUint16(uuid[6:], timeHi)
 	binary.BigEndian.PutUint16(uuid[8:], seq)
 	copy(uuid[10:], nodeID[:])
 
 	return uuid, nil
-}
-
-// MustNewUUID returns the Verison 1 UUID from calling NewUUID, or panics
-// if NewUUID fails.
-func MustNewUUID() UUID {
-	uuid, err := NewUUID()
-	if err != nil {
-		panic(err)
-	}
-	return uuid
 }

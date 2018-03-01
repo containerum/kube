@@ -42,7 +42,7 @@ func NewDCESecurity(domain Domain, id uint32) (UUID, error) {
 // NewDCEPerson returns a DCE Security (Version 2) UUID in the person
 // domain with the id returned by os.Getuid.
 //
-//  NewDCEPerson(Person, uint32(os.Getuid()))
+//  NewDCESecurity(Person, uint32(os.Getuid()))
 func NewDCEPerson() (UUID, error) {
 	return NewDCESecurity(Person, uint32(os.Getuid()))
 }
@@ -50,7 +50,7 @@ func NewDCEPerson() (UUID, error) {
 // NewDCEGroup returns a DCE Security (Version 2) UUID in the group
 // domain with the id returned by os.Getgid.
 //
-//  NewDCEGroup(Group, uint32(os.Getgid()))
+//  NewDCESecurity(Group, uint32(os.Getgid()))
 func NewDCEGroup() (UUID, error) {
 	return NewDCESecurity(Group, uint32(os.Getgid()))
 }
@@ -61,9 +61,9 @@ func (uuid UUID) Domain() Domain {
 	return Domain(uuid[9])
 }
 
-// Id returns the id for a Version 2 UUID. Ids are only defined for Vrsion 2
+// ID returns the id for a Version 2 UUID. IDs are only defined for Version 2
 // UUIDs.
-func (uuid UUID) Id() uint32 {
+func (uuid UUID) ID() uint32 {
 	return binary.BigEndian.Uint32(uuid[0:4])
 }
 

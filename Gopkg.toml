@@ -50,8 +50,8 @@
   version = "1.0.5"
 
 [[constraint]]
+  branch = "master"
   name = "github.com/google/uuid"
-  version = "v.1"
 
 [[constraint]]
   name = "github.com/sirupsen/logrus"
