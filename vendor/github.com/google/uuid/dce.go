@@ -61,9 +61,9 @@ func (uuid UUID) Domain() Domain {
 	return Domain(uuid[9])
 }
 
-// ID returns the id for a Version 2 UUID. IDs are only defined for Version 2
+// Id returns the id for a Version 2 UUID. Ids are only defined for Vrsion 2
 // UUIDs.
-func (uuid UUID) ID() uint32 {
+func (uuid UUID) Id() uint32 {
 	return binary.BigEndian.Uint32(uuid[0:4])
 }
 
