@@ -58,6 +58,7 @@ func ReadAccess() gin.HandlerFunc {
 			if userNsData != nil {
 				if ok := containsAccess(userNsData.Access, readLevels...); ok {
 					c.Set(NamespaceKey, userNsData.ID)
+					c.Set(NamespaceLabelKey, userNsData.Label)
 					return
 				}
 			} else {
