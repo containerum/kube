@@ -9,10 +9,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var (
-	tailDefault = int64(100)
-)
-
 //TODO: Imp struct to GetPodLogs func
 type LogOptions struct {
 	Follow     bool
@@ -22,6 +18,7 @@ type LogOptions struct {
 	Container  string
 }
 
+//GetPodList returns pods list
 func (k *Kube) GetPodList(ns string, owner string) (interface{}, error) {
 	pods, err := k.CoreV1().Pods(ns).List(meta_v1.ListOptions{
 		LabelSelector: getOwnerLabel(owner),
@@ -36,6 +33,7 @@ func (k *Kube) GetPodList(ns string, owner string) (interface{}, error) {
 	return pods, nil
 }
 
+//GetPod returns pod
 func (k *Kube) GetPod(ns string, po string) (interface{}, error) {
 	pod, err := k.CoreV1().Pods(ns).Get(po, meta_v1.GetOptions{})
 	if err != nil {
@@ -48,6 +46,7 @@ func (k *Kube) GetPod(ns string, po string) (interface{}, error) {
 	return pod, nil
 }
 
+//DeletePod deletes pod
 func (k *Kube) DeletePod(ns string, po string) error {
 	err := k.CoreV1().Pods(ns).Delete(po, &meta_v1.DeleteOptions{})
 	if err != nil {
@@ -60,6 +59,7 @@ func (k *Kube) DeletePod(ns string, po string) error {
 	return nil
 }
 
+//GetPodLogs attaches client to pod log
 func (k *Kube) GetPodLogs(ns string, po string, out *bytes.Buffer, opt *LogOptions) error {
 	defer log.Debug("STOP FOLLOW LOGS STREAM")
 	req := k.CoreV1().Pods(ns).GetLogs(po, &v1.PodLogOptions{

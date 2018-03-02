@@ -6,6 +6,7 @@ import (
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+//GetEndpointList returns endpoints list
 func (kube *Kube) GetEndpointList(namespace string) (*api_core.EndpointsList, error) {
 	endpointsAfter, err := kube.CoreV1().Endpoints(namespace).List(api_meta.ListOptions{})
 	if err != nil {
@@ -17,6 +18,7 @@ func (kube *Kube) GetEndpointList(namespace string) (*api_core.EndpointsList, er
 	return endpointsAfter, nil
 }
 
+//GetEndpoint returns endpoint
 func (kube *Kube) GetEndpoint(namespace, endpoint string) (*api_core.Endpoints, error) {
 	endpointAfter, err := kube.CoreV1().Endpoints(namespace).Get(endpoint, api_meta.GetOptions{})
 	if err != nil {
@@ -29,6 +31,7 @@ func (kube *Kube) GetEndpoint(namespace, endpoint string) (*api_core.Endpoints, 
 	return endpointAfter, nil
 }
 
+//CreateEndpoint creates endpoint
 func (kube *Kube) CreateEndpoint(endpoint *api_core.Endpoints) (*api_core.Endpoints, error) {
 	endpointAfter, err := kube.CoreV1().Endpoints(endpoint.Namespace).Create(endpoint)
 	if err != nil {
@@ -41,6 +44,7 @@ func (kube *Kube) CreateEndpoint(endpoint *api_core.Endpoints) (*api_core.Endpoi
 	return endpointAfter, nil
 }
 
+//UpdateEndpoint updates endpoint
 func (kube *Kube) UpdateEndpoint(endpoint *api_core.Endpoints) (*api_core.Endpoints, error) {
 	endpointAfter, err := kube.CoreV1().Endpoints(endpoint.Namespace).Update(endpoint)
 	if err != nil {
@@ -53,6 +57,7 @@ func (kube *Kube) UpdateEndpoint(endpoint *api_core.Endpoints) (*api_core.Endpoi
 	return endpointAfter, nil
 }
 
+//DeleteEndpoint deletes endpoint
 func (kube *Kube) DeleteEndpoint(namespace, endpoint string) error {
 	err := kube.CoreV1().Endpoints(namespace).Delete(endpoint, &api_meta.DeleteOptions{})
 	if err != nil {

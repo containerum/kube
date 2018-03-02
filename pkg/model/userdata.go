@@ -10,6 +10,7 @@ import (
 
 type UserHeaderDataMap map[string]model.UserHeaderData
 
+//ParseUserHeaderData decodes headers for substitutions
 func ParseUserHeaderData(str string) (*UserHeaderDataMap, error) {
 	data, err := base64.StdEncoding.DecodeString(str)
 	if err != nil {

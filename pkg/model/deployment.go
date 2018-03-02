@@ -184,15 +184,15 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, []
 			container.Ports = makeContainerPorts(c.Ports)
 		}
 
-		if rq, err := makeContainerResourceQuota(c.Limits.CPU, c.Limits.Memory); err != nil {
-			return nil, nil, nil, []error{err}
-		} else {
-			container.Resources = *rq
-		}
-
-		err := validateContainer(c, *container.Resources.Limits.Cpu(), *container.Resources.Limits.Memory())
+		rq, err := makeContainerResourceQuota(c.Limits.CPU, c.Limits.Memory)
 		if err != nil {
-			return nil, nil, nil, err
+			return nil, nil, nil, []error{err}
+		}
+		container.Resources = *rq
+
+		errs := validateContainer(c, *container.Resources.Limits.Cpu(), *container.Resources.Limits.Memory())
+		if err != nil {
+			return nil, nil, nil, errs
 		}
 
 		containersAfter = append(containersAfter, container)
@@ -303,7 +303,7 @@ func UpdateImage(deployment interface{}, containerName, newimage string) (*api_a
 		}
 	}
 	if updated == false {
-		return nil, fmt.Errorf(NoContainer, containerName)
+		return nil, fmt.Errorf(noContainer, containerName)
 	}
 
 	return deploy, nil
