@@ -6,6 +6,7 @@ import (
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+//GetDeploymentList returns deployments list
 func (k *Kube) GetDeploymentList(ns string, owner string) (*api_apps.DeploymentList, error) {
 	deployments, err := k.AppsV1().Deployments(ns).List(api_meta.ListOptions{
 		LabelSelector: getOwnerLabel(owner),
@@ -20,6 +21,7 @@ func (k *Kube) GetDeploymentList(ns string, owner string) (*api_apps.DeploymentL
 	return deployments, nil
 }
 
+//GetDeployment returns deployment
 func (k *Kube) GetDeployment(ns string, deploy string) (*api_apps.Deployment, error) {
 	deployment, err := k.AppsV1().Deployments(ns).Get(deploy, api_meta.GetOptions{})
 	if err != nil {
@@ -32,6 +34,7 @@ func (k *Kube) GetDeployment(ns string, deploy string) (*api_apps.Deployment, er
 	return deployment, nil
 }
 
+//CreateDeployment creates deployment
 func (k *Kube) CreateDeployment(ns string, depl *api_apps.Deployment) (*api_apps.Deployment, error) {
 	deployment, err := k.AppsV1().Deployments(ns).Create(depl)
 	if err != nil {
@@ -44,6 +47,7 @@ func (k *Kube) CreateDeployment(ns string, depl *api_apps.Deployment) (*api_apps
 	return deployment, nil
 }
 
+//DeleteDeployment deletes deployment
 func (k *Kube) DeleteDeployment(ns string, deployName string) error {
 	err := k.AppsV1().Deployments(ns).Delete(deployName, &api_meta.DeleteOptions{})
 	if err != nil {
@@ -56,6 +60,7 @@ func (k *Kube) DeleteDeployment(ns string, deployName string) error {
 	return nil
 }
 
+//UpdateDeployment updates deployment
 func (k *Kube) UpdateDeployment(ns string, depl *api_apps.Deployment) (*api_apps.Deployment, error) {
 	deployment, err := k.AppsV1().Deployments(ns).Update(depl)
 	if err != nil {

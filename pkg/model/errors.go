@@ -17,7 +17,7 @@ const (
 	invalidProtocol    = "Invalid protocol: %v. It must be TCP or UDP"
 	noOwner            = "Owner should be provided"
 	invalidOwner       = "Owner should be UUID"
-	NoContainer        = "Container %v is not found in deployment"
+	noContainer        = "Container %v is not found in deployment"
 	invalidName        = "Invalid name: %v. It must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character"
 	invalidKey         = "Invalid key: %v. It must consist of alphanumeric characters, '-', '_' or '.'"
 	invalidIP          = "Invalid IP: %v. It must be a valid IP address, (e.g. 10.9.8.7)"
@@ -54,6 +54,7 @@ var (
 	ErrUnableConvertConfigMap     = errors.New("Unable to decode config map")
 )
 
+//ParseResourceError checks error status
 func ParseResourceError(in interface{}, defaulterr *ch.Err) *ch.Err {
 	sE, isStatusErrorCode := in.(*api_errors.StatusError)
 	if isStatusErrorCode {
@@ -69,6 +70,7 @@ func ParseResourceError(in interface{}, defaulterr *ch.Err) *ch.Err {
 	return defaulterr
 }
 
+//IsValidUUID checks if UUID is valid
 func IsValidUUID(u string) bool {
 	_, err := uuid.Parse(u)
 	if err != nil {

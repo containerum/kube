@@ -6,6 +6,7 @@ import (
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+//GetConfigMapList returns config maps list
 func (kube *Kube) GetConfigMapList(namespace string) (*api_core.ConfigMapList, error) {
 	cmAfter, err := kube.CoreV1().ConfigMaps(namespace).List(api_meta.ListOptions{})
 	if err != nil {
@@ -17,6 +18,7 @@ func (kube *Kube) GetConfigMapList(namespace string) (*api_core.ConfigMapList, e
 	return cmAfter, nil
 }
 
+//GetConfigMap returns config map
 func (kube *Kube) GetConfigMap(namespace, cm string) (*api_core.ConfigMap, error) {
 	cmAfter, err := kube.CoreV1().ConfigMaps(namespace).Get(cm, api_meta.GetOptions{})
 	if err != nil {
@@ -29,6 +31,7 @@ func (kube *Kube) GetConfigMap(namespace, cm string) (*api_core.ConfigMap, error
 	return cmAfter, nil
 }
 
+//CreateConfigMap creates config map
 func (kube *Kube) CreateConfigMap(cm *api_core.ConfigMap) (*api_core.ConfigMap, error) {
 	cmAfter, err := kube.CoreV1().ConfigMaps(cm.Namespace).Create(cm)
 	if err != nil {
@@ -41,6 +44,7 @@ func (kube *Kube) CreateConfigMap(cm *api_core.ConfigMap) (*api_core.ConfigMap, 
 	return cmAfter, nil
 }
 
+//UpdateConfigMap updates config map
 func (kube *Kube) UpdateConfigMap(cm *api_core.ConfigMap) (*api_core.ConfigMap, error) {
 	cmAfter, err := kube.CoreV1().ConfigMaps(cm.Namespace).Update(cm)
 	if err != nil {
@@ -53,6 +57,7 @@ func (kube *Kube) UpdateConfigMap(cm *api_core.ConfigMap) (*api_core.ConfigMap, 
 	return cmAfter, nil
 }
 
+//DeleteConfigMap deletes config map
 func (kube *Kube) DeleteConfigMap(namespace, cm string) error {
 	err := kube.CoreV1().ConfigMaps(namespace).Delete(cm, &api_meta.DeleteOptions{})
 	if err != nil {

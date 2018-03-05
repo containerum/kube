@@ -10,6 +10,7 @@ const (
 	quotaName = "quota"
 )
 
+//GetNamespaceQuotaList returns namespaces (quotas) list
 func (k *Kube) GetNamespaceQuotaList(owner string) (*api_core.ResourceQuotaList, error) {
 	quotas, err := k.CoreV1().ResourceQuotas("").List(api_meta.ListOptions{
 		LabelSelector: getOwnerLabel(owner),
@@ -21,6 +22,7 @@ func (k *Kube) GetNamespaceQuotaList(owner string) (*api_core.ResourceQuotaList,
 	return quotas, nil
 }
 
+//GetNamespaceQuota returns namespace (quota)
 func (k *Kube) GetNamespaceQuota(ns string) (*api_core.ResourceQuota, error) {
 	quota, err := k.CoreV1().ResourceQuotas(ns).Get(quotaName, api_meta.GetOptions{})
 	if err != nil {
@@ -30,6 +32,7 @@ func (k *Kube) GetNamespaceQuota(ns string) (*api_core.ResourceQuota, error) {
 	return quota, nil
 }
 
+//CreateNamespace creates namespace
 func (k *Kube) CreateNamespace(ns *api_core.Namespace) (*api_core.Namespace, error) {
 	nsAfter, err := k.CoreV1().Namespaces().Create(ns)
 	if err != nil {
@@ -39,6 +42,7 @@ func (k *Kube) CreateNamespace(ns *api_core.Namespace) (*api_core.Namespace, err
 	return nsAfter, nil
 }
 
+//CreateNamespaceQuota creates namespace quota
 func (k *Kube) CreateNamespaceQuota(nsName string, quota *api_core.ResourceQuota) (*api_core.ResourceQuota, error) {
 	quotaAfter, err := k.CoreV1().ResourceQuotas(nsName).Create(quota)
 	if err != nil {
@@ -48,6 +52,7 @@ func (k *Kube) CreateNamespaceQuota(nsName string, quota *api_core.ResourceQuota
 	return quotaAfter, nil
 }
 
+//UpdateNamespaceQuota updates namespace quota
 func (k *Kube) UpdateNamespaceQuota(nsName string, quota *api_core.ResourceQuota) (*api_core.ResourceQuota, error) {
 	quotaAfter, err := k.CoreV1().ResourceQuotas(nsName).Update(quota)
 	if err != nil {
@@ -57,6 +62,7 @@ func (k *Kube) UpdateNamespaceQuota(nsName string, quota *api_core.ResourceQuota
 	return quotaAfter, nil
 }
 
+//DeleteNamespace deletes namespace
 func (k *Kube) DeleteNamespace(nsName string) error {
 	err := k.CoreV1().Namespaces().Delete(nsName, &api_meta.DeleteOptions{})
 	if err != nil {

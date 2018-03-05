@@ -85,7 +85,7 @@ func CreateConfigMap(ctx *gin.Context) {
 	quota, err := kube.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
 		return
 	}
 
@@ -128,7 +128,7 @@ func UpdateConfigMap(ctx *gin.Context) {
 	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
 		return
 	}
 

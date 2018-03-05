@@ -7,10 +7,12 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+//Kube is struct for kubernetes client
 type Kube struct {
 	*kubernetes.Clientset
 }
 
+//RegisterClient creates kubernetes client
 func (k *Kube) RegisterClient(cfgpath string) error {
 	config, err := clientcmd.BuildConfigFromFlags("", cfgpath)
 	if err != nil {
