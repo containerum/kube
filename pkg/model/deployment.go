@@ -104,7 +104,7 @@ func getVolumeMode(volumes []api_core.Volume) map[string]int32 {
 
 //MakeDeployment creates kubernetes v1.Deployment from Deployment struct and namespace labels
 func MakeDeployment(nsName string, depl DeploymentWithOwner, labels map[string]string) (*api_apps.Deployment, []error) {
-	err := validateDeployment(depl)
+	err := ValidateDeployment(depl)
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +190,7 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, []
 		}
 		container.Resources = *rq
 
-		errs := validateContainer(c, *container.Resources.Limits.Cpu(), *container.Resources.Limits.Memory())
+		errs := ValidateContainer(c, *container.Resources.Limits.Cpu(), *container.Resources.Limits.Memory())
 		if err != nil {
 			return nil, nil, nil, errs
 		}
