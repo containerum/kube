@@ -37,7 +37,7 @@ func TestContainsAccess(t *testing.T) {
 func TestIsAdmin(t *testing.T) {
 	e := gin.New()
 	r := gofight.New()
-	e.Use(IsAdmin()).GET("/test", func(c *gin.Context) {
+	e.GET("/test", IsAdmin, func(c *gin.Context) {
 		c.AbortWithStatus(http.StatusOK)
 	})
 	Convey("Test IsAdmin Middleware", t, func() {

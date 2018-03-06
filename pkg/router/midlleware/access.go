@@ -34,39 +34,37 @@ const (
 	namespaceParam = "namespace"
 )
 
-func IsAdmin() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		if role := ctx.GetHeader(userRoleXHeader); role != "admin" {
-			gonic.Gonic(cherry.ErrAdminRequired(), ctx)
+func IsAdmin(ctx *gin.Context) {
+	if role := ctx.GetHeader(userRoleXHeader); role != "admin" {
+		gonic.Gonic(cherry.ErrAdminRequired(), ctx)
+		return
+	}
+	return
+}
+
+func ReadAccess(c *gin.Context) {
+	ns := c.MustGet(NamespaceKey).(string)
+	if c.MustGet(UserRole).(string) == "user" {
+		var userNsData *kubeModel.UserHeaderData
+		nsList := c.MustGet(UserNamespaces).(*model.UserHeaderDataMap)
+		for _, n := range *nsList {
+			if ns == n.Label {
+				userNsData = &n
+				break
+			}
+		}
+		if userNsData != nil {
+			if ok := containsAccess(userNsData.Access, readLevels...); ok {
+				c.Set(NamespaceKey, userNsData.ID)
+				c.Set(NamespaceLabelKey, userNsData.Label)
+				return
+			}
+		} else {
+			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
 	}
-}
-
-func ReadAccess() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ns := c.MustGet(NamespaceKey).(string)
-		if c.MustGet(UserRole).(string) == "user" {
-			var userNsData *kubeModel.UserHeaderData
-			nsList := c.MustGet(UserNamespaces).(*model.UserHeaderDataMap)
-			for _, n := range *nsList {
-				if ns == n.Label {
-					userNsData = &n
-					break
-				}
-			}
-			if userNsData != nil {
-				if ok := containsAccess(userNsData.Access, readLevels...); ok {
-					c.Set(NamespaceKey, userNsData.ID)
-					c.Set(NamespaceLabelKey, userNsData.Label)
-					return
-				}
-			} else {
-				c.AbortWithStatus(http.StatusForbidden)
-				return
-			}
-		}
-	}
+	return
 }
 
 func containsAccess(access string, in ...AccessLevel) bool {
