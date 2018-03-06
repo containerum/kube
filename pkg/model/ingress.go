@@ -171,13 +171,15 @@ func makeIngressRules(rules []kube_types.Rule) ([]api_extensions.IngressRule, []
 func ValidateIngress(ingress IngressWithOwner) []error {
 	errs := []error{}
 	if ingress.Owner == "" {
-		errs = append(errs, errors.New(noOwner))
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
 	} else {
 		if !IsValidUUID(ingress.Owner) {
 			errs = append(errs, errors.New(invalidOwner))
 		}
 	}
-	if len(api_validation.IsDNS1123Subdomain(ingress.Name)) > 0 {
+	if ingress.Name == "" {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
+	} else if len(api_validation.IsDNS1123Subdomain(ingress.Name)) > 0 {
 		errs = append(errs, fmt.Errorf(invalidName, ingress.Name))
 	}
 	if ingress.Rules == nil || len(ingress.Rules) == 0 {
@@ -188,7 +190,9 @@ func ValidateIngress(ingress IngressWithOwner) []error {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Path"))
 		}
 		for _, p := range v.Path {
-			if len(api_validation.IsDNS1123Subdomain(p.ServiceName)) > 0 {
+			if ingress.Name == "" {
+				errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
+			} else if len(api_validation.IsDNS1123Subdomain(p.ServiceName)) > 0 {
 				errs = append(errs, fmt.Errorf(invalidName, p.ServiceName))
 			}
 			if len(api_validation.IsValidPortNum(p.ServicePort)) > 0 {

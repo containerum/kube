@@ -127,13 +127,15 @@ func makeEndpointPorts(ports []json_types.Port) []api_core.EndpointPort {
 func ValidateEndpoint(endpoint json_types.Endpoint) []error {
 	errs := []error{}
 	if endpoint.Owner == nil {
-		errs = append(errs, errors.New(noOwner))
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
 	} else {
 		if !IsValidUUID(*endpoint.Owner) {
 			errs = append(errs, errors.New(invalidOwner))
 		}
 	}
-	if len(api_validation.IsDNS1123Subdomain(endpoint.Name)) > 0 {
+	if endpoint.Name == "" {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
+	} else if len(api_validation.IsDNS1123Subdomain(endpoint.Name)) > 0 {
 		errs = append(errs, fmt.Errorf(invalidName, endpoint.Name))
 	}
 	if endpoint.Addresses == nil || len(endpoint.Addresses) == 0 {
@@ -148,10 +150,14 @@ func ValidateEndpoint(endpoint json_types.Endpoint) []error {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Ports"))
 	}
 	for _, v := range endpoint.Ports {
-		if len(api_validation.IsValidPortName(v.Name)) > 0 {
+		if v.Name == "" {
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port name"))
+		} else if len(api_validation.IsValidPortName(v.Name)) > 0 {
 			errs = append(errs, fmt.Errorf(invalidName, v.Name))
 		}
-		if v.Protocol != "TCP" && v.Protocol != "UDP" {
+		if v.Protocol == "" {
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port protocol"))
+		} else if v.Protocol != "TCP" && v.Protocol != "UDP" {
 			errs = append(errs, fmt.Errorf(invalidProtocol, v.Protocol))
 		}
 		if len(api_validation.IsValidPortNum(v.Port)) > 0 {
