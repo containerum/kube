@@ -345,7 +345,7 @@ func makeTemplateVolumes(volumes []string, cmaps map[string]int64, owner string)
 	return tvolumes
 }
 
-func validateDeployment(deploy DeploymentWithOwner) []error {
+func ValidateDeployment(deploy DeploymentWithOwner) []error {
 	errs := []error{}
 	if deploy.Owner == "" {
 		errs = append(errs, errors.New(noOwner))
@@ -369,7 +369,7 @@ func validateDeployment(deploy DeploymentWithOwner) []error {
 	return nil
 }
 
-func validateContainer(container kube_types.Container, cpu, mem api_resource.Quantity) []error {
+func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Quantity) []error {
 	errs := []error{}
 
 	mincpu, _ := api_resource.ParseQuantity(minDeployCPU)

@@ -73,7 +73,7 @@ func parseEndpointPort(np interface{}) json_types.Port {
 
 // MakeEndpoint creates kubernetes v1.Endpoint from Endpoint struct and namespace labels
 func MakeEndpoint(nsName string, endpoint json_types.Endpoint, labels map[string]string) (*api_core.Endpoints, []error) {
-	err := validateEndpoint(endpoint)
+	err := ValidateEndpoint(endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func makeEndpointPorts(ports []json_types.Port) []api_core.EndpointPort {
 	return endpointports
 }
 
-func validateEndpoint(endpoint json_types.Endpoint) []error {
+func ValidateEndpoint(endpoint json_types.Endpoint) []error {
 	errs := []error{}
 	if endpoint.Owner == nil {
 		errs = append(errs, errors.New(noOwner))
