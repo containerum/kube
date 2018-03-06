@@ -90,13 +90,15 @@ func MakeConfigMap(nsName string, cm ConfigMapWithOwner, labels map[string]strin
 func ValidateConfigMap(cm ConfigMapWithOwner) []error {
 	errs := []error{}
 	if cm.Owner == "" {
-		errs = append(errs, errors.New(noOwner))
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
 	} else {
 		if !IsValidUUID(cm.Owner) {
 			errs = append(errs, errors.New(invalidOwner))
 		}
 	}
-	if len(api_validation.IsDNS1123Subdomain(cm.Name)) > 0 {
+	if cm.Name == "" {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
+	} else if len(api_validation.IsDNS1123Subdomain(cm.Name)) > 0 {
 		errs = append(errs, fmt.Errorf(invalidName, cm.Name))
 	}
 	for k := range cm.Data {

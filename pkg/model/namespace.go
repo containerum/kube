@@ -111,13 +111,14 @@ func MakeNamespace(ns NamespaceWithOwner) (*api_core.Namespace, []error) {
 func validateNamespace(ns NamespaceWithOwner) []error {
 	errs := []error{}
 
-	if len(api_validation.IsDNS1123Subdomain(ns.Label)) > 0 {
+	if ns.Label == "" {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Label"))
+	} else if len(api_validation.IsDNS1123Subdomain(ns.Label)) > 0 {
 		errs = append(errs, fmt.Errorf(invalidName, ns.Label))
 	}
 	if ns.Owner != "" && !IsValidUUID(ns.Owner) {
 		errs = append(errs, errors.New(invalidOwner))
 	}
-
 	if len(errs) > 0 {
 		return errs
 	}

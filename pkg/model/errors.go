@@ -15,7 +15,6 @@ const (
 	invalidReplicas    = "Invalid replicas number: %v. It must be between 1 and %v"
 	invalidPort        = "Invalid port: %v. It must be between %v and %v"
 	invalidProtocol    = "Invalid protocol: %v. It must be TCP or UDP"
-	noOwner            = "Owner should be provided"
 	invalidOwner       = "Owner should be UUID"
 	noContainer        = "Container %v is not found in deployment"
 	invalidName        = "Invalid name: %v. It must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character"
