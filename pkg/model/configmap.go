@@ -60,7 +60,7 @@ func ParseConfigMap(cmi interface{}) (*ConfigMapWithOwner, error) {
 
 // MakeConfigMap creates kubernetes v1.ConfigMap from ConfigMap struct and namespace labels
 func MakeConfigMap(nsName string, cm ConfigMapWithOwner, labels map[string]string) (*api_core.ConfigMap, []error) {
-	err := validateConfigMap(cm)
+	err := ValidateConfigMap(cm)
 	if err != nil {
 		return nil, err
 	}
@@ -84,11 +84,10 @@ func MakeConfigMap(nsName string, cm ConfigMapWithOwner, labels map[string]strin
 		},
 		Data: cm.Data,
 	}
-
 	return &newCm, nil
 }
 
-func validateConfigMap(cm ConfigMapWithOwner) []error {
+func ValidateConfigMap(cm ConfigMapWithOwner) []error {
 	errs := []error{}
 	if cm.Owner == "" {
 		errs = append(errs, errors.New(noOwner))

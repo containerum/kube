@@ -135,7 +135,7 @@ func MakeResourceQuota(ns string, labels map[string]string, resources kube_types
 		return nil, []error{ErrInvalidMemoryFormat}
 	}
 
-	errs := validateResourceQuota(cpuq, memoryq)
+	errs := ValidateResourceQuota(cpuq, memoryq)
 	if errs != nil {
 		return nil, errs
 	}
@@ -162,7 +162,7 @@ func MakeResourceQuota(ns string, labels map[string]string, resources kube_types
 	return &newRq, nil
 }
 
-func validateResourceQuota(cpu, mem api_resource.Quantity) []error {
+func ValidateResourceQuota(cpu, mem api_resource.Quantity) []error {
 	errs := []error{}
 
 	mincpu, _ := api_resource.ParseQuantity(minNamespaceCPU)

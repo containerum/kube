@@ -103,7 +103,7 @@ func parseServicePort(np interface{}) kube_types.ServicePort {
 
 // MakeService creates kubernetes v1.Service from Service struct and namespace labels
 func MakeService(nsName string, service ServiceWithOwner, labels map[string]string) (*api_core.Service, []error) {
-	err := validateService(service)
+	err := ValidateService(service)
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +158,7 @@ func makeServicePorts(ports []kube_types.ServicePort) []api_core.ServicePort {
 	return serviceports
 }
 
-func validateService(service ServiceWithOwner) []error {
+func ValidateService(service ServiceWithOwner) []error {
 	errs := []error{}
 	if service.Owner == "" {
 		errs = append(errs, errors.New(noOwner))

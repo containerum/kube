@@ -1,14 +1,10 @@
 package model
 
 import (
-	//	"fmt"
+	"fmt"
 
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_extensions "k8s.io/api/extensions/v1beta1"
-	//	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
-	//	"k8s.io/apimachinery/pkg/util/intstr"
-	//	api_validation "k8s.io/apimachinery/pkg/util/validation"
-	"fmt"
 
 	"github.com/pkg/errors"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -100,7 +96,7 @@ func parseTLS(tlss []api_extensions.IngressTLS) map[string]string {
 
 // MakeIngress creates kubernetes v1beta1.Ingress from Ingress struct and namespace labels
 func MakeIngress(nsName string, ingress IngressWithOwner, labels map[string]string) (*api_extensions.Ingress, []error) {
-	err := validateIngress(ingress)
+	err := ValidateIngress(ingress)
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +168,7 @@ func makeIngressRules(rules []kube_types.Rule) ([]api_extensions.IngressRule, []
 	return newRules, secrets, tls
 }
 
-func validateIngress(ingress IngressWithOwner) []error {
+func ValidateIngress(ingress IngressWithOwner) []error {
 	errs := []error{}
 	if ingress.Owner == "" {
 		errs = append(errs, errors.New(noOwner))

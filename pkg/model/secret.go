@@ -63,7 +63,7 @@ func ParseSecret(secreti interface{}) (*SecretWithOwner, error) {
 
 // MakeSecret creates kubernetes v1.Secret from Secret struct and namespace labels
 func MakeSecret(nsName string, secret SecretWithOwner, labels map[string]string) (*api_core.Secret, []error) {
-	err := validateSecret(secret)
+	err := ValidateSecret(secret)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +102,7 @@ func makeSecretData(data map[string]string) map[string][]byte {
 	return newData
 }
 
-func validateSecret(secret SecretWithOwner) []error {
+func ValidateSecret(secret SecretWithOwner) []error {
 	errs := []error{}
 	if secret.Owner == "" {
 		errs = append(errs, errors.New(noOwner))
