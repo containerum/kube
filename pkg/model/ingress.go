@@ -12,13 +12,17 @@ import (
 	api_validation "k8s.io/apimachinery/pkg/util/validation"
 )
 
+type IngressesList struct {
+	Ingress []IngressWithOwner `json:"ingresses"`
+}
+
 type IngressWithOwner struct {
 	kube_types.Ingress
 	Owner string `json:"owner,omitempty"`
 }
 
 // ParseIngressList parses kubernetes v1beta1.IngressList to more convenient []Ingress struct
-func ParseIngressList(ingressi interface{}) ([]IngressWithOwner, error) {
+func ParseIngressList(ingressi interface{}) (*IngressesList, error) {
 	ingresses := ingressi.(*api_extensions.IngressList)
 	if ingresses == nil {
 		return nil, ErrUnableConvertIngressList
@@ -31,7 +35,7 @@ func ParseIngressList(ingressi interface{}) ([]IngressWithOwner, error) {
 		}
 		newIngresses = append(newIngresses, *newIngress)
 	}
-	return newIngresses, nil
+	return &IngressesList{newIngresses}, nil
 }
 
 // ParseIngress parses kubernetes v1beta1.Ingress to more convenient Ingress struct

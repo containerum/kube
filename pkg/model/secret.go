@@ -10,13 +10,17 @@ import (
 	api_validation "k8s.io/apimachinery/pkg/util/validation"
 )
 
+type SecretsList struct {
+	Secrets []SecretWithOwner `json:"secrets"`
+}
+
 type SecretWithOwner struct {
 	kube_types.Secret
 	Owner string `json:"owner,omitempty"`
 }
 
 // ParseSecretList parses kubernetes v1.SecretList to more convenient []Secret struct.
-func ParseSecretList(secreti interface{}) ([]SecretWithOwner, error) {
+func ParseSecretList(secreti interface{}) (*SecretsList, error) {
 	secrets := secreti.(*api_core.SecretList)
 	if secrets == nil {
 		return nil, ErrUnableConvertSecretList
@@ -33,7 +37,7 @@ func ParseSecretList(secreti interface{}) ([]SecretWithOwner, error) {
 			newSecrets = append(newSecrets, *newSecret)
 		}
 	}
-	return newSecrets, nil
+	return &SecretsList{newSecrets}, nil
 }
 
 // ParseSecret parses kubernetes v1.Secret to more convenient Secret struct.

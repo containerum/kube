@@ -10,8 +10,12 @@ import (
 	api_validation "k8s.io/apimachinery/pkg/util/validation"
 )
 
+type EndpointsList struct {
+	Endpoints []json_types.Endpoint `json:"endpoints"`
+}
+
 // ParseEndpointList parses kubernetes v1.EndpointsList to more convenient []Endpoint struct
-func ParseEndpointList(endpointi interface{}) ([]json_types.Endpoint, error) {
+func ParseEndpointList(endpointi interface{}) (*EndpointsList, error) {
 	endpoints := endpointi.(*api_core.EndpointsList)
 	if endpoints == nil {
 		return nil, ErrUnableConvertEndpointList
@@ -24,7 +28,7 @@ func ParseEndpointList(endpointi interface{}) ([]json_types.Endpoint, error) {
 		}
 		newEndpoints = append(newEndpoints, *newEndpoint)
 	}
-	return newEndpoints, nil
+	return &EndpointsList{newEndpoints}, nil
 }
 
 // ParseEndpoint parses kubernetes v1.Endpoint to more convenient Endpoint struct

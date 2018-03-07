@@ -8,19 +8,23 @@ import (
 	api_core "k8s.io/api/core/v1"
 )
 
+type PodsList struct {
+	Pods []PodWithOwner `json:"pods"`
+}
+
 type PodWithOwner struct {
 	kube_types.Pod
 	Owner string `json:"owner,omitempty"`
 }
 
 // ParsePodList parses kubernetes v1.PodList to more convenient []Pod struct.
-func ParsePodList(pods interface{}) []PodWithOwner {
+func ParsePodList(pods interface{}) *PodsList {
 	objects := pods.(*api_core.PodList)
 	var pos []PodWithOwner
 	for _, po := range objects.Items {
 		pos = append(pos, ParsePod(&po))
 	}
-	return pos
+	return &PodsList{pos}
 }
 
 // ParsePod parses kubernetes v1.PodList to more convenient Pod struct.

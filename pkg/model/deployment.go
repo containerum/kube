@@ -30,13 +30,17 @@ const (
 	maxDeployReplicas = 10
 )
 
+type DeploymentsList struct {
+	Deployments []DeploymentWithOwner `json:"deployments"`
+}
+
 type DeploymentWithOwner struct {
 	kube_types.Deployment
 	Owner string `json:"owner,omitempty"`
 }
 
 // ParseDeploymentList parses kubernetes v1.DeploymentList to more convenient []Deployment struct
-func ParseDeploymentList(deploys interface{}) ([]DeploymentWithOwner, error) {
+func ParseDeploymentList(deploys interface{}) (*DeploymentsList, error) {
 	objects := deploys.(*api_apps.DeploymentList)
 	if objects == nil {
 		return nil, ErrUnableConvertDeploymentList
@@ -51,7 +55,7 @@ func ParseDeploymentList(deploys interface{}) ([]DeploymentWithOwner, error) {
 
 		deployments = append(deployments, *deployment)
 	}
-	return deployments, nil
+	return &DeploymentsList{deployments}, nil
 }
 
 // ParseDeployment parses kubernetes v1.Deployment to more convenient Deployment struct
