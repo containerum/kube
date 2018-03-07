@@ -2,14 +2,19 @@ package router
 
 import (
 	"net/http"
-	"time"
 
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	h "git.containerum.net/ch/kube-api/pkg/router/handlers"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
-	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/sirupsen/logrus"
 
+	"time"
+
+	ch "git.containerum.net/ch/kube-client/pkg/cherry"
+	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/cherrylog"
+	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
+	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
+	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,7 +28,7 @@ func CreateRouter(kube *kubernetes.Kube, debug bool) http.Handler {
 func initMiddlewares(e *gin.Engine, kube *kubernetes.Kube) {
 	/* System */
 	e.Use(ginrus.Ginrus(logrus.WithField("component", "gin"), time.RFC3339, true))
-	e.Use(gin.RecoveryWithWriter(logrus.WithField("component", "gin_recovery").WriterLevel(logrus.ErrorLevel)))
+	e.Use(gonic.Recovery(func() *ch.Err { return cherry.ErrUnableCreateResource() }, cherrylog.NewLogrusAdapter(logrus.WithField("component", "gin"))))
 	/* Custom */
 	e.Use(m.RequiredUserHeaders())
 	e.Use(m.SetNamespace())

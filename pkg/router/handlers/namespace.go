@@ -25,6 +25,9 @@ func GetNamespaceList(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
+	gonic.Gonic(cherry.ErrInvalidRole(), ctx)
+	return
+
 	quotas, err := kube.GetNamespaceQuotaList(ctx.Query(ownerQuery))
 	if err != nil {
 		ctx.Error(err)
@@ -43,11 +46,14 @@ func GetNamespaceList(ctx *gin.Context) {
 }
 
 func GetNamespace(ctx *gin.Context) {
-	log.WithField("Namespace", ctx.Param(namespaceParam)).Debug("Get namespace Call")
+	log.WithFields(log.Fields{
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+	}).Debug("Get namespace Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	quota, err := kube.GetNamespaceQuota(ctx.Param(namespaceParam))
+	quota, err := kube.GetNamespaceQuota(ctx.MustGet(m.NamespaceKey).(string))
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableGetResource()), ctx)
