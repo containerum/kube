@@ -25,9 +25,6 @@ func GetNamespaceList(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	gonic.Gonic(cherry.ErrInvalidRole(), ctx)
-	return
-
 	quotas, err := kube.GetNamespaceQuotaList(ctx.Query(ownerQuery))
 	if err != nil {
 		ctx.Error(err)
