@@ -10,7 +10,6 @@ import (
 
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/router"
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
@@ -35,10 +34,6 @@ func server(c *cli.Context) error {
 
 	kube := kubernetes.Kube{}
 	kube.RegisterClient(c.String("kubeconf"))
-
-	if c.String("resource_service_url") == "" {
-		exitOnErr(errors.New("resource service url is required"))
-	}
 
 	app := router.CreateRouter(&kube, c.Bool("debug"))
 
