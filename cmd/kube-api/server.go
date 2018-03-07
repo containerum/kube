@@ -26,11 +26,6 @@ var flags = []cli.Flag{
 		Name:   "kubeconf",
 		Usage:  "config file for kubernetes apiserver client",
 	},
-	cli.StringFlag{
-		EnvVar: "CH_KUBE_API_RESOURCE_SERVICE_URL",
-		Name:   "resource_service_url",
-		Usage:  "resource service URL",
-	},
 }
 
 func server(c *cli.Context) error {
