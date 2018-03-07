@@ -4,19 +4,23 @@
 [[projects]]
   branch = "master"
   name = "git.containerum.net/ch/json-types"
-  packages = ["kube-api"]
-  revision = "c385a9fdb97c8eab793d03695b191edb24885eff"
+  packages = [
+    "kube-api",
+    "user-manager"
+  ]
+  revision = "2b91a176625129c8b8d97820c4016459a89530d5"
 
 [[projects]]
   branch = "develop"
   name = "git.containerum.net/ch/kube-client"
   packages = [
     "pkg/cherry",
+    "pkg/cherry/adaptors/cherrylog",
     "pkg/cherry/adaptors/gonic",
     "pkg/cherry/kube-api",
     "pkg/model"
   ]
-  revision = "21a88c5ebd7186a4a69675746767337b292ee81d"
+  revision = "f691d505c0a0c012453678a7e63c8d7d1d6c5bb1"
 
 [[projects]]
   name = "github.com/PuerkitoBio/purell"
@@ -95,13 +99,19 @@
   branch = "master"
   name = "github.com/go-openapi/spec"
   packages = ["."]
-  revision = "1de3e0542de65ad8d75452a595886fdd0befb363"
+  revision = "d8000b5bfbd1147255710505a27c735b6b2ae2ac"
 
 [[projects]]
   branch = "master"
   name = "github.com/go-openapi/swag"
   packages = ["."]
-  revision = "0d03ad0b6405ada874d59d97c416b5cf4234e154"
+  revision = "ceb469cb0fdf2d792f28d771bc05da6c606f55e5"
+
+[[projects]]
+  name = "github.com/go-resty/resty"
+  packages = ["."]
+  revision = "65798e030a35b911602b4d1d743d6f50ac93b665"
+  version = "v1.3"
 
 [[projects]]
   name = "github.com/gogo/protobuf"
@@ -177,7 +187,7 @@
     ".",
     "diskcache"
   ]
-  revision = "2bcd89a1743fd4b373f7370ce8ddc14dfbd18229"
+  revision = "9cad4c3443a7200dd6400aef47183728de563a38"
 
 [[projects]]
   branch = "master"
@@ -217,7 +227,7 @@
     "jlexer",
     "jwriter"
   ]
-  revision = "32fa128f234d041f196a9f3e0fea5ac9772c08e1"
+  revision = "8f7b30c7ef1dfd23a196867f5d63cbcf08f60088"
 
 [[projects]]
   name = "github.com/mattn/go-isatty"
@@ -228,8 +238,8 @@
 [[projects]]
   name = "github.com/modern-go/concurrent"
   packages = ["."]
-  revision = "938152ca6a933f501bb238954eebd3cbcbf489ff"
-  version = "1.0.2"
+  revision = "bacd9c7ef1dd9b15be4a9909b8ac7a4e313eec94"
+  version = "1.0.3"
 
 [[projects]]
   name = "github.com/modern-go/reflect2"
@@ -274,8 +284,8 @@
     "internal/go-render/render",
     "internal/oglematchers"
   ]
-  revision = "0b37b35ec7434b77e77a4bb29b79677cced992ea"
-  version = "1.8.1"
+  revision = "7678a5452ebea5b7090a6b163f844c133f523da2"
+  version = "1.8.3"
 
 [[projects]]
   name = "github.com/smartystreets/goconvey"
@@ -315,7 +325,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "91a49db82a88618983a78a06c1cbd4e00ab749ab"
+  revision = "85f98707c97e11569271e4d9b3d397e079c4f4d0"
 
 [[projects]]
   branch = "master"
@@ -324,9 +334,10 @@
     "http2",
     "http2/hpack",
     "idna",
-    "lex/httplex"
+    "lex/httplex",
+    "publicsuffix"
   ]
-  revision = "cbe0f9307d0156177f9dd5dc85da1a31abc5f2fb"
+  revision = "d25186b37f34ebdbbea8f488ef055638dfab272d"
 
 [[projects]]
   branch = "master"
@@ -335,7 +346,7 @@
     "unix",
     "windows"
   ]
-  revision = "f6cff0780e542efa0c8e864dc8fa522808f6a598"
+  revision = "dd2ff4accc098aceecb86b36eaa7829b2a17b1c9"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -516,6 +527,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "fb532a42b2e93d4afa639bd614da1f576582363078678dfa8c444aefdac7ceef"
+  inputs-digest = "41268b6bd6151ec1e9379911f3f6d16e4c2822e22e4c683b792a4eacfc36ef19"
   solver-name = "gps-cdcl"
   solver-version = 1
