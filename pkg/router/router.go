@@ -28,7 +28,7 @@ func CreateRouter(kube *kubernetes.Kube, debug bool) http.Handler {
 func initMiddlewares(e *gin.Engine, kube *kubernetes.Kube) {
 	/* System */
 	e.Use(ginrus.Ginrus(logrus.WithField("component", "gin"), time.RFC3339, true))
-	e.Use(gonic.Recovery(func() *ch.Err { return cherry.ErrUnableCreateResource() }, cherrylog.NewLogrusAdapter(logrus.WithField("component", "gin"))))
+	e.Use(gonic.Recovery(func() *ch.Err { return cherry.ErrInternalError() }, cherrylog.NewLogrusAdapter(logrus.WithField("component", "gin"))))
 	/* Custom */
 	e.Use(m.RequiredUserHeaders())
 	e.Use(m.SetNamespace())
