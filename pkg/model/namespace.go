@@ -24,6 +24,10 @@ const (
 	maxNamespaceMemory = "10Gi"
 )
 
+type NamespacesList struct {
+	Namespaces []NamespaceWithOwner `json:"namespaces"`
+}
+
 type NamespaceWithOwner struct {
 	kube_types.Namespace
 	Owner string `json:"owner,omitempty"`
@@ -31,7 +35,7 @@ type NamespaceWithOwner struct {
 
 // ParseResourceQuotaList parses kubernetes v1.ResourceQuotaList to more convenient []Namespace struct.
 // (resource quouta contains all fields that parent namespace contains)
-func ParseResourceQuotaList(quotas interface{}) ([]NamespaceWithOwner, error) {
+func ParseResourceQuotaList(quotas interface{}) (*NamespacesList, error) {
 	objects := quotas.(*api_core.ResourceQuotaList)
 	if objects == nil {
 		return nil, ErrUnableConvertNamespaceList
@@ -45,7 +49,7 @@ func ParseResourceQuotaList(quotas interface{}) ([]NamespaceWithOwner, error) {
 		}
 		namespaces = append(namespaces, *ns)
 	}
-	return namespaces, nil
+	return &NamespacesList{namespaces}, nil
 }
 
 // ParseResourceQuota parses kubernetes v1.ResourceQuota to more convenient Namespace struct.
@@ -61,14 +65,13 @@ func ParseResourceQuota(quota interface{}) (*NamespaceWithOwner, error) {
 	cpuUsed := obj.Status.Used[api_core.ResourceLimitsCPU]
 	memoryUsed := obj.Status.Used[api_core.ResourceLimitsMemory]
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
-
-	//	createdAt := obj.ObjectMeta.CreationTimestamp.Unix()
+	createdAt := obj.ObjectMeta.CreationTimestamp.Unix()
 
 	return &NamespaceWithOwner{
 		Owner: owner,
 		Namespace: kube_types.Namespace{
-			Label: obj.GetNamespace(),
-			//TODO			CreatedAt: &createdAt,
+			Label:     obj.GetNamespace(),
+			CreatedAt: &createdAt,
 			Resources: kube_types.Resources{
 				Hard: kube_types.Resource{
 					CPU:    cpuLimit.String(),

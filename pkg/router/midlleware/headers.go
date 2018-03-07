@@ -7,6 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"fmt"
+
 	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
 	log "github.com/sirupsen/logrus"
@@ -23,31 +25,41 @@ var (
 )
 
 func RequiredUserHeaders() gin.HandlerFunc {
-	return func(c *gin.Context) {
+	return func(ctx *gin.Context) {
+		notFoundHeaders := requireHeaders(ctx, userRoleXHeader)
+		if len(notFoundHeaders) > 0 {
+			gonic.Gonic(cherry.ErrRequiredHeadersNotProvided().AddDetails(notFoundHeaders...), ctx)
+			return
+		}
 		/* Check User-Role and User-Namespace, X-User-Volume */
-		if isUser, err := checkIsUserRole(c.GetHeader(userRoleXHeader)); err != nil {
-			log.WithField("Value", c.GetHeader(userRoleXHeader)).WithError(err).Warn("Check User-Role Error")
-			gonic.Gonic(cherry.ErrRequiredHeadersNotProvided(), c)
+		if isUser, err := checkIsUserRole(ctx.GetHeader(userRoleXHeader)); err != nil {
+			log.WithField("Value", ctx.GetHeader(userRoleXHeader)).WithError(err).Warn("Check User-Role Error")
+			gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetails("Invalid user role"), ctx)
 		} else {
 			//User-Role: user, check User-Namespace, X-User-Volume
+			notFoundHeaders := requireHeaders(ctx, userNamespaceXHeader, userVolumeXHeader)
+			if len(notFoundHeaders) > 0 {
+				gonic.Gonic(cherry.ErrRequiredHeadersNotProvided().AddDetails(notFoundHeaders...), ctx)
+				return
+			}
 			if isUser {
-				userNs, errNs := checkUserNamespace(c.GetHeader(userNamespaceXHeader))
-				userVol, errVol := checkUserVolume(c.GetHeader(userVolumeXHeader))
+				userNs, errNs := checkUserNamespace(ctx.GetHeader(userNamespaceXHeader))
+				userVol, errVol := checkUserVolume(ctx.GetHeader(userVolumeXHeader))
 				if errNs != nil {
-					log.WithField("Value", c.GetHeader(userNamespaceXHeader)).WithError(errNs).Warn("Check User-Namespace header Error")
-					gonic.Gonic(cherry.ErrRequiredHeadersNotProvided(), c)
+					log.WithField("Value", ctx.GetHeader(userNamespaceXHeader)).WithError(errNs).Warn("Check User-Namespace header Error")
+					gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetails(fmt.Sprintf("%v: %v", userNamespaceXHeader, errNs)), ctx)
 					return
 				}
 				if errVol != nil {
-					log.WithField("Value", c.GetHeader(userVolumeXHeader)).WithError(errVol).Warn("Check User-Volume header Error")
-					gonic.Gonic(cherry.ErrRequiredHeadersNotProvided(), c)
+					log.WithField("Value", ctx.GetHeader(userVolumeXHeader)).WithError(errVol).Warn("Check User-Volume header Error")
+					gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetails(fmt.Sprintf("%v: %v", userVolumeXHeader, errVol)), ctx)
 					return
 				}
-				c.Set(UserNamespaces, userNs)
-				c.Set(UserVolumes, userVol)
+				ctx.Set(UserNamespaces, userNs)
+				ctx.Set(UserVolumes, userVol)
 			}
 		}
-		c.Set(UserRole, c.GetHeader(userRoleXHeader))
+		ctx.Set(UserRole, ctx.GetHeader(userRoleXHeader))
 	}
 }
 
@@ -67,4 +79,13 @@ func checkUserNamespace(userNamespace string) (*model.UserHeaderDataMap, error) 
 
 func checkUserVolume(userVolume string) (*model.UserHeaderDataMap, error) {
 	return model.ParseUserHeaderData(userVolume)
+}
+
+func requireHeaders(ctx *gin.Context, headers ...string) (notFoundHeaders []string) {
+	for _, v := range headers {
+		if ctx.GetHeader(v) == "" {
+			notFoundHeaders = append(notFoundHeaders, v)
+		}
+	}
+	return
 }

@@ -28,7 +28,7 @@ var (
 	ErrInvalidCPUFormat    = errors.New("Invalid cpu quota format")
 	ErrInvalidMemoryFormat = errors.New("Invalid memory quota format")
 
-	ErrUnableEncodeUserHeaderData    = errors.New("Unbale to encode user header data")
+	ErrUnableDecodeUserHeaderData    = errors.New("Unbale to decode user header data")
 	ErrUnableUnmarshalUserHeaderData = errors.New("Unable to unmarshal user header data")
 
 	ErrUnableConvertServiceList = errors.New("Unable to decode services list")

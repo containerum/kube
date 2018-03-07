@@ -20,6 +20,10 @@ const (
 	maxport = 65535
 )
 
+type ServicesList struct {
+	Services []ServiceWithOwner `json:"services"`
+}
+
 type ServiceWithOwner struct {
 	kube_types.Service
 	Owner      string `json:"owner,omitempty"`
@@ -32,7 +36,7 @@ const (
 )
 
 // ParseServiceList parses kubernetes v1.ServiceList to more convenient Service struct.
-func ParseServiceList(ns interface{}) ([]ServiceWithOwner, error) {
+func ParseServiceList(ns interface{}) (*ServicesList, error) {
 	nativeServices := ns.(*api_core.ServiceList)
 	if nativeServices == nil {
 		return nil, ErrUnableConvertServiceList
@@ -49,7 +53,7 @@ func ParseServiceList(ns interface{}) ([]ServiceWithOwner, error) {
 			serviceList = append(serviceList, *service)
 		}
 	}
-	return serviceList, nil
+	return &ServicesList{serviceList}, nil
 }
 
 // ParseService parses kubernetes v1.Service to more convenient Service struct.

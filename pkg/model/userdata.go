@@ -14,8 +14,8 @@ type UserHeaderDataMap map[string]model.UserHeaderData
 func ParseUserHeaderData(str string) (*UserHeaderDataMap, error) {
 	data, err := base64.StdEncoding.DecodeString(str)
 	if err != nil {
-		log.WithError(err).WithField("Value", str).Warn(ErrUnableEncodeUserHeaderData)
-		return nil, ErrUnableEncodeUserHeaderData
+		log.WithError(err).WithField("Value", str).Warn(ErrUnableDecodeUserHeaderData)
+		return nil, ErrUnableDecodeUserHeaderData
 	}
 	var userData []model.UserHeaderData
 	err = json.Unmarshal(data, &userData)

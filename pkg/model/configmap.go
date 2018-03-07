@@ -10,13 +10,17 @@ import (
 	api_validation "k8s.io/apimachinery/pkg/util/validation"
 )
 
+type ConfigMapsList struct {
+	ConfigMaps []ConfigMapWithOwner `json:"configmaps"`
+}
+
 type ConfigMapWithOwner struct {
 	kube_types.ConfigMap
 	Owner string `json:"owner,omitempty"`
 }
 
 // ParseConfigMapList parses kubernetes v1.ConfigMapList to more convenient []ConfigMap struct.
-func ParseConfigMapList(cmi interface{}) ([]ConfigMapWithOwner, error) {
+func ParseConfigMapList(cmi interface{}) (*ConfigMapsList, error) {
 	cm := cmi.(*api_core.ConfigMapList)
 	if cm == nil {
 		return nil, ErrUnableConvertConfigMapList
@@ -30,7 +34,7 @@ func ParseConfigMapList(cmi interface{}) ([]ConfigMapWithOwner, error) {
 		}
 		newCms = append(newCms, *newCm)
 	}
-	return newCms, nil
+	return &ConfigMapsList{newCms}, nil
 }
 
 // ParseConfigMap parses kubernetes v1.ConfigMap to more convenient ConfigMap struct.
