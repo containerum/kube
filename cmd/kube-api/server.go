@@ -35,7 +35,6 @@ var flags = []cli.Flag{
 
 func server(c *cli.Context) error {
 	if c.Bool("debug") {
-		//log.SetFormatter(&log.TextFormatter{})
 		log.SetLevel(log.DebugLevel)
 	}
 
@@ -45,7 +44,6 @@ func server(c *cli.Context) error {
 	if c.String("resource_service_url") == "" {
 		exitOnErr(errors.New("resource service url is required"))
 	}
-	//rs := clients.NewHTTPUserManagerClient(c.String("resource_service_url"))
 
 	app := router.CreateRouter(&kube, c.Bool("debug"))
 
