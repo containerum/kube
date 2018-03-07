@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -28,7 +29,6 @@ var flags = []cli.Flag{
 
 func server(c *cli.Context) error {
 	if c.Bool("debug") {
-		//log.SetFormatter(&log.TextFormatter{})
 		log.SetLevel(log.DebugLevel)
 	}
 
@@ -38,18 +38,12 @@ func server(c *cli.Context) error {
 	app := router.CreateRouter(&kube, c.Bool("debug"))
 
 	// for graceful shutdown
-	httpsrv := &http.Server{
+	srv := &http.Server{
 		Addr:    ":1212",
 		Handler: app,
 	}
 
-	// serve connections
-	go func() {
-		if err := httpsrv.ListenAndServe(); err != nil {
-			log.WithError(err).Error("http server start failed")
-			os.Exit(1)
-		}
-	}()
+	go exitOnErr(srv.ListenAndServe())
 
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 5 seconds.
@@ -61,5 +55,12 @@ func server(c *cli.Context) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	return httpsrv.Shutdown(ctx)
+	return srv.Shutdown(ctx)
+}
+
+func exitOnErr(err error) {
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }

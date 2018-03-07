@@ -10,7 +10,8 @@ const (
 	UserVolumes    = "user-volumes"
 	UserRole       = "user-role"
 
-	KubeClient = "kubernetes-client"
+	KubeClient     = "kubernetes-client"
+	ResourceClient = "rs-client"
 
 	NamespaceKey      = "namespace"
 	NamespaceLabelKey = "namespace-key"

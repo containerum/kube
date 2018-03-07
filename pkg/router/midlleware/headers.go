@@ -34,7 +34,7 @@ func RequiredUserHeaders() gin.HandlerFunc {
 		/* Check User-Role and User-Namespace, X-User-Volume */
 		if isUser, err := checkIsUserRole(ctx.GetHeader(userRoleXHeader)); err != nil {
 			log.WithField("Value", ctx.GetHeader(userRoleXHeader)).WithError(err).Warn("Check User-Role Error")
-			gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetails("Invalid user role"), ctx)
+			gonic.Gonic(cherry.ErrInvalidRole(), ctx)
 		} else {
 			//User-Role: user, check User-Namespace, X-User-Volume
 			notFoundHeaders := requireHeaders(ctx, userNamespaceXHeader, userVolumeXHeader)

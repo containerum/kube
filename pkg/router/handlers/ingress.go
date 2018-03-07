@@ -19,12 +19,13 @@ const (
 
 func GetIngressList(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": ctx.Param(namespaceParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
 	}).Debug("Create secret Call")
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	ingressList, err := kubecli.GetIngressList(ctx.Param(namespaceParam))
+	ingressList, err := kubecli.GetIngressList(ctx.MustGet(m.NamespaceKey).(string))
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
@@ -43,12 +44,14 @@ func GetIngressList(ctx *gin.Context) {
 
 func GetIngress(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": ctx.Param(namespaceParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+		"Ingress":         ctx.Param(ingressParam),
 	}).Debug("Create secret Call")
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	ingress, err := kubecli.GetIngress(ctx.Param(namespaceParam), ctx.Param(ingressParam))
+	ingress, err := kubecli.GetIngress(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(ingressParam))
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableGetResource()), ctx)

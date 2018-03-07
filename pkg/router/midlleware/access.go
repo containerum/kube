@@ -56,9 +56,12 @@ func ReadAccess(c *gin.Context) {
 				c.Set(NamespaceKey, userNsData.ID)
 				c.Set(NamespaceLabelKey, userNsData.Label)
 				return
+			} else {
+				gonic.Gonic(cherry.ErrAccessError(), c)
+				return
 			}
 		} else {
-			cherry.ErrRequestValidationFailed()
+			gonic.Gonic(cherry.ErrAccessError(), c)
 			return
 		}
 	}
