@@ -70,21 +70,25 @@ func (k *Kube) GetPodLogs(ns string, po string, out *bytes.Buffer, opt *LogOptio
 	})
 	readCloser, err := req.Stream()
 	if err != nil {
+		log.WithError(err).Debug("STREAM")
 		return err
 	}
 	defer readCloser.Close()
 	for {
 		select {
 		case <-opt.StopFollow:
+			log.WithError(err).Debug("FOLLOW")
 			return nil
 		default:
 			buf := make([]byte, 1024)
 			_, err := readCloser.Read(buf)
 			if err != nil {
+				log.WithError(err).Debug("READ")
 				return err
 			}
 			_, err = out.Write(buf)
 			if err != nil {
+				log.WithError(err).Debug("WRITE")
 				return err
 			}
 		}
