@@ -26,6 +26,7 @@ var (
 
 func RequiredUserHeaders() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		log.WithField("Headers", ctx.Request.Header).Debug("Header list")
 		notFoundHeaders := requireHeaders(ctx, userRoleXHeader)
 		if len(notFoundHeaders) > 0 {
 			gonic.Gonic(cherry.ErrRequiredHeadersNotProvided().AddDetails(notFoundHeaders...), ctx)
