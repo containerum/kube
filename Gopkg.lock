@@ -4,14 +4,10 @@
 [[projects]]
   branch = "master"
   name = "git.containerum.net/ch/json-types"
-  packages = [
-    "kube-api",
-    "user-manager"
-  ]
+  packages = ["kube-api"]
   revision = "2b91a176625129c8b8d97820c4016459a89530d5"
 
 [[projects]]
-  branch = "develop"
   name = "git.containerum.net/ch/kube-client"
   packages = [
     "pkg/cherry",
@@ -20,7 +16,8 @@
     "pkg/cherry/kube-api",
     "pkg/model"
   ]
-  revision = "f691d505c0a0c012453678a7e63c8d7d1d6c5bb1"
+  revision = "ec0ed453031faa1f30e18eb6eed19ed4af6cfe6d"
+  version = "v0.2.1"
 
 [[projects]]
   name = "github.com/PuerkitoBio/purell"
@@ -106,12 +103,6 @@
   name = "github.com/go-openapi/swag"
   packages = ["."]
   revision = "ceb469cb0fdf2d792f28d771bc05da6c606f55e5"
-
-[[projects]]
-  name = "github.com/go-resty/resty"
-  packages = ["."]
-  revision = "65798e030a35b911602b4d1d743d6f50ac93b665"
-  version = "v1.3"
 
 [[projects]]
   name = "github.com/gogo/protobuf"
@@ -334,8 +325,7 @@
     "http2",
     "http2/hpack",
     "idna",
-    "lex/httplex",
-    "publicsuffix"
+    "lex/httplex"
   ]
   revision = "d25186b37f34ebdbbea8f488ef055638dfab272d"
 
@@ -527,6 +517,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "41268b6bd6151ec1e9379911f3f6d16e4c2822e22e4c683b792a4eacfc36ef19"
+  inputs-digest = "3d29e17ff848b8e3440da7e8ad3cc1d874fb7592e303437e6c9097be3b9ab125"
   solver-name = "gps-cdcl"
   solver-version = 1
