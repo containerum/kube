@@ -89,12 +89,13 @@ func DeletePod(ctx *gin.Context) {
 
 func GetPodLogs(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": ctx.Param(namespaceParam),
-		"Pod":       ctx.Param(podParam),
-		"Follow":    ctx.Query(followQuery),
-		"Tail":      ctx.Query(tailQuery),
-		"Container": ctx.Query(containerQuery),
-		"Previous":  ctx.Query(previousQuery),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+		"Pod":             ctx.Param(podParam),
+		"Follow":          ctx.Query(followQuery),
+		"Tail":            ctx.Query(tailQuery),
+		"Container":       ctx.Query(containerQuery),
+		"Previous":        ctx.Query(previousQuery),
 	}).Debug("Get pod logs Call")
 
 	conn, err := wsupgrader.Upgrade(ctx.Writer, ctx.Request, nil)
@@ -106,8 +107,9 @@ func GetPodLogs(ctx *gin.Context) {
 	stream := new(bytes.Buffer)
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	logOpt := makeLogOption(ctx)
+	ns := ctx.MustGet(m.NamespaceKey).(string)
 
-	go kube.GetPodLogs(ctx.Param(namespaceParam), ctx.Param(podParam), stream, &logOpt)
+	go kube.GetPodLogs(ns, ctx.Param(podParam), stream, &logOpt)
 	go writeLogs(conn, stream, &logOpt.StopFollow)
 }
 
