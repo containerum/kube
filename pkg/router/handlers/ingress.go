@@ -70,7 +70,8 @@ func GetIngress(ctx *gin.Context) {
 
 func CreateIngress(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": ctx.Param(namespaceParam),
+		"Namespace_Param": ctx.Param(namespaceParam),
+		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
 	}).Debug("Create secret Call")
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -82,14 +83,14 @@ func CreateIngress(ctx *gin.Context) {
 		return
 	}
 
-	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
+	quota, err := kubecli.GetNamespaceQuota(ctx.MustGet(m.NamespaceKey).(string))
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
 		return
 	}
 
-	newIngress, errs := model.MakeIngress(ctx.Param(namespaceParam), ingress, quota.Labels)
+	newIngress, errs := model.MakeIngress(ctx.MustGet(m.NamespaceKey).(string), ingress, quota.Labels)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
@@ -112,7 +113,8 @@ func CreateIngress(ctx *gin.Context) {
 
 func UpdateIngress(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": ctx.Param(namespaceParam),
+		"Namespace_Param": ctx.Param(namespaceParam),
+		"Namespace": ctx.MustGet(m.NamespaceKey).(string),
 		"Ingress":   ctx.Param(ingressParam),
 	}).Debug("Create secret Call")
 
@@ -127,14 +129,14 @@ func UpdateIngress(ctx *gin.Context) {
 
 	ingress.Name = ctx.Param(ingressParam)
 
-	quota, err := kube.GetNamespaceQuota(ctx.Param(namespaceParam))
+	quota, err := kube.GetNamespaceQuota(ctx.MustGet(m.NamespaceKey).(string))
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
 		return
 	}
 
-	newIngress, errs := model.MakeIngress(ctx.Param(namespaceParam), ingress, quota.Labels)
+	newIngress, errs := model.MakeIngress(ctx.MustGet(m.NamespaceKey).(string), ingress, quota.Labels)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
@@ -157,12 +159,13 @@ func UpdateIngress(ctx *gin.Context) {
 
 func DeleteIngress(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": ctx.Param(namespaceParam),
+		"Namespace_Param": ctx.Param(namespaceParam),
+		"Namespace": ctx.MustGet(m.NamespaceKey).(string),
 	}).Debug("Create secret Call")
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	err := kubecli.DeleteIngress(ctx.Param(namespaceParam), ctx.Param(ingressParam))
+	err := kubecli.DeleteIngress(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(ingressParam))
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
