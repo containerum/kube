@@ -96,11 +96,12 @@ func ParseService(srv interface{}) (*ServiceWithOwner, error) {
 
 func parseServicePort(np interface{}) kube_types.ServicePort {
 	nativePort := np.(api_core.ServicePort)
+	port := int(nativePort.Port)
 	targetPort := int(nativePort.TargetPort.IntVal)
 	return kube_types.ServicePort{
 		Name:       nativePort.Name,
-		Port:       int(nativePort.Port),
-		TargetPort: &targetPort,
+		Port:       &port,
+		TargetPort: targetPort,
 		Protocol:   kube_types.Protocol(nativePort.Protocol),
 	}
 }
@@ -151,12 +152,16 @@ func MakeService(nsName string, service ServiceWithOwner, labels map[string]stri
 func makeServicePorts(ports []kube_types.ServicePort) []api_core.ServicePort {
 	var serviceports []api_core.ServicePort
 	if ports != nil {
-		for _, v := range ports {
-			var targetport intstr.IntOrString
-			if v.TargetPort != nil {
-				targetport = intstr.FromInt(*v.TargetPort)
+		for _, port := range ports {
+			if port.Port == nil {
+				port.Port = &port.TargetPort
 			}
-			serviceports = append(serviceports, api_core.ServicePort{Name: v.Name, Protocol: api_core.Protocol(v.Protocol), Port: int32(v.Port), TargetPort: targetport})
+			serviceports = append(serviceports, api_core.ServicePort{
+				Name:       port.Name,
+				Protocol:   api_core.Protocol(port.Protocol),
+				Port:       int32(*port.Port),
+				TargetPort: intstr.FromInt(port.TargetPort),
+			})
 		}
 	}
 	return serviceports
@@ -190,9 +195,9 @@ func ValidateService(service ServiceWithOwner) []error {
 		} else if v.Protocol != kube_types.UDP && v.Protocol != kube_types.TCP {
 			errs = append(errs, fmt.Errorf(invalidProtocol, v.Protocol))
 		}
-		if len(api_validation.IsInRange(v.Port, minport, maxport)) > 0 {
-			errs = append(errs, fmt.Errorf(invalidPort, v.Port, minport, maxport))
-		}
+		//if len(api_validation.IsInRange(v.Port, minport, maxport)) > 0 {
+		//	errs = append(errs, fmt.Errorf(invalidPort, v.Port, minport, maxport))
+		//}
 	}
 	if len(errs) > 0 {
 		return errs
