@@ -182,24 +182,27 @@ func GetSelectedIngresses(ctx *gin.Context) {
 
 	ingresses := make(map[string]model.IngressesList, 0)
 
-	nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
-	for _, n := range *nsList {
+	role := ctx.MustGet(m.UserRole).(string)
+	if role == "user" {
+		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
+		for _, n := range *nsList {
 
-		ingressList, err := kubecli.GetIngressList(n.ID)
-		if err != nil {
-			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
-			return
+			ingressList, err := kubecli.GetIngressList(n.ID)
+			if err != nil {
+				ctx.Error(err)
+				gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+				return
+			}
+
+			il, err := model.ParseIngressList(ingressList)
+			if err != nil {
+				ctx.Error(err)
+				gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+				return
+			}
+
+			ingresses[n.Label] = *il
 		}
-
-		il, err := model.ParseIngressList(ingressList)
-		if err != nil {
-			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
-			return
-		}
-
-		ingresses[n.Label] = *il
 	}
 
 	ctx.JSON(http.StatusOK, ingresses)
