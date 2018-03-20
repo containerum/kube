@@ -4,8 +4,11 @@
 [[projects]]
   branch = "master"
   name = "git.containerum.net/ch/json-types"
-  packages = ["kube-api"]
-  revision = "2b91a176625129c8b8d97820c4016459a89530d5"
+  packages = [
+    "kube-api",
+    "user-manager"
+  ]
+  revision = "2b7a55bc8ebcc50ddcea49df46e9907c02955d18"
 
 [[projects]]
   name = "git.containerum.net/ch/kube-client"
@@ -16,8 +19,8 @@
     "pkg/cherry/kube-api",
     "pkg/model"
   ]
-  revision = "2035dec77ef785eae29663b2b361d1d6701eedfc"
-  version = "v0.2.2"
+  revision = "09a5775c1583053a2a4770025f8f8ffcf795e163"
+  version = "v0.2.4"
 
 [[projects]]
   name = "github.com/PuerkitoBio/purell"
@@ -105,6 +108,12 @@
   revision = "ceb469cb0fdf2d792f28d771bc05da6c606f55e5"
 
 [[projects]]
+  name = "github.com/go-resty/resty"
+  packages = ["."]
+  revision = "65798e030a35b911602b4d1d743d6f50ac93b665"
+  version = "v1.3"
+
+[[projects]]
   name = "github.com/gogo/protobuf"
   packages = [
     "proto",
@@ -163,7 +172,7 @@
   branch = "master"
   name = "github.com/gopherjs/gopherjs"
   packages = ["js"]
-  revision = "df18d38287ab2ed3138d564e7c8cbe4d5a249d87"
+  revision = "82b322028c96512b15077093b16a5f1c7ea897ac"
 
 [[projects]]
   name = "github.com/gorilla/websocket"
@@ -195,8 +204,8 @@
 [[projects]]
   name = "github.com/json-iterator/go"
   packages = ["."]
-  revision = "3353055b2a1a5ae1b6a8dfde887a524e7088f3a2"
-  version = "1.1.2"
+  revision = "ca39e5af3ece67bbcda3d0f4f56a8e24d9f2dad4"
+  version = "1.1.3"
 
 [[projects]]
   name = "github.com/jtolds/gls"
@@ -218,7 +227,7 @@
     "jlexer",
     "jwriter"
   ]
-  revision = "8f7b30c7ef1dfd23a196867f5d63cbcf08f60088"
+  revision = "f594efddfa171111dc4349cd6e78e8f61dc7936f"
 
 [[projects]]
   name = "github.com/mattn/go-isatty"
@@ -265,8 +274,8 @@
 [[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
-  revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
-  version = "v1.0.4"
+  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
+  version = "v1.0.5"
 
 [[projects]]
   name = "github.com/smartystreets/assertions"
@@ -316,7 +325,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "85f98707c97e11569271e4d9b3d397e079c4f4d0"
+  revision = "c3a3ad6d03f7a915c0f7e194b7152974bb73d287"
 
 [[projects]]
   branch = "master"
@@ -325,9 +334,10 @@
     "http2",
     "http2/hpack",
     "idna",
-    "lex/httplex"
+    "lex/httplex",
+    "publicsuffix"
   ]
-  revision = "d25186b37f34ebdbbea8f488ef055638dfab272d"
+  revision = "6078986fec03a1dcc236c34816c71b0e05018fda"
 
 [[projects]]
   branch = "master"
@@ -336,7 +346,7 @@
     "unix",
     "windows"
   ]
-  revision = "dd2ff4accc098aceecb86b36eaa7829b2a17b1c9"
+  revision = "d8e400bc7db4870d786864138af681469693d18c"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -379,7 +389,6 @@
   version = "v2.1.1"
 
 [[projects]]
-  branch = "release-1.9"
   name = "k8s.io/api"
   packages = [
     "admissionregistration/v1alpha1",
@@ -412,9 +421,9 @@
     "storage/v1beta1"
   ]
   revision = "acf347b865f29325eb61f4cd2df11e86e073a5ee"
+  version = "kubernetes-1.9.3"
 
 [[projects]]
-  branch = "release-1.9"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/errors",
@@ -454,6 +463,7 @@
     "third_party/forked/golang/reflect"
   ]
   revision = "19e3f5aa3adca672c153d324e6b7d82ff8935f03"
+  version = "kubernetes-1.9.3"
 
 [[projects]]
   name = "k8s.io/client-go"
@@ -517,6 +527,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3d29e17ff848b8e3440da7e8ad3cc1d874fb7592e303437e6c9097be3b9ab125"
+  inputs-digest = "41268b6bd6151ec1e9379911f3f6d16e4c2822e22e4c683b792a4eacfc36ef19"
   solver-name = "gps-cdcl"
   solver-version = 1

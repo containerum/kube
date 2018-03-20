@@ -104,7 +104,7 @@ func MakeNamespace(ns NamespaceWithOwner) (*api_core.Namespace, []error) {
 		},
 		ObjectMeta: api_meta.ObjectMeta{
 			Labels: map[string]string{},
-			Name:   ns.Label,
+			Name:   ns.Name,
 		},
 		Spec: api_core.NamespaceSpec{},
 	}
@@ -118,10 +118,10 @@ func MakeNamespace(ns NamespaceWithOwner) (*api_core.Namespace, []error) {
 func validateNamespace(ns NamespaceWithOwner) []error {
 	errs := []error{}
 
-	if ns.Label == "" {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Label"))
-	} else if err := api_validation.IsDNS1123Subdomain(ns.Label); len(err) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, ns.Label, strings.Join(err, ","))))
+	if ns.Name == "" {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
+	} else if err := api_validation.IsDNS1123Subdomain(ns.Name); len(err) > 0 {
+		errs = append(errs, errors.New(fmt.Sprintf(invalidName, ns.Name, strings.Join(err, ","))))
 	}
 	if ns.Owner != "" && !IsValidUUID(ns.Owner) {
 		errs = append(errs, errors.New(invalidOwner))
