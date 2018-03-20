@@ -52,6 +52,10 @@ func GetNamespaceList(ctx *gin.Context) {
 		return
 	}
 
+	if role == "user" {
+		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
+		ret = model.ReplaceNamespaceName(*nsList, ret.Namespaces)
+	}
 	ctx.JSON(http.StatusOK, ret)
 }
 

@@ -6,6 +6,8 @@ import (
 
 	"strconv"
 
+	"strings"
+
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	"github.com/pkg/errors"
 	"gopkg.in/inf.v0"
@@ -360,8 +362,8 @@ func ValidateDeployment(deploy DeploymentWithOwner) []error {
 	}
 	if deploy.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-	} else if len(api_validation.IsDNS1123Subdomain(deploy.Name)) > 0 {
-		errs = append(errs, fmt.Errorf(invalidName, deploy.Name))
+	} else if err := api_validation.IsDNS1123Subdomain(deploy.Name); len(err) > 0 {
+		errs = append(errs, errors.New(fmt.Sprintf(invalidName, deploy.Name, strings.Join(err, ","))))
 	}
 	if len(api_validation.IsInRange(deploy.Replicas, 1, maxDeployReplicas)) > 0 {
 		errs = append(errs, fmt.Errorf(invalidReplicas, deploy.Replicas, maxDeployReplicas))
@@ -383,8 +385,10 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 	minmem, _ := api_resource.ParseQuantity(minDeployMemory)
 	maxmem, _ := api_resource.ParseQuantity(maxDeployMemory)
 
-	if len(api_validation.IsDNS1123Subdomain(container.Name)) > 0 {
-		errs = append(errs, fmt.Errorf(invalidName, container.Name))
+	if container.Name == "" {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
+	} else if err := api_validation.IsDNS1123Subdomain(container.Name); len(err) > 0 {
+		errs = append(errs, errors.New(fmt.Sprintf(invalidName, container.Name, strings.Join(err, ","))))
 	}
 
 	if cpu.Cmp(mincpu) == -1 || cpu.Cmp(maxcpu) == 1 {
@@ -396,8 +400,10 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 	}
 
 	for _, v := range container.Ports {
-		if len(api_validation.IsValidPortName(v.Name)) > 0 {
-			errs = append(errs, fmt.Errorf(invalidName, v.Name))
+		if v.Name == "" {
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port: Name"))
+		} else if err := api_validation.IsValidPortName(v.Name); len(err) > 0 {
+			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
 		}
 		if v.Protocol != kube_types.UDP && v.Protocol != kube_types.TCP {
 			errs = append(errs, fmt.Errorf(invalidProtocol, v.Protocol))
@@ -417,8 +423,10 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 	}
 
 	for _, v := range container.VolumeMounts {
-		if len(api_validation.IsDNS1123Subdomain(v.Name)) > 0 {
-			errs = append(errs, fmt.Errorf(invalidName, v.Name))
+		if v.Name == "" {
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "Volume: Name"))
+		} else if err := api_validation.IsDNS1123Subdomain(container.Name); len(err) > 0 {
+			errs = append(errs, errors.New(fmt.Sprintf(invalidName, container.Name, strings.Join(err, ","))))
 		}
 		if v.MountPath == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Volume: Mount path"))
@@ -426,11 +434,13 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 	}
 
 	for _, v := range container.ConfigMaps {
-		if len(api_validation.IsDNS1123Subdomain(v.Name)) > 0 {
-			errs = append(errs, fmt.Errorf(invalidName, v.Name))
+		if v.Name == "" {
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "ConfigMap: Name"))
+		} else if err := api_validation.IsDNS1123Subdomain(container.Name); len(err) > 0 {
+			errs = append(errs, errors.New(fmt.Sprintf(invalidName, container.Name, strings.Join(err, ","))))
 		}
 		if v.MountPath == "" {
-			errs = append(errs, fmt.Errorf(fieldShouldExist, "Config: Map mount path"))
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "ConfigMap: Mount path"))
 		}
 	}
 

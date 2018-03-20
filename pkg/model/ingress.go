@@ -6,6 +6,8 @@ import (
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_extensions "k8s.io/api/extensions/v1beta1"
 
+	"strings"
+
 	"github.com/pkg/errors"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -183,8 +185,8 @@ func ValidateIngress(ingress IngressWithOwner) []error {
 	}
 	if ingress.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-	} else if len(api_validation.IsDNS1123Subdomain(ingress.Name)) > 0 {
-		errs = append(errs, fmt.Errorf(invalidName, ingress.Name))
+	} else if err := api_validation.IsDNS1123Subdomain(ingress.Name); len(err) > 0 {
+		errs = append(errs, errors.New(fmt.Sprintf(invalidName, ingress.Name, strings.Join(err, ","))))
 	}
 	if ingress.Rules == nil || len(ingress.Rules) == 0 {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Rules"))
@@ -196,8 +198,8 @@ func ValidateIngress(ingress IngressWithOwner) []error {
 		for _, p := range v.Path {
 			if ingress.Name == "" {
 				errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-			} else if len(api_validation.IsDNS1123Subdomain(p.ServiceName)) > 0 {
-				errs = append(errs, fmt.Errorf(invalidName, p.ServiceName))
+			} else if err := api_validation.IsDNS1123Subdomain(p.ServiceName); len(err) > 0 {
+				errs = append(errs, errors.New(fmt.Sprintf(invalidName, p.ServiceName, strings.Join(err, ","))))
 			}
 			if len(api_validation.IsValidPortNum(p.ServicePort)) > 0 {
 				errs = append(errs, fmt.Errorf(invalidPort, p.ServicePort, 1, maxport))

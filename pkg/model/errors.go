@@ -17,7 +17,7 @@ const (
 	invalidProtocol    = "Invalid protocol: %v. It must be TCP or UDP"
 	invalidOwner       = "Owner should be UUID"
 	noContainer        = "Container %v is not found in deployment"
-	invalidName        = "Invalid name: %v. It must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character"
+	invalidName        = "Invalid name: %v. %v"
 	invalidKey         = "Invalid key: %v. It must consist of alphanumeric characters, '-', '_' or '.'"
 	invalidIP          = "Invalid IP: %v. It must be a valid IP address, (e.g. 10.9.8.7)"
 	invalidCPUQuota    = "Invalid CPU quota: %v. It must be between %v and %v"

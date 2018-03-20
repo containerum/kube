@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"strings"
+
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_resource "k8s.io/apimachinery/pkg/api/resource"
@@ -30,6 +32,7 @@ type NamespacesList struct {
 
 type NamespaceWithOwner struct {
 	kube_types.Namespace
+	Name  string `json:"name,omitempty"`
 	Owner string `json:"owner,omitempty"`
 }
 
@@ -69,8 +72,9 @@ func ParseResourceQuota(quota interface{}) (*NamespaceWithOwner, error) {
 
 	return &NamespaceWithOwner{
 		Owner: owner,
+		Name:  obj.GetNamespace(),
 		Namespace: kube_types.Namespace{
-			Label:     obj.GetNamespace(),
+			//Label:     obj.GetNamespace(),
 			CreatedAt: &createdAt,
 			Resources: kube_types.Resources{
 				Hard: kube_types.Resource{
@@ -116,8 +120,8 @@ func validateNamespace(ns NamespaceWithOwner) []error {
 
 	if ns.Label == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Label"))
-	} else if len(api_validation.IsDNS1123Subdomain(ns.Label)) > 0 {
-		errs = append(errs, fmt.Errorf(invalidName, ns.Label))
+	} else if err := api_validation.IsDNS1123Subdomain(ns.Label); len(err) > 0 {
+		errs = append(errs, errors.New(fmt.Sprintf(invalidName, ns.Label, strings.Join(err, ","))))
 	}
 	if ns.Owner != "" && !IsValidUUID(ns.Owner) {
 		errs = append(errs, errors.New(invalidOwner))
@@ -186,4 +190,19 @@ func ValidateResourceQuota(cpu, mem api_resource.Quantity) []error {
 		return errs
 	}
 	return nil
+}
+
+func ReplaceNamespaceName(headers UserHeaderDataMap, nsl []NamespaceWithOwner) *NamespacesList {
+	ret := NamespacesList{}
+
+	for _, ns := range nsl {
+		for _, n := range headers {
+			if ns.Name == n.ID {
+				ns.Label = n.Label
+				ns.Name = ""
+				ret.Namespaces = append(ret.Namespaces, ns)
+			}
+		}
+	}
+	return &ret
 }
