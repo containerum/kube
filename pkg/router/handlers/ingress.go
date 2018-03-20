@@ -3,8 +3,6 @@ package handlers
 import (
 	"net/http"
 
-	"fmt"
-
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
@@ -186,8 +184,6 @@ func GetSelectedIngresses(ctx *gin.Context) {
 
 	nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
 	for _, n := range *nsList {
-
-		fmt.Println("NS", n)
 
 		ingressList, err := kubecli.GetIngressList(n.ID)
 		if err != nil {
