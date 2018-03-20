@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"strings"
+
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -102,8 +104,8 @@ func ValidateConfigMap(cm ConfigMapWithOwner) []error {
 	}
 	if cm.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-	} else if len(api_validation.IsDNS1123Subdomain(cm.Name)) > 0 {
-		errs = append(errs, fmt.Errorf(invalidName, cm.Name))
+	} else if err := api_validation.IsDNS1123Subdomain(cm.Name); len(err) > 0 {
+		errs = append(errs, errors.New(fmt.Sprintf(invalidName, cm.Name, strings.Join(err, ","))))
 	}
 	for k := range cm.Data {
 		if len(api_validation.IsConfigMapKey(k)) > 0 {

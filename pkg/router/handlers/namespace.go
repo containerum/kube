@@ -18,14 +18,27 @@ import (
 const (
 	ownerQuery     = "owner"
 	namespaceParam = "namespace"
+
+	userIDHeader = "X-User-Id"
 )
 
 func GetNamespaceList(ctx *gin.Context) {
-	log.WithField("Owner", ctx.Query(ownerQuery)).Debug("Get namespace list Call")
+	owner := ctx.Query(ownerQuery)
+
+	role := ctx.MustGet(m.UserRole).(string)
+	if role == "user" {
+		owner = ctx.GetHeader(userIDHeader)
+		if owner == "" {
+			gonic.Gonic(cherry.ErrRequiredHeadersNotProvided().AddDetails(userIDHeader), ctx)
+			return
+		}
+	}
+
+	log.WithField("Owner", owner).Debug("Get namespace list Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	quotas, err := kube.GetNamespaceQuotaList(ctx.Query(ownerQuery))
+	quotas, err := kube.GetNamespaceQuotaList(owner)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
@@ -39,6 +52,10 @@ func GetNamespaceList(ctx *gin.Context) {
 		return
 	}
 
+	if role == "user" {
+		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
+		ret = model.ReplaceNamespaceName(*nsList, ret.Namespaces)
+	}
 	ctx.JSON(http.StatusOK, ret)
 }
 

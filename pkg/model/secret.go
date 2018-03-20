@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"strings"
+
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -117,8 +119,8 @@ func ValidateSecret(secret SecretWithOwner) []error {
 	}
 	if secret.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-	} else if len(api_validation.IsDNS1123Subdomain(secret.Name)) > 0 {
-		errs = append(errs, fmt.Errorf(invalidName, secret.Name))
+	} else if err := api_validation.IsDNS1123Subdomain(secret.Name); len(err) > 0 {
+		errs = append(errs, errors.New(fmt.Sprintf(invalidName, secret.Name, strings.Join(err, ","))))
 	}
 	for k := range secret.Data {
 		if len(api_validation.IsConfigMapKey(k)) > 0 {

@@ -38,9 +38,12 @@ func initRoutes(e *gin.Engine) {
 	e.NoRoute(func(c *gin.Context) {
 		c.Status(http.StatusNotFound)
 	})
+
+	e.GET("/ingresses", h.GetSelectedIngresses)
+
 	namespace := e.Group("/namespaces")
 	{
-		namespace.GET("", m.ReadAccess, h.GetNamespaceList)
+		namespace.GET("", h.GetNamespaceList)
 		namespace.GET("/:namespace", m.ReadAccess, h.GetNamespace)
 		namespace.POST("", h.CreateNamespace)
 		namespace.PUT("/:namespace", h.UpdateNamespace)

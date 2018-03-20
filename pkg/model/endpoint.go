@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"strings"
+
 	json_types "git.containerum.net/ch/json-types/kube-api"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -139,8 +141,8 @@ func ValidateEndpoint(endpoint json_types.Endpoint) []error {
 	}
 	if endpoint.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-	} else if len(api_validation.IsDNS1123Subdomain(endpoint.Name)) > 0 {
-		errs = append(errs, fmt.Errorf(invalidName, endpoint.Name))
+	} else if err := api_validation.IsDNS1123Subdomain(endpoint.Name); len(err) > 0 {
+		errs = append(errs, errors.New(fmt.Sprintf(invalidName, endpoint.Name, strings.Join(err, ","))))
 	}
 	if endpoint.Addresses == nil || len(endpoint.Addresses) == 0 {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Addresses"))
@@ -156,8 +158,8 @@ func ValidateEndpoint(endpoint json_types.Endpoint) []error {
 	for _, v := range endpoint.Ports {
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port name"))
-		} else if len(api_validation.IsValidPortName(v.Name)) > 0 {
-			errs = append(errs, fmt.Errorf(invalidName, v.Name))
+		} else if err := api_validation.IsValidPortName(v.Name); len(err) > 0 {
+			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
 		}
 		if v.Protocol == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port protocol"))

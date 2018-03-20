@@ -21,7 +21,7 @@ func GetIngressList(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
 		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
-	}).Debug("Create secret Call")
+	}).Debug("Get ingress list")
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
@@ -47,7 +47,7 @@ func GetIngress(ctx *gin.Context) {
 		"Namespace Param": ctx.Param(namespaceParam),
 		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
 		"Ingress":         ctx.Param(ingressParam),
-	}).Debug("Create secret Call")
+	}).Debug("Get ingress Call")
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
@@ -72,7 +72,7 @@ func CreateIngress(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace_Param": ctx.Param(namespaceParam),
 		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
-	}).Debug("Create secret Call")
+	}).Debug("Create ingress Call")
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
@@ -114,9 +114,9 @@ func CreateIngress(ctx *gin.Context) {
 func UpdateIngress(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace_Param": ctx.Param(namespaceParam),
-		"Namespace": ctx.MustGet(m.NamespaceKey).(string),
-		"Ingress":   ctx.Param(ingressParam),
-	}).Debug("Create secret Call")
+		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+		"Ingress":         ctx.Param(ingressParam),
+	}).Debug("Update ingress Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
@@ -160,8 +160,8 @@ func UpdateIngress(ctx *gin.Context) {
 func DeleteIngress(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace_Param": ctx.Param(namespaceParam),
-		"Namespace": ctx.MustGet(m.NamespaceKey).(string),
-	}).Debug("Create secret Call")
+		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+	}).Debug("Delete ingress Call")
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
@@ -173,4 +173,34 @@ func DeleteIngress(ctx *gin.Context) {
 	}
 
 	ctx.Status(http.StatusAccepted)
+}
+
+func GetSelectedIngresses(ctx *gin.Context) {
+	log.Debug("Get selected ingresses Call")
+
+	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	ingresses := make(map[string]model.IngressesList, 0)
+
+	nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
+	for _, n := range *nsList {
+
+		ingressList, err := kubecli.GetIngressList(n.ID)
+		if err != nil {
+			ctx.Error(err)
+			gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+			return
+		}
+
+		il, err := model.ParseIngressList(ingressList)
+		if err != nil {
+			ctx.Error(err)
+			gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+			return
+		}
+
+		ingresses[n.Label] = *il
+	}
+
+	ctx.JSON(http.StatusOK, ingresses)
 }

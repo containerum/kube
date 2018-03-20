@@ -12,6 +12,8 @@ import (
 
 	"fmt"
 
+	"strings"
+
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
@@ -116,7 +118,7 @@ func MakeService(nsName string, service ServiceWithOwner, labels map[string]stri
 	if labels == nil {
 		labels = make(map[string]string, 0)
 	}
-	labels[appLabel] = service.Name
+	labels[appLabel] = service.Deploy
 	labels[ownerLabel] = service.Owner
 	labels[nameLabel] = service.Name
 	labels[hiddenLabel] = strconv.FormatBool(service.Hidden)
@@ -178,26 +180,29 @@ func ValidateService(service ServiceWithOwner) []error {
 	}
 	if service.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-	} else if len(api_validation.IsDNS1123Subdomain(service.Name)) > 0 {
-		errs = append(errs, fmt.Errorf(invalidName, service.Name))
+	} else if err := api_validation.IsDNS1123Subdomain(service.Name); len(err) > 0 {
+		errs = append(errs, errors.New(fmt.Sprintf(invalidName, service.Name, strings.Join(err, ","))))
 	}
 	if service.Ports == nil || len(service.Ports) == 0 {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Ports"))
 	}
+	if service.Deploy == "" {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Deploy"))
+	}
 	for _, v := range service.Ports {
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port name"))
-		} else if len(api_validation.IsValidPortName(v.Name)) > 0 {
-			errs = append(errs, fmt.Errorf(invalidName, v.Name))
+		} else if err := api_validation.IsValidPortName(v.Name); len(err) > 0 {
+			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
 		}
 		if v.Protocol == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port protocol"))
 		} else if v.Protocol != kube_types.UDP && v.Protocol != kube_types.TCP {
 			errs = append(errs, fmt.Errorf(invalidProtocol, v.Protocol))
 		}
-		//if len(api_validation.IsInRange(v.Port, minport, maxport)) > 0 {
-		//	errs = append(errs, fmt.Errorf(invalidPort, v.Port, minport, maxport))
-		//}
+		if len(api_validation.IsInRange(*v.Port, minport, maxport)) > 0 {
+			errs = append(errs, fmt.Errorf(invalidPort, v.Port, minport, maxport))
+		}
 	}
 	if len(errs) > 0 {
 		return errs
