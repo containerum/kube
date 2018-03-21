@@ -120,7 +120,7 @@ func validateNamespace(ns NamespaceWithOwner) []error {
 
 	if ns.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-	} else if err := api_validation.IsDNS1123Subdomain(ns.Name); len(err) > 0 {
+	} else if err := api_validation.IsDNS1123Label(ns.Name); len(err) > 0 {
 		errs = append(errs, errors.New(fmt.Sprintf(invalidName, ns.Name, strings.Join(err, ","))))
 	}
 	if ns.Owner != "" {

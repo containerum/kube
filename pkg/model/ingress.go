@@ -189,7 +189,7 @@ func ValidateIngress(ingress IngressWithOwner) []error {
 	}
 	if ingress.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-	} else if err := api_validation.IsDNS1123Subdomain(ingress.Name); len(err) > 0 {
+	} else if err := api_validation.IsDNS1123Label(ingress.Name); len(err) > 0 {
 		errs = append(errs, errors.New(fmt.Sprintf(invalidName, ingress.Name, strings.Join(err, ","))))
 	}
 	if ingress.Rules == nil || len(ingress.Rules) == 0 {
@@ -202,7 +202,7 @@ func ValidateIngress(ingress IngressWithOwner) []error {
 		for _, p := range v.Path {
 			if ingress.Name == "" {
 				errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-			} else if err := api_validation.IsDNS1123Subdomain(p.ServiceName); len(err) > 0 {
+			} else if err := api_validation.IsDNS1123Label(p.ServiceName); len(err) > 0 {
 				errs = append(errs, errors.New(fmt.Sprintf(invalidName, p.ServiceName, strings.Join(err, ","))))
 			}
 			if len(api_validation.IsValidPortNum(p.ServicePort)) > 0 {

@@ -126,7 +126,7 @@ func ValidateSecret(secret SecretWithOwner) []error {
 	}
 	if secret.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-	} else if err := api_validation.IsDNS1123Subdomain(secret.Name); len(err) > 0 {
+	} else if err := api_validation.IsDNS1123Label(secret.Name); len(err) > 0 {
 		errs = append(errs, errors.New(fmt.Sprintf(invalidName, secret.Name, strings.Join(err, ","))))
 	}
 	for k := range secret.Data {

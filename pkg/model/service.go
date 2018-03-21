@@ -183,7 +183,7 @@ func ValidateService(service ServiceWithOwner) []error {
 	}
 	if service.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-	} else if err := api_validation.IsDNS1123Subdomain(service.Name); len(err) > 0 {
+	} else if err := api_validation.IsDNS1123Label(service.Name); len(err) > 0 {
 		errs = append(errs, errors.New(fmt.Sprintf(invalidName, service.Name, strings.Join(err, ","))))
 	}
 	if service.Ports == nil || len(service.Ports) == 0 {
@@ -195,7 +195,7 @@ func ValidateService(service ServiceWithOwner) []error {
 	for _, v := range service.Ports {
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port name"))
-		} else if err := api_validation.IsValidPortName(v.Name); len(err) > 0 {
+		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
 			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
 		}
 		if v.Protocol == "" {

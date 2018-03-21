@@ -369,7 +369,7 @@ func ValidateDeployment(deploy DeploymentWithOwner) []error {
 	}
 	if deploy.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-	} else if err := api_validation.IsDNS1123Subdomain(deploy.Name); len(err) > 0 {
+	} else if err := api_validation.IsDNS1123Label(deploy.Name); len(err) > 0 {
 		errs = append(errs, errors.New(fmt.Sprintf(invalidName, deploy.Name, strings.Join(err, ","))))
 	}
 	if len(api_validation.IsInRange(deploy.Replicas, 1, maxDeployReplicas)) > 0 {
@@ -394,7 +394,7 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 
 	if container.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-	} else if err := api_validation.IsDNS1123Subdomain(container.Name); len(err) > 0 {
+	} else if err := api_validation.IsDNS1123Label(container.Name); len(err) > 0 {
 		errs = append(errs, errors.New(fmt.Sprintf(invalidName, container.Name, strings.Join(err, ","))))
 	}
 
@@ -409,7 +409,7 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 	for _, v := range container.Ports {
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port: Name"))
-		} else if err := api_validation.IsValidPortName(v.Name); len(err) > 0 {
+		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
 			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
 		}
 		if v.Protocol != kube_types.UDP && v.Protocol != kube_types.TCP {
@@ -432,7 +432,7 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 	for _, v := range container.VolumeMounts {
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Volume: Name"))
-		} else if err := api_validation.IsDNS1123Subdomain(container.Name); len(err) > 0 {
+		} else if err := api_validation.IsDNS1123Label(container.Name); len(err) > 0 {
 			errs = append(errs, errors.New(fmt.Sprintf(invalidName, container.Name, strings.Join(err, ","))))
 		}
 		if v.MountPath == "" {
@@ -443,7 +443,7 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 	for _, v := range container.ConfigMaps {
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "ConfigMap: Name"))
-		} else if err := api_validation.IsDNS1123Subdomain(container.Name); len(err) > 0 {
+		} else if err := api_validation.IsDNS1123Label(container.Name); len(err) > 0 {
 			errs = append(errs, errors.New(fmt.Sprintf(invalidName, container.Name, strings.Join(err, ","))))
 		}
 		if v.MountPath == "" {
