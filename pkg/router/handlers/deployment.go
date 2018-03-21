@@ -33,7 +33,8 @@ func GetDeploymentList(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseDeploymentList(deployments)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseDeploymentList(deployments, role == "user")
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
@@ -57,7 +58,8 @@ func GetDeployment(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseDeployment(deployment)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseDeployment(deployment, role == "user")
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
@@ -100,7 +102,8 @@ func CreateDeployment(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseDeployment(deployAfter)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseDeployment(deployAfter, role == "user")
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -152,7 +155,8 @@ func UpdateDeployment(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseDeployment(deployAfter)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseDeployment(deployAfter, role == "user")
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -190,7 +194,8 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseDeployment(deployAfter)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseDeployment(deployAfter, role == "user")
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -232,7 +237,8 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseDeployment(deployAfter)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseDeployment(deployAfter, role == "user")
 	if err != nil {
 		ctx.Error(err)
 	}

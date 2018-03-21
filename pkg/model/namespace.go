@@ -194,26 +194,24 @@ func ValidateResourceQuota(cpu, mem api_resource.Quantity) []error {
 	return nil
 }
 
-func ReplaceNamespaceListName(headers UserHeaderDataMap, nsl []NamespaceWithOwner) *NamespacesList {
+func ParseNamespaceListForUser(headers UserHeaderDataMap, nsl []NamespaceWithOwner) *NamespacesList {
 	ret := NamespacesList{}
 	for _, ns := range nsl {
-		for _, n := range headers {
-			if ns.Name == n.ID {
-				ns.Label = n.Label
-				ns.Name = ""
-				ret.Namespaces = append(ret.Namespaces, ns)
-			}
+		nsp := ParseNamespaceForUser(headers, &ns)
+		if nsp.Label != "" {
+			ret.Namespaces = append(ret.Namespaces, *nsp)
 		}
 	}
 	return &ret
 }
 
-func ReplaceNamespaceName(headers UserHeaderDataMap, ns *NamespaceWithOwner) *NamespaceWithOwner {
+func ParseNamespaceForUser(headers UserHeaderDataMap, ns *NamespaceWithOwner) *NamespaceWithOwner {
 	for _, n := range headers {
 		if ns.Name == n.ID {
 			ns.Label = n.Label
-			ns.Name = ""
 		}
 	}
+	ns.Name = ""
+	ns.Owner = ""
 	return ns
 }

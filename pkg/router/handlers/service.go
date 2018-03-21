@@ -31,7 +31,9 @@ func GetServiceList(ctx *gin.Context) {
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 		return
 	}
-	ret, err := model.ParseServiceList(nativeServices)
+
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseServiceList(nativeServices, role == "user")
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
@@ -56,7 +58,8 @@ func GetService(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseService(nativeService)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseService(nativeService, role == "user")
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
@@ -97,7 +100,8 @@ func CreateService(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseService(svcAfter)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseService(svcAfter, role == "user")
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -150,7 +154,8 @@ func UpdateService(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseService(updatedService)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseService(updatedService, role == "user")
 	if err != nil {
 		ctx.Error(err)
 	}

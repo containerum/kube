@@ -32,7 +32,8 @@ func GetSecretList(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseSecretList(secrets)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseSecretList(secrets, role == "user")
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
@@ -58,7 +59,8 @@ func GetSecret(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseSecret(secret)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseSecret(secret, role == "user")
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
@@ -102,7 +104,8 @@ func CreateSecret(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseSecret(secretAfter)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseSecret(secretAfter, role == "user")
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -147,7 +150,8 @@ func UpdateSecret(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseSecret(secretAfter)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseSecret(secretAfter, role == "user")
 	if err != nil {
 		ctx.Error(err)
 	}
