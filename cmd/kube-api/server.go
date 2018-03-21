@@ -28,7 +28,7 @@ var flags = []cli.Flag{
 		Usage:  "config file for kubernetes apiserver client",
 	},
 	cli.BoolFlag{
-		EnvVar: "CH_KUBE_API_LOG",
+		EnvVar: "CH_KUBE_API_TEXTLOG",
 		Name:   "textlog",
 		Usage:  "output log in text format",
 	},
