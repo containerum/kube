@@ -10,7 +10,9 @@ import (
 
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/router"
+	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
+
 	"github.com/urfave/cli"
 )
 
@@ -25,11 +27,26 @@ var flags = []cli.Flag{
 		Name:   "kubeconf",
 		Usage:  "config file for kubernetes apiserver client",
 	},
+	cli.BoolFlag{
+		EnvVar: "CH_KUBE_API_TEXTLOG",
+		Name:   "textlog",
+		Usage:  "output log in text format",
+	},
 }
 
 func server(c *cli.Context) error {
 	if c.Bool("debug") {
+		gin.SetMode(gin.DebugMode)
 		log.SetLevel(log.DebugLevel)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+		log.SetLevel(log.InfoLevel)
+	}
+
+	if c.Bool("textlog") {
+		log.SetFormatter(&log.TextFormatter{})
+	} else {
+		log.SetFormatter(&log.JSONFormatter{})
 	}
 
 	kube := kubernetes.Kube{}
