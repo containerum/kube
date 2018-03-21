@@ -51,7 +51,9 @@ func GetPodList(ctx *gin.Context) {
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 		return
 	}
-	podList := model.ParsePodList(pods)
+
+	role := ctx.MustGet(m.UserRole).(string)
+	podList := model.ParsePodList(pods, role == "user")
 	ctx.JSON(http.StatusOK, podList)
 }
 
@@ -68,7 +70,9 @@ func GetPod(ctx *gin.Context) {
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableGetResource()), ctx)
 		return
 	}
-	po := model.ParsePod(pod)
+
+	role := ctx.MustGet(m.UserRole).(string)
+	po := model.ParsePod(pod, role == "user")
 	ctx.JSON(http.StatusOK, po)
 }
 

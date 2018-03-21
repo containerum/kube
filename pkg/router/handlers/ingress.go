@@ -32,7 +32,8 @@ func GetIngressList(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseIngressList(ingressList)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseIngressList(ingressList, role == "user")
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
@@ -58,7 +59,8 @@ func GetIngress(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseIngress(ingress)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseIngress(ingress, role == "user")
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
@@ -103,7 +105,8 @@ func CreateIngress(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseIngress(ingressAfter)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseIngress(ingressAfter, role == "user")
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -149,7 +152,8 @@ func UpdateIngress(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseIngress(ingressAfter)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseIngress(ingressAfter, role == "user")
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -194,7 +198,7 @@ func GetSelectedIngresses(ctx *gin.Context) {
 				return
 			}
 
-			il, err := model.ParseIngressList(ingressList)
+			il, err := model.ParseIngressList(ingressList, true)
 			if err != nil {
 				ctx.Error(err)
 				gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)

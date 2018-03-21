@@ -24,14 +24,14 @@ type IngressWithOwner struct {
 }
 
 // ParseIngressList parses kubernetes v1beta1.IngressList to more convenient []Ingress struct
-func ParseIngressList(ingressi interface{}) (*IngressesList, error) {
+func ParseIngressList(ingressi interface{}, parseforuser bool) (*IngressesList, error) {
 	ingresses := ingressi.(*api_extensions.IngressList)
 	if ingresses == nil {
 		return nil, ErrUnableConvertIngressList
 	}
 	newIngresses := make([]IngressWithOwner, 0)
 	for _, ingress := range ingresses.Items {
-		newIngress, err := ParseIngress(&ingress)
+		newIngress, err := ParseIngress(&ingress, parseforuser)
 		if err != nil {
 			return nil, err
 		}
@@ -41,7 +41,7 @@ func ParseIngressList(ingressi interface{}) (*IngressesList, error) {
 }
 
 // ParseIngress parses kubernetes v1beta1.Ingress to more convenient Ingress struct
-func ParseIngress(ingressi interface{}) (*IngressWithOwner, error) {
+func ParseIngress(ingressi interface{}, parseforuser bool) (*IngressWithOwner, error) {
 	ingress := ingressi.(*api_extensions.Ingress)
 	if ingress == nil {
 		return nil, ErrUnableConvertIngress
@@ -60,6 +60,10 @@ func ParseIngress(ingressi interface{}) (*IngressWithOwner, error) {
 			Rules:     rules,
 		},
 		Owner: owner,
+	}
+
+	if parseforuser {
+		newIngress.Owner = ""
 	}
 
 	return &newIngress, nil

@@ -22,7 +22,7 @@ type SecretWithOwner struct {
 }
 
 // ParseSecretList parses kubernetes v1.SecretList to more convenient []Secret struct.
-func ParseSecretList(secreti interface{}) (*SecretsList, error) {
+func ParseSecretList(secreti interface{}, parseforuser bool) (*SecretsList, error) {
 	secrets := secreti.(*api_core.SecretList)
 	if secrets == nil {
 		return nil, ErrUnableConvertSecretList
@@ -30,7 +30,7 @@ func ParseSecretList(secreti interface{}) (*SecretsList, error) {
 
 	newSecrets := make([]SecretWithOwner, 0)
 	for _, secret := range secrets.Items {
-		newSecret, err := ParseSecret(&secret)
+		newSecret, err := ParseSecret(&secret, parseforuser)
 		if err != nil {
 			return nil, err
 		}
@@ -43,7 +43,7 @@ func ParseSecretList(secreti interface{}) (*SecretsList, error) {
 }
 
 // ParseSecret parses kubernetes v1.Secret to more convenient Secret struct.
-func ParseSecret(secreti interface{}) (*SecretWithOwner, error) {
+func ParseSecret(secreti interface{}, parseforuser bool) (*SecretWithOwner, error) {
 	secret := secreti.(*api_core.Secret)
 	if secret == nil {
 		return nil, ErrUnableConvertSecret
@@ -57,14 +57,21 @@ func ParseSecret(secreti interface{}) (*SecretWithOwner, error) {
 	owner := secret.GetObjectMeta().GetLabels()[ownerLabel]
 	createdAt := secret.CreationTimestamp.Unix()
 
-	return &SecretWithOwner{
+	newSecret := SecretWithOwner{
 		Secret: kube_types.Secret{
 			Name:      secret.GetName(),
 			CreatedAt: &createdAt,
 			Data:      newData,
 		},
 		Owner: owner,
-	}, nil
+	}
+
+	if parseforuser {
+		newSecret.Owner = ""
+	}
+
+	return &newSecret, nil
+
 }
 
 // MakeSecret creates kubernetes v1.Secret from Secret struct and namespace labels

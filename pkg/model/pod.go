@@ -18,21 +18,22 @@ type PodWithOwner struct {
 }
 
 // ParsePodList parses kubernetes v1.PodList to more convenient []Pod struct.
-func ParsePodList(pods interface{}) *PodsList {
+func ParsePodList(pods interface{}, parseforuser bool) *PodsList {
 	objects := pods.(*api_core.PodList)
 	var pos []PodWithOwner
 	for _, po := range objects.Items {
-		pos = append(pos, ParsePod(&po))
+		pos = append(pos, ParsePod(&po, parseforuser))
 	}
 	return &PodsList{pos}
 }
 
 // ParsePod parses kubernetes v1.PodList to more convenient Pod struct.
-func ParsePod(pod interface{}) PodWithOwner {
+func ParsePod(pod interface{}, parseforuser bool) PodWithOwner {
 	obj := pod.(*api_core.Pod)
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
 	containers := getContainers(obj.Spec.Containers, nil)
-	return PodWithOwner{
+
+	newPod := PodWithOwner{
 		Pod: model.Pod{
 			Name:       obj.GetName(),
 			Containers: containers,
@@ -43,6 +44,12 @@ func ParsePod(pod interface{}) PodWithOwner {
 		},
 		Owner: owner,
 	}
+
+	if parseforuser {
+		newPod.Owner = ""
+	}
+
+	return newPod
 }
 
 func getContainers(cListi interface{}, mode map[string]int32) []model.Container {

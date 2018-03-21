@@ -42,7 +42,7 @@ type DeploymentWithOwner struct {
 }
 
 // ParseDeploymentList parses kubernetes v1.DeploymentList to more convenient []Deployment struct
-func ParseDeploymentList(deploys interface{}) (*DeploymentsList, error) {
+func ParseDeploymentList(deploys interface{}, parseforuser bool) (*DeploymentsList, error) {
 	objects := deploys.(*api_apps.DeploymentList)
 	if objects == nil {
 		return nil, ErrUnableConvertDeploymentList
@@ -50,7 +50,7 @@ func ParseDeploymentList(deploys interface{}) (*DeploymentsList, error) {
 
 	deployments := make([]DeploymentWithOwner, 0)
 	for _, deployment := range objects.Items {
-		deployment, err := ParseDeployment(&deployment)
+		deployment, err := ParseDeployment(&deployment, parseforuser)
 		if err != nil {
 			return nil, err
 		}
@@ -61,7 +61,7 @@ func ParseDeploymentList(deploys interface{}) (*DeploymentsList, error) {
 }
 
 // ParseDeployment parses kubernetes v1.Deployment to more convenient Deployment struct
-func ParseDeployment(deployment interface{}) (*DeploymentWithOwner, error) {
+func ParseDeployment(deployment interface{}, parseforuser bool) (*DeploymentWithOwner, error) {
 	obj := deployment.(*api_apps.Deployment)
 	if obj == nil {
 		return nil, ErrUnableConvertDeployment
@@ -79,7 +79,8 @@ func ParseDeployment(deployment interface{}) (*DeploymentWithOwner, error) {
 			updated = t
 		}
 	}
-	return &DeploymentWithOwner{
+
+	newDeploy := DeploymentWithOwner{
 		Deployment: kube_types.Deployment{
 			Name:     obj.GetName(),
 			Replicas: replicas,
@@ -95,7 +96,13 @@ func ParseDeployment(deployment interface{}) (*DeploymentWithOwner, error) {
 			Containers: containers,
 		},
 		Owner: owner,
-	}, nil
+	}
+
+	if parseforuser {
+		newDeploy.Owner = ""
+	}
+
+	return &newDeploy, nil
 }
 
 func getVolumeMode(volumes []api_core.Volume) map[string]int32 {

@@ -38,7 +38,7 @@ const (
 )
 
 // ParseServiceList parses kubernetes v1.ServiceList to more convenient Service struct.
-func ParseServiceList(ns interface{}) (*ServicesList, error) {
+func ParseServiceList(ns interface{}, parseforuser bool) (*ServicesList, error) {
 	nativeServices := ns.(*api_core.ServiceList)
 	if nativeServices == nil {
 		return nil, ErrUnableConvertServiceList
@@ -46,7 +46,7 @@ func ParseServiceList(ns interface{}) (*ServicesList, error) {
 
 	serviceList := make([]ServiceWithOwner, 0, nativeServices.Size())
 	for _, nativeService := range nativeServices.Items {
-		service, err := ParseService(&nativeService)
+		service, err := ParseService(&nativeService, parseforuser)
 		if err != nil {
 			return nil, err
 		}
@@ -59,7 +59,7 @@ func ParseServiceList(ns interface{}) (*ServicesList, error) {
 }
 
 // ParseService parses kubernetes v1.Service to more convenient Service struct.
-func ParseService(srv interface{}) (*ServiceWithOwner, error) {
+func ParseService(srv interface{}, parseforuser bool) (*ServiceWithOwner, error) {
 	native := srv.(*api_core.Service)
 	if native == nil {
 		return nil, ErrUnableConvertService
@@ -91,6 +91,10 @@ func ParseService(srv interface{}) (*ServiceWithOwner, error) {
 
 	if s, err := strconv.ParseBool(native.GetObjectMeta().GetLabels()[hiddenLabel]); err == nil {
 		service.Hidden = s
+	}
+
+	if parseforuser {
+		service.Owner = ""
 	}
 
 	return &service, nil
