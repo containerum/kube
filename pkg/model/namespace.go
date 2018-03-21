@@ -123,7 +123,7 @@ func validateNamespace(ns NamespaceWithOwner) []error {
 	} else if err := api_validation.IsDNS1123Label(ns.Name); len(err) > 0 {
 		errs = append(errs, errors.New(fmt.Sprintf(invalidName, ns.Name, strings.Join(err, ","))))
 	}
-	if ns.Owner != "" {
+	if ns.Owner == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
 	} else if !IsValidUUID(ns.Owner) {
 		errs = append(errs, errors.New(invalidOwner))
