@@ -38,12 +38,12 @@ func RequiredUserHeaders() gin.HandlerFunc {
 			gonic.Gonic(cherry.ErrInvalidRole(), ctx)
 		} else {
 			//User-Role: user, check User-Namespace, X-User-Volume
-			notFoundHeaders := requireHeaders(ctx, userNamespaceXHeader, userVolumeXHeader)
-			if len(notFoundHeaders) > 0 {
-				gonic.Gonic(cherry.ErrRequiredHeadersNotProvided().AddDetails(notFoundHeaders...), ctx)
-				return
-			}
 			if isUser {
+				notFoundHeaders := requireHeaders(ctx, userNamespaceXHeader, userVolumeXHeader)
+				if len(notFoundHeaders) > 0 {
+					gonic.Gonic(cherry.ErrRequiredHeadersNotProvided().AddDetails(notFoundHeaders...), ctx)
+					return
+				}
 				userNs, errNs := checkUserNamespace(ctx.GetHeader(userNamespaceXHeader))
 				userVol, errVol := checkUserVolume(ctx.GetHeader(userVolumeXHeader))
 				if errNs != nil {
