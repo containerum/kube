@@ -54,7 +54,7 @@ func GetNamespaceList(ctx *gin.Context) {
 
 	if role == "user" {
 		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
-		ret = model.ReplaceNamespaceName(*nsList, ret.Namespaces)
+		ret = model.ReplaceNamespaceListName(*nsList, ret.Namespaces)
 	}
 	ctx.JSON(http.StatusOK, ret)
 }
@@ -79,6 +79,12 @@ func GetNamespace(ctx *gin.Context) {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
 		return
+	}
+
+	role := ctx.MustGet(m.UserRole).(string)
+	if role == "user" {
+		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
+		ret = model.ReplaceNamespaceName(*nsList, ret)
 	}
 
 	ctx.JSON(http.StatusOK, ret)

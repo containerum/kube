@@ -194,9 +194,8 @@ func ValidateResourceQuota(cpu, mem api_resource.Quantity) []error {
 	return nil
 }
 
-func ReplaceNamespaceName(headers UserHeaderDataMap, nsl []NamespaceWithOwner) *NamespacesList {
+func ReplaceNamespaceListName(headers UserHeaderDataMap, nsl []NamespaceWithOwner) *NamespacesList {
 	ret := NamespacesList{}
-
 	for _, ns := range nsl {
 		for _, n := range headers {
 			if ns.Name == n.ID {
@@ -207,4 +206,14 @@ func ReplaceNamespaceName(headers UserHeaderDataMap, nsl []NamespaceWithOwner) *
 		}
 	}
 	return &ret
+}
+
+func ReplaceNamespaceName(headers UserHeaderDataMap, ns *NamespaceWithOwner) *NamespaceWithOwner {
+	for _, n := range headers {
+		if ns.Name == n.ID {
+			ns.Label = n.Label
+			ns.Name = ""
+		}
+	}
+	return ns
 }

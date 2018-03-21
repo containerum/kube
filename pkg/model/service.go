@@ -129,10 +129,9 @@ func MakeService(nsName string, service ServiceWithOwner, labels map[string]stri
 			APIVersion: "v1",
 		},
 		ObjectMeta: api_meta.ObjectMeta{
-			Labels:          labels,
-			Name:            service.Name,
-			Namespace:       nsName,
-			ResourceVersion: "TEST",
+			Labels:    labels,
+			Name:      service.Name,
+			Namespace: nsName,
 		},
 		Spec: api_core.ServiceSpec{
 			Type:  "ClusterIP",
