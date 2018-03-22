@@ -176,21 +176,19 @@ func ValidateService(service ServiceWithOwner) []error {
 	errs := []error{}
 	if service.Owner == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
-	} else {
-		if !IsValidUUID(service.Owner) {
-			errs = append(errs, errors.New(invalidOwner))
-		}
+	} else if !IsValidUUID(service.Owner) {
+		errs = append(errs, errors.New(invalidOwner))
 	}
 	if service.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
 	} else if err := api_validation.IsDNS1123Label(service.Name); len(err) > 0 {
 		errs = append(errs, errors.New(fmt.Sprintf(invalidName, service.Name, strings.Join(err, ","))))
 	}
-	if service.Ports == nil || len(service.Ports) == 0 {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Ports"))
-	}
 	if service.Deploy == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Deploy"))
+	}
+	if service.Ports == nil || len(service.Ports) == 0 {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Ports"))
 	}
 	for _, v := range service.Ports {
 		if v.Name == "" {

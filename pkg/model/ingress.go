@@ -182,10 +182,8 @@ func ValidateIngress(ingress IngressWithOwner) []error {
 	errs := []error{}
 	if ingress.Owner == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
-	} else {
-		if !IsValidUUID(ingress.Owner) {
-			errs = append(errs, errors.New(invalidOwner))
-		}
+	} else if !IsValidUUID(ingress.Owner) {
+		errs = append(errs, errors.New(invalidOwner))
 	}
 	if ingress.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
