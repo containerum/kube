@@ -119,10 +119,8 @@ func ValidateSecret(secret SecretWithOwner) []error {
 	errs := []error{}
 	if secret.Owner == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
-	} else {
-		if !IsValidUUID(secret.Owner) {
-			errs = append(errs, errors.New(invalidOwner))
-		}
+	} else if !IsValidUUID(secret.Owner) {
+		errs = append(errs, errors.New(invalidOwner))
 	}
 	if secret.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
@@ -130,8 +128,8 @@ func ValidateSecret(secret SecretWithOwner) []error {
 		errs = append(errs, errors.New(fmt.Sprintf(invalidName, secret.Name, strings.Join(err, ","))))
 	}
 	for k := range secret.Data {
-		if len(api_validation.IsConfigMapKey(k)) > 0 {
-			errs = append(errs, fmt.Errorf(invalidKey, k))
+		if err := api_validation.IsConfigMapKey(k); len(err) > 0 {
+			errs = append(errs, fmt.Errorf(invalidName, k, strings.Join(err, ",")))
 		}
 	}
 	if len(errs) > 0 {

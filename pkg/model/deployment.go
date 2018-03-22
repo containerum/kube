@@ -204,7 +204,7 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, []
 		container.Resources = *rq
 
 		errs := ValidateContainer(c, *container.Resources.Limits.Cpu(), *container.Resources.Limits.Memory())
-		if err != nil {
+		if errs != nil {
 			return nil, nil, nil, errs
 		}
 
@@ -421,19 +421,18 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 	}
 
 	for _, v := range container.Env {
-		if len(api_validation.IsEnvVarName(v.Value)) > 0 {
-			errs = append(errs, fmt.Errorf(fieldShouldExist, "Env: Value"))
-		}
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Env: Name"))
+		} else if err := api_validation.IsEnvVarName(v.Name); len(err) > 0 {
+			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
 		}
 	}
 
 	for _, v := range container.VolumeMounts {
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Volume: Name"))
-		} else if err := api_validation.IsDNS1123Label(container.Name); len(err) > 0 {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidName, container.Name, strings.Join(err, ","))))
+		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
+			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
 		}
 		if v.MountPath == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Volume: Mount path"))
@@ -443,8 +442,8 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 	for _, v := range container.ConfigMaps {
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "ConfigMap: Name"))
-		} else if err := api_validation.IsDNS1123Label(container.Name); len(err) > 0 {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidName, container.Name, strings.Join(err, ","))))
+		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
+			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
 		}
 		if v.MountPath == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "ConfigMap: Mount path"))

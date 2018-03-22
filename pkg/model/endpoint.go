@@ -134,10 +134,8 @@ func ValidateEndpoint(endpoint json_types.Endpoint) []error {
 	errs := []error{}
 	if endpoint.Owner == nil {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
-	} else {
-		if !IsValidUUID(*endpoint.Owner) {
-			errs = append(errs, errors.New(invalidOwner))
-		}
+	} else if !IsValidUUID(*endpoint.Owner) {
+		errs = append(errs, errors.New(invalidOwner))
 	}
 	if endpoint.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
