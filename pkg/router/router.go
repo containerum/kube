@@ -82,15 +82,15 @@ func initRoutes(e *gin.Engine) {
 		{
 			ingress.GET("", m.ReadAccess, h.GetIngressList)
 			ingress.GET("/:ingress", m.ReadAccess, h.GetIngress)
-			ingress.POST("", h.CreateIngress)
-			ingress.PUT("/:ingress", h.UpdateIngress)
-			ingress.DELETE("/:ingress", h.DeleteIngress)
+			ingress.POST("", m.ReadAccess, h.CreateIngress)
+			ingress.PUT("/:ingress", m.ReadAccess, h.UpdateIngress)
+			ingress.DELETE("/:ingress", m.ReadAccess, h.DeleteIngress)
 		}
 
 		endpoint := namespace.Group("/:namespace/endpoints")
 		{
-			endpoint.GET("", m.IsAdmin, m.ReadAccess, h.GetEndpointList)
-			endpoint.GET("/:endpoint", m.IsAdmin, m.ReadAccess, h.GetEndpoint)
+			endpoint.GET("", m.IsAdmin, h.GetEndpointList)
+			endpoint.GET("/:endpoint", m.IsAdmin, h.GetEndpoint)
 			endpoint.POST("", h.CreateEndpoint)
 			endpoint.PUT("/:endpoint", h.UpdateEndpoint)
 			endpoint.DELETE("/:endpoint", h.DeleteEndpoint)
@@ -98,8 +98,8 @@ func initRoutes(e *gin.Engine) {
 
 		configmap := namespace.Group("/:namespace/configmaps")
 		{
-			configmap.GET("", m.IsAdmin, m.ReadAccess, h.GetConfigMapList)
-			configmap.GET("/:configmap", m.IsAdmin, m.ReadAccess, h.GetConfigMap)
+			configmap.GET("", m.IsAdmin, h.GetConfigMapList)
+			configmap.GET("/:configmap", m.IsAdmin, h.GetConfigMap)
 			configmap.POST("", h.CreateConfigMap)
 			configmap.PUT("/:configmap", h.UpdateConfigMap)
 			configmap.DELETE("/:configmap", h.DeleteConfigMap)
