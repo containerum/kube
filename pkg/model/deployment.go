@@ -31,7 +31,7 @@ const (
 	maxDeployCPU    = "4"
 	maxDeployMemory = "4Gi"
 
-	maxDeployReplicas = 10
+	maxDeployReplicas = 15
 )
 
 type DeploymentsList struct {
@@ -364,10 +364,8 @@ func ValidateDeployment(deploy DeploymentWithOwner) []error {
 	errs := []error{}
 	if deploy.Owner == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
-	} else {
-		if !IsValidUUID(deploy.Owner) {
-			errs = append(errs, errors.New(invalidOwner))
-		}
+	} else if !IsValidUUID(deploy.Owner) {
+		errs = append(errs, errors.New(invalidOwner))
 	}
 	if deploy.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
