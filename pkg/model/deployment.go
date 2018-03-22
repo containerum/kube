@@ -8,6 +8,8 @@ import (
 
 	"strings"
 
+	"path"
+
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	"github.com/pkg/errors"
 	"gopkg.in/inf.v0"
@@ -437,6 +439,9 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 		if v.MountPath == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Volume: Mount path"))
 		}
+		if v.SubPath != nil && path.IsAbs(*v.SubPath) {
+			errs = append(errs, fmt.Errorf(subPathRelative, *v.SubPath))
+		}
 	}
 
 	for _, v := range container.ConfigMaps {
@@ -447,6 +452,9 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 		}
 		if v.MountPath == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "ConfigMap: Mount path"))
+		}
+		if v.SubPath != nil && path.IsAbs(*v.SubPath) {
+			errs = append(errs, fmt.Errorf(subPathRelative, *v.SubPath))
 		}
 	}
 
