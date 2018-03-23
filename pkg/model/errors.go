@@ -18,10 +18,10 @@ const (
 	invalidOwner       = "Owner should be UUID"
 	noContainer        = "Container %v is not found in deployment"
 	invalidName        = "Invalid name: %v. %v"
-	invalidKey         = "Invalid key: %v. It must consist of alphanumeric characters, '-', '_' or '.'"
 	invalidIP          = "Invalid IP: %v. It must be a valid IP address, (e.g. 10.9.8.7)"
 	invalidCPUQuota    = "Invalid CPU quota: %v. It must be between %v and %v"
 	invalidMemoryQuota = "Invalid memory quota: %v. It must be between %v and %v"
+	subPathRelative    = "Invalid Sub Path: %v. It must be relative path"
 )
 
 var (

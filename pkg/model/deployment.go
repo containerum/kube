@@ -8,6 +8,8 @@ import (
 
 	"strings"
 
+	"path"
+
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	"github.com/pkg/errors"
 	"gopkg.in/inf.v0"
@@ -29,7 +31,7 @@ const (
 	maxDeployCPU    = "4"
 	maxDeployMemory = "4Gi"
 
-	maxDeployReplicas = 10
+	maxDeployReplicas = 15
 )
 
 type DeploymentsList struct {
@@ -362,10 +364,8 @@ func ValidateDeployment(deploy DeploymentWithOwner) []error {
 	errs := []error{}
 	if deploy.Owner == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
-	} else {
-		if !IsValidUUID(deploy.Owner) {
-			errs = append(errs, errors.New(invalidOwner))
-		}
+	} else if !IsValidUUID(deploy.Owner) {
+		errs = append(errs, errors.New(invalidOwner))
 	}
 	if deploy.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
@@ -437,6 +437,9 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 		if v.MountPath == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Volume: Mount path"))
 		}
+		if v.SubPath != nil && path.IsAbs(*v.SubPath) {
+			errs = append(errs, fmt.Errorf(subPathRelative, *v.SubPath))
+		}
 	}
 
 	for _, v := range container.ConfigMaps {
@@ -447,6 +450,9 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 		}
 		if v.MountPath == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "ConfigMap: Mount path"))
+		}
+		if v.SubPath != nil && path.IsAbs(*v.SubPath) {
+			errs = append(errs, fmt.Errorf(subPathRelative, *v.SubPath))
 		}
 	}
 

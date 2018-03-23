@@ -32,8 +32,9 @@ type NamespacesList struct {
 
 type NamespaceWithOwner struct {
 	kube_types.Namespace
-	Name  string `json:"name,omitempty"`
-	Owner string `json:"owner,omitempty"`
+	Name   string `json:"name,omitempty"`
+	Owner  string `json:"owner,omitempty"`
+	Access string `json:"access,omitempty"`
 }
 
 // ParseResourceQuotaList parses kubernetes v1.ResourceQuotaList to more convenient []Namespace struct.
@@ -209,6 +210,7 @@ func ParseNamespaceForUser(headers UserHeaderDataMap, ns *NamespaceWithOwner) *N
 	for _, n := range headers {
 		if ns.Name == n.ID {
 			ns.Label = n.Label
+			ns.Access = n.Access
 		}
 	}
 	ns.Name = ""
