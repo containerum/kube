@@ -3,8 +3,6 @@ package handlers
 import (
 	"net/http"
 
-	"fmt"
-
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
@@ -194,13 +192,11 @@ func CreateSecretFromFile(ctx *gin.Context) {
 
 	role := ctx.MustGet(m.UserRole).(string)
 	if role == "user" {
-		fmt.Println("TETETET")
 		if secret.Labels == nil {
 			secret.Labels = map[string]string{}
 		}
 		secret.Labels["owner"] = ctx.MustGet(m.UserID).(string)
 
-		fmt.Println("GFGFGFG", secret.Labels["owner"])
 		secret.Namespace = ctx.MustGet(m.NamespaceKey).(string)
 	} else {
 		secret.Namespace = ctx.Param(namespaceParam)

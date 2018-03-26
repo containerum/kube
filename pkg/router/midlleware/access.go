@@ -40,14 +40,6 @@ func IsAdmin(ctx *gin.Context) {
 	return
 }
 
-func HasUserID(ctx *gin.Context) {
-	if ctx.GetHeader(userRoleXHeader) == "" {
-		gonic.Gonic(cherry.ErrRequiredHeadersNotProvided().AddDetails(userRoleXHeader), ctx)
-		return
-	}
-	return
-}
-
 func ReadAccess(c *gin.Context) {
 	ns := c.MustGet(NamespaceKey).(string)
 	if c.MustGet(UserRole).(string) == "user" {
