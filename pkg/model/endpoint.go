@@ -94,7 +94,6 @@ func MakeEndpoint(nsName string, endpoint json_types.Endpoint, labels map[string
 		labels = make(map[string]string, 0)
 	}
 
-	labels[appLabel] = endpoint.Name
 	labels[ownerLabel] = *endpoint.Owner
 	labels[nameLabel] = endpoint.Name
 

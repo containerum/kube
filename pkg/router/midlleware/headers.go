@@ -15,6 +15,7 @@ import (
 )
 
 const (
+	UserIDHeader         = "X-User-Id"
 	userRoleXHeader      = "X-User-Role"
 	userNamespaceXHeader = "X-User-Namespace"
 	userVolumeXHeader    = "X-User-Volume"
@@ -58,6 +59,7 @@ func RequiredUserHeaders() gin.HandlerFunc {
 				}
 				ctx.Set(UserNamespaces, userNs)
 				ctx.Set(UserVolumes, userVol)
+				ctx.Set(UserID, ctx.GetHeader(UserIDHeader))
 			}
 		}
 		ctx.Set(UserRole, ctx.GetHeader(userRoleXHeader))

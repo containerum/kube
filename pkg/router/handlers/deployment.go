@@ -279,9 +279,16 @@ func CreateDeploymentFromFile(ctx *gin.Context) {
 
 	role := ctx.MustGet(m.UserRole).(string)
 	if role == "user" {
+		deploy.Labels["owner"] = ctx.MustGet(m.UserID).(string)
 		deploy.Namespace = ctx.MustGet(m.NamespaceKey).(string)
 	} else {
 		deploy.Namespace = ctx.Param(namespaceParam)
+	}
+
+	errs := model.ValidateDeploymentFromFile(&deploy)
+	if errs != nil {
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		return
 	}
 
 	_, err := kube.GetNamespaceQuota(ctx.MustGet(m.NamespaceKey).(string))

@@ -188,6 +188,7 @@ func CreateServiceFromFile(ctx *gin.Context) {
 		"Namespace Param": ctx.Param(namespaceParam),
 		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
 	}).Debug("Create service Call")
+
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
 	var svc api_core.Service
@@ -199,9 +200,16 @@ func CreateServiceFromFile(ctx *gin.Context) {
 
 	role := ctx.MustGet(m.UserRole).(string)
 	if role == "user" {
+		svc.Labels["owner"] = ctx.MustGet(m.UserID).(string)
 		svc.Namespace = ctx.MustGet(m.NamespaceKey).(string)
 	} else {
 		svc.Namespace = ctx.Param(namespaceParam)
+	}
+
+	errs := model.ValidateServiceFromFile(&svc)
+	if errs != nil {
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		return
 	}
 
 	_, err := kubecli.GetNamespaceQuota(ctx.MustGet(m.NamespaceKey).(string))

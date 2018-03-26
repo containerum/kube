@@ -20,6 +20,11 @@ type SecretWithOwner struct {
 	Owner string `json:"owner,omitempty"`
 }
 
+const (
+	secretKind       = "Secret"
+	secretApiVersion = "v1"
+)
+
 // ParseSecretList parses kubernetes v1.SecretList to more convenient []Secret struct.
 func ParseSecretList(secreti interface{}, parseforuser bool) (*SecretsList, error) {
 	secrets := secreti.(*api_core.SecretList)
@@ -29,12 +34,15 @@ func ParseSecretList(secreti interface{}, parseforuser bool) (*SecretsList, erro
 
 	newSecrets := make([]SecretWithOwner, 0)
 	for _, secret := range secrets.Items {
-		newSecret, err := ParseSecret(&secret, parseforuser)
+		newSecret, err := ParseSecret(&secret, false)
 		if err != nil {
 			return nil, err
 		}
 
 		if newSecret.Owner != "" {
+			if parseforuser {
+				newSecret.Owner = ""
+			}
 			newSecrets = append(newSecrets, *newSecret)
 		}
 	}
@@ -83,14 +91,13 @@ func MakeSecret(nsName string, secret SecretWithOwner, labels map[string]string)
 	if labels == nil {
 		labels = make(map[string]string, 0)
 	}
-	labels[appLabel] = secret.Name
 	labels[ownerLabel] = secret.Owner
 	labels[nameLabel] = secret.Name
 
 	newSecret := api_core.Secret{
 		TypeMeta: api_meta.TypeMeta{
-			Kind:       "Secret",
-			APIVersion: "v1",
+			Kind:       secretKind,
+			APIVersion: secretApiVersion,
 		},
 		ObjectMeta: api_meta.ObjectMeta{
 			Labels:    labels,
@@ -131,6 +138,33 @@ func ValidateSecret(secret SecretWithOwner) []error {
 			errs = append(errs, fmt.Errorf(invalidName, k, strings.Join(err, ",")))
 		}
 	}
+	if len(errs) > 0 {
+		return errs
+	}
+	return nil
+}
+
+func ValidateSecretFromFile(secret *api_core.Secret) []error {
+	errs := []error{}
+
+	if secret.Kind != secretKind {
+		errs = append(errs, fmt.Errorf(invalidResourceKind, secret.Kind, secretKind))
+	}
+
+	if secret.APIVersion != secretApiVersion {
+		errs = append(errs, fmt.Errorf(invalidApiVersion, secret.APIVersion, secretApiVersion))
+	}
+
+	if secret.GetLabels()[ownerLabel] == "" {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Label: Owner"))
+	} else if !IsValidUUID(secret.GetLabels()[ownerLabel]) {
+		errs = append(errs, errors.New(invalidOwner))
+	}
+
+	if secret.Name == "" {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
+	}
+
 	if len(errs) > 0 {
 		return errs
 	}

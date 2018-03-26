@@ -73,7 +73,6 @@ func MakeConfigMap(nsName string, cm ConfigMapWithOwner, labels map[string]strin
 	if labels == nil {
 		labels = make(map[string]string, 0)
 	}
-	labels[appLabel] = cm.Name
 	labels[ownerLabel] = cm.Owner
 	labels[nameLabel] = cm.Name
 

@@ -24,6 +24,11 @@ const (
 	maxport = 65535
 )
 
+const (
+	serviceKind       = "Service"
+	serviceApiVersion = "v1"
+)
+
 type ServicesList struct {
 	Services []ServiceWithOwner `json:"services"`
 }
@@ -130,8 +135,8 @@ func MakeService(nsName string, service ServiceWithOwner, labels map[string]stri
 
 	newService := api_core.Service{
 		TypeMeta: api_meta.TypeMeta{
-			Kind:       "Service",
-			APIVersion: "v1",
+			Kind:       serviceKind,
+			APIVersion: serviceApiVersion,
 		},
 		ObjectMeta: api_meta.ObjectMeta{
 			Labels:    labels,
@@ -210,6 +215,33 @@ func ValidateService(service ServiceWithOwner) []error {
 			errs = append(errs, fmt.Errorf(invalidPort, v.Port, minport, maxport))
 		}
 	}
+	if len(errs) > 0 {
+		return errs
+	}
+	return nil
+}
+
+func ValidateServiceFromFile(svc *api_core.Service) []error {
+	errs := []error{}
+
+	if svc.Kind != serviceKind {
+		errs = append(errs, fmt.Errorf(invalidResourceKind, svc.Kind, serviceKind))
+	}
+
+	if svc.APIVersion != serviceApiVersion {
+		errs = append(errs, fmt.Errorf(invalidApiVersion, svc.APIVersion, serviceApiVersion))
+	}
+
+	if svc.GetLabels()[ownerLabel] == "" {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Label: Owner"))
+	} else if !IsValidUUID(svc.GetLabels()[ownerLabel]) {
+		errs = append(errs, errors.New(invalidOwner))
+	}
+
+	if svc.Name == "" {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
+	}
+
 	if len(errs) > 0 {
 		return errs
 	}

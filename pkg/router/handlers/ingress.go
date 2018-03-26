@@ -93,6 +93,11 @@ func CreateIngress(ctx *gin.Context) {
 		return
 	}
 
+	role := ctx.MustGet(m.UserRole).(string)
+	if role == "user" {
+		ingress.Owner = ctx.MustGet(m.UserID).(string)
+	}
+
 	newIngress, errs := model.MakeIngress(ctx.MustGet(m.NamespaceKey).(string), ingress, quota.Labels)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
@@ -106,7 +111,6 @@ func CreateIngress(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
 	ret, err := model.ParseIngress(ingressAfter, role == "user")
 	if err != nil {
 		ctx.Error(err)
@@ -122,7 +126,7 @@ func UpdateIngress(ctx *gin.Context) {
 		"Ingress":         ctx.Param(ingressParam),
 	}).Debug("Update ingress Call")
 
-	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
 	var ingress model.IngressWithOwner
 	if err := ctx.ShouldBindWith(&ingress, binding.JSON); err != nil {
@@ -131,13 +135,16 @@ func UpdateIngress(ctx *gin.Context) {
 		return
 	}
 
-	ingress.Name = ctx.Param(ingressParam)
-
-	quota, err := kube.GetNamespaceQuota(ctx.MustGet(m.NamespaceKey).(string))
+	quota, err := kubecli.GetNamespaceQuota(ctx.MustGet(m.NamespaceKey).(string))
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
 		return
+	}
+
+	role := ctx.MustGet(m.UserRole).(string)
+	if role == "user" {
+		ingress.Owner = ctx.MustGet(m.UserID).(string)
 	}
 
 	newIngress, errs := model.MakeIngress(ctx.MustGet(m.NamespaceKey).(string), ingress, quota.Labels)
@@ -146,14 +153,13 @@ func UpdateIngress(ctx *gin.Context) {
 		return
 	}
 
-	ingressAfter, err := kube.UpdateIngress(newIngress)
+	ingressAfter, err := kubecli.UpdateIngress(newIngress)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
 	ret, err := model.ParseIngress(ingressAfter, role == "user")
 	if err != nil {
 		ctx.Error(err)
@@ -228,8 +234,15 @@ func CreateIngressFromFile(ctx *gin.Context) {
 		return
 	}
 
+	errs := model.ValidateIngressFromFile(&ingress)
+	if errs != nil {
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		return
+	}
+
 	role := ctx.MustGet(m.UserRole).(string)
 	if role == "user" {
+		ingress.Labels["owner"] = ctx.MustGet(m.UserID).(string)
 		ingress.Namespace = ctx.MustGet(m.NamespaceKey).(string)
 	} else {
 		ingress.Namespace = ctx.Param(namespaceParam)
