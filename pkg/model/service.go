@@ -158,7 +158,7 @@ func MakeService(nsName string, service ServiceWithOwner, labels map[string]stri
 		newService.Spec.ExternalIPs = service.IPs
 
 		if service.Domain != "" {
-			labels[domainLabel] = service.Domain
+			newService.ObjectMeta.Labels[domainLabel] = service.Domain
 		}
 	}
 
