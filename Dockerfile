@@ -7,7 +7,7 @@ RUN CGO_ENABLED=0 go build -v -ldflags="-w -s -extldflags '-static'" -tags="json
 FROM alpine:latest
 COPY --from=builder /bin/kube-api /
 ENV CH_KUBE_API_KUBE_CONF "/cfg/kube.conf" \
-    CH_KUBE_API_DEBUG "false"
+    CH_KUBE_API_DEBUG "true"
 VOLUME ["/cfg"]
 EXPOSE 1212
 ENTRYPOINT ["/kube-api"]
