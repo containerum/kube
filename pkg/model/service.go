@@ -22,6 +22,10 @@ const (
 	maxport = 65535
 )
 
+const (
+	domainLabel = "domain"
+)
+
 type ServicesList struct {
 	Services []ServiceWithOwner `json:"services"`
 }
@@ -69,13 +73,16 @@ func ParseService(srv interface{}, parseforuser bool) (*ServiceWithOwner, error)
 
 	createdAt := native.GetCreationTimestamp().Unix()
 	owner := native.GetObjectMeta().GetLabels()[ownerLabel]
+	deploy := native.GetObjectMeta().GetLabels()[appLabel]
+	domain := native.GetObjectMeta().GetLabels()[domainLabel]
 
 	service := ServiceWithOwner{
 		Service: kube_types.Service{
 			Name:      native.Name,
 			CreatedAt: &createdAt,
-			Deploy:    native.GetObjectMeta().GetLabels()[appLabel], // TODO: check if app key doesn't exists!
 			Ports:     ports,
+			Deploy:    deploy,
+			Domain:    domain,
 		},
 		Owner: owner,
 	}
@@ -149,6 +156,10 @@ func MakeService(nsName string, service ServiceWithOwner, labels map[string]stri
 
 	if service.IPs != nil {
 		newService.Spec.ExternalIPs = service.IPs
+
+		if service.Domain != "" {
+			newService.ObjectMeta.Labels[domainLabel] = service.Domain
+		}
 	}
 
 	return &newService, nil
