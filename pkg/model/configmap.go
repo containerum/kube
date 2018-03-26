@@ -3,7 +3,6 @@ package model
 import (
 	"errors"
 	"fmt"
-
 	"strings"
 
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"

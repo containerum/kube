@@ -6,9 +6,8 @@ import (
 
 	"strconv"
 
-	"strings"
-
 	"path"
+	"strings"
 
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	"github.com/pkg/errors"
@@ -20,17 +19,16 @@ import (
 	api_validation "k8s.io/apimachinery/pkg/util/validation"
 )
 
-const requestCoeffUnscaled = 5
-const requestCoeffScale = 1
-
-const glusterFSEndpoint = "ch-glusterfs"
-
 const (
-	minDeployCPU    = "10m"
-	minDeployMemory = "10Mi"
-	maxDeployCPU    = "4"
-	maxDeployMemory = "4Gi"
+	glusterFSEndpoint = "ch-glusterfs"
 
+	requestCoeffUnscaled = 5
+	requestCoeffScale    = 1
+
+	minDeployCPU      = "10m"
+	minDeployMemory   = "10Mi"
+	maxDeployCPU      = "4"
+	maxDeployMemory   = "4Gi"
 	maxDeployReplicas = 15
 )
 

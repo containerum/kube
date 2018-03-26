@@ -3,7 +3,6 @@ package model
 import (
 	"errors"
 	"fmt"
-
 	"strings"
 
 	json_types "git.containerum.net/ch/json-types/kube-api"

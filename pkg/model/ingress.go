@@ -1,14 +1,14 @@
 package model
 
 import (
-	"fmt"
+	"errors"
 
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_extensions "k8s.io/api/extensions/v1beta1"
 
+	"fmt"
 	"strings"
 
-	"github.com/pkg/errors"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	api_validation "k8s.io/apimachinery/pkg/util/validation"

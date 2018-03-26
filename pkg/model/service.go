@@ -11,19 +11,17 @@ import (
 	"strconv"
 
 	"fmt"
-
 	"strings"
 
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 const (
+	domainLabel = "domain"
+	hiddenLabel = "hidden"
+
 	minport = 11000
 	maxport = 65535
-)
-
-const (
-	domainLabel = "domain"
 )
 
 type ServicesList struct {
@@ -36,10 +34,6 @@ type ServiceWithOwner struct {
 	Hidden     bool   `json:"hidden,omitempty"`
 	NoSelector bool   `json:"no_selector,omitempty"`
 }
-
-const (
-	hiddenLabel = "hidden"
-)
 
 // ParseServiceList parses kubernetes v1.ServiceList to more convenient Service struct.
 func ParseServiceList(ns interface{}, parseforuser bool) (*ServicesList, error) {

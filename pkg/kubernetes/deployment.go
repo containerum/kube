@@ -35,11 +35,11 @@ func (k *Kube) GetDeployment(ns string, deploy string) (*api_apps.Deployment, er
 }
 
 //CreateDeployment creates deployment
-func (k *Kube) CreateDeployment(ns string, depl *api_apps.Deployment) (*api_apps.Deployment, error) {
-	deployment, err := k.AppsV1().Deployments(ns).Create(depl)
+func (k *Kube) CreateDeployment(depl *api_apps.Deployment) (*api_apps.Deployment, error) {
+	deployment, err := k.AppsV1().Deployments(depl.Namespace).Create(depl)
 	if err != nil {
 		log.WithFields(log.Fields{
-			"Namespace":  ns,
+			"Namespace":  depl.Namespace,
 			"Deployment": depl.Name,
 		}).Error(ErrUnableCreateDeployment)
 		return nil, err
@@ -61,11 +61,11 @@ func (k *Kube) DeleteDeployment(ns string, deployName string) error {
 }
 
 //UpdateDeployment updates deployment
-func (k *Kube) UpdateDeployment(ns string, depl *api_apps.Deployment) (*api_apps.Deployment, error) {
-	deployment, err := k.AppsV1().Deployments(ns).Update(depl)
+func (k *Kube) UpdateDeployment(depl *api_apps.Deployment) (*api_apps.Deployment, error) {
+	deployment, err := k.AppsV1().Deployments(depl.Namespace).Update(depl)
 	if err != nil {
 		log.WithFields(log.Fields{
-			"Namespace":  ns,
+			"Namespace":  depl.Namespace,
 			"Deployment": depl.Name,
 		}).Error(ErrUnableUpdateDeployment)
 		return nil, err

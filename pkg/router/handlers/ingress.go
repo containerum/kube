@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
+	api_extensions "k8s.io/api/extensions/v1beta1"
 )
 
 const (
@@ -210,4 +211,48 @@ func GetSelectedIngresses(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, ingresses)
+}
+
+func CreateIngressFromFile(ctx *gin.Context) {
+	log.WithFields(log.Fields{
+		"Namespace_Param": ctx.Param(namespaceParam),
+		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+	}).Debug("Create ingress from file Call")
+
+	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	var ingress api_extensions.Ingress
+	if err := ctx.ShouldBindWith(&ingress, binding.JSON); err != nil {
+		ctx.Error(err)
+		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
+		return
+	}
+
+	role := ctx.MustGet(m.UserRole).(string)
+	if role == "user" {
+		ingress.Namespace = ctx.MustGet(m.NamespaceKey).(string)
+	} else {
+		ingress.Namespace = ctx.Param(namespaceParam)
+	}
+
+	_, err := kubecli.GetNamespaceQuota(ctx.MustGet(m.NamespaceKey).(string))
+	if err != nil {
+		ctx.Error(err)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
+		return
+	}
+
+	ingressAfter, err := kubecli.CreateIngress(&ingress)
+	if err != nil {
+		ctx.Error(err)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailsErr(err), ctx)
+		return
+	}
+
+	ret, err := model.ParseIngress(ingressAfter, role == "user")
+	if err != nil {
+		ctx.Error(err)
+	}
+
+	ctx.JSON(http.StatusCreated, ret)
 }
