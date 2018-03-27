@@ -154,7 +154,7 @@ func ValidateEndpoint(endpoint json_types.Endpoint) []error {
 	for _, v := range endpoint.Ports {
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port name"))
-		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
+		} else if err := api_validation.IsDNS1035Label(v.Name); len(err) > 0 {
 			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
 		}
 		if v.Protocol == "" {

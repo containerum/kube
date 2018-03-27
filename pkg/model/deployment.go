@@ -370,7 +370,7 @@ func ValidateDeployment(deploy DeploymentWithOwner) []error {
 	}
 	if deploy.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-	} else if err := api_validation.IsDNS1123Label(deploy.Name); len(err) > 0 {
+	} else if err := api_validation.IsDNS1035Label(deploy.Name); len(err) > 0 {
 		errs = append(errs, errors.New(fmt.Sprintf(invalidName, deploy.Name, strings.Join(err, ","))))
 	}
 	if len(api_validation.IsInRange(deploy.Replicas, 1, maxDeployReplicas)) > 0 {
@@ -385,13 +385,13 @@ func ValidateDeployment(deploy DeploymentWithOwner) []error {
 	return nil
 }
 
+var mincpu, _ = api_resource.ParseQuantity(minDeployCPU)
+var maxcpu, _ = api_resource.ParseQuantity(maxDeployCPU)
+var minmem, _ = api_resource.ParseQuantity(minDeployMemory)
+var maxmem, _ = api_resource.ParseQuantity(maxDeployMemory)
+
 func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Quantity) []error {
 	errs := []error{}
-
-	mincpu, _ := api_resource.ParseQuantity(minDeployCPU)
-	maxcpu, _ := api_resource.ParseQuantity(maxDeployCPU)
-	minmem, _ := api_resource.ParseQuantity(minDeployMemory)
-	maxmem, _ := api_resource.ParseQuantity(maxDeployMemory)
 
 	if container.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
@@ -410,7 +410,7 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 	for _, v := range container.Ports {
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port: Name"))
-		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
+		} else if err := api_validation.IsDNS1035Label(v.Name); len(err) > 0 {
 			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
 		}
 		if v.Protocol != kube_types.UDP && v.Protocol != kube_types.TCP {
@@ -432,7 +432,7 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 	for _, v := range container.VolumeMounts {
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Volume: Name"))
-		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
+		} else if err := api_validation.IsDNS1035Label(v.Name); len(err) > 0 {
 			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
 		}
 		if v.MountPath == "" {
@@ -446,7 +446,7 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 	for _, v := range container.ConfigMaps {
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "ConfigMap: Name"))
-		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
+		} else if err := api_validation.IsDNS1035Label(v.Name); len(err) > 0 {
 			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
 		}
 		if v.MountPath == "" {
@@ -470,7 +470,7 @@ func ValidateDeploymentFromFile(deploy *api_apps.Deployment) []error {
 		errs = append(errs, fmt.Errorf(invalidResourceKind, deploy.Kind, deploymentKind))
 	}
 
-	if deploy.APIVersion != deploymentApiVersion {
+	if deploy.APIVersion != "" && deploy.APIVersion != deploymentApiVersion {
 		errs = append(errs, fmt.Errorf(invalidApiVersion, deploy.APIVersion, deploymentApiVersion))
 	}
 
@@ -482,6 +482,57 @@ func ValidateDeploymentFromFile(deploy *api_apps.Deployment) []error {
 
 	if deploy.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
+	} else if err := api_validation.IsDNS1123Label(deploy.Name); len(err) > 0 {
+		errs = append(errs, errors.New(fmt.Sprintf(invalidName, deploy.Name, strings.Join(err, ","))))
+	}
+
+	if len(api_validation.IsInRange(int(*deploy.Spec.Replicas), 1, maxDeployReplicas)) > 0 {
+		errs = append(errs, fmt.Errorf(invalidReplicas, *deploy.Spec.Replicas, maxDeployReplicas))
+	}
+	if deploy.Spec.Template.Spec.Containers == nil || len(deploy.Spec.Template.Spec.Containers) == 0 {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Containers"))
+	}
+
+	for _, c := range deploy.Spec.Template.Spec.Containers {
+		if c.Resources.Limits.Cpu().Cmp(mincpu) == -1 || c.Resources.Limits.Cpu().Cmp(maxcpu) == 1 {
+			errs = append(errs, fmt.Errorf(invalidCPUQuota, c.Resources.Limits.Cpu().String(), minDeployCPU, maxDeployCPU))
+		}
+		if c.Resources.Limits.Memory().Cmp(minmem) == -1 || c.Resources.Limits.Memory().Cmp(maxmem) == 1 {
+			errs = append(errs, fmt.Errorf(invalidMemoryQuota, c.Resources.Limits.Memory().String(), minDeployMemory, maxDeployMemory))
+		}
+
+		for _, p := range c.Ports {
+			if p.Name == "" {
+				errs = append(errs, fmt.Errorf(fieldShouldExist, "Port: Name"))
+			} else if err := api_validation.IsDNS1035Label(p.Name); len(err) > 0 {
+				errs = append(errs, errors.New(fmt.Sprintf(invalidName, p.Name, strings.Join(err, ","))))
+			}
+			if len(api_validation.IsValidPortNum(int(p.ContainerPort))) > 0 {
+				errs = append(errs, fmt.Errorf(invalidPort, p.ContainerPort, minport, maxport))
+			}
+		}
+
+		for _, e := range c.Env {
+			if e.Name == "" {
+				errs = append(errs, fmt.Errorf(fieldShouldExist, "Env: Name"))
+			} else if err := api_validation.IsEnvVarName(e.Name); len(err) > 0 {
+				errs = append(errs, errors.New(fmt.Sprintf(invalidName, e.Name, strings.Join(err, ","))))
+			}
+		}
+
+		for _, m := range c.VolumeMounts {
+			if m.Name == "" {
+				errs = append(errs, fmt.Errorf(fieldShouldExist, "Volume: Name"))
+			} else if err := api_validation.IsDNS1035Label(m.Name); len(err) > 0 {
+				errs = append(errs, errors.New(fmt.Sprintf(invalidName, m.Name, strings.Join(err, ","))))
+			}
+			if m.MountPath == "" {
+				errs = append(errs, fmt.Errorf(fieldShouldExist, "Volume: Mount path"))
+			}
+			if m.SubPath != "" && path.IsAbs(m.SubPath) {
+				errs = append(errs, fmt.Errorf(subPathRelative, m.SubPath))
+			}
+		}
 	}
 
 	if len(errs) > 0 {

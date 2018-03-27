@@ -202,9 +202,9 @@ func ValidateIngress(ingress IngressWithOwner) []error {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Path"))
 		}
 		for _, p := range v.Path {
-			if ingress.Name == "" {
+			if p.ServiceName == "" {
 				errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-			} else if err := api_validation.IsDNS1123Label(p.ServiceName); len(err) > 0 {
+			} else if err := api_validation.IsDNS1035Label(p.ServiceName); len(err) > 0 {
 				errs = append(errs, errors.New(fmt.Sprintf(invalidName, p.ServiceName, strings.Join(err, ","))))
 			}
 			if len(api_validation.IsValidPortNum(p.ServicePort)) > 0 {
@@ -229,7 +229,7 @@ func ValidateIngressFromFile(ingress *api_extensions.Ingress) []error {
 		errs = append(errs, fmt.Errorf(invalidResourceKind, ingress.Kind, ingressKind))
 	}
 
-	if ingress.APIVersion != ingressApiVersion {
+	if ingress.APIVersion != "" && ingress.APIVersion != ingressApiVersion {
 		errs = append(errs, fmt.Errorf(invalidApiVersion, ingress.APIVersion, ingressApiVersion))
 	}
 
@@ -241,6 +241,30 @@ func ValidateIngressFromFile(ingress *api_extensions.Ingress) []error {
 
 	if ingress.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
+	} else if err := api_validation.IsDNS1123Label(ingress.Name); len(err) > 0 {
+		errs = append(errs, errors.New(fmt.Sprintf(invalidName, ingress.Name, strings.Join(err, ","))))
+	}
+
+	if ingress.Spec.Rules == nil || len(ingress.Spec.Rules) == 0 {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Rules"))
+	}
+	for _, r := range ingress.Spec.Rules {
+		if r.HTTP.Paths == nil || len(r.HTTP.Paths) == 0 {
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "Path"))
+		}
+		for _, p := range r.HTTP.Paths {
+			if p.Backend.ServiceName == "" {
+				errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
+			} else if err := api_validation.IsDNS1035Label(p.Backend.ServiceName); len(err) > 0 {
+				errs = append(errs, errors.New(fmt.Sprintf(invalidName, p.Backend.ServiceName, strings.Join(err, ","))))
+			}
+			if len(api_validation.IsValidPortNum(int(p.Backend.ServicePort.IntVal))) > 0 {
+				errs = append(errs, fmt.Errorf(invalidPort, p.Backend.ServicePort.IntVal, 1, maxport))
+			}
+			if p.Path == "" {
+				errs = append(errs, fmt.Errorf(fieldShouldExist, "Path"))
+			}
+		}
 	}
 
 	if len(errs) > 0 {

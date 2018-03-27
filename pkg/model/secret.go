@@ -39,7 +39,7 @@ func ParseSecretList(secreti interface{}, parseforuser bool) (*SecretsList, erro
 			return nil, err
 		}
 
-		if newSecret.Owner != "" {
+		if newSecret.Owner != "" || !parseforuser {
 			if parseforuser {
 				newSecret.Owner = ""
 			}
@@ -151,7 +151,7 @@ func ValidateSecretFromFile(secret *api_core.Secret) []error {
 		errs = append(errs, fmt.Errorf(invalidResourceKind, secret.Kind, secretKind))
 	}
 
-	if secret.APIVersion != secretApiVersion {
+	if secret.APIVersion != "" && secret.APIVersion != secretApiVersion {
 		errs = append(errs, fmt.Errorf(invalidApiVersion, secret.APIVersion, secretApiVersion))
 	}
 
@@ -163,6 +163,14 @@ func ValidateSecretFromFile(secret *api_core.Secret) []error {
 
 	if secret.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
+	} else if err := api_validation.IsDNS1123Label(secret.Name); len(err) > 0 {
+		errs = append(errs, errors.New(fmt.Sprintf(invalidName, secret.Name, strings.Join(err, ","))))
+	}
+
+	for k := range secret.Data {
+		if err := api_validation.IsConfigMapKey(k); len(err) > 0 {
+			errs = append(errs, fmt.Errorf(invalidName, k, strings.Join(err, ",")))
+		}
 	}
 
 	if len(errs) > 0 {
