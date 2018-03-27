@@ -241,7 +241,7 @@ func ValidateIngressFromFile(ingress *api_extensions.Ingress) []error {
 
 	if ingress.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-	} else if err := api_validation.IsDNS1123Label(ingress.Name); len(err) > 0 {
+	} else if err := api_validation.IsDNS1123Subdomain(ingress.Name); len(err) > 0 {
 		errs = append(errs, errors.New(fmt.Sprintf(invalidName, ingress.Name, strings.Join(err, ","))))
 	}
 
