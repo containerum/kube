@@ -228,7 +228,7 @@ func ValidateServiceFromFile(svc *api_core.Service) []error {
 		errs = append(errs, fmt.Errorf(invalidResourceKind, svc.Kind, serviceKind))
 	}
 
-	if svc.APIVersion != serviceApiVersion {
+	if svc.APIVersion != "" && svc.APIVersion != serviceApiVersion {
 		errs = append(errs, fmt.Errorf(invalidApiVersion, svc.APIVersion, serviceApiVersion))
 	}
 

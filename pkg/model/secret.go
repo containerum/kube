@@ -151,7 +151,7 @@ func ValidateSecretFromFile(secret *api_core.Secret) []error {
 		errs = append(errs, fmt.Errorf(invalidResourceKind, secret.Kind, secretKind))
 	}
 
-	if secret.APIVersion != secretApiVersion {
+	if secret.APIVersion != "" && secret.APIVersion != secretApiVersion {
 		errs = append(errs, fmt.Errorf(invalidApiVersion, secret.APIVersion, secretApiVersion))
 	}
 

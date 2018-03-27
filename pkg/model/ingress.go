@@ -229,7 +229,7 @@ func ValidateIngressFromFile(ingress *api_extensions.Ingress) []error {
 		errs = append(errs, fmt.Errorf(invalidResourceKind, ingress.Kind, ingressKind))
 	}
 
-	if ingress.APIVersion != ingressApiVersion {
+	if ingress.APIVersion != "" && ingress.APIVersion != ingressApiVersion {
 		errs = append(errs, fmt.Errorf(invalidApiVersion, ingress.APIVersion, ingressApiVersion))
 	}
 

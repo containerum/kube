@@ -470,7 +470,7 @@ func ValidateDeploymentFromFile(deploy *api_apps.Deployment) []error {
 		errs = append(errs, fmt.Errorf(invalidResourceKind, deploy.Kind, deploymentKind))
 	}
 
-	if deploy.APIVersion != deploymentApiVersion {
+	if deploy.APIVersion != "" && deploy.APIVersion != deploymentApiVersion {
 		errs = append(errs, fmt.Errorf(invalidApiVersion, deploy.APIVersion, deploymentApiVersion))
 	}
 
