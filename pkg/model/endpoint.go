@@ -3,7 +3,6 @@ package model
 import (
 	"errors"
 	"fmt"
-
 	"strings"
 
 	json_types "git.containerum.net/ch/json-types/kube-api"
@@ -95,7 +94,6 @@ func MakeEndpoint(nsName string, endpoint json_types.Endpoint, labels map[string
 		labels = make(map[string]string, 0)
 	}
 
-	labels[appLabel] = endpoint.Name
 	labels[ownerLabel] = *endpoint.Owner
 	labels[nameLabel] = endpoint.Name
 

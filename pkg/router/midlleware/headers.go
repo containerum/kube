@@ -15,6 +15,7 @@ import (
 )
 
 const (
+	UserIDHeader         = "X-User-Id"
 	userRoleXHeader      = "X-User-Role"
 	userNamespaceXHeader = "X-User-Namespace"
 	userVolumeXHeader    = "X-User-Volume"
@@ -39,7 +40,7 @@ func RequiredUserHeaders() gin.HandlerFunc {
 		} else {
 			//User-Role: user, check User-Namespace, X-User-Volume
 			if isUser {
-				notFoundHeaders := requireHeaders(ctx, userNamespaceXHeader, userVolumeXHeader)
+				notFoundHeaders := requireHeaders(ctx, userNamespaceXHeader, userVolumeXHeader, UserIDHeader)
 				if len(notFoundHeaders) > 0 {
 					gonic.Gonic(cherry.ErrRequiredHeadersNotProvided().AddDetails(notFoundHeaders...), ctx)
 					return
@@ -58,6 +59,7 @@ func RequiredUserHeaders() gin.HandlerFunc {
 				}
 				ctx.Set(UserNamespaces, userNs)
 				ctx.Set(UserVolumes, userVol)
+				ctx.Set(UserID, ctx.GetHeader(UserIDHeader))
 			}
 		}
 		ctx.Set(UserRole, ctx.GetHeader(userRoleXHeader))

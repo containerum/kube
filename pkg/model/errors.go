@@ -5,23 +5,8 @@ import (
 
 	ch "git.containerum.net/ch/kube-client/pkg/cherry"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
-	"github.com/google/uuid"
 	api_errors "k8s.io/apimachinery/pkg/api/errors"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
-
-const (
-	fieldShouldExist   = "Field %v should be provided"
-	invalidReplicas    = "Invalid replicas number: %v. It must be between 1 and %v"
-	invalidPort        = "Invalid port: %v. It must be between %v and %v"
-	invalidProtocol    = "Invalid protocol: %v. It must be TCP or UDP"
-	invalidOwner       = "Owner should be UUID"
-	noContainer        = "Container %v is not found in deployment"
-	invalidName        = "Invalid name: %v. %v"
-	invalidIP          = "Invalid IP: %v. It must be a valid IP address, (e.g. 10.9.8.7)"
-	invalidCPUQuota    = "Invalid CPU quota: %v. It must be between %v and %v"
-	invalidMemoryQuota = "Invalid memory quota: %v. It must be between %v and %v"
-	subPathRelative    = "Invalid Sub Path: %v. It must be relative path"
 )
 
 var (
@@ -53,6 +38,22 @@ var (
 	ErrUnableConvertConfigMap     = errors.New("Unable to decode config map")
 )
 
+const (
+	noContainer         = "Container %v is not found in deployment"
+	fieldShouldExist    = "Field %v should be provided"
+	invalidReplicas     = "Invalid replicas number: %v. It must be between 1 and %v"
+	invalidPort         = "Invalid port: %v. It must be between %v and %v"
+	invalidProtocol     = "Invalid protocol: %v. It must be TCP or UDP"
+	invalidOwner        = "Owner should be UUID"
+	invalidName         = "Invalid name: %v. %v"
+	invalidIP           = "Invalid IP: %v. It must be a valid IP address, (e.g. 10.9.8.7)"
+	invalidCPUQuota     = "Invalid CPU quota: %v. It must be between %v and %v"
+	invalidMemoryQuota  = "Invalid memory quota: %v. It must be between %v and %v"
+	subPathRelative     = "Invalid Sub Path: %v. It must be relative path"
+	invalidResourceKind = "Invalid resource kind: %v. Shoud be %v"
+	invalidApiVersion   = "Invalid API Version: %v. Shoud be %v"
+)
+
 //ParseResourceError checks error status
 func ParseResourceError(in interface{}, defaulterr *ch.Err) *ch.Err {
 	sE, isStatusErrorCode := in.(*api_errors.StatusError)
@@ -67,13 +68,4 @@ func ParseResourceError(in interface{}, defaulterr *ch.Err) *ch.Err {
 		}
 	}
 	return defaulterr
-}
-
-//IsValidUUID checks if UUID is valid
-func IsValidUUID(u string) bool {
-	_, err := uuid.Parse(u)
-	if err != nil {
-		return false
-	}
-	return true
 }

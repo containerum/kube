@@ -8,6 +8,7 @@ import (
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
+	api_apps "k8s.io/api/apps/v1"
 
 	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
 	"github.com/gin-gonic/gin"
@@ -95,7 +96,7 @@ func CreateDeployment(ctx *gin.Context) {
 		return
 	}
 
-	deployAfter, err := kube.CreateDeployment(ctx.Param(namespaceParam), deployment)
+	deployAfter, err := kube.CreateDeployment(deployment)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
@@ -148,7 +149,7 @@ func UpdateDeployment(ctx *gin.Context) {
 		return
 	}
 
-	deployAfter, err := kube.UpdateDeployment(ctx.Param(namespaceParam), deployment)
+	deployAfter, err := kube.UpdateDeployment(deployment)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
@@ -187,7 +188,7 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 	newRepl := int32(replicas.Replicas)
 	deployment.Spec.Replicas = &newRepl
 
-	deployAfter, err := kube.UpdateDeployment(ctx.Param(namespaceParam), deployment)
+	deployAfter, err := kube.UpdateDeployment(deployment)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
@@ -230,7 +231,7 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 		return
 	}
 
-	deployAfter, err := kube.UpdateDeployment(ctx.Param(namespaceParam), deploymentUpd)
+	deployAfter, err := kube.UpdateDeployment(deploymentUpd)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
@@ -259,4 +260,54 @@ func DeleteDeployment(ctx *gin.Context) {
 		return
 	}
 	ctx.Status(http.StatusAccepted)
+}
+
+func CreateDeploymentFromFile(ctx *gin.Context) {
+	log.WithFields(log.Fields{
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+	}).Debug("Create deployment from file Call")
+
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	var deploy api_apps.Deployment
+	if err := ctx.ShouldBindWith(&deploy, binding.JSON); err != nil {
+		ctx.Error(err)
+		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
+		return
+	}
+
+	role := ctx.MustGet(m.UserRole).(string)
+	if role == "user" {
+		deploy.Labels["owner"] = ctx.MustGet(m.UserID).(string)
+		deploy.Namespace = ctx.MustGet(m.NamespaceKey).(string)
+	} else {
+		deploy.Namespace = ctx.Param(namespaceParam)
+	}
+
+	errs := model.ValidateDeploymentFromFile(&deploy)
+	if errs != nil {
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		return
+	}
+
+	_, err := kube.GetNamespaceQuota(ctx.MustGet(m.NamespaceKey).(string))
+	if err != nil {
+		ctx.Error(err)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
+		return
+	}
+
+	deployAfter, err := kube.CreateDeployment(&deploy)
+	if err != nil {
+		ctx.Error(err)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailsErr(err), ctx)
+		return
+	}
+
+	ret, err := model.ParseDeployment(deployAfter, role == "user")
+	if err != nil {
+		ctx.Error(err)
+	}
+	ctx.JSON(http.StatusCreated, ret)
 }

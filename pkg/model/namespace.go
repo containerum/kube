@@ -3,7 +3,6 @@ package model
 import (
 	"errors"
 	"fmt"
-
 	"strings"
 
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
@@ -17,9 +16,7 @@ const (
 	ownerLabel = "owner"
 	appLabel   = "app"
 	nameLabel  = "name"
-)
 
-const (
 	minNamespaceCPU    = "0.3"
 	minNamespaceMemory = "0.5Gi"
 	maxNamespaceCPU    = "10"
@@ -93,7 +90,7 @@ func ParseResourceQuota(quota interface{}) (*NamespaceWithOwner, error) {
 
 // MakeNamespace creates kubernetes v1.Namespace from Namespace struct
 func MakeNamespace(ns NamespaceWithOwner) (*api_core.Namespace, []error) {
-	err := validateNamespace(ns)
+	err := ValidateNamespace(ns)
 	if err != nil {
 		return nil, err
 	}
@@ -114,25 +111,6 @@ func MakeNamespace(ns NamespaceWithOwner) (*api_core.Namespace, []error) {
 	}
 
 	return &newNs, nil
-}
-
-func validateNamespace(ns NamespaceWithOwner) []error {
-	errs := []error{}
-
-	if ns.Name == "" {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-	} else if err := api_validation.IsDNS1123Label(ns.Name); len(err) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, ns.Name, strings.Join(err, ","))))
-	}
-	if ns.Owner == "" {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
-	} else if !IsValidUUID(ns.Owner) {
-		errs = append(errs, errors.New(invalidOwner))
-	}
-	if len(errs) > 0 {
-		return errs
-	}
-	return nil
 }
 
 // MakeResourceQuota creates kubernetes v1.ResourceQuota from cpu, memory, labels and namespace name
@@ -173,28 +151,6 @@ func MakeResourceQuota(ns string, labels map[string]string, resources kube_types
 	return &newRq, nil
 }
 
-func ValidateResourceQuota(cpu, mem api_resource.Quantity) []error {
-	errs := []error{}
-
-	mincpu, _ := api_resource.ParseQuantity(minNamespaceCPU)
-	maxcpu, _ := api_resource.ParseQuantity(maxNamespaceCPU)
-	minmem, _ := api_resource.ParseQuantity(minNamespaceMemory)
-	maxmem, _ := api_resource.ParseQuantity(maxNamespaceMemory)
-
-	if cpu.Cmp(mincpu) == -1 || cpu.Cmp(maxcpu) == 1 {
-		errs = append(errs, fmt.Errorf(invalidCPUQuota, cpu.String(), minNamespaceCPU, maxNamespaceCPU))
-	}
-
-	if mem.Cmp(minmem) == -1 || mem.Cmp(maxmem) == 1 {
-		errs = append(errs, fmt.Errorf(invalidMemoryQuota, mem.String(), minNamespaceMemory, maxNamespaceMemory))
-	}
-
-	if len(errs) > 0 {
-		return errs
-	}
-	return nil
-}
-
 func ParseNamespaceListForUser(headers UserHeaderDataMap, nsl []NamespaceWithOwner) *NamespacesList {
 	ret := NamespacesList{}
 	for _, ns := range nsl {
@@ -216,4 +172,45 @@ func ParseNamespaceForUser(headers UserHeaderDataMap, ns *NamespaceWithOwner) *N
 	ns.Name = ""
 	ns.Owner = ""
 	return ns
+}
+
+func ValidateNamespace(ns NamespaceWithOwner) []error {
+	errs := []error{}
+
+	if ns.Name == "" {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
+	} else if err := api_validation.IsDNS1123Label(ns.Name); len(err) > 0 {
+		errs = append(errs, errors.New(fmt.Sprintf(invalidName, ns.Name, strings.Join(err, ","))))
+	}
+	if ns.Owner == "" {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
+	} else if !IsValidUUID(ns.Owner) {
+		errs = append(errs, errors.New(invalidOwner))
+	}
+	if len(errs) > 0 {
+		return errs
+	}
+	return nil
+}
+
+func ValidateResourceQuota(cpu, mem api_resource.Quantity) []error {
+	errs := []error{}
+
+	mincpu, _ := api_resource.ParseQuantity(minNamespaceCPU)
+	maxcpu, _ := api_resource.ParseQuantity(maxNamespaceCPU)
+	minmem, _ := api_resource.ParseQuantity(minNamespaceMemory)
+	maxmem, _ := api_resource.ParseQuantity(maxNamespaceMemory)
+
+	if cpu.Cmp(mincpu) == -1 || cpu.Cmp(maxcpu) == 1 {
+		errs = append(errs, fmt.Errorf(invalidCPUQuota, cpu.String(), minNamespaceCPU, maxNamespaceCPU))
+	}
+
+	if mem.Cmp(minmem) == -1 || mem.Cmp(maxmem) == 1 {
+		errs = append(errs, fmt.Errorf(invalidMemoryQuota, mem.String(), minNamespaceMemory, maxNamespaceMemory))
+	}
+
+	if len(errs) > 0 {
+		return errs
+	}
+	return nil
 }

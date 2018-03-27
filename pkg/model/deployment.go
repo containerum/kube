@@ -6,9 +6,8 @@ import (
 
 	"strconv"
 
-	"strings"
-
 	"path"
+	"strings"
 
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	"github.com/pkg/errors"
@@ -20,17 +19,19 @@ import (
 	api_validation "k8s.io/apimachinery/pkg/util/validation"
 )
 
-const requestCoeffUnscaled = 5
-const requestCoeffScale = 1
-
-const glusterFSEndpoint = "ch-glusterfs"
-
 const (
-	minDeployCPU    = "10m"
-	minDeployMemory = "10Mi"
-	maxDeployCPU    = "4"
-	maxDeployMemory = "4Gi"
+	deploymentKind       = "Deployment"
+	deploymentApiVersion = "apps/v1"
 
+	glusterFSEndpoint = "ch-glusterfs"
+
+	requestCoeffUnscaled = 5
+	requestCoeffScale    = 1
+
+	minDeployCPU      = "10m"
+	minDeployMemory   = "10Mi"
+	maxDeployCPU      = "4"
+	maxDeployMemory   = "4Gi"
 	maxDeployReplicas = 15
 )
 
@@ -139,8 +140,8 @@ func MakeDeployment(nsName string, depl DeploymentWithOwner, labels map[string]s
 
 	deployment := api_apps.Deployment{
 		TypeMeta: api_meta.TypeMeta{
-			Kind:       "Deployment",
-			APIVersion: "apps/v1",
+			Kind:       deploymentKind,
+			APIVersion: deploymentApiVersion,
 		},
 		ObjectMeta: api_meta.ObjectMeta{
 			Labels:    labels,
@@ -454,6 +455,33 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 		if v.SubPath != nil && path.IsAbs(*v.SubPath) {
 			errs = append(errs, fmt.Errorf(subPathRelative, *v.SubPath))
 		}
+	}
+
+	if len(errs) > 0 {
+		return errs
+	}
+	return nil
+}
+
+func ValidateDeploymentFromFile(deploy *api_apps.Deployment) []error {
+	errs := []error{}
+
+	if deploy.Kind != deploymentKind {
+		errs = append(errs, fmt.Errorf(invalidResourceKind, deploy.Kind, deploymentKind))
+	}
+
+	if deploy.APIVersion != deploymentApiVersion {
+		errs = append(errs, fmt.Errorf(invalidApiVersion, deploy.APIVersion, deploymentApiVersion))
+	}
+
+	if deploy.GetLabels()[ownerLabel] == "" {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Label: Owner"))
+	} else if !IsValidUUID(deploy.GetLabels()[ownerLabel]) {
+		errs = append(errs, errors.New(invalidOwner))
+	}
+
+	if deploy.Name == "" {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
 	}
 
 	if len(errs) > 0 {

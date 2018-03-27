@@ -1,14 +1,14 @@
 package model
 
 import (
-	"fmt"
+	"errors"
 
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_extensions "k8s.io/api/extensions/v1beta1"
 
+	"fmt"
 	"strings"
 
-	"github.com/pkg/errors"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	api_validation "k8s.io/apimachinery/pkg/util/validation"
@@ -22,6 +22,11 @@ type IngressWithOwner struct {
 	kube_types.Ingress
 	Owner string `json:"owner,omitempty"`
 }
+
+const (
+	ingressKind       = "Ingress"
+	ingressApiVersion = "extensions/v1beta1"
+)
 
 // ParseIngressList parses kubernetes v1beta1.IngressList to more convenient []Ingress struct
 func ParseIngressList(ingressi interface{}, parseforuser bool) (*IngressesList, error) {
@@ -113,7 +118,6 @@ func MakeIngress(nsName string, ingress IngressWithOwner, labels map[string]stri
 	if labels == nil {
 		labels = make(map[string]string, 0)
 	}
-	labels[appLabel] = ingress.Name
 	labels[ownerLabel] = ingress.Owner
 	labels[nameLabel] = ingress.Name
 
@@ -121,8 +125,8 @@ func MakeIngress(nsName string, ingress IngressWithOwner, labels map[string]stri
 
 	newIngress := api_extensions.Ingress{
 		TypeMeta: api_meta.TypeMeta{
-			Kind:       "Ingress",
-			APIVersion: "extensions/v1beta1",
+			Kind:       ingressKind,
+			APIVersion: ingressApiVersion,
 		},
 		ObjectMeta: api_meta.ObjectMeta{
 			Labels:      labels,
@@ -210,6 +214,33 @@ func ValidateIngress(ingress IngressWithOwner) []error {
 				errs = append(errs, fmt.Errorf(fieldShouldExist, "Path"))
 			}
 		}
+	}
+
+	if len(errs) > 0 {
+		return errs
+	}
+	return nil
+}
+
+func ValidateIngressFromFile(ingress *api_extensions.Ingress) []error {
+	errs := []error{}
+
+	if ingress.Kind != ingressKind {
+		errs = append(errs, fmt.Errorf(invalidResourceKind, ingress.Kind, ingressKind))
+	}
+
+	if ingress.APIVersion != ingressApiVersion {
+		errs = append(errs, fmt.Errorf(invalidApiVersion, ingress.APIVersion, ingressApiVersion))
+	}
+
+	if ingress.GetLabels()[ownerLabel] == "" {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Label: Owner"))
+	} else if !IsValidUUID(ingress.GetLabels()[ownerLabel]) {
+		errs = append(errs, errors.New(invalidOwner))
+	}
+
+	if ingress.Name == "" {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
 	}
 
 	if len(errs) > 0 {
