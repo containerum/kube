@@ -191,7 +191,7 @@ func ValidateService(service ServiceWithOwner) []error {
 	}
 	if service.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-	} else if err := api_validation.IsDNS1123Label(service.Name); len(err) > 0 {
+	} else if err := api_validation.IsDNS1035Label(service.Name); len(err) > 0 {
 		errs = append(errs, errors.New(fmt.Sprintf(invalidName, service.Name, strings.Join(err, ","))))
 	}
 	if service.Deploy == "" {
@@ -203,7 +203,7 @@ func ValidateService(service ServiceWithOwner) []error {
 	for _, v := range service.Ports {
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port name"))
-		} else if err := api_validation.IsDNS1035Label(v.Name); len(err) > 0 {
+		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
 			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
 		}
 		if v.Protocol == "" {
@@ -212,7 +212,7 @@ func ValidateService(service ServiceWithOwner) []error {
 			errs = append(errs, fmt.Errorf(invalidProtocol, v.Protocol))
 		}
 		if len(api_validation.IsInRange(*v.Port, minport, maxport)) > 0 {
-			errs = append(errs, fmt.Errorf(invalidPort, v.Port, minport, maxport))
+			errs = append(errs, fmt.Errorf(invalidPort, *v.Port, minport, maxport))
 		}
 	}
 	if len(errs) > 0 {
@@ -240,7 +240,7 @@ func ValidateServiceFromFile(svc *api_core.Service) []error {
 
 	if svc.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-	} else if err := api_validation.IsDNS1123Label(svc.Name); len(err) > 0 {
+	} else if err := api_validation.IsDNS1035Label(svc.Name); len(err) > 0 {
 		errs = append(errs, errors.New(fmt.Sprintf(invalidName, svc.Name, strings.Join(err, ","))))
 	}
 	if svc.Spec.Ports == nil || len(svc.Spec.Ports) == 0 {
@@ -249,7 +249,7 @@ func ValidateServiceFromFile(svc *api_core.Service) []error {
 	for _, v := range svc.Spec.Ports {
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port name"))
-		} else if err := api_validation.IsDNS1035Label(v.Name); len(err) > 0 {
+		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
 			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
 		}
 		if len(api_validation.IsInRange(int(v.Port), minport, maxport)) > 0 {

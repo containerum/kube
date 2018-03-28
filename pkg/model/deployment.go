@@ -370,7 +370,7 @@ func ValidateDeployment(deploy DeploymentWithOwner) []error {
 	}
 	if deploy.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-	} else if err := api_validation.IsDNS1035Label(deploy.Name); len(err) > 0 {
+	} else if err := api_validation.IsDNS1123Label(deploy.Name); len(err) > 0 {
 		errs = append(errs, errors.New(fmt.Sprintf(invalidName, deploy.Name, strings.Join(err, ","))))
 	}
 	if len(api_validation.IsInRange(deploy.Replicas, 1, maxDeployReplicas)) > 0 {
@@ -410,7 +410,7 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 	for _, v := range container.Ports {
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port: Name"))
-		} else if err := api_validation.IsDNS1035Label(v.Name); len(err) > 0 {
+		} else if err := api_validation.IsValidPortName(v.Name); len(err) > 0 {
 			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
 		}
 		if v.Protocol != kube_types.UDP && v.Protocol != kube_types.TCP {
@@ -432,7 +432,7 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 	for _, v := range container.VolumeMounts {
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Volume: Name"))
-		} else if err := api_validation.IsDNS1035Label(v.Name); len(err) > 0 {
+		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
 			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
 		}
 		if v.MountPath == "" {
@@ -446,7 +446,7 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 	for _, v := range container.ConfigMaps {
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "ConfigMap: Name"))
-		} else if err := api_validation.IsDNS1035Label(v.Name); len(err) > 0 {
+		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
 			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
 		}
 		if v.MountPath == "" {
@@ -504,7 +504,7 @@ func ValidateDeploymentFromFile(deploy *api_apps.Deployment) []error {
 		for _, p := range c.Ports {
 			if p.Name == "" {
 				errs = append(errs, fmt.Errorf(fieldShouldExist, "Port: Name"))
-			} else if err := api_validation.IsDNS1035Label(p.Name); len(err) > 0 {
+			} else if err := api_validation.IsValidPortName(p.Name); len(err) > 0 {
 				errs = append(errs, errors.New(fmt.Sprintf(invalidName, p.Name, strings.Join(err, ","))))
 			}
 			if len(api_validation.IsValidPortNum(int(p.ContainerPort))) > 0 {
@@ -523,7 +523,7 @@ func ValidateDeploymentFromFile(deploy *api_apps.Deployment) []error {
 		for _, m := range c.VolumeMounts {
 			if m.Name == "" {
 				errs = append(errs, fmt.Errorf(fieldShouldExist, "Volume: Name"))
-			} else if err := api_validation.IsDNS1035Label(m.Name); len(err) > 0 {
+			} else if err := api_validation.IsDNS1123Label(m.Name); len(err) > 0 {
 				errs = append(errs, errors.New(fmt.Sprintf(invalidName, m.Name, strings.Join(err, ","))))
 			}
 			if m.MountPath == "" {
