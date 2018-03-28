@@ -42,7 +42,7 @@ func GetNamespaceList(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseResourceQuotaList(quotas)
+	ret, err := model.ParseResourceQuotaList(quotas, role == "admin")
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
@@ -71,14 +71,14 @@ func GetNamespace(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseResourceQuota(quota)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseResourceQuota(quota, role == "admin")
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
 	if role == "user" {
 		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
 		ret = model.ParseNamespaceForUser(*nsList, ret)
@@ -125,7 +125,7 @@ func CreateNamespace(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseResourceQuota(quotaCreated)
+	ret, err := model.ParseResourceQuota(quotaCreated, true)
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -165,7 +165,7 @@ func UpdateNamespace(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseResourceQuota(quotaAfter)
+	ret, err := model.ParseResourceQuota(quotaAfter, true)
 	if err != nil {
 		ctx.Error(err)
 	}
