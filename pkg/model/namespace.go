@@ -36,7 +36,7 @@ type NamespaceWithOwner struct {
 
 // ParseResourceQuotaList parses kubernetes v1.ResourceQuotaList to more convenient []Namespace struct.
 // (resource quouta contains all fields that parent namespace contains)
-func ParseResourceQuotaList(quotas interface{}) (*NamespacesList, error) {
+func ParseResourceQuotaList(quotas interface{}, parseforadmin bool) (*NamespacesList, error) {
 	objects := quotas.(*api_core.ResourceQuotaList)
 	if objects == nil {
 		return nil, ErrUnableConvertNamespaceList
@@ -44,7 +44,7 @@ func ParseResourceQuotaList(quotas interface{}) (*NamespacesList, error) {
 
 	namespaces := make([]NamespaceWithOwner, 0)
 	for _, quota := range objects.Items {
-		ns, err := ParseResourceQuota(&quota)
+		ns, err := ParseResourceQuota(&quota, parseforadmin)
 		if err != nil {
 			return nil, err
 		}
@@ -55,7 +55,7 @@ func ParseResourceQuotaList(quotas interface{}) (*NamespacesList, error) {
 
 // ParseResourceQuota parses kubernetes v1.ResourceQuota to more convenient Namespace struct.
 // (resource quouta contains all fields that parent namespace contains)
-func ParseResourceQuota(quota interface{}) (*NamespaceWithOwner, error) {
+func ParseResourceQuota(quota interface{}, parseforadmin bool) (*NamespaceWithOwner, error) {
 	obj := quota.(*api_core.ResourceQuota)
 	if obj == nil {
 		return nil, ErrUnableConvertNamespace
@@ -68,7 +68,7 @@ func ParseResourceQuota(quota interface{}) (*NamespaceWithOwner, error) {
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
 	createdAt := obj.ObjectMeta.CreationTimestamp.Unix()
 
-	return &NamespaceWithOwner{
+	ns := NamespaceWithOwner{
 		Owner: owner,
 		Name:  obj.GetNamespace(),
 		Namespace: kube_types.Namespace{
@@ -85,7 +85,13 @@ func ParseResourceQuota(quota interface{}) (*NamespaceWithOwner, error) {
 				},
 			},
 		},
-	}, nil
+	}
+
+	if parseforadmin {
+		ns.Label = ns.Name
+	}
+
+	return &ns, nil
 }
 
 // MakeNamespace creates kubernetes v1.Namespace from Namespace struct
