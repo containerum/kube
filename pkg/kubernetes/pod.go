@@ -6,16 +6,23 @@ import (
 	v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"io"
+
+	"fmt"
+
 	log "github.com/sirupsen/logrus"
+)
+
+const (
+	logsBufferSize = 1024
 )
 
 //TODO: Imp struct to GetPodLogs func
 type LogOptions struct {
-	Follow     bool
-	StopFollow chan struct{}
-	Tail       int64
-	Previous   bool
-	Container  string
+	Follow    bool
+	Tail      int64
+	Previous  bool
+	Container string
 }
 
 //GetPodList returns pods list
@@ -60,7 +67,7 @@ func (k *Kube) DeletePod(ns string, po string) error {
 }
 
 //GetPodLogs attaches client to pod log
-func (k *Kube) GetPodLogs(ns string, po string, out *bytes.Buffer, opt *LogOptions) error {
+func (k *Kube) GetPodLogs(ns string, po string, out *io.PipeWriter, opt *LogOptions) error {
 	defer log.Debug("STOP FOLLOW LOGS STREAM")
 	req := k.CoreV1().Pods(ns).GetLogs(po, &v1.PodLogOptions{
 		TailLines: &opt.Tail,
@@ -74,23 +81,31 @@ func (k *Kube) GetPodLogs(ns string, po string, out *bytes.Buffer, opt *LogOptio
 		return err
 	}
 	defer readCloser.Close()
+	bb := [logsBufferSize]byte{}
+	buf := bytes.NewBuffer(bb[:])
 	for {
-		select {
-		case <-opt.StopFollow:
-			log.WithError(err).Debug("FOLLOW")
+		fmt.Println("Start reading log from stream")
+		_, err := buf.ReadFrom(io.LimitReader(readCloser, logsBufferSize))
+		if err != nil {
+			out.CloseWithError(err)
+			return err
+		}
+		n, err := buf.WriteTo(out)
+		switch err {
+		case nil:
+			if n == 0 {
+				return nil
+			}
+			//pass
+		case io.ErrClosedPipe:
+			log.Debugln("Connection closed")
 			return nil
 		default:
-			buf := make([]byte, 1024)
-			_, err := readCloser.Read(buf)
-			if err != nil {
-				log.WithError(err).Debug("READ")
-				return err
-			}
-			_, err = out.Write(buf)
-			if err != nil {
-				log.WithError(err).Debug("WRITE")
-				return err
-			}
+			fmt.Println("Error", err)
+			out.CloseWithError(err)
+			return err
 		}
+		buf.Reset()
+		fmt.Println("Chunk of logs read end")
 	}
 }

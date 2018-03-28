@@ -5,11 +5,12 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"time"
 
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
+
+	"fmt"
 
 	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
@@ -31,8 +32,8 @@ const (
 )
 
 var wsupgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
+	ReadBufferSize:  logsBufferSize,
+	WriteBufferSize: logsBufferSize,
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
@@ -108,44 +109,42 @@ func GetPodLogs(ctx *gin.Context) {
 		log.WithError(err).Error("unable to upgrade http to socket")
 		return
 	}
-	stream := new(bytes.Buffer)
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	logOpt := makeLogOption(ctx)
 	ns := ctx.MustGet(m.NamespaceKey).(string)
 
-	go kube.GetPodLogs(ns, ctx.Param(podParam), stream, &logOpt)
-	go writeLogs(conn, stream, &logOpt.StopFollow, logOpt.Follow)
+	rd, wr := io.Pipe()
+	go kube.GetPodLogs(ns, ctx.Param(podParam), wr, &logOpt)
+	go writeLogs(conn, rd)
 }
 
-func writeLogs(conn *websocket.Conn, logs *bytes.Buffer, done *chan struct{}, follow bool) {
-	defer func(done *chan struct{}) {
-		conn.Close()
-		*done <- struct{}{}
-	}(done)
-
+func writeLogs(conn *websocket.Conn, logs *io.PipeReader) {
+	defer conn.Close()
+	bb := [logsBufferSize]byte{}
+	buf := bytes.NewBuffer(bb[:])
 	for {
-		time.Sleep(time.Millisecond * 5)
-		buf := make([]byte, logsBufferSize)
-		_, err := logs.Read(buf)
+		fmt.Println("Start reading logs")
+		_, err := buf.ReadFrom(io.LimitReader(logs, logsBufferSize))
 		if err != nil {
-			if err == io.EOF {
-				if !follow { // if we are not following logs just close connection
-					return
-				}
+			if err == io.EOF || err == io.ErrClosedPipe {
+				fmt.Println("Stop reading logs EOF/Closed pipe")
+				return
 			} else {
 				log.WithError(err).Error("Unable read logs stream") //TODO: Write good err
 				return
 			}
 			continue
 		}
-		if err := conn.WriteMessage(websocket.TextMessage, buf); err != nil {
+		fmt.Println("Start sending logs")
+		if err := conn.WriteMessage(websocket.TextMessage, buf.Bytes()); err != nil {
 			return
 		}
+		fmt.Println("Chunk sent")
+		buf.Reset()
 	}
 }
 
 func makeLogOption(c *gin.Context) kubernetes.LogOptions {
-	stop := make(chan struct{}, 1)
 	followStr := c.Query(followQuery)
 	previousStr := c.Query(previousQuery)
 	container := c.Query(containerQuery)
@@ -154,10 +153,9 @@ func makeLogOption(c *gin.Context) kubernetes.LogOptions {
 		tail = tailDefault
 	}
 	return kubernetes.LogOptions{
-		Tail:       int64(tail),
-		Follow:     followStr == "true",
-		StopFollow: stop,
-		Previous:   previousStr == "true",
-		Container:  container,
+		Tail:      int64(tail),
+		Follow:    followStr == "true",
+		Previous:  previousStr == "true",
+		Container: container,
 	}
 }
