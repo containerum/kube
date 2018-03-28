@@ -114,10 +114,10 @@ func GetPodLogs(ctx *gin.Context) {
 	ns := ctx.MustGet(m.NamespaceKey).(string)
 
 	go kube.GetPodLogs(ns, ctx.Param(podParam), stream, &logOpt)
-	go writeLogs(conn, stream, &logOpt.StopFollow)
+	go writeLogs(conn, stream, &logOpt.StopFollow, logOpt.Follow)
 }
 
-func writeLogs(conn *websocket.Conn, logs *bytes.Buffer, done *chan struct{}) {
+func writeLogs(conn *websocket.Conn, logs *bytes.Buffer, done *chan struct{}, follow bool) {
 	defer func(done *chan struct{}) {
 		conn.Close()
 		*done <- struct{}{}
@@ -128,7 +128,11 @@ func writeLogs(conn *websocket.Conn, logs *bytes.Buffer, done *chan struct{}) {
 		buf := make([]byte, logsBufferSize)
 		_, err := logs.Read(buf)
 		if err != nil {
-			if err != io.EOF {
+			if err == io.EOF {
+				if !follow { // if we are not following logs just close connection
+					return
+				}
+			} else {
 				log.WithError(err).Error("Unable read logs stream") //TODO: Write good err
 				return
 			}
