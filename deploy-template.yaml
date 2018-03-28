@@ -35,6 +35,8 @@ spec:
           value: '${CH_KUBE_API_KUBE_CONF}'
         - name: CH_KUBE_API_DEBUG
           value: '${CH_KUBE_API_DEBUG}'
+        - name: CH_KUBE_API_TEXTLOG
+          value: '${CH_KUBE_API_TEXTLOG}'
       imagePullSecrets:
       - name: gitlab-registry
       volumes:

@@ -72,11 +72,11 @@ func ParseDeployment(deployment interface{}, parseforuser bool) (*DeploymentWith
 
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
 	replicas := 0
-	containers := getContainers(obj.Spec.Template.Spec.Containers, getVolumeMode(obj.Spec.Template.Spec.Volumes))
-	updated := obj.ObjectMeta.CreationTimestamp.Unix()
 	if r := obj.Spec.Replicas; r != nil {
 		replicas = int(*r)
 	}
+	containers, totalcpu, totalmem := getContainers(obj.Spec.Template.Spec.Containers, getVolumeMode(obj.Spec.Template.Spec.Volumes), replicas)
+	updated := obj.ObjectMeta.CreationTimestamp.Unix()
 	for _, c := range obj.Status.Conditions {
 		if t := c.LastUpdateTime.Unix(); t > updated {
 			updated = t
@@ -96,7 +96,9 @@ func ParseDeployment(deployment interface{}, parseforuser bool) (*DeploymentWith
 				UpdatedReplicas:     int(obj.Status.UpdatedReplicas),
 				UnavailableReplicas: int(obj.Status.UnavailableReplicas),
 			},
-			Containers: containers,
+			Containers:  containers,
+			TotalCPU:    totalcpu.String(),
+			TotalMemory: totalmem.String(),
 		},
 		Owner: owner,
 	}

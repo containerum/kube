@@ -6,6 +6,7 @@ import (
 	"git.containerum.net/ch/kube-client/pkg/model"
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
+	api_resource "k8s.io/apimachinery/pkg/api/resource"
 )
 
 type PodsList struct {
@@ -31,7 +32,7 @@ func ParsePodList(pods interface{}, parseforuser bool) *PodsList {
 func ParsePod(pod interface{}, parseforuser bool) PodWithOwner {
 	obj := pod.(*api_core.Pod)
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
-	containers := getContainers(obj.Spec.Containers, nil)
+	containers, _, _ := getContainers(obj.Spec.Containers, nil, 0)
 
 	newPod := PodWithOwner{
 		Pod: model.Pod{
@@ -52,15 +53,19 @@ func ParsePod(pod interface{}, parseforuser bool) PodWithOwner {
 	return newPod
 }
 
-func getContainers(cListi interface{}, mode map[string]int32) []model.Container {
+func getContainers(cListi interface{}, mode map[string]int32, replicas int) (containers []model.Container, totalcpu api_resource.Quantity, totalmem api_resource.Quantity) {
 	cList := cListi.([]api_core.Container)
-	var containers []model.Container
 	for _, c := range cList {
 		env := getEnv(c.Env)
 		volumes, configMaps := getVolumes(c.VolumeMounts, mode)
 
 		cpu := c.Resources.Limits["cpu"]
 		mem := c.Resources.Limits["memory"]
+
+		for i := 0; i < replicas; i++ {
+			totalcpu.Add(c.Resources.Limits["cpu"])
+			totalmem.Add(c.Resources.Limits["memory"])
+		}
 
 		containers = append(containers, model.Container{
 			Name:         c.Name,
@@ -75,7 +80,7 @@ func getContainers(cListi interface{}, mode map[string]int32) []model.Container 
 			},
 		})
 	}
-	return containers
+	return containers, totalcpu, totalmem
 }
 
 func getVolumes(vListi interface{}, mode map[string]int32) ([]model.ContainerVolume, []model.ContainerVolume) {
