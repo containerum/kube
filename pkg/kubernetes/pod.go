@@ -1,14 +1,12 @@
 package kubernetes
 
 import (
-	"bytes"
+	"io"
+	"time"
 
+	"git.containerum.net/ch/kube-api/pkg/utils"
 	v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"io"
-
-	"fmt"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -67,7 +65,7 @@ func (k *Kube) DeletePod(ns string, po string) error {
 }
 
 //GetPodLogs attaches client to pod log
-func (k *Kube) GetPodLogs(ns string, po string, out *io.PipeWriter, opt *LogOptions) error {
+func (k *Kube) GetPodLogs(ns string, po string, opt *LogOptions) (io.ReadCloser, error) {
 	defer log.Debug("STOP FOLLOW LOGS STREAM")
 	req := k.CoreV1().Pods(ns).GetLogs(po, &v1.PodLogOptions{
 		TailLines: &opt.Tail,
@@ -75,37 +73,28 @@ func (k *Kube) GetPodLogs(ns string, po string, out *io.PipeWriter, opt *LogOpti
 		Previous:  opt.Previous,
 		Container: opt.Container,
 	})
+
 	readCloser, err := req.Stream()
+
 	if err != nil {
 		log.WithError(err).Debug("STREAM")
-		return err
+		return nil, err
 	}
-	defer readCloser.Close()
-	bb := [logsBufferSize]byte{}
-	buf := bytes.NewBuffer(bb[:])
-	for {
-		fmt.Println("Start reading log from stream")
-		_, err := buf.ReadFrom(io.LimitReader(readCloser, logsBufferSize))
-		if err != nil {
-			out.CloseWithError(err)
-			return err
-		}
-		n, err := buf.WriteTo(out)
-		switch err {
-		case nil:
-			if n == 0 {
-				return nil
-			}
-			//pass
-		case io.ErrClosedPipe:
-			log.Debugln("Connection closed")
-			return nil
-		default:
-			fmt.Println("Error", err)
-			out.CloseWithError(err)
-			return err
-		}
-		buf.Reset()
-		fmt.Println("Chunk of logs read end")
+	return timeoutreader.NewTimeoutReaderSize(readCloser, 10*time.Second, true, 0), nil
+}
+
+type proxyRC struct {
+	io.ReadCloser
+}
+
+func (proxy *proxyRC) Read(p []byte) (int, error) {
+	n, err := proxy.ReadCloser.Read(p)
+	if n == 0 && err != nil {
+		return 0, io.EOF
 	}
+	return n, err
+}
+
+func (proxy *proxyRC) Close() error {
+	return proxy.ReadCloser.Close()
 }

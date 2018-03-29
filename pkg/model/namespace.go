@@ -42,7 +42,7 @@ func ParseResourceQuotaList(quotas interface{}, parseforadmin bool) (*Namespaces
 		return nil, ErrUnableConvertNamespaceList
 	}
 
-	namespaces := make([]NamespaceWithOwner, 0)
+	namespaces := make([]NamespaceWithOwner, 0, objects.Size())
 	for _, quota := range objects.Items {
 		ns, err := ParseResourceQuota(&quota, parseforadmin)
 		if err != nil {
@@ -158,7 +158,8 @@ func MakeResourceQuota(ns string, labels map[string]string, resources kube_types
 }
 
 func ParseNamespaceListForUser(headers UserHeaderDataMap, nsl []NamespaceWithOwner) *NamespacesList {
-	ret := NamespacesList{}
+	nso := make([]NamespaceWithOwner, 0)
+	ret := NamespacesList{nso}
 	for _, ns := range nsl {
 		nsp := ParseNamespaceForUser(headers, &ns)
 		if nsp.Label != "" {

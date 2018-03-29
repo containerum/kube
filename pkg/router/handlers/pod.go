@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"bytes"
 	"io"
 	"net/http"
 	"strconv"
@@ -113,35 +112,59 @@ func GetPodLogs(ctx *gin.Context) {
 	logOpt := makeLogOption(ctx)
 	ns := ctx.MustGet(m.NamespaceKey).(string)
 
-	rd, wr := io.Pipe()
-	go kube.GetPodLogs(ns, ctx.Param(podParam), wr, &logOpt)
-	go writeLogs(conn, rd)
+	rc, err := kube.GetPodLogs(ns, ctx.Param(podParam), &logOpt)
+	if err != nil {
+		ctx.Error(err)
+		return
+	}
+	go writeLogs(conn, rc)
 }
 
-func writeLogs(conn *websocket.Conn, logs *io.PipeReader) {
+func writeLogs(conn *websocket.Conn, logs io.ReadCloser) {
 	defer conn.Close()
-	bb := [logsBufferSize]byte{}
-	buf := bytes.NewBuffer(bb[:])
+	defer logs.Close()
+	pp := [logsBufferSize]byte{}
+	//const timeout = 4 * time.Second
+	//closeLogs := sync.Once{}
+	//defer closeLogs.Do(func() { logs.Close() })
+	//ok := make(chan struct{})
+cycle:
 	for {
-		fmt.Println("Start reading logs")
-		_, err := buf.ReadFrom(io.LimitReader(logs, logsBufferSize))
-		if err != nil {
-			if err == io.EOF || err == io.ErrClosedPipe {
-				fmt.Println("Stop reading logs EOF/Closed pipe")
-				return
-			} else {
-				log.WithError(err).Error("Unable read logs stream") //TODO: Write good err
-				return
+		/*time.AfterFunc(timeout, func() {
+			select {
+			case <-ok:
+			default:
+				closeLogs.Do(func() { logs.Close() })
 			}
-			continue
+		})*/
+		fmt.Println("Start reading logs")
+		//n, err := buf.ReadFrom(io.LimitReader(logs, 300))
+		n, err := logs.Read(pp[:])
+		//ok <- struct{}{}
+		log.Debugf("Read bytes from logs %v/n", n)
+		switch err {
+		case nil:
+			// pass
+		case io.EOF:
+			break cycle
+		default:
+			log.WithError(err).Errorf("fatal error while reading logs from kube")
+			break cycle
 		}
-		fmt.Println("Start sending logs")
-		if err := conn.WriteMessage(websocket.TextMessage, buf.Bytes()); err != nil {
-			return
+		log.Debugf("Start sending logs")
+		err = conn.WriteMessage(websocket.TextMessage, pp[:n])
+		switch err {
+		case nil:
+			// pass
+		case websocket.ErrCloseSent:
+			break cycle
+		default:
+			log.WithError(err).Debugf("error while sending log chunk to ws")
+			break cycle
 		}
-		fmt.Println("Chunk sent")
-		buf.Reset()
+		log.Debugf("Chunk sent")
 	}
+	log.Debugf("End writing logs")
 }
 
 func makeLogOption(c *gin.Context) kubernetes.LogOptions {
