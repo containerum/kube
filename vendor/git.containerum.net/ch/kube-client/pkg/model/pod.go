@@ -7,6 +7,7 @@ type Pod struct {
 	ImagePullSecret *map[string]string `json:"image_pull_secret,omitempty"`
 	Status          *PodStatus         `json:"status,omitempty"`
 	Hostname        *string            `json:"hostname,omitempty"`
+	Deploy          *string            `json:"deploy,omitempty"`
 }
 
 // PodStatus --
