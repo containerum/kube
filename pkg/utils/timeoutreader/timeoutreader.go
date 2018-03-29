@@ -24,6 +24,8 @@ type TimeoutReader struct {
 	maxReadSize    int
 	done           chan *readResponse
 	timer          *time.Timer
+	close          chan struct{}
+	onceClose      sync.Once
 }
 
 func NewTimeoutReaderSize(reader io.ReadCloser, timeout time.Duration, closeOnTimeout bool, maxReadSize int) *TimeoutReader {
@@ -36,6 +38,7 @@ func NewTimeoutReaderSize(reader io.ReadCloser, timeout time.Duration, closeOnTi
 	if timeout > 0 {
 		tr.timer = time.NewTimer(timeout)
 	}
+	tr.close = make(chan struct{})
 	return tr
 }
 
@@ -46,8 +49,12 @@ func NewTimeoutReader(reader io.ReadCloser, timeout time.Duration, closeOnTimeou
 
 // Closes the TimeoutReader.
 // Also closes the underlying Reader if it was not closed already at timeout.
-func (this *TimeoutReader) Close() error {
-	return this.reader.Close()
+func (this *TimeoutReader) Close() (err error) {
+	this.onceClose.Do(func() {
+		this.close <- struct{}{}
+		err = this.reader.Close()
+	})
+	return
 }
 
 // Read from the underlying reader.
@@ -106,6 +113,8 @@ func (this *TimeoutReader) Read(p []byte) (int, error) {
 			this.reader.Close()
 		}
 		return 0, ErrReadTimeout
+	case <-this.close:
+		return 0, io.EOF
 	case resp := <-this.done:
 		return resp.n, resp.err
 	}

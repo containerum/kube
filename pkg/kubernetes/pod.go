@@ -2,17 +2,11 @@ package kubernetes
 
 import (
 	"io"
-	"time"
 
-	"git.containerum.net/ch/kube-api/pkg/utils"
-	v1 "k8s.io/api/core/v1"
+	"k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	log "github.com/sirupsen/logrus"
-)
-
-const (
-	logsBufferSize = 1024
 )
 
 //TODO: Imp struct to GetPodLogs func
@@ -66,7 +60,6 @@ func (k *Kube) DeletePod(ns string, po string) error {
 
 //GetPodLogs attaches client to pod log
 func (k *Kube) GetPodLogs(ns string, po string, opt *LogOptions) (io.ReadCloser, error) {
-	defer log.Debug("STOP FOLLOW LOGS STREAM")
 	req := k.CoreV1().Pods(ns).GetLogs(po, &v1.PodLogOptions{
 		TailLines: &opt.Tail,
 		Follow:    opt.Follow,
@@ -74,27 +67,5 @@ func (k *Kube) GetPodLogs(ns string, po string, opt *LogOptions) (io.ReadCloser,
 		Container: opt.Container,
 	})
 
-	readCloser, err := req.Stream()
-
-	if err != nil {
-		log.WithError(err).Debug("STREAM")
-		return nil, err
-	}
-	return timeoutreader.NewTimeoutReaderSize(readCloser, 10*time.Second, true, 0), nil
-}
-
-type proxyRC struct {
-	io.ReadCloser
-}
-
-func (proxy *proxyRC) Read(p []byte) (int, error) {
-	n, err := proxy.ReadCloser.Read(p)
-	if n == 0 && err != nil {
-		return 0, io.EOF
-	}
-	return n, err
-}
-
-func (proxy *proxyRC) Close() error {
-	return proxy.ReadCloser.Close()
+	return req.Stream()
 }
