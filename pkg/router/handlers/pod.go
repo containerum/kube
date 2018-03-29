@@ -122,19 +122,30 @@ func GetPodLogs(ctx *gin.Context) {
 	go writeLogs(conn, rc)
 }
 
+func runOnce(action func()) func() {
+	once := &sync.Once{}
+	return func() {
+		once.Do(action)
+	}
+}
+
 func writeLogs(conn *websocket.Conn, logs io.ReadCloser) {
 	defer conn.Close()
-	defer logs.Close()
 	pp := [logsBufferSize]byte{}
-
 	const timeout = 4 * time.Second
-	closeLogs := sync.Once{}
-	defer closeLogs.Do(func() { logs.Close() })
+	stop := make(chan struct{})
+	stopAll := runOnce(func() {
+		close(stop)
+	})
+	closeLogs := runOnce(func() {
+		logs.Close()
+	})
+	defer closeLogs()
+	defer stopAll()
 
 	timer := time.NewTimer(timeout)
-	stop := make(chan struct{})
-	defer close(stop)
-	conn.SetPingHandler(func(data string) error {
+
+	conn.SetPongHandler(func(data string) error {
 		if !timer.Stop() {
 			<-timer.C
 		}
@@ -147,45 +158,59 @@ func writeLogs(conn *websocket.Conn, logs io.ReadCloser) {
 			return
 		case <-timer.C:
 			log.Debugf("closing on timeout")
-			closeLogs.Do(func() { logs.Close() })
+			stopAll()
+			closeLogs()
 		}
 	}()
-
+	go func() {
+		for {
+			select {
+			case <-stop:
+				return
+			default:
+				err := conn.WriteControl(websocket.PingMessage,
+					[]byte{},
+					time.Now().Add(timeout))
+				if err != nil {
+					stopAll()
+					closeLogs()
+					return
+				}
+			}
+		}
+	}()
 cycle:
 	for {
-		/*time.AfterFunc(timeout, func() {
-			select {
-			case <-ok:
+		select {
+		case <-stop:
+			break cycle
+		default:
+			fmt.Println("Start reading logs")
+			n, err := logs.Read(pp[:])
+			log.Debugf("Read bytes from logs %v/n", n)
+			switch err {
+			case nil:
+				// pass
+			case io.EOF:
+				break cycle
 			default:
-				closeLogs.Do(func() { logs.Close() })
+				log.WithError(err).Errorf("fatal error while reading logs from kube")
+				break cycle
 			}
-		})*/
-		fmt.Println("Start reading logs")
-		//n, err := buf.ReadFrom(io.LimitReader(logs, 300))
-		n, err := logs.Read(pp[:])
-		//ok <- struct{}{}
-		log.Debugf("Read bytes from logs %v/n", n)
-		switch err {
-		case nil:
-			// pass
-		case io.EOF:
-			break cycle
-		default:
-			log.WithError(err).Errorf("fatal error while reading logs from kube")
-			break cycle
+			log.Debugf("Start sending logs")
+			conn.SetWriteDeadline(time.Now().Add(3 * timeout / 4))
+			err = conn.WriteMessage(websocket.TextMessage, pp[:n])
+			switch err {
+			case nil:
+				// pass
+			case websocket.ErrCloseSent:
+				break cycle
+			default:
+				log.WithError(err).Debugf("error while sending log chunk to ws")
+				break cycle
+			}
+			log.Debugf("Chunk sent")
 		}
-		log.Debugf("Start sending logs")
-		err = conn.WriteMessage(websocket.TextMessage, pp[:n])
-		switch err {
-		case nil:
-			// pass
-		case websocket.ErrCloseSent:
-			break cycle
-		default:
-			log.WithError(err).Debugf("error while sending log chunk to ws")
-			break cycle
-		}
-		log.Debugf("Chunk sent")
 	}
 	log.Debugf("End writing logs")
 }
