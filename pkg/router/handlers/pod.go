@@ -150,8 +150,26 @@ func writeLogs(conn *websocket.Conn, logs io.ReadCloser) {
 			<-timer.C
 		}
 		timer.Reset(timeout)
+		err := conn.WriteControl(websocket.PingMessage,
+			[]byte{},
+			time.Now().Add(timeout))
+		if err != nil {
+			stopAll()
+			closeLogs()
+			log.Debugf("error while sending ping: %v", err)
+			return err
+		}
 		return nil
 	})
+	err := conn.WriteControl(websocket.PingMessage,
+		[]byte{},
+		time.Now().Add(timeout))
+	if err != nil {
+		stopAll()
+		closeLogs()
+		log.Debugf("error while sending ping: %v", err)
+		return
+	}
 	go func() {
 		select {
 		case <-stop:
@@ -162,23 +180,7 @@ func writeLogs(conn *websocket.Conn, logs io.ReadCloser) {
 			closeLogs()
 		}
 	}()
-	go func() {
-		for {
-			select {
-			case <-stop:
-				return
-			default:
-				err := conn.WriteControl(websocket.PingMessage,
-					[]byte{},
-					time.Now().Add(timeout))
-				if err != nil {
-					stopAll()
-					closeLogs()
-					return
-				}
-			}
-		}
-	}()
+
 cycle:
 	for {
 		select {
