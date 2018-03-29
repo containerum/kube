@@ -20,7 +20,7 @@
     "pkg/cherry/kube-api",
     "pkg/model"
   ]
-  revision = "064a9e60abb10c40e7598739415f0305bfdc4252"
+  revision = "eda770796ff49f5e0a76a654f9e244bed25284bf"
 
 [[projects]]
   name = "github.com/PuerkitoBio/purell"
@@ -385,8 +385,8 @@
 [[projects]]
   name = "gopkg.in/yaml.v2"
   packages = ["."]
-  revision = "86f5ed62f8a0ee96bd888d2efdfd6d4fb100a4eb"
-  version = "v2.2.0"
+  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
+  version = "v2.2.1"
 
 [[projects]]
   name = "k8s.io/api"

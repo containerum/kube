@@ -33,9 +33,11 @@ func ParsePod(pod interface{}, parseforuser bool) PodWithOwner {
 	obj := pod.(*api_core.Pod)
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
 	containers, _, _ := getContainers(obj.Spec.Containers, nil, 0)
+	deploy := obj.GetObjectMeta().GetLabels()[appLabel]
 
 	newPod := PodWithOwner{
 		Pod: model.Pod{
+			Deploy:     &deploy,
 			Name:       obj.GetName(),
 			Containers: containers,
 			Hostname:   &obj.Spec.Hostname,
