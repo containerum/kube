@@ -158,7 +158,8 @@ func MakeResourceQuota(ns string, labels map[string]string, resources kube_types
 }
 
 func ParseNamespaceListForUser(headers UserHeaderDataMap, nsl []NamespaceWithOwner) *NamespacesList {
-	ret := NamespacesList{}
+	nso := make([]NamespaceWithOwner, 0)
+	ret := NamespacesList{nso}
 	for _, ns := range nsl {
 		nsp := ParseNamespaceForUser(headers, &ns)
 		if nsp.Label != "" {
