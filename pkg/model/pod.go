@@ -32,15 +32,17 @@ func ParsePodList(pods interface{}, parseforuser bool) *PodsList {
 func ParsePod(pod interface{}, parseforuser bool) PodWithOwner {
 	obj := pod.(*api_core.Pod)
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
-	containers, _, _ := getContainers(obj.Spec.Containers, nil, 0)
+	containers, cpu, mem := getContainers(obj.Spec.Containers, nil, 1)
 	deploy := obj.GetObjectMeta().GetLabels()[appLabel]
 
 	newPod := PodWithOwner{
 		Pod: model.Pod{
-			Deploy:     &deploy,
-			Name:       obj.GetName(),
-			Containers: containers,
-			Hostname:   &obj.Spec.Hostname,
+			TotalMemory: mem.String(),
+			TotalCPU:    cpu.String(),
+			Deploy:      &deploy,
+			Name:        obj.GetName(),
+			Containers:  containers,
+			Hostname:    &obj.Spec.Hostname,
 			Status: &model.PodStatus{
 				Phase: string(obj.Status.Phase),
 			},

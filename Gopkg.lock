@@ -20,7 +20,7 @@
     "pkg/cherry/kube-api",
     "pkg/model"
   ]
-  revision = "f62bb2b21a44c363186ed6bf42d574cb666cb09c"
+  revision = "ee63238440a7f4051f8c93417603918326bf10dc"
 
 [[projects]]
   name = "github.com/PuerkitoBio/purell"
