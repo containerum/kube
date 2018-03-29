@@ -13,6 +13,8 @@ import (
 	"fmt"
 	"strings"
 
+	"time"
+
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
@@ -70,7 +72,7 @@ func ParseService(srv interface{}, parseforuser bool) (*ServiceWithOwner, error)
 
 	ports := make([]kube_types.ServicePort, 0, 1)
 
-	createdAt := native.GetCreationTimestamp().Unix()
+	createdAt := native.GetCreationTimestamp().Format(time.RFC3339)
 	owner := native.GetObjectMeta().GetLabels()[ownerLabel]
 	deploy := native.GetObjectMeta().GetLabels()[appLabel]
 	domain := native.GetObjectMeta().GetLabels()[domainLabel]

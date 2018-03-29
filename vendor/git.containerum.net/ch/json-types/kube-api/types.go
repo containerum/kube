@@ -9,7 +9,7 @@ const (
 type Endpoint struct {
 	Name      string   `json:"name"`
 	Owner     *string  `json:"owner,omitempty"`
-	CreatedAt *int64   `json:"created_at,omitempty"`
+	CreatedAt *string   `json:"created_at,omitempty"`
 	Addresses []string `json:"addresses"`
 	Ports     []Port   `json:"ports"`
 }

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"time"
+
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -62,7 +64,7 @@ func ParseSecret(secreti interface{}, parseforuser bool) (*SecretWithOwner, erro
 	}
 
 	owner := secret.GetObjectMeta().GetLabels()[ownerLabel]
-	createdAt := secret.CreationTimestamp.Unix()
+	createdAt := secret.CreationTimestamp.Format(time.RFC3339)
 
 	newSecret := SecretWithOwner{
 		Secret: kube_types.Secret{
