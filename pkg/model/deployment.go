@@ -9,6 +9,8 @@ import (
 	"path"
 	"strings"
 
+	"time"
+
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	"github.com/pkg/errors"
 	"gopkg.in/inf.v0"
@@ -76,10 +78,10 @@ func ParseDeployment(deployment interface{}, parseforuser bool) (*DeploymentWith
 		replicas = int(*r)
 	}
 	containers, totalcpu, totalmem := getContainers(obj.Spec.Template.Spec.Containers, getVolumeMode(obj.Spec.Template.Spec.Volumes), replicas)
-	updated := obj.ObjectMeta.CreationTimestamp.Unix()
+	updated := obj.ObjectMeta.CreationTimestamp
 	for _, c := range obj.Status.Conditions {
-		if t := c.LastUpdateTime.Unix(); t > updated {
-			updated = t
+		if c.LastUpdateTime.After(updated.Time) {
+			updated = c.LastUpdateTime
 		}
 	}
 
@@ -88,8 +90,8 @@ func ParseDeployment(deployment interface{}, parseforuser bool) (*DeploymentWith
 			Name:     obj.GetName(),
 			Replicas: replicas,
 			Status: &kube_types.DeploymentStatus{
-				CreatedAt:           obj.ObjectMeta.CreationTimestamp.Unix(),
-				UpdatedAt:           updated,
+				CreatedAt:           obj.ObjectMeta.CreationTimestamp.Format(time.RFC3339),
+				UpdatedAt:           updated.Format(time.RFC3339),
 				Replicas:            int(obj.Status.Replicas),
 				ReadyReplicas:       int(obj.Status.ReadyReplicas),
 				AvailableReplicas:   int(obj.Status.AvailableReplicas),

@@ -21,7 +21,7 @@ type PodWithOwner struct {
 // ParsePodList parses kubernetes v1.PodList to more convenient []Pod struct.
 func ParsePodList(pods interface{}, parseforuser bool) *PodsList {
 	objects := pods.(*api_core.PodList)
-	var pos []PodWithOwner
+	pos := make([]PodWithOwner, 0)
 	for _, po := range objects.Items {
 		pos = append(pos, ParsePod(&po, parseforuser))
 	}

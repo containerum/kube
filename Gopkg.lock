@@ -8,7 +8,7 @@
     "kube-api",
     "user-manager"
   ]
-  revision = "bacd09385ad4f2d0593c5ad22a8a5b0bd40b3ae1"
+  revision = "4c4a15c4c67b5e1bb973f743990b8304737aabb8"
 
 [[projects]]
   branch = "develop"
@@ -20,7 +20,7 @@
     "pkg/cherry/kube-api",
     "pkg/model"
   ]
-  revision = "eda770796ff49f5e0a76a654f9e244bed25284bf"
+  revision = "f62bb2b21a44c363186ed6bf42d574cb666cb09c"
 
 [[projects]]
   name = "github.com/PuerkitoBio/purell"
@@ -346,7 +346,7 @@
     "unix",
     "windows"
   ]
-  revision = "13d03a9a82fba647c21a0ef8fba44a795d0f0835"
+  revision = "378d26f46672a356c46195c28f61bdb4c0a781dd"
 
 [[projects]]
   name = "golang.org/x/text"

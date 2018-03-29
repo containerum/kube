@@ -14,7 +14,7 @@ type Pod struct {
 type PodStatus struct {
 	Phase        string `json:"phase"`
 	RestartCount int    `json:"restart_count"`
-	StartAt      int64  `json:"start_at"`
+	StartAt      string `json:"start_at"`
 }
 
 // UpdateImage --

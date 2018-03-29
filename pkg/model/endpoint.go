@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"time"
+
 	json_types "git.containerum.net/ch/json-types/kube-api"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -42,7 +44,7 @@ func ParseEndpoint(endpointi interface{}) (*json_types.Endpoint, error) {
 	ports := make([]json_types.Port, 0)
 	addresses := make([]string, 0)
 
-	createdAt := endpoint.GetCreationTimestamp().Unix()
+	createdAt := endpoint.GetCreationTimestamp().Format(time.RFC3339)
 	owner := endpoint.GetObjectMeta().GetLabels()[ownerLabel]
 
 	newEndpoint := json_types.Endpoint{

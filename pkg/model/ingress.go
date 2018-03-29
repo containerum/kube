@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"strings"
 
+	"time"
+
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	api_validation "k8s.io/apimachinery/pkg/util/validation"
@@ -53,7 +55,7 @@ func ParseIngress(ingressi interface{}, parseforuser bool) (*IngressWithOwner, e
 	if ingress == nil {
 		return nil, ErrUnableConvertIngress
 	}
-	createdAt := ingress.CreationTimestamp.Unix()
+	createdAt := ingress.CreationTimestamp.Format(time.RFC3339)
 	owner := ingress.GetObjectMeta().GetLabels()[ownerLabel]
 
 	secrets := parseTLS(ingress.Spec.TLS)

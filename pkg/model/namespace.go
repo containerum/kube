@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"time"
+
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_resource "k8s.io/apimachinery/pkg/api/resource"
@@ -66,7 +68,7 @@ func ParseResourceQuota(quota interface{}, parseforadmin bool) (*NamespaceWithOw
 	cpuUsed := obj.Status.Used[api_core.ResourceLimitsCPU]
 	memoryUsed := obj.Status.Used[api_core.ResourceLimitsMemory]
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
-	createdAt := obj.ObjectMeta.CreationTimestamp.Unix()
+	createdAt := obj.ObjectMeta.CreationTimestamp.Format(time.RFC3339)
 
 	ns := NamespaceWithOwner{
 		Owner: owner,

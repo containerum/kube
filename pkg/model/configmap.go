@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"time"
+
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -51,7 +53,7 @@ func ParseConfigMap(cmi interface{}) (*ConfigMapWithOwner, error) {
 	}
 
 	owner := cm.GetObjectMeta().GetLabels()[ownerLabel]
-	createdAt := cm.CreationTimestamp.Unix()
+	createdAt := cm.CreationTimestamp.Format(time.RFC3339)
 
 	return &ConfigMapWithOwner{
 		ConfigMap: kube_types.ConfigMap{
