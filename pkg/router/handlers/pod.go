@@ -4,6 +4,8 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"sync"
+	"time"
 
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
@@ -124,10 +126,31 @@ func writeLogs(conn *websocket.Conn, logs io.ReadCloser) {
 	defer conn.Close()
 	defer logs.Close()
 	pp := [logsBufferSize]byte{}
-	//const timeout = 4 * time.Second
-	//closeLogs := sync.Once{}
-	//defer closeLogs.Do(func() { logs.Close() })
-	//ok := make(chan struct{})
+
+	const timeout = 4 * time.Second
+	closeLogs := sync.Once{}
+	defer closeLogs.Do(func() { logs.Close() })
+
+	timer := time.NewTimer(timeout)
+	stop := make(chan struct{})
+	defer close(stop)
+	conn.SetPingHandler(func(data string) error {
+		if !timer.Stop() {
+			<-timer.C
+		}
+		timer.Reset(timeout)
+		return nil
+	})
+	go func() {
+		select {
+		case <-stop:
+			return
+		case <-timer.C:
+			log.Debugf("closing on timeout")
+			closeLogs.Do(func() { logs.Close() })
+		}
+	}()
+
 cycle:
 	for {
 		/*time.AfterFunc(timeout, func() {
