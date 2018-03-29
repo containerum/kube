@@ -8,6 +8,8 @@ type Pod struct {
 	Status          *PodStatus         `json:"status,omitempty"`
 	Hostname        *string            `json:"hostname,omitempty"`
 	Deploy          *string            `json:"deploy,omitempty"`
+	TotalCPU         string            `json:"total_cpu,omitempty"`
+	TotalMemory      string            `json:"total_memory,omitempty"`
 }
 
 // PodStatus --
