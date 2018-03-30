@@ -61,7 +61,7 @@ func ReadAccess(c *gin.Context) {
 				return
 			}
 		} else {
-			gonic.Gonic(cherry.ErrAccessError(), c)
+			gonic.Gonic(cherry.ErrResourceNotExist(), c)
 			return
 		}
 	}
