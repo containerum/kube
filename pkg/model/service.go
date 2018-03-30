@@ -56,7 +56,7 @@ func ParseServiceList(ns interface{}, parseforuser bool) (*ServicesList, error) 
 			return nil, err
 		}
 
-		if !service.Hidden {
+		if !service.Hidden && service.Owner != "" {
 			serviceList = append(serviceList, *service)
 		}
 	}
