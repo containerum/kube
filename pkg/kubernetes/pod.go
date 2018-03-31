@@ -1,21 +1,26 @@
 package kubernetes
 
 import (
-	"bytes"
+	"io"
+	"time"
 
+	"git.containerum.net/ch/kube-api/pkg/utils"
 	v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	logsBufferSize = 1024
+)
+
 //TODO: Imp struct to GetPodLogs func
 type LogOptions struct {
-	Follow     bool
-	StopFollow chan struct{}
-	Tail       int64
-	Previous   bool
-	Container  string
+	Follow    bool
+	Tail      int64
+	Previous  bool
+	Container string
 }
 
 //GetPodList returns pods list
@@ -60,7 +65,7 @@ func (k *Kube) DeletePod(ns string, po string) error {
 }
 
 //GetPodLogs attaches client to pod log
-func (k *Kube) GetPodLogs(ns string, po string, out *bytes.Buffer, opt *LogOptions) error {
+func (k *Kube) GetPodLogs(ns string, po string, opt *LogOptions) (io.ReadCloser, error) {
 	defer log.Debug("STOP FOLLOW LOGS STREAM")
 	req := k.CoreV1().Pods(ns).GetLogs(po, &v1.PodLogOptions{
 		TailLines: &opt.Tail,
@@ -68,29 +73,28 @@ func (k *Kube) GetPodLogs(ns string, po string, out *bytes.Buffer, opt *LogOptio
 		Previous:  opt.Previous,
 		Container: opt.Container,
 	})
+
 	readCloser, err := req.Stream()
+
 	if err != nil {
 		log.WithError(err).Debug("STREAM")
-		return err
+		return nil, err
 	}
-	defer readCloser.Close()
-	for {
-		select {
-		case <-opt.StopFollow:
-			log.WithError(err).Debug("FOLLOW")
-			return nil
-		default:
-			buf := make([]byte, 1024)
-			_, err := readCloser.Read(buf)
-			if err != nil {
-				log.WithError(err).Debug("READ")
-				return err
-			}
-			_, err = out.Write(buf)
-			if err != nil {
-				log.WithError(err).Debug("WRITE")
-				return err
-			}
-		}
+	return timeoutreader.NewTimeoutReaderSize(readCloser, 10*time.Second, true, 0), nil
+}
+
+type proxyRC struct {
+	io.ReadCloser
+}
+
+func (proxy *proxyRC) Read(p []byte) (int, error) {
+	n, err := proxy.ReadCloser.Read(p)
+	if n == 0 && err != nil {
+		return 0, io.EOF
 	}
+	return n, err
+}
+
+func (proxy *proxyRC) Close() error {
+	return proxy.ReadCloser.Close()
 }

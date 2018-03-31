@@ -1,15 +1,17 @@
 package handlers
 
 import (
-	"bytes"
 	"io"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
+
+	"fmt"
 
 	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
@@ -31,8 +33,8 @@ const (
 )
 
 var wsupgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
+	ReadBufferSize:  logsBufferSize,
+	WriteBufferSize: logsBufferSize,
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
@@ -108,44 +110,114 @@ func GetPodLogs(ctx *gin.Context) {
 		log.WithError(err).Error("unable to upgrade http to socket")
 		return
 	}
-	stream := new(bytes.Buffer)
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	logOpt := makeLogOption(ctx)
 	ns := ctx.MustGet(m.NamespaceKey).(string)
 
-	go kube.GetPodLogs(ns, ctx.Param(podParam), stream, &logOpt)
-	go writeLogs(conn, stream, &logOpt.StopFollow, logOpt.Follow)
+	rc, err := kube.GetPodLogs(ns, ctx.Param(podParam), &logOpt)
+	if err != nil {
+		ctx.Error(err)
+		return
+	}
+	go writeLogs(conn, rc)
 }
 
-func writeLogs(conn *websocket.Conn, logs *bytes.Buffer, done *chan struct{}, follow bool) {
-	defer func(done *chan struct{}) {
-		conn.Close()
-		*done <- struct{}{}
-	}(done)
-
-	for {
-		time.Sleep(time.Millisecond * 5)
-		buf := make([]byte, logsBufferSize)
-		_, err := logs.Read(buf)
-		if err != nil {
-			if err == io.EOF {
-				if !follow { // if we are not following logs just close connection
-					return
-				}
-			} else {
-				log.WithError(err).Error("Unable read logs stream") //TODO: Write good err
-				return
-			}
-			continue
-		}
-		if err := conn.WriteMessage(websocket.TextMessage, buf); err != nil {
-			return
-		}
+func runOnce(action func()) func() {
+	once := &sync.Once{}
+	return func() {
+		once.Do(action)
 	}
 }
 
+func writeLogs(conn *websocket.Conn, logs io.ReadCloser) {
+	defer conn.Close()
+	pp := [logsBufferSize]byte{}
+	const timeout = 4 * time.Second
+	stop := make(chan struct{})
+	stopAll := runOnce(func() {
+		close(stop)
+	})
+	closeLogs := runOnce(func() {
+		logs.Close()
+	})
+	defer closeLogs()
+	defer stopAll()
+
+	timer := time.NewTimer(timeout)
+
+	conn.SetPongHandler(func(data string) error {
+		if !timer.Stop() {
+			<-timer.C
+		}
+		timer.Reset(timeout)
+		err := conn.WriteControl(websocket.PingMessage,
+			[]byte{},
+			time.Now().Add(timeout))
+		if err != nil {
+			stopAll()
+			closeLogs()
+			log.Debugf("error while sending ping: %v", err)
+			return err
+		}
+		return nil
+	})
+	err := conn.WriteControl(websocket.PingMessage,
+		[]byte{},
+		time.Now().Add(timeout))
+	if err != nil {
+		stopAll()
+		closeLogs()
+		log.Debugf("error while sending ping: %v", err)
+		return
+	}
+	go func() {
+		select {
+		case <-stop:
+			return
+		case <-timer.C:
+			log.Debugf("closing on timeout")
+			stopAll()
+			closeLogs()
+		}
+	}()
+
+cycle:
+	for {
+		select {
+		case <-stop:
+			break cycle
+		default:
+			fmt.Println("Start reading logs")
+			n, err := logs.Read(pp[:])
+			log.Debugf("Read bytes from logs %v/n", n)
+			switch err {
+			case nil:
+				// pass
+			case io.EOF:
+				break cycle
+			default:
+				log.WithError(err).Errorf("fatal error while reading logs from kube")
+				break cycle
+			}
+			log.Debugf("Start sending logs")
+			conn.SetWriteDeadline(time.Now().Add(3 * timeout / 4))
+			err = conn.WriteMessage(websocket.TextMessage, pp[:n])
+			switch err {
+			case nil:
+				// pass
+			case websocket.ErrCloseSent:
+				break cycle
+			default:
+				log.WithError(err).Debugf("error while sending log chunk to ws")
+				break cycle
+			}
+			log.Debugf("Chunk sent")
+		}
+	}
+	log.Debugf("End writing logs")
+}
+
 func makeLogOption(c *gin.Context) kubernetes.LogOptions {
-	stop := make(chan struct{}, 1)
 	followStr := c.Query(followQuery)
 	previousStr := c.Query(previousQuery)
 	container := c.Query(containerQuery)
@@ -154,10 +226,9 @@ func makeLogOption(c *gin.Context) kubernetes.LogOptions {
 		tail = tailDefault
 	}
 	return kubernetes.LogOptions{
-		Tail:       int64(tail),
-		Follow:     followStr == "true",
-		StopFollow: stop,
-		Previous:   previousStr == "true",
-		Container:  container,
+		Tail:      int64(tail),
+		Follow:    followStr == "true",
+		Previous:  previousStr == "true",
+		Container: container,
 	}
 }
