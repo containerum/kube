@@ -8,10 +8,9 @@
     "kube-api",
     "user-manager"
   ]
-  revision = "4c4a15c4c67b5e1bb973f743990b8304737aabb8"
+  revision = "599b891f00ceb949969b66d8a62b8fc881e3fe7e"
 
 [[projects]]
-  branch = "develop"
   name = "git.containerum.net/ch/kube-client"
   packages = [
     "pkg/cherry",
@@ -20,7 +19,8 @@
     "pkg/cherry/kube-api",
     "pkg/model"
   ]
-  revision = "ee63238440a7f4051f8c93417603918326bf10dc"
+  revision = "b15f50466efc6d0ea0ba695d0d65c74a53594979"
+  version = "v0.8.1"
 
 [[projects]]
   name = "github.com/PuerkitoBio/purell"
@@ -198,8 +198,8 @@
 [[projects]]
   name = "github.com/imdario/mergo"
   packages = ["."]
-  revision = "163f41321a19dd09362d4c63cc2489db2015f1f4"
-  version = "0.3.2"
+  revision = "0d4b488675fdec1dde48751b05ab530cf0b630e1"
+  version = "v0.3.2"
 
 [[projects]]
   name = "github.com/json-iterator/go"
@@ -325,7 +325,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "88942b9c40a4c9d203b82b3731787b672d6e809b"
+  revision = "12892e8c234f4fe6f6803f052061de9057903bb2"
 
 [[projects]]
   branch = "master"
@@ -337,7 +337,7 @@
     "lex/httplex",
     "publicsuffix"
   ]
-  revision = "6078986fec03a1dcc236c34816c71b0e05018fda"
+  revision = "b68f30494add4df6bd8ef5e82803f308e7f7c59c"
 
 [[projects]]
   branch = "master"
