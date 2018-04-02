@@ -85,10 +85,10 @@ func initRoutes(e *gin.Engine) {
 		{
 			ingress.GET("", m.ReadAccess, h.GetIngressList)
 			ingress.GET("/:ingress", m.ReadAccess, h.GetIngress)
-			ingress.POST("", m.ReadAccess, h.CreateIngress)
+			ingress.POST("", h.CreateIngress)
 			ingress.POST("/file", m.ReadAccess, h.CreateIngressFromFile)
-			ingress.PUT("/:ingress", m.ReadAccess, h.UpdateIngress)
-			ingress.DELETE("/:ingress", m.ReadAccess, h.DeleteIngress)
+			ingress.PUT("/:ingress", h.UpdateIngress)
+			ingress.DELETE("/:ingress", h.DeleteIngress)
 		}
 
 		endpoint := namespace.Group("/:namespace/endpoints")
