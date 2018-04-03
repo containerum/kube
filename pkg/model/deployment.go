@@ -13,7 +13,6 @@ import (
 
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	"github.com/pkg/errors"
-	"gopkg.in/inf.v0"
 	api_apps "k8s.io/api/apps/v1"
 	api_core "k8s.io/api/core/v1"
 	api_resource "k8s.io/apimachinery/pkg/api/resource"
@@ -286,24 +285,21 @@ func makeContainerCommands(commands []string) []string {
 
 func makeContainerResourceQuota(cpu string, memory string) (*api_core.ResourceRequirements, error) {
 	limits := make(map[api_core.ResourceName]api_resource.Quantity)
+	requests := make(map[api_core.ResourceName]api_resource.Quantity)
 
-	var err error
-	limits["cpu"], err = api_resource.ParseQuantity(cpu)
+	lcpu, err := api_resource.ParseQuantity(cpu)
 	if err != nil {
 		return nil, ErrInvalidCPUFormat
 	}
-	limits["memory"], err = api_resource.ParseQuantity(memory)
+	lmem, err := api_resource.ParseQuantity(memory)
 	if err != nil {
 		return nil, ErrInvalidMemoryFormat
 	}
 
-	requests := make(map[api_core.ResourceName]api_resource.Quantity)
-	reqCPU := limits["cpu"]
-	reqMem := limits["memory"]
-
-	//TODO Think how to divide Quantity values in adequate way
-	requests["cpu"] = *api_resource.NewScaledQuantity(reqCPU.AsDec().Mul(reqCPU.AsDec(), inf.NewDec(requestCoeffUnscaled, requestCoeffScale)).UnscaledBig().Int64(), api_resource.Scale(0-reqCPU.AsDec().Scale()))
-	requests["memory"] = *api_resource.NewScaledQuantity(reqMem.AsDec().Mul(reqMem.AsDec(), inf.NewDec(requestCoeffUnscaled, requestCoeffScale)).UnscaledBig().Int64(), api_resource.Scale(0-reqMem.AsDec().Scale()))
+	limits["cpu"] = lcpu
+	limits["memory"] = lmem
+	requests["cpu"] = *api_resource.NewMilliQuantity(lcpu.MilliValue()/2, api_resource.BinarySI)
+	requests["memory"] = *api_resource.NewQuantity(lmem.Value()/2, api_resource.BinarySI)
 
 	return &api_core.ResourceRequirements{
 		Limits:   limits,
