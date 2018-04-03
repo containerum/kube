@@ -51,12 +51,15 @@ func ParseServiceList(ns interface{}, parseforuser bool) (*ServicesList, error) 
 
 	serviceList := make([]ServiceWithOwner, 0, nativeServices.Size())
 	for _, nativeService := range nativeServices.Items {
-		service, err := ParseService(&nativeService, parseforuser)
+		service, err := ParseService(&nativeService, false)
 		if err != nil {
 			return nil, err
 		}
 
 		if !service.Hidden && service.Owner != "" {
+			if parseforuser {
+				service.Owner = ""
+			}
 			serviceList = append(serviceList, *service)
 		}
 	}
