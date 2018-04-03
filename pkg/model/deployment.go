@@ -26,9 +26,6 @@ const (
 
 	glusterFSEndpoint = "ch-glusterfs"
 
-	requestCoeffUnscaled = 5
-	requestCoeffScale    = 1
-
 	minDeployCPU      = "10m"
 	minDeployMemory   = "10Mi"
 	maxDeployCPU      = "4"
