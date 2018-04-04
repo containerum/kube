@@ -3,6 +3,8 @@ package model
 import (
 	"strconv"
 
+	"time"
+
 	"git.containerum.net/ch/kube-client/pkg/model"
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
@@ -34,9 +36,11 @@ func ParsePod(pod interface{}, parseforuser bool) PodWithOwner {
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
 	containers, cpu, mem := getContainers(obj.Spec.Containers, nil, 1)
 	deploy := obj.GetObjectMeta().GetLabels()[appLabel]
+	createdAt := obj.ObjectMeta.CreationTimestamp.Format(time.RFC3339)
 
 	newPod := PodWithOwner{
 		Pod: model.Pod{
+			CreatedAt:   &createdAt,
 			TotalMemory: mem.String(),
 			TotalCPU:    cpu.String(),
 			Deploy:      &deploy,
