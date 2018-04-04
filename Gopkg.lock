@@ -8,10 +8,9 @@
     "kube-api",
     "user-manager"
   ]
-  revision = "599b891f00ceb949969b66d8a62b8fc881e3fe7e"
+  revision = "36190bd3a045c3e3e7464862a8cb63061f48870e"
 
 [[projects]]
-  branch = "develop"
   name = "git.containerum.net/ch/kube-client"
   packages = [
     "pkg/cherry",
@@ -20,7 +19,8 @@
     "pkg/cherry/kube-api",
     "pkg/model"
   ]
-  revision = "69ed54d203ee11d8c5f4a01466115832440914cb"
+  revision = "5028d0b31a8738c807c7f95738da368dfceed95b"
+  version = "v0.8.4"
 
 [[projects]]
   name = "github.com/PuerkitoBio/purell"
@@ -527,6 +527,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a42f8d041a985f4a5d90fcf839e2218f0ef5ca614342bfa67ac6b4de691d2512"
+  inputs-digest = "0b081bb5d9c94563473e021341b3c4c1ce54ebbe77319c31c2f00e832226c813"
   solver-name = "gps-cdcl"
   solver-version = 1
