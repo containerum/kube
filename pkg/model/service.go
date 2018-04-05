@@ -51,12 +51,15 @@ func ParseServiceList(ns interface{}, parseforuser bool) (*ServicesList, error) 
 
 	serviceList := make([]ServiceWithOwner, 0, nativeServices.Size())
 	for _, nativeService := range nativeServices.Items {
-		service, err := ParseService(&nativeService, parseforuser)
+		service, err := ParseService(&nativeService, false)
 		if err != nil {
 			return nil, err
 		}
 
 		if !service.Hidden && service.Owner != "" {
+			if parseforuser {
+				service.Owner = ""
+			}
 			serviceList = append(serviceList, *service)
 		}
 	}
@@ -213,8 +216,10 @@ func ValidateService(service ServiceWithOwner) []error {
 		} else if v.Protocol != kube_types.UDP && v.Protocol != kube_types.TCP {
 			errs = append(errs, fmt.Errorf(invalidProtocol, v.Protocol))
 		}
-		if len(api_validation.IsInRange(*v.Port, minport, maxport)) > 0 {
-			errs = append(errs, fmt.Errorf(invalidPort, *v.Port, minport, maxport))
+		if len(service.IPs) > 0 {
+			if len(api_validation.IsInRange(*v.Port, minport, maxport)) > 0 {
+				errs = append(errs, fmt.Errorf(invalidPort, *v.Port, minport, maxport))
+			}
 		}
 	}
 	if len(errs) > 0 {
@@ -249,13 +254,16 @@ func ValidateServiceFromFile(svc *api_core.Service) []error {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Ports"))
 	}
 	for _, v := range svc.Spec.Ports {
+
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port name"))
 		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
 			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
 		}
-		if len(api_validation.IsInRange(int(v.Port), minport, maxport)) > 0 {
-			errs = append(errs, fmt.Errorf(invalidPort, v.Port, minport, maxport))
+		if len(svc.Spec.ExternalIPs) > 0 {
+			if len(api_validation.IsInRange(int(v.Port), minport, maxport)) > 0 {
+				errs = append(errs, fmt.Errorf(invalidPort, v.Port, minport, maxport))
+			}
 		}
 	}
 	if len(errs) > 0 {

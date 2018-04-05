@@ -8,7 +8,7 @@
     "kube-api",
     "user-manager"
   ]
-  revision = "599b891f00ceb949969b66d8a62b8fc881e3fe7e"
+  revision = "36190bd3a045c3e3e7464862a8cb63061f48870e"
 
 [[projects]]
   name = "git.containerum.net/ch/kube-client"
@@ -19,8 +19,8 @@
     "pkg/cherry/kube-api",
     "pkg/model"
   ]
-  revision = "b15f50466efc6d0ea0ba695d0d65c74a53594979"
-  version = "v0.8.1"
+  revision = "5028d0b31a8738c807c7f95738da368dfceed95b"
+  version = "v0.8.4"
 
 [[projects]]
   name = "github.com/PuerkitoBio/purell"
@@ -198,8 +198,8 @@
 [[projects]]
   name = "github.com/imdario/mergo"
   packages = ["."]
-  revision = "0d4b488675fdec1dde48751b05ab530cf0b630e1"
-  version = "v0.3.2"
+  revision = "33882c6bfe701aca0ff1472aa8b4ebd6135a560d"
+  version = "v0.3.3"
 
 [[projects]]
   name = "github.com/json-iterator/go"
@@ -325,7 +325,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "12892e8c234f4fe6f6803f052061de9057903bb2"
+  revision = "b2aa35443fbc700ab74c586ae79b81c171851023"
 
 [[projects]]
   branch = "master"
@@ -346,7 +346,7 @@
     "unix",
     "windows"
   ]
-  revision = "378d26f46672a356c46195c28f61bdb4c0a781dd"
+  revision = "f67933eaf9e2f750f58a234209a11ebc1107be38"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -522,11 +522,11 @@
   branch = "master"
   name = "k8s.io/kube-openapi"
   packages = ["pkg/common"]
-  revision = "50ae88d24ede7b8bad68e23c805b5d3da5c8abaf"
+  revision = "cd0308977f05a0de033c0e8ce1860b317e360dca"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6c08550c6823003eeb4ab83036ffa428e2d3dc51fc98512bf084e9774109ffe7"
+  inputs-digest = "0b081bb5d9c94563473e021341b3c4c1ce54ebbe77319c31c2f00e832226c813"
   solver-name = "gps-cdcl"
   solver-version = 1

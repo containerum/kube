@@ -30,8 +30,8 @@
   name = "git.containerum.net/ch/json-types"
 
 [[constraint]]
-  branch = "develop"
   name = "git.containerum.net/ch/kube-client"
+  version = "~0.8.0"
 
 [[constraint]]
   name = "github.com/appleboy/gofight"
