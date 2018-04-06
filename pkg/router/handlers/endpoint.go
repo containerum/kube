@@ -152,7 +152,7 @@ func UpdateEndpoint(ctx *gin.Context) {
 		ctx.Error(err)
 	}
 
-	ctx.JSON(http.StatusCreated, ret)
+	ctx.JSON(http.StatusAccepted, ret)
 }
 
 func DeleteEndpoint(ctx *gin.Context) {
