@@ -22,6 +22,10 @@ type ConfigMapWithOwner struct {
 	Owner string `json:"owner,omitempty"`
 }
 
+const (
+	fileNameLabel = "filename"
+)
+
 // ParseConfigMapList parses kubernetes v1.ConfigMapList to more convenient []ConfigMap struct.
 func ParseConfigMapList(cmi interface{}) (*ConfigMapsList, error) {
 	cm := cmi.(*api_core.ConfigMapList)
@@ -53,6 +57,7 @@ func ParseConfigMap(cmi interface{}) (*ConfigMapWithOwner, error) {
 	}
 
 	owner := cm.GetObjectMeta().GetLabels()[ownerLabel]
+	fileName := cm.GetObjectMeta().GetLabels()[fileNameLabel]
 	createdAt := cm.CreationTimestamp.Format(time.RFC3339)
 
 	return &ConfigMapWithOwner{
@@ -60,6 +65,7 @@ func ParseConfigMap(cmi interface{}) (*ConfigMapWithOwner, error) {
 			Name:      cm.GetName(),
 			CreatedAt: &createdAt,
 			Data:      newData,
+			FileName:  fileName,
 		},
 		Owner: owner,
 	}, nil
@@ -76,6 +82,7 @@ func MakeConfigMap(nsName string, cm ConfigMapWithOwner, labels map[string]strin
 		labels = make(map[string]string, 0)
 	}
 	labels[ownerLabel] = cm.Owner
+	labels[fileNameLabel] = cm.FileName
 
 	newCm := api_core.ConfigMap{
 		TypeMeta: api_meta.TypeMeta{
@@ -99,7 +106,9 @@ func ValidateConfigMap(cm ConfigMapWithOwner) []error {
 	} else if !IsValidUUID(cm.Owner) {
 		errs = append(errs, errors.New(invalidOwner))
 	}
-
+	if cm.FileName == "" {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "File Name"))
+	}
 	if cm.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
 	} else if err := api_validation.IsDNS1123Label(cm.Name); len(err) > 0 {

@@ -19,8 +19,8 @@
     "pkg/cherry/kube-api",
     "pkg/model"
   ]
-  revision = "5028d0b31a8738c807c7f95738da368dfceed95b"
-  version = "v0.8.4"
+  revision = "edd532c2f3dc66a66dce8359a66becf1c2f6f6ba"
+  version = "v0.8.7"
 
 [[projects]]
   name = "github.com/PuerkitoBio/purell"
@@ -99,19 +99,19 @@
   branch = "master"
   name = "github.com/go-openapi/spec"
   packages = ["."]
-  revision = "9acd88844bc186c3ec7f318cd3d56f1114b4ab99"
+  revision = "370d9e047557906322be8396e77cb0376be6cb96"
 
 [[projects]]
   branch = "master"
   name = "github.com/go-openapi/swag"
   packages = ["."]
-  revision = "ceb469cb0fdf2d792f28d771bc05da6c606f55e5"
+  revision = "811b1089cde9dad18d4d0c2d09fbdbf28dbd27a5"
 
 [[projects]]
   name = "github.com/go-resty/resty"
   packages = ["."]
-  revision = "65798e030a35b911602b4d1d743d6f50ac93b665"
-  version = "v1.3"
+  revision = "f8815663de1e64d57cdd4ee9e2b2fa96977a030e"
+  version = "v1.4"
 
 [[projects]]
   name = "github.com/gogo/protobuf"
@@ -198,8 +198,8 @@
 [[projects]]
   name = "github.com/imdario/mergo"
   packages = ["."]
-  revision = "33882c6bfe701aca0ff1472aa8b4ebd6135a560d"
-  version = "v0.3.3"
+  revision = "9d5f1277e9a8ed20c3684bda8fde67c05628518c"
+  version = "v0.3.4"
 
 [[projects]]
   name = "github.com/json-iterator/go"
@@ -337,7 +337,7 @@
     "lex/httplex",
     "publicsuffix"
   ]
-  revision = "b68f30494add4df6bd8ef5e82803f308e7f7c59c"
+  revision = "b3c676e531a6dc479fa1b35ac961c13f5e2b4d2e"
 
 [[projects]]
   branch = "master"
@@ -346,7 +346,7 @@
     "unix",
     "windows"
   ]
-  revision = "f67933eaf9e2f750f58a234209a11ebc1107be38"
+  revision = "1d206c9fa8975fb4cf00df1dc8bf3283dc24ba0e"
 
 [[projects]]
   name = "golang.org/x/text"
