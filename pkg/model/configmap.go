@@ -76,7 +76,6 @@ func MakeConfigMap(nsName string, cm ConfigMapWithOwner, labels map[string]strin
 		labels = make(map[string]string, 0)
 	}
 	labels[ownerLabel] = cm.Owner
-	labels[nameLabel] = cm.Name
 
 	newCm := api_core.ConfigMap{
 		TypeMeta: api_meta.TypeMeta{

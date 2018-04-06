@@ -136,7 +136,6 @@ func MakeDeployment(nsName string, depl DeploymentWithOwner, labels map[string]s
 	}
 	labels[appLabel] = depl.Name
 	labels[ownerLabel] = depl.Owner
-	labels[nameLabel] = depl.Name
 
 	deployment := api_apps.Deployment{
 		TypeMeta: api_meta.TypeMeta{
