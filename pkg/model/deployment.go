@@ -28,8 +28,8 @@ const (
 
 	minDeployCPU      = "10m"
 	minDeployMemory   = "10Mi"
-	maxDeployCPU      = "4"
-	maxDeployMemory   = "4Gi"
+	maxDeployCPU      = "12"
+	maxDeployMemory   = "16Gi"
 	maxDeployReplicas = 15
 )
 

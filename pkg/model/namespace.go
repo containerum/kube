@@ -20,8 +20,8 @@ const (
 
 	minNamespaceCPU    = "0.3"
 	minNamespaceMemory = "0.5Gi"
-	maxNamespaceCPU    = "10"
-	maxNamespaceMemory = "10Gi"
+	maxNamespaceCPU    = "12"
+	maxNamespaceMemory = "28Gi"
 )
 
 type NamespacesList struct {
