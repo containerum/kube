@@ -28,6 +28,8 @@ type IngressWithOwner struct {
 const (
 	ingressKind       = "Ingress"
 	ingressApiVersion = "extensions/v1beta1"
+
+	ingressHostSuffix = ".hub.containerum.io"
 )
 
 // ParseIngressList parses kubernetes v1beta1.IngressList to more convenient []Ingress struct
@@ -164,7 +166,7 @@ func makeIngressRules(rules []kube_types.Rule) ([]api_extensions.IngressRule, []
 			})
 		}
 		newRules = append(newRules, api_extensions.IngressRule{
-			Host: v.Host,
+			Host: v.Host + ingressHostSuffix,
 			IngressRuleValue: api_extensions.IngressRuleValue{
 				HTTP: &api_extensions.HTTPIngressRuleValue{
 					Paths: paths,
