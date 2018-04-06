@@ -97,7 +97,6 @@ func MakeEndpoint(nsName string, endpoint json_types.Endpoint, labels map[string
 	}
 
 	labels[ownerLabel] = *endpoint.Owner
-	labels[nameLabel] = endpoint.Name
 
 	newEndpoint := api_core.Endpoints{
 		TypeMeta: api_meta.TypeMeta{

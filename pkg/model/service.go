@@ -135,7 +135,6 @@ func MakeService(nsName string, service ServiceWithOwner, labels map[string]stri
 	}
 	labels[appLabel] = service.Deploy
 	labels[ownerLabel] = service.Owner
-	labels[nameLabel] = service.Name
 	labels[hiddenLabel] = strconv.FormatBool(service.Hidden)
 
 	newService := api_core.Service{
@@ -155,7 +154,10 @@ func MakeService(nsName string, service ServiceWithOwner, labels map[string]stri
 	}
 
 	if !service.NoSelector {
-		newService.Spec.Selector = labels
+		selector := make(map[string]string, 0)
+		selector[appLabel] = service.Deploy
+		selector[ownerLabel] = service.Owner
+		newService.Spec.Selector = selector
 	}
 
 	if service.IPs != nil {
@@ -254,7 +256,6 @@ func ValidateServiceFromFile(svc *api_core.Service) []error {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Ports"))
 	}
 	for _, v := range svc.Spec.Ports {
-
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port name"))
 		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {

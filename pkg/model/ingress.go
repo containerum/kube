@@ -121,7 +121,6 @@ func MakeIngress(nsName string, ingress IngressWithOwner, labels map[string]stri
 		labels = make(map[string]string, 0)
 	}
 	labels[ownerLabel] = ingress.Owner
-	labels[nameLabel] = ingress.Name
 
 	rules, secrets, tls := makeIngressRules(ingress.Rules)
 

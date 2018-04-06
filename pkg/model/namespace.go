@@ -17,7 +17,6 @@ import (
 const (
 	ownerLabel = "owner"
 	appLabel   = "app"
-	nameLabel  = "name"
 
 	minNamespaceCPU    = "0.3"
 	minNamespaceMemory = "0.5Gi"

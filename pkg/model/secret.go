@@ -94,7 +94,6 @@ func MakeSecret(nsName string, secret SecretWithOwner, labels map[string]string)
 		labels = make(map[string]string, 0)
 	}
 	labels[ownerLabel] = secret.Owner
-	labels[nameLabel] = secret.Name
 
 	newSecret := api_core.Secret{
 		TypeMeta: api_meta.TypeMeta{
