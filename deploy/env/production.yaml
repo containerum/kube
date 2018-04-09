@@ -1,0 +1,4 @@
+env:
+  CH_KUBE_API_KUBE_CONF: "/cfg/kube.conf"
+  CH_KUBE_API_DEBUG: "false"
+  CH_KUBE_API_TEXTLOG: "false"
