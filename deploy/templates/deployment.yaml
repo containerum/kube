@@ -22,10 +22,17 @@ spec:
     spec:
       imagePullSecrets:
         - name: {{ .Values.image.secret }}
+      volumes:
+      - configMap:
+          name: kube-api-cfg
+        name: kube-api-volume
       containers:
         - name: {{ .Chart.Name }}-{{ .Values.name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - mountPath: /cfg
+             name: kube-api-volume
           env:
             {{- range $key, $val := .Values.env }}
             - name: {{ $key }}
