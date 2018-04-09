@@ -32,7 +32,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           volumeMounts:
             - mountPath: /cfg
-             name: kube-api-volume
+              name: kube-api-volume
           env:
             {{- range $key, $val := .Values.env }}
             - name: {{ $key }}
