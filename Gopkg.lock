@@ -19,8 +19,8 @@
     "pkg/cherry/kube-api",
     "pkg/model"
   ]
-  revision = "edd532c2f3dc66a66dce8359a66becf1c2f6f6ba"
-  version = "v0.8.7"
+  revision = "b5dd7ebef54c79c70f90db81fa448dca491b8351"
+  version = "v0.8.8"
 
 [[projects]]
   name = "github.com/PuerkitoBio/purell"
@@ -172,7 +172,7 @@
   branch = "master"
   name = "github.com/gopherjs/gopherjs"
   packages = ["js"]
-  revision = "82b322028c96512b15077093b16a5f1c7ea897ac"
+  revision = "827bd480590f537dd1c934ce76fac24ea7ce9cae"
 
 [[projects]]
   name = "github.com/gorilla/websocket"
@@ -312,8 +312,8 @@
 [[projects]]
   name = "github.com/ugorji/go"
   packages = ["codec"]
-  revision = "9831f2c3ac1068a78f50999a30db84270f647af6"
-  version = "v1.1"
+  revision = "b4c50a2b199d93b13dc15e78929cfb23bfdf21ab"
+  version = "v1.1.1"
 
 [[projects]]
   name = "github.com/urfave/cli"
@@ -325,7 +325,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "b2aa35443fbc700ab74c586ae79b81c171851023"
+  revision = "beb2a9779c3b677077c41673505f150149fce895"
 
 [[projects]]
   branch = "master"
@@ -337,7 +337,7 @@
     "lex/httplex",
     "publicsuffix"
   ]
-  revision = "b3c676e531a6dc479fa1b35ac961c13f5e2b4d2e"
+  revision = "61147c48b25b599e5b561d2e9c4f3e1ef489ca41"
 
 [[projects]]
   branch = "master"
@@ -346,7 +346,7 @@
     "unix",
     "windows"
   ]
-  revision = "1d206c9fa8975fb4cf00df1dc8bf3283dc24ba0e"
+  revision = "3b87a42e500a6dc65dae1a55d0b641295971163e"
 
 [[projects]]
   name = "golang.org/x/text"

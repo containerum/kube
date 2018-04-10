@@ -59,7 +59,6 @@ func ParseConfigMap(cmi interface{}, parseforuser bool) (*ConfigMapWithOwner, er
 	}
 
 	owner := cm.GetObjectMeta().GetLabels()[ownerLabel]
-	fileName := cm.GetObjectMeta().GetLabels()[fileNameLabel]
 	createdAt := cm.CreationTimestamp.Format(time.RFC3339)
 
 	newCm := ConfigMapWithOwner{
@@ -67,7 +66,6 @@ func ParseConfigMap(cmi interface{}, parseforuser bool) (*ConfigMapWithOwner, er
 			Name:      cm.GetName(),
 			CreatedAt: &createdAt,
 			Data:      newData,
-			FileName:  fileName,
 		},
 		Owner: owner,
 	}
@@ -120,9 +118,6 @@ func ValidateConfigMap(cm ConfigMapWithOwner) []error {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
 	} else if !IsValidUUID(cm.Owner) {
 		errs = append(errs, errors.New(invalidOwner))
-	}
-	if cm.FileName == "" {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "File Name"))
 	}
 	if cm.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
