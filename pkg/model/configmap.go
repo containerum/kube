@@ -7,6 +7,8 @@ import (
 
 	"time"
 
+	"encoding/base64"
+
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -83,6 +85,13 @@ func MakeConfigMap(nsName string, cm ConfigMapWithOwner, labels map[string]strin
 	}
 	labels[ownerLabel] = cm.Owner
 	labels[fileNameLabel] = cm.FileName
+
+	for k, v := range cm.Data {
+		dec, err := base64.StdEncoding.DecodeString(v)
+		if err == nil {
+			cm.Data[k] = string(dec)
+		}
+	}
 
 	newCm := api_core.ConfigMap{
 		TypeMeta: api_meta.TypeMeta{
