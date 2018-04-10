@@ -88,7 +88,6 @@ func MakeConfigMap(nsName string, cm ConfigMapWithOwner, labels map[string]strin
 		labels = make(map[string]string, 0)
 	}
 	labels[ownerLabel] = cm.Owner
-	labels[fileNameLabel] = cm.FileName
 
 	for k, v := range cm.Data {
 		dec, err := base64.StdEncoding.DecodeString(v)
