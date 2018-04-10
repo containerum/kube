@@ -32,7 +32,8 @@ func GetConfigMapList(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseConfigMapList(cm)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseConfigMapList(cm, role == "user")
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
@@ -58,7 +59,8 @@ func GetConfigMap(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseConfigMap(cm)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseConfigMap(cm, role == "user")
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
@@ -102,12 +104,45 @@ func CreateConfigMap(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseConfigMap(cmAfter)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseConfigMap(cmAfter, role == "user")
 	if err != nil {
 		ctx.Error(err)
 	}
 
 	ctx.JSON(http.StatusCreated, ret)
+}
+
+func GetSelectedConfigMaps(ctx *gin.Context) {
+	log.Debug("Get selected config maps Call")
+
+	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	cms := make(map[string]model.ConfigMapsList, 0)
+
+	role := ctx.MustGet(m.UserRole).(string)
+	if role == "user" {
+		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
+		for _, n := range *nsList {
+			cmList, err := kubecli.GetConfigMapList(n.ID)
+			if err != nil {
+				ctx.Error(err)
+				gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+				return
+			}
+
+			il, err := model.ParseConfigMapList(cmList, role == "user")
+			if err != nil {
+				ctx.Error(err)
+				gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+				return
+			}
+
+			cms[n.Label] = *il
+		}
+	}
+
+	ctx.JSON(http.StatusOK, cms)
 }
 
 func UpdateConfigMap(ctx *gin.Context) {
@@ -147,7 +182,8 @@ func UpdateConfigMap(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseConfigMap(cmAfter)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseConfigMap(cmAfter, role == "user")
 	if err != nil {
 		ctx.Error(err)
 	}

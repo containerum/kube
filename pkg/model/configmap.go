@@ -29,7 +29,7 @@ const (
 )
 
 // ParseConfigMapList parses kubernetes v1.ConfigMapList to more convenient []ConfigMap struct.
-func ParseConfigMapList(cmi interface{}) (*ConfigMapsList, error) {
+func ParseConfigMapList(cmi interface{}, parseforuser bool) (*ConfigMapsList, error) {
 	cm := cmi.(*api_core.ConfigMapList)
 	if cm == nil {
 		return nil, ErrUnableConvertConfigMapList
@@ -37,7 +37,7 @@ func ParseConfigMapList(cmi interface{}) (*ConfigMapsList, error) {
 
 	newCms := make([]ConfigMapWithOwner, 0)
 	for _, cm := range cm.Items {
-		newCm, err := ParseConfigMap(&cm)
+		newCm, err := ParseConfigMap(&cm, parseforuser)
 		if err != nil {
 			return nil, err
 		}
@@ -47,7 +47,7 @@ func ParseConfigMapList(cmi interface{}) (*ConfigMapsList, error) {
 }
 
 // ParseConfigMap parses kubernetes v1.ConfigMap to more convenient ConfigMap struct.
-func ParseConfigMap(cmi interface{}) (*ConfigMapWithOwner, error) {
+func ParseConfigMap(cmi interface{}, parseforuser bool) (*ConfigMapWithOwner, error) {
 	cm := cmi.(*api_core.ConfigMap)
 	if cm == nil {
 		return nil, ErrUnableConvertConfigMap
@@ -62,7 +62,7 @@ func ParseConfigMap(cmi interface{}) (*ConfigMapWithOwner, error) {
 	fileName := cm.GetObjectMeta().GetLabels()[fileNameLabel]
 	createdAt := cm.CreationTimestamp.Format(time.RFC3339)
 
-	return &ConfigMapWithOwner{
+	newCm := ConfigMapWithOwner{
 		ConfigMap: kube_types.ConfigMap{
 			Name:      cm.GetName(),
 			CreatedAt: &createdAt,
@@ -70,7 +70,13 @@ func ParseConfigMap(cmi interface{}) (*ConfigMapWithOwner, error) {
 			FileName:  fileName,
 		},
 		Owner: owner,
-	}, nil
+	}
+
+	if parseforuser {
+		newCm.Owner = ""
+	}
+
+	return &newCm, nil
 }
 
 // MakeConfigMap creates kubernetes v1.ConfigMap from ConfigMap struct and namespace labels
