@@ -24,10 +24,6 @@ type ConfigMapWithOwner struct {
 	Owner string `json:"owner,omitempty"`
 }
 
-const (
-	fileNameLabel = "filename"
-)
-
 // ParseConfigMapList parses kubernetes v1.ConfigMapList to more convenient []ConfigMap struct.
 func ParseConfigMapList(cmi interface{}, parseforuser bool) (*ConfigMapsList, error) {
 	cm := cmi.(*api_core.ConfigMapList)
