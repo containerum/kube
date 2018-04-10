@@ -205,7 +205,7 @@ func GetSelectedIngresses(ctx *gin.Context) {
 				return
 			}
 
-			il, err := model.ParseIngressList(ingressList, true)
+			il, err := model.ParseIngressList(ingressList, role == "user")
 			if err != nil {
 				ctx.Error(err)
 				gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)

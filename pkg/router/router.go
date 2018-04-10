@@ -40,6 +40,7 @@ func initRoutes(e *gin.Engine) {
 	})
 
 	e.GET("/ingresses", h.GetSelectedIngresses)
+	e.GET("/configmaps", h.GetSelectedConfigMaps)
 
 	namespace := e.Group("/namespaces")
 	{
@@ -102,8 +103,8 @@ func initRoutes(e *gin.Engine) {
 
 		configmap := namespace.Group("/:namespace/configmaps")
 		{
-			configmap.GET("", m.IsAdmin, h.GetConfigMapList)
-			configmap.GET("/:configmap", m.IsAdmin, h.GetConfigMap)
+			configmap.GET("", m.ReadAccess, h.GetConfigMapList)
+			configmap.GET("/:configmap", m.ReadAccess, h.GetConfigMap)
 			configmap.POST("", h.CreateConfigMap)
 			configmap.PUT("/:configmap", h.UpdateConfigMap)
 			configmap.DELETE("/:configmap", h.DeleteConfigMap)
