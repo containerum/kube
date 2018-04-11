@@ -72,7 +72,8 @@ func GetConfigMap(ctx *gin.Context) {
 
 func CreateConfigMap(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": ctx.Param(namespaceParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
 	}).Debug("Create config map Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -84,14 +85,14 @@ func CreateConfigMap(ctx *gin.Context) {
 		return
 	}
 
-	quota, err := kube.GetNamespaceQuota(ctx.Param(namespaceParam))
+	quota, err := kube.GetNamespaceQuota(ctx.MustGet(m.NamespaceKey).(string))
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
 		return
 	}
 
-	newCm, errs := model.MakeConfigMap(ctx.Param(namespaceParam), cm, quota.Labels)
+	newCm, errs := model.MakeConfigMap(ctx.MustGet(m.NamespaceKey).(string), cm, quota.Labels)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
@@ -114,7 +115,10 @@ func CreateConfigMap(ctx *gin.Context) {
 }
 
 func GetSelectedConfigMaps(ctx *gin.Context) {
-	log.Debug("Get selected config maps Call")
+	log.WithFields(log.Fields{
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+	}).Debug("Get selected config maps Call")
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
@@ -147,8 +151,9 @@ func GetSelectedConfigMaps(ctx *gin.Context) {
 
 func UpdateConfigMap(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": ctx.Param(namespaceParam),
-		"ConfigMap": ctx.Param(configMapParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+		"ConfigMap":       ctx.Param(configMapParam),
 	}).Debug("Create config map Call")
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -160,7 +165,7 @@ func UpdateConfigMap(ctx *gin.Context) {
 		return
 	}
 
-	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
+	quota, err := kubecli.GetNamespaceQuota(ctx.MustGet(m.NamespaceKey).(string))
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
@@ -169,7 +174,7 @@ func UpdateConfigMap(ctx *gin.Context) {
 
 	cm.Name = ctx.Param(configMapParam)
 
-	newCm, errs := model.MakeConfigMap(ctx.Param(namespaceParam), cm, quota.Labels)
+	newCm, errs := model.MakeConfigMap(ctx.MustGet(m.NamespaceKey).(string), cm, quota.Labels)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
@@ -193,11 +198,12 @@ func UpdateConfigMap(ctx *gin.Context) {
 
 func DeleteConfigMap(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": ctx.Param(namespaceParam),
-		"ConfigMap": ctx.Param(configMapParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+		"ConfigMap":       ctx.Param(configMapParam),
 	}).Debug("Delete config map Call")
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-	err := kube.DeleteConfigMap(ctx.Param(namespaceParam), ctx.Param(configMapParam))
+	err := kube.DeleteConfigMap(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(configMapParam))
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableDeleteResource()), ctx)

@@ -73,7 +73,8 @@ func GetSecret(ctx *gin.Context) {
 
 func CreateSecret(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": ctx.Param(namespaceParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
 	}).Debug("Create secret Call")
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -85,14 +86,14 @@ func CreateSecret(ctx *gin.Context) {
 		return
 	}
 
-	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
+	quota, err := kubecli.GetNamespaceQuota(ctx.MustGet(m.NamespaceKey).(string))
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
 		return
 	}
 
-	newSecret, errs := model.MakeSecret(ctx.Param(namespaceParam), secret, quota.Labels)
+	newSecret, errs := model.MakeSecret(ctx.MustGet(m.NamespaceKey).(string), secret, quota.Labels)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
@@ -116,8 +117,9 @@ func CreateSecret(ctx *gin.Context) {
 
 func UpdateSecret(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": ctx.Param(namespaceParam),
-		"Secret":    ctx.Param(secretParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+		"Secret":          ctx.Param(secretParam),
 	}).Debug("Create secret Call")
 
 	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -129,7 +131,7 @@ func UpdateSecret(ctx *gin.Context) {
 		return
 	}
 
-	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
+	quota, err := kubecli.GetNamespaceQuota(ctx.MustGet(m.NamespaceKey).(string))
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
@@ -138,7 +140,7 @@ func UpdateSecret(ctx *gin.Context) {
 
 	secret.Name = ctx.Param(secretParam)
 
-	newSecret, errs := model.MakeSecret(ctx.Param(namespaceParam), secret, quota.Labels)
+	newSecret, errs := model.MakeSecret(ctx.MustGet(m.NamespaceKey).(string), secret, quota.Labels)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
@@ -162,11 +164,12 @@ func UpdateSecret(ctx *gin.Context) {
 
 func DeleteSecret(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": ctx.Param(namespaceParam),
-		"Secret":    ctx.Param(secretParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+		"Secret":          ctx.Param(secretParam),
 	}).Debug("Delete secret Call")
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-	err := kube.DeleteSecret(ctx.Param(namespaceParam), ctx.Param(secretParam))
+	err := kube.DeleteSecret(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(secretParam))
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableDeleteResource()), ctx)

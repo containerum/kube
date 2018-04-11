@@ -78,11 +78,12 @@ func GetPod(ctx *gin.Context) {
 
 func DeletePod(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace": ctx.Param(namespaceParam),
-		"Pod":       ctx.Param(podParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+		"Pod":             ctx.Param(podParam),
 	}).Debug("Delete pod Call")
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-	err := kube.DeletePod(ctx.Param(namespaceParam), ctx.Param(podParam))
+	err := kube.DeletePod(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(podParam))
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
