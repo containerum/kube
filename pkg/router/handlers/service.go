@@ -188,7 +188,7 @@ func DeleteService(ctx *gin.Context) {
 	}).Debug("Delete service call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-	err := kube.DeleteService(namespace, serviceName)
+	err := kube.DeleteService(namespace, service)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
