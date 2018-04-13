@@ -30,10 +30,12 @@ var (
 
 const (
 	namespaceParam = "namespace"
+	RoleUser       = "user"
+	RoleAdmin      = "admin"
 )
 
 func IsAdmin(ctx *gin.Context) {
-	if role := ctx.GetHeader(userRoleXHeader); role != "admin" {
+	if role := ctx.GetHeader(userRoleXHeader); role != RoleAdmin {
 		gonic.Gonic(cherry.ErrAdminRequired(), ctx)
 		return
 	}
@@ -42,7 +44,7 @@ func IsAdmin(ctx *gin.Context) {
 
 func ReadAccess(c *gin.Context) {
 	ns := c.MustGet(NamespaceKey).(string)
-	if c.MustGet(UserRole).(string) == "user" {
+	if c.MustGet(UserRole).(string) == RoleUser {
 		var userNsData *kubeModel.UserHeaderData
 		nsList := c.MustGet(UserNamespaces).(*model.UserHeaderDataMap)
 		for _, n := range *nsList {
@@ -56,14 +58,12 @@ func ReadAccess(c *gin.Context) {
 				c.Set(NamespaceKey, userNsData.ID)
 				c.Set(NamespaceLabelKey, userNsData.Label)
 				return
-			} else {
-				gonic.Gonic(cherry.ErrAccessError(), c)
-				return
 			}
-		} else {
-			gonic.Gonic(cherry.ErrResourceNotExist(), c)
+			gonic.Gonic(cherry.ErrAccessError(), c)
 			return
 		}
+		gonic.Gonic(cherry.ErrResourceNotExist(), c)
+		return
 	}
 	return
 }

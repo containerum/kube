@@ -21,13 +21,16 @@ const (
 )
 
 func GetDeploymentList(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+		"Namespace":       namespace,
 		"Owner":           ctx.Query(ownerQuery),
 	}).Debug("Get deployment list Call")
+
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-	deployments, err := kube.GetDeploymentList(ctx.MustGet(m.NamespaceKey).(string), ctx.Query(ownerQuery))
+
+	deploy, err := kube.GetDeploymentList(namespace, ctx.Query(ownerQuery))
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
@@ -35,7 +38,8 @@ func GetDeploymentList(ctx *gin.Context) {
 	}
 
 	role := ctx.MustGet(m.UserRole).(string)
-	ret, err := model.ParseDeploymentList(deployments, role == "user")
+
+	ret, err := model.ParseKubeDeploymentList(deploy, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
@@ -46,13 +50,17 @@ func GetDeploymentList(ctx *gin.Context) {
 }
 
 func GetDeployment(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	deployment := ctx.Param(deploymentParam)
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
-		"Deployment":      ctx.Param(deploymentParam),
+		"Namespace":       namespace,
+		"Deployment":      deployment,
 	}).Debug("Get deployment Call")
+
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-	deployment, err := kube.GetDeployment(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(deploymentParam))
+
+	deploy, err := kube.GetDeployment(namespace, deployment)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableGetResource()), ctx)
@@ -60,18 +68,21 @@ func GetDeployment(ctx *gin.Context) {
 	}
 
 	role := ctx.MustGet(m.UserRole).(string)
-	ret, err := model.ParseDeployment(deployment, role == "user")
+	ret, err := model.ParseKubeDeployment(deploy, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
 		return
 	}
+
 	ctx.JSON(http.StatusOK, ret)
 }
 
 func CreateDeployment(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
-		"Namespace": ctx.Param(namespaceParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       namespace,
 	}).Debug("Create deployment Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -83,28 +94,32 @@ func CreateDeployment(ctx *gin.Context) {
 		return
 	}
 
-	quota, err := kube.GetNamespaceQuota(ctx.Param(namespaceParam))
+	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
 		return
 	}
 
-	deployment, errs := model.MakeDeployment(ctx.Param(namespaceParam), deployReq, quota.Labels)
+	role := ctx.MustGet(m.UserRole).(string)
+	if role == m.RoleUser {
+		deployReq.Owner = ctx.MustGet(m.UserID).(string)
+	}
+
+	deploy, errs := deployReq.ToKube(namespace, quota.Labels)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
-	deployAfter, err := kube.CreateDeployment(deployment)
+	deployAfter, err := kube.CreateDeployment(deploy)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
-	ret, err := model.ParseDeployment(deployAfter, role == "user")
+	ret, err := model.ParseKubeDeployment(deployAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -112,9 +127,12 @@ func CreateDeployment(ctx *gin.Context) {
 }
 
 func UpdateDeployment(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	deployment := ctx.Param(deploymentParam)
 	log.WithFields(log.Fields{
-		"Namespace":  ctx.Param(namespaceParam),
-		"Deployment": ctx.Param(deploymentParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       namespace,
+		"Deployment":      deployment,
 	}).Debug("Update deployment Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -126,30 +144,30 @@ func UpdateDeployment(ctx *gin.Context) {
 		return
 	}
 
-	quota, err := kube.GetNamespaceQuota(ctx.Param(namespaceParam))
+	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
 		return
 	}
 
-	oldDeploy, err := kube.GetDeployment(ctx.Param(namespaceParam), ctx.Param(deploymentParam))
+	oldDeploy, err := kube.GetDeployment(namespace, deployment)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
-	deployReq.Name = ctx.Param(deploymentParam)
-	deployReq.Owner = oldDeploy.GetObjectMeta().GetLabels()["owner"]
+	deployReq.Name = deployment
+	deployReq.Owner = oldDeploy.GetObjectMeta().GetLabels()[ownerQuery]
 
-	deployment, errs := model.MakeDeployment(ctx.Param(namespaceParam), deployReq, quota.Labels)
+	deploy, errs := deployReq.ToKube(namespace, quota.Labels)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
-	deployAfter, err := kube.UpdateDeployment(deployment)
+	deployAfter, err := kube.UpdateDeployment(deploy)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
@@ -157,7 +175,8 @@ func UpdateDeployment(ctx *gin.Context) {
 	}
 
 	role := ctx.MustGet(m.UserRole).(string)
-	ret, err := model.ParseDeployment(deployAfter, role == "user")
+
+	ret, err := model.ParseKubeDeployment(deployAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -166,10 +185,16 @@ func UpdateDeployment(ctx *gin.Context) {
 }
 
 func UpdateDeploymentReplicas(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	deployment := ctx.Param(deploymentParam)
 	log.WithFields(log.Fields{
-		"Namespace":  ctx.Param(namespaceParam),
-		"Deployment": ctx.Param(deploymentParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       namespace,
+		"Deployment":      deployment,
 	}).Debug("Update deployment replicas Call")
+
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
 	var replicas kube_types.UpdateReplicas
 	if err := ctx.ShouldBindWith(&replicas, binding.JSON); err != nil {
 		ctx.Error(err)
@@ -177,8 +202,7 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 		return
 	}
 
-	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-	deployment, err := kube.GetDeployment(ctx.Param(namespaceParam), ctx.Param(deploymentParam))
+	deploy, err := kube.GetDeployment(namespace, deployment)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
@@ -186,9 +210,9 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 	}
 
 	newRepl := int32(replicas.Replicas)
-	deployment.Spec.Replicas = &newRepl
+	deploy.Spec.Replicas = &newRepl
 
-	deployAfter, err := kube.UpdateDeployment(deployment)
+	deployAfter, err := kube.UpdateDeployment(deploy)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
@@ -196,7 +220,7 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 	}
 
 	role := ctx.MustGet(m.UserRole).(string)
-	ret, err := model.ParseDeployment(deployAfter, role == "user")
+	ret, err := model.ParseKubeDeployment(deployAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -205,33 +229,37 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 }
 
 func UpdateDeploymentImage(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	deployment := ctx.Param(deploymentParam)
 	log.WithFields(log.Fields{
-		"Namespace":  ctx.Param(namespaceParam),
-		"Deployment": ctx.Param(deploymentParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       namespace,
+		"Deployment":      deployment,
 	}).Debug("Update deployment container image Call")
-	var image kube_types.UpdateImage
-	if err := ctx.ShouldBindWith(&image, binding.JSON); err != nil {
+
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	var newImage kube_types.UpdateImage
+	if err := ctx.ShouldBindWith(&newImage, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
-	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-
-	deployment, err := kube.GetDeployment(ctx.Param(namespaceParam), ctx.Param(deploymentParam))
+	deploy, err := kube.GetDeployment(namespace, deployment)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
-	deploymentUpd, err := model.UpdateImage(deployment, image.Container, image.Image)
+	deployUpd, err := model.UpdateImage(deploy, newImage.Container, newImage.Image)
 	if err != nil {
 		gonic.Gonic(cherry.ErrUnableUpdateResource().AddDetailsErr(err), ctx)
 		return
 	}
 
-	deployAfter, err := kube.UpdateDeployment(deploymentUpd)
+	deployAfter, err := kube.UpdateDeployment(deployUpd)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
@@ -239,7 +267,7 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 	}
 
 	role := ctx.MustGet(m.UserRole).(string)
-	ret, err := model.ParseDeployment(deployAfter, role == "user")
+	ret, err := model.ParseKubeDeployment(deployAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -248,24 +276,31 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 }
 
 func DeleteDeployment(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	deployment := ctx.Param(deploymentParam)
 	log.WithFields(log.Fields{
-		"Namespace":  ctx.Param(namespaceParam),
-		"Deployment": ctx.Param(deploymentParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       namespace,
+		"Deployment":      deployment,
 	}).Debug("Delete deployment Call")
+
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-	err := kube.DeleteDeployment(ctx.Param(namespaceParam), ctx.Param(deploymentParam))
+
+	err := kube.DeleteDeployment(namespace, deployment)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
 		return
 	}
+
 	ctx.Status(http.StatusAccepted)
 }
 
 func CreateDeploymentFromFile(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+		"Namespace":       namespace,
 	}).Debug("Create deployment from file Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -278,9 +313,9 @@ func CreateDeploymentFromFile(ctx *gin.Context) {
 	}
 
 	role := ctx.MustGet(m.UserRole).(string)
-	if role == "user" {
+	if role == m.RoleUser {
 		deploy.Labels["owner"] = ctx.MustGet(m.UserID).(string)
-		deploy.Namespace = ctx.MustGet(m.NamespaceKey).(string)
+		deploy.Namespace = namespace
 	} else {
 		deploy.Namespace = ctx.Param(namespaceParam)
 	}
@@ -291,7 +326,7 @@ func CreateDeploymentFromFile(ctx *gin.Context) {
 		return
 	}
 
-	_, err := kube.GetNamespaceQuota(ctx.MustGet(m.NamespaceKey).(string))
+	_, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
@@ -305,7 +340,7 @@ func CreateDeploymentFromFile(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseDeployment(deployAfter, role == "user")
+	ret, err := model.ParseKubeDeployment(deployAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
 	}

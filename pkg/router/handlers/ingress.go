@@ -19,14 +19,15 @@ const (
 )
 
 func GetIngressList(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+		"Namespace":       namespace,
 	}).Debug("Get ingress list")
 
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	ingressList, err := kubecli.GetIngressList(ctx.MustGet(m.NamespaceKey).(string))
+	ingressList, err := kube.GetIngressList(namespace)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
@@ -34,7 +35,7 @@ func GetIngressList(ctx *gin.Context) {
 	}
 
 	role := ctx.MustGet(m.UserRole).(string)
-	ret, err := model.ParseIngressList(ingressList, role == "user")
+	ret, err := model.ParseKubeIngressList(ingressList, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
@@ -45,15 +46,17 @@ func GetIngressList(ctx *gin.Context) {
 }
 
 func GetIngress(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	ingr := ctx.Param(ingressParam)
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
-		"Ingress":         ctx.Param(ingressParam),
+		"Namespace":       namespace,
+		"Ingress":         ingr,
 	}).Debug("Get ingress Call")
 
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	ingress, err := kubecli.GetIngress(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(ingressParam))
+	ingress, err := kube.GetIngress(namespace, ingr)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableGetResource()), ctx)
@@ -61,7 +64,7 @@ func GetIngress(ctx *gin.Context) {
 	}
 
 	role := ctx.MustGet(m.UserRole).(string)
-	ret, err := model.ParseIngress(ingress, role == "user")
+	ret, err := model.ParseKubeIngressList(ingress, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
@@ -72,21 +75,22 @@ func GetIngress(ctx *gin.Context) {
 }
 
 func CreateIngress(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
-		"Namespace_Param": ctx.Param(namespaceParam),
-		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       namespace,
 	}).Debug("Create ingress Call")
 
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var ingress model.IngressWithOwner
-	if err := ctx.ShouldBindWith(&ingress, binding.JSON); err != nil {
+	var ingressReq model.IngressWithOwner
+	if err := ctx.ShouldBindWith(&ingressReq, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
-	quota, err := kubecli.GetNamespaceQuota(ctx.MustGet(m.NamespaceKey).(string))
+	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
@@ -94,24 +98,24 @@ func CreateIngress(ctx *gin.Context) {
 	}
 
 	role := ctx.MustGet(m.UserRole).(string)
-	if role == "user" {
-		ingress.Owner = ctx.MustGet(m.UserID).(string)
+	if role == m.RoleUser {
+		ingressReq.Owner = ctx.MustGet(m.UserID).(string)
 	}
 
-	newIngress, errs := model.MakeIngress(ctx.MustGet(m.NamespaceKey).(string), ingress, quota.Labels)
+	newIngress, errs := ingressReq.ToKube(namespace, quota.Labels)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
-	ingressAfter, err := kubecli.CreateIngress(newIngress)
+	ingressAfter, err := kube.CreateIngress(newIngress)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
-	ret, err := model.ParseIngress(ingressAfter, role == "user")
+	ret, err := model.ParseKubeIngress(ingressAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -120,47 +124,55 @@ func CreateIngress(ctx *gin.Context) {
 }
 
 func UpdateIngress(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	ingr := ctx.Param(ingressParam)
 	log.WithFields(log.Fields{
-		"Namespace_Param": ctx.Param(namespaceParam),
-		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
-		"Ingress":         ctx.Param(ingressParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       namespace,
+		"Ingress":         ingr,
 	}).Debug("Update ingress Call")
 
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var ingress model.IngressWithOwner
-	if err := ctx.ShouldBindWith(&ingress, binding.JSON); err != nil {
+	var ingressReq model.IngressWithOwner
+	if err := ctx.ShouldBindWith(&ingressReq, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
-	quota, err := kubecli.GetNamespaceQuota(ctx.MustGet(m.NamespaceKey).(string))
+	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
-	if role == "user" {
-		ingress.Owner = ctx.MustGet(m.UserID).(string)
-	}
-
-	newIngress, errs := model.MakeIngress(ctx.MustGet(m.NamespaceKey).(string), ingress, quota.Labels)
-	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
-		return
-	}
-
-	ingressAfter, err := kubecli.UpdateIngress(newIngress)
+	oldIngress, err := kube.GetIngress(namespace, ingr)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
-	ret, err := model.ParseIngress(ingressAfter, role == "user")
+	ingressReq.Name = ingr
+	ingressReq.Owner = oldIngress.GetObjectMeta().GetLabels()[ownerQuery]
+
+	newIngress, errs := ingressReq.ToKube(namespace, quota.Labels)
+	if errs != nil {
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		return
+	}
+
+	ingressAfter, err := kube.UpdateIngress(newIngress)
+	if err != nil {
+		ctx.Error(err)
+		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		return
+	}
+
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseKubeIngress(ingressAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -169,14 +181,17 @@ func UpdateIngress(ctx *gin.Context) {
 }
 
 func DeleteIngress(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	ingr := ctx.Param(ingressParam)
 	log.WithFields(log.Fields{
-		"Namespace_Param": ctx.Param(namespaceParam),
-		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       namespace,
+		"Ingress":         ingr,
 	}).Debug("Delete ingress Call")
 
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	err := kubecli.DeleteIngress(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(ingressParam))
+	err := kube.DeleteIngress(namespace, ingr)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
@@ -189,30 +204,30 @@ func DeleteIngress(ctx *gin.Context) {
 func GetSelectedIngresses(ctx *gin.Context) {
 	log.Debug("Get selected ingresses Call")
 
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
 	ingresses := make(map[string]model.IngressesList, 0)
 
 	role := ctx.MustGet(m.UserRole).(string)
-	if role == "user" {
+	if role == m.RoleUser {
 		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
 		for _, n := range *nsList {
 
-			ingressList, err := kubecli.GetIngressList(n.ID)
+			ingressList, err := kube.GetIngressList(n.ID)
 			if err != nil {
 				ctx.Error(err)
 				gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 				return
 			}
 
-			il, err := model.ParseIngressList(ingressList, role == "user")
+			ingressesList, err := model.ParseKubeIngressList(ingressList, role == m.RoleUser)
 			if err != nil {
 				ctx.Error(err)
 				gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 				return
 			}
 
-			ingresses[n.Label] = *il
+			ingresses[n.Label] = *ingressesList
 		}
 	}
 
@@ -225,7 +240,7 @@ func CreateIngressFromFile(ctx *gin.Context) {
 		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
 	}).Debug("Create ingress from file Call")
 
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
 	var ingress api_extensions.Ingress
 	if err := ctx.ShouldBindWith(&ingress, binding.JSON); err != nil {
@@ -241,28 +256,28 @@ func CreateIngressFromFile(ctx *gin.Context) {
 	}
 
 	role := ctx.MustGet(m.UserRole).(string)
-	if role == "user" {
+	if role == m.RoleUser {
 		ingress.Labels["owner"] = ctx.MustGet(m.UserID).(string)
 		ingress.Namespace = ctx.MustGet(m.NamespaceKey).(string)
 	} else {
 		ingress.Namespace = ctx.Param(namespaceParam)
 	}
 
-	_, err := kubecli.GetNamespaceQuota(ctx.MustGet(m.NamespaceKey).(string))
+	_, err := kube.GetNamespaceQuota(ctx.MustGet(m.NamespaceKey).(string))
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
 		return
 	}
 
-	ingressAfter, err := kubecli.CreateIngress(&ingress)
+	ingressAfter, err := kube.CreateIngress(&ingress)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailsErr(err), ctx)
 		return
 	}
 
-	ret, err := model.ParseIngress(ingressAfter, role == "user")
+	ret, err := model.ParseKubeIngress(ingressAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
 	}

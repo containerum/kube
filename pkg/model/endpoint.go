@@ -14,18 +14,20 @@ import (
 )
 
 type EndpointsList struct {
-	Endpoints []json_types.Endpoint `json:"endpoints"`
+	Endpoints []Endpoint `json:"endpoints"`
 }
 
-// ParseEndpointList parses kubernetes v1.EndpointsList to more convenient []Endpoint struct
-func ParseEndpointList(endpointi interface{}) (*EndpointsList, error) {
+type Endpoint json_types.Endpoint
+
+// ParseKubeEndpointList parses kubernetes v1.EndpointsList to more convenient []Endpoint struct
+func ParseKubeEndpointList(endpointi interface{}) (*EndpointsList, error) {
 	endpoints := endpointi.(*api_core.EndpointsList)
 	if endpoints == nil {
 		return nil, ErrUnableConvertEndpointList
 	}
-	newEndpoints := make([]json_types.Endpoint, 0)
+	newEndpoints := make([]Endpoint, 0)
 	for _, ingress := range endpoints.Items {
-		newEndpoint, err := ParseEndpoint(&ingress)
+		newEndpoint, err := ParseKubeEndpoint(&ingress)
 		if err != nil {
 			return nil, err
 		}
@@ -34,8 +36,8 @@ func ParseEndpointList(endpointi interface{}) (*EndpointsList, error) {
 	return &EndpointsList{newEndpoints}, nil
 }
 
-// ParseEndpoint parses kubernetes v1.Endpoint to more convenient Endpoint struct
-func ParseEndpoint(endpointi interface{}) (*json_types.Endpoint, error) {
+// ParseKubeEndpoint parses kubernetes v1.Endpoint to more convenient Endpoint struct
+func ParseKubeEndpoint(endpointi interface{}) (*Endpoint, error) {
 	endpoint := endpointi.(*api_core.Endpoints)
 	if endpoint == nil {
 		return nil, ErrUnableConvertEndpoint
@@ -47,7 +49,7 @@ func ParseEndpoint(endpointi interface{}) (*json_types.Endpoint, error) {
 	createdAt := endpoint.GetCreationTimestamp().Format(time.RFC3339)
 	owner := endpoint.GetObjectMeta().GetLabels()[ownerLabel]
 
-	newEndpoint := json_types.Endpoint{
+	newEndpoint := Endpoint{
 		Name:      endpoint.Name,
 		Owner:     &owner,
 		CreatedAt: &createdAt,
@@ -78,14 +80,14 @@ func parseEndpointPort(np interface{}) json_types.Port {
 	}
 }
 
-// MakeEndpoint creates kubernetes v1.Endpoint from Endpoint struct and namespace labels
-func MakeEndpoint(nsName string, endpoint json_types.Endpoint, labels map[string]string) (*api_core.Endpoints, []error) {
-	err := ValidateEndpoint(endpoint)
+// ToKube creates kubernetes v1.Endpoint from Endpoint struct and namespace labels
+func (endpoint *Endpoint) ToKube(nsName string, labels map[string]string) (*api_core.Endpoints, []error) {
+	err := endpoint.Validate()
 	if err != nil {
 		return nil, err
 	}
 
-	ipaddrs := []api_core.EndpointAddress{}
+	ipaddrs := make([]api_core.EndpointAddress, 0)
 	for _, v := range endpoint.Addresses {
 		ipaddrs = append(ipaddrs, api_core.EndpointAddress{
 			IP: v,
@@ -129,7 +131,7 @@ func makeEndpointPorts(ports []json_types.Port) []api_core.EndpointPort {
 	return endpointports
 }
 
-func ValidateEndpoint(endpoint json_types.Endpoint) []error {
+func (endpoint *Endpoint) Validate() []error {
 	errs := []error{}
 	if endpoint.Owner == nil {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
@@ -139,7 +141,7 @@ func ValidateEndpoint(endpoint json_types.Endpoint) []error {
 	if endpoint.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
 	} else if err := api_validation.IsDNS1123Label(endpoint.Name); len(err) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, endpoint.Name, strings.Join(err, ","))))
+		errs = append(errs, fmt.Errorf(invalidName, endpoint.Name, strings.Join(err, ",")))
 	}
 	if endpoint.Addresses == nil || len(endpoint.Addresses) == 0 {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Addresses"))
@@ -156,7 +158,7 @@ func ValidateEndpoint(endpoint json_types.Endpoint) []error {
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port name"))
 		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
+			errs = append(errs, fmt.Errorf(invalidName, v.Name, strings.Join(err, ",")))
 		}
 		if v.Protocol == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port protocol"))

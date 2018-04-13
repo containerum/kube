@@ -10,48 +10,48 @@ import (
 )
 
 var (
-	ErrInvalidCPUFormat    = errors.New("Invalid cpu quota format")
-	ErrInvalidMemoryFormat = errors.New("Invalid memory quota format")
+	ErrInvalidCPUFormat    = errors.New("invalid cpu quota format")
+	ErrInvalidMemoryFormat = errors.New("invalid memory quota format")
 
-	ErrUnableDecodeUserHeaderData    = errors.New("Unbale to decode user header data")
-	ErrUnableUnmarshalUserHeaderData = errors.New("Unable to unmarshal user header data")
+	ErrUnableDecodeUserHeaderData    = errors.New("unable to decode user header data")
+	ErrUnableUnmarshalUserHeaderData = errors.New("unable to unmarshal user header data")
 
-	ErrUnableConvertServiceList = errors.New("Unable to decode services list")
-	ErrUnableConvertService     = errors.New("Unable to decode service")
+	ErrUnableConvertServiceList = errors.New("unable to decode services list")
+	ErrUnableConvertService     = errors.New("unable to decode service")
 
-	ErrUnableConvertNamespaceList = errors.New("Unable to decode namespaces list")
-	ErrUnableConvertNamespace     = errors.New("Unable to decode namespace")
+	ErrUnableConvertNamespaceList = errors.New("unable to decode namespaces list")
+	ErrUnableConvertNamespace     = errors.New("unable to decode namespace")
 
-	ErrUnableConvertSecretList = errors.New("Unable to decode secrets list")
-	ErrUnableConvertSecret     = errors.New("Unable to decode secret")
+	ErrUnableConvertSecretList = errors.New("unable to decode secrets list")
+	ErrUnableConvertSecret     = errors.New("unable to decode secret")
 
-	ErrUnableConvertIngressList = errors.New("Unable to decode ingresses list")
-	ErrUnableConvertIngress     = errors.New("Unable to decode ingress")
+	ErrUnableConvertIngressList = errors.New("unable to decode ingresses list")
+	ErrUnableConvertIngress     = errors.New("unable to decode ingress")
 
-	ErrUnableConvertDeploymentList = errors.New("Unable to decode deployment list")
-	ErrUnableConvertDeployment     = errors.New("Unable to decode deployment")
+	ErrUnableConvertDeploymentList = errors.New("unable to decode deployment list")
+	ErrUnableConvertDeployment     = errors.New("unable to decode deployment")
 
-	ErrUnableConvertEndpointList = errors.New("Unable to decode services list")
-	ErrUnableConvertEndpoint     = errors.New("Unable to decode service")
+	ErrUnableConvertEndpointList = errors.New("unable to decode services list")
+	ErrUnableConvertEndpoint     = errors.New("unable to decode service")
 
-	ErrUnableConvertConfigMapList = errors.New("Unable to decode config maps list")
-	ErrUnableConvertConfigMap     = errors.New("Unable to decode config map")
+	ErrUnableConvertConfigMapList = errors.New("unable to decode config maps list")
+	ErrUnableConvertConfigMap     = errors.New("unable to decode config map")
 )
 
 const (
-	noContainer         = "Container %v is not found in deployment"
-	fieldShouldExist    = "Field %v should be provided"
-	invalidReplicas     = "Invalid replicas number: %v. It must be between 1 and %v"
-	invalidPort         = "Invalid port: %v. It must be between %v and %v"
-	invalidProtocol     = "Invalid protocol: %v. It must be TCP or UDP"
-	invalidOwner        = "Owner should be UUID"
-	invalidName         = "Invalid name: %v. %v"
-	invalidIP           = "Invalid IP: %v. It must be a valid IP address, (e.g. 10.9.8.7)"
-	invalidCPUQuota     = "Invalid CPU quota: %v. It must be between %v and %v"
-	invalidMemoryQuota  = "Invalid memory quota: %v. It must be between %v and %v"
-	subPathRelative     = "Invalid Sub Path: %v. It must be relative path"
-	invalidResourceKind = "Invalid resource kind: %v. Shoud be %v"
-	invalidApiVersion   = "Invalid API Version: %v. Shoud be %v"
+	noContainer         = "container %v is not found in deployment"
+	fieldShouldExist    = "field %v should be provided"
+	invalidReplicas     = "invalid replicas number: %v. It must be between 1 and %v"
+	invalidPort         = "invalid port: %v. It must be between %v and %v"
+	invalidProtocol     = "invalid protocol: %v. It must be TCP or UDP"
+	invalidOwner        = "owner should be UUID"
+	invalidName         = "invalid name: %v. %v"
+	invalidIP           = "invalid IP: %v. It must be a valid IP address, (e.g. 10.9.8.7)"
+	invalidCPUQuota     = "invalid CPU quota: %v. It must be between %v and %v"
+	invalidMemoryQuota  = "invalid memory quota: %v. It must be between %v and %v"
+	subPathRelative     = "invalid Sub Path: %v. It must be relative path"
+	invalidResourceKind = "invalid resource kind: %v. Shoud be %v"
+	invalidAPIVersion   = "invalid API Version: %v. Shoud be %v"
 )
 
 //ParseResourceError checks error status

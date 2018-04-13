@@ -14,12 +14,12 @@ func TestCheckUserRole(t *testing.T) {
 			So(ok, ShouldEqual, false)
 		})
 		Convey("Check admin role", func() {
-			ok, err := checkIsUserRole("admin")
+			ok, err := checkIsUserRole(RoleAdmin)
 			So(err, ShouldBeNil)
 			So(ok, ShouldEqual, false)
 		})
 		Convey("Check user role", func() {
-			ok, err := checkIsUserRole("user")
+			ok, err := checkIsUserRole(RoleUser)
 			So(err, ShouldBeNil)
 			So(ok, ShouldEqual, true)
 		})
