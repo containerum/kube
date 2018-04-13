@@ -76,10 +76,10 @@ func initRoutes(e *gin.Engine) {
 		{
 			secret.GET("", m.ReadAccess, h.GetSecretList)
 			secret.GET("/:secret", m.ReadAccess, h.GetSecret)
-			secret.POST("", h.CreateSecret)
+			secret.POST("", m.ReadAccess, h.CreateSecret)
 			secret.POST("/file", m.ReadAccess, h.CreateSecretFromFile)
-			secret.PUT("/:secret", h.UpdateSecret)
-			secret.DELETE("/:secret", h.DeleteSecret)
+			secret.PUT("/:secret", m.ReadAccess, h.UpdateSecret)
+			secret.DELETE("/:secret", m.ReadAccess, h.DeleteSecret)
 		}
 
 		ingress := namespace.Group("/:namespace/ingresses")
@@ -105,9 +105,9 @@ func initRoutes(e *gin.Engine) {
 		{
 			configmap.GET("", m.ReadAccess, h.GetConfigMapList)
 			configmap.GET("/:configmap", m.ReadAccess, h.GetConfigMap)
-			configmap.POST("", h.CreateConfigMap)
-			configmap.PUT("/:configmap", h.UpdateConfigMap)
-			configmap.DELETE("/:configmap", h.DeleteConfigMap)
+			configmap.POST("", m.ReadAccess, h.CreateConfigMap)
+			configmap.PUT("/:configmap", m.ReadAccess, h.UpdateConfigMap)
+			configmap.DELETE("/:configmap", m.ReadAccess, h.DeleteConfigMap)
 		}
 
 		pod := namespace.Group("/:namespace/pods")
@@ -115,7 +115,7 @@ func initRoutes(e *gin.Engine) {
 			pod.GET("", m.ReadAccess, h.GetPodList)
 			pod.GET("/:pod", m.ReadAccess, h.GetPod)
 			pod.GET("/:pod/log", m.ReadAccess, h.GetPodLogs)
-			pod.DELETE("/:pod", h.DeletePod)
+			pod.DELETE("/:pod", m.ReadAccess, h.DeletePod)
 		}
 	}
 }
