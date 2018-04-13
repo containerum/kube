@@ -3,11 +3,9 @@ package handlers
 import (
 	"net/http"
 
-	"git.containerum.net/ch/kube-api/pkg/clients"
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
-	ch "git.containerum.net/ch/kube-client/pkg/cherry"
 	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
 	api_core "k8s.io/api/core/v1"
