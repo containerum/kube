@@ -22,7 +22,7 @@ import (
 
 const (
 	deploymentKind       = "Deployment"
-	deploymentApiVersion = "apps/v1"
+	deploymentAPIVersion = "apps/v1"
 
 	glusterFSEndpoint = "ch-glusterfs"
 
@@ -42,16 +42,16 @@ type DeploymentWithOwner struct {
 	Owner string `json:"owner,omitempty"`
 }
 
-// ParseDeploymentList parses kubernetes v1.DeploymentList to more convenient []Deployment struct
-func ParseDeploymentList(deploys interface{}, parseforuser bool) (*DeploymentsList, error) {
-	objects := deploys.(*api_apps.DeploymentList)
-	if objects == nil {
+// ParseKubeDeploymentList parses kubernetes v1.DeploymentList to more convenient []Deployment struct
+func ParseKubeDeploymentList(deploys interface{}, parseforuser bool) (*DeploymentsList, error) {
+	deployList := deploys.(*api_apps.DeploymentList)
+	if deployList == nil {
 		return nil, ErrUnableConvertDeploymentList
 	}
 
 	deployments := make([]DeploymentWithOwner, 0)
-	for _, deployment := range objects.Items {
-		deployment, err := ParseDeployment(&deployment, parseforuser)
+	for _, deployment := range deployList.Items {
+		deployment, err := ParseKubeDeployment(&deployment, parseforuser)
 		if err != nil {
 			return nil, err
 		}
@@ -61,21 +61,21 @@ func ParseDeploymentList(deploys interface{}, parseforuser bool) (*DeploymentsLi
 	return &DeploymentsList{deployments}, nil
 }
 
-// ParseDeployment parses kubernetes v1.Deployment to more convenient Deployment struct
-func ParseDeployment(deployment interface{}, parseforuser bool) (*DeploymentWithOwner, error) {
-	obj := deployment.(*api_apps.Deployment)
-	if obj == nil {
+// ParseKubeDeployment parses kubernetes v1.Deployment to more convenient Deployment struct
+func ParseKubeDeployment(deployment interface{}, parseforuser bool) (*DeploymentWithOwner, error) {
+	deploy := deployment.(*api_apps.Deployment)
+	if deploy == nil {
 		return nil, ErrUnableConvertDeployment
 	}
 
-	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
+	owner := deploy.GetObjectMeta().GetLabels()[ownerLabel]
 	replicas := 0
-	if r := obj.Spec.Replicas; r != nil {
+	if r := deploy.Spec.Replicas; r != nil {
 		replicas = int(*r)
 	}
-	containers, totalcpu, totalmem := getContainers(obj.Spec.Template.Spec.Containers, getVolumeMode(obj.Spec.Template.Spec.Volumes), replicas)
-	updated := obj.ObjectMeta.CreationTimestamp
-	for _, c := range obj.Status.Conditions {
+	containers, totalcpu, totalmem := getContainers(deploy.Spec.Template.Spec.Containers, getVolumeMode(deploy.Spec.Template.Spec.Volumes), replicas)
+	updated := deploy.ObjectMeta.CreationTimestamp
+	for _, c := range deploy.Status.Conditions {
 		if c.LastUpdateTime.After(updated.Time) {
 			updated = c.LastUpdateTime
 		}
@@ -83,16 +83,16 @@ func ParseDeployment(deployment interface{}, parseforuser bool) (*DeploymentWith
 
 	newDeploy := DeploymentWithOwner{
 		Deployment: kube_types.Deployment{
-			Name:     obj.GetName(),
+			Name:     deploy.GetName(),
 			Replicas: replicas,
 			Status: &kube_types.DeploymentStatus{
-				CreatedAt:           obj.ObjectMeta.CreationTimestamp.Format(time.RFC3339),
+				CreatedAt:           deploy.ObjectMeta.CreationTimestamp.Format(time.RFC3339),
 				UpdatedAt:           updated.Format(time.RFC3339),
-				Replicas:            int(obj.Status.Replicas),
-				ReadyReplicas:       int(obj.Status.ReadyReplicas),
-				AvailableReplicas:   int(obj.Status.AvailableReplicas),
-				UpdatedReplicas:     int(obj.Status.UpdatedReplicas),
-				UnavailableReplicas: int(obj.Status.UnavailableReplicas),
+				Replicas:            int(deploy.Status.Replicas),
+				ReadyReplicas:       int(deploy.Status.ReadyReplicas),
+				AvailableReplicas:   int(deploy.Status.AvailableReplicas),
+				UpdatedReplicas:     int(deploy.Status.UpdatedReplicas),
+				UnavailableReplicas: int(deploy.Status.UnavailableReplicas),
 			},
 			Containers:  containers,
 			TotalCPU:    totalcpu.String(),
@@ -118,15 +118,15 @@ func getVolumeMode(volumes []api_core.Volume) map[string]int32 {
 	return volumemap
 }
 
-//MakeDeployment creates kubernetes v1.Deployment from Deployment struct and namespace labels
-func MakeDeployment(nsName string, depl DeploymentWithOwner, labels map[string]string) (*api_apps.Deployment, []error) {
-	err := ValidateDeployment(depl)
+//ToKube creates kubernetes v1.Deployment from Deployment struct and namespace labels
+func (deploy *DeploymentWithOwner) ToKube(nsName string, labels map[string]string) (*api_apps.Deployment, []error) {
+	err := deploy.Validate()
 	if err != nil {
 		return nil, err
 	}
 
-	repl := int32(depl.Replicas)
-	containers, volumes, cmaps, err := makeContainers(depl.Containers)
+	repl := int32(deploy.Replicas)
+	containers, volumes, cmaps, err := makeContainers(deploy.Containers)
 	if err != nil {
 		return nil, err
 	}
@@ -134,17 +134,17 @@ func MakeDeployment(nsName string, depl DeploymentWithOwner, labels map[string]s
 	if labels == nil {
 		labels = make(map[string]string, 0)
 	}
-	labels[appLabel] = depl.Name
-	labels[ownerLabel] = depl.Owner
+	labels[appLabel] = deploy.Name
+	labels[ownerLabel] = deploy.Owner
 
-	deployment := api_apps.Deployment{
+	newDeploy := api_apps.Deployment{
 		TypeMeta: api_meta.TypeMeta{
 			Kind:       deploymentKind,
-			APIVersion: deploymentApiVersion,
+			APIVersion: deploymentAPIVersion,
 		},
 		ObjectMeta: api_meta.ObjectMeta{
 			Labels:    labels,
-			Name:      depl.Name,
+			Name:      deploy.Name,
 			Namespace: nsName,
 		},
 		Spec: api_apps.DeploymentSpec{
@@ -158,7 +158,7 @@ func MakeDeployment(nsName string, depl DeploymentWithOwner, labels map[string]s
 					NodeSelector: map[string]string{
 						"role": "slave",
 					},
-					Volumes: makeTemplateVolumes(volumes, cmaps, depl.Owner),
+					Volumes: makeTemplateVolumes(volumes, cmaps, deploy.Owner),
 				},
 				ObjectMeta: api_meta.ObjectMeta{
 					Labels: labels,
@@ -167,7 +167,7 @@ func MakeDeployment(nsName string, depl DeploymentWithOwner, labels map[string]s
 		},
 	}
 
-	return &deployment, nil
+	return &newDeploy, nil
 }
 
 func makeContainers(containers []kube_types.Container) ([]api_core.Container, []string, map[string]int64, []error) {
@@ -205,7 +205,7 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, []
 		}
 		container.Resources = *rq
 
-		errs := ValidateContainer(c, *container.Resources.Limits.Cpu(), *container.Resources.Limits.Memory())
+		errs := validateContainer(c, *container.Resources.Limits.Cpu(), *container.Resources.Limits.Memory())
 		if errs != nil {
 			return nil, nil, nil, errs
 		}
@@ -357,7 +357,7 @@ func makeTemplateVolumes(volumes []string, cmaps map[string]int64, owner string)
 	return tvolumes
 }
 
-func ValidateDeployment(deploy DeploymentWithOwner) []error {
+func (deploy *DeploymentWithOwner) Validate() []error {
 	errs := []error{}
 	if deploy.Owner == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
@@ -367,7 +367,7 @@ func ValidateDeployment(deploy DeploymentWithOwner) []error {
 	if deploy.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
 	} else if err := api_validation.IsDNS1123Label(deploy.Name); len(err) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, deploy.Name, strings.Join(err, ","))))
+		errs = append(errs, fmt.Errorf(invalidName, deploy.Name, strings.Join(err, ",")))
 	}
 	if len(api_validation.IsInRange(deploy.Replicas, 1, maxDeployReplicas)) > 0 {
 		errs = append(errs, fmt.Errorf(invalidReplicas, deploy.Replicas, maxDeployReplicas))
@@ -386,13 +386,13 @@ var maxcpu, _ = api_resource.ParseQuantity(maxDeployCPU)
 var minmem, _ = api_resource.ParseQuantity(minDeployMemory)
 var maxmem, _ = api_resource.ParseQuantity(maxDeployMemory)
 
-func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Quantity) []error {
+func validateContainer(container kube_types.Container, cpu, mem api_resource.Quantity) []error {
 	errs := []error{}
 
 	if container.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
 	} else if err := api_validation.IsDNS1123Label(container.Name); len(err) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, container.Name, strings.Join(err, ","))))
+		errs = append(errs, fmt.Errorf(invalidName, container.Name, strings.Join(err, ",")))
 	}
 
 	if cpu.Cmp(mincpu) == -1 || cpu.Cmp(maxcpu) == 1 {
@@ -407,7 +407,7 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port: Name"))
 		} else if err := api_validation.IsValidPortName(v.Name); len(err) > 0 {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
+			errs = append(errs, fmt.Errorf(invalidName, v.Name, strings.Join(err, ",")))
 		}
 		if v.Protocol != kube_types.UDP && v.Protocol != kube_types.TCP {
 			errs = append(errs, fmt.Errorf(invalidProtocol, v.Protocol))
@@ -421,7 +421,7 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Env: Name"))
 		} else if err := api_validation.IsEnvVarName(v.Name); len(err) > 0 {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
+			errs = append(errs, fmt.Errorf(invalidName, v.Name, strings.Join(err, ",")))
 		}
 	}
 
@@ -429,7 +429,7 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Volume: Name"))
 		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
+			errs = append(errs, fmt.Errorf(invalidName, v.Name, strings.Join(err, ",")))
 		}
 		if v.MountPath == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Volume: Mount path"))
@@ -443,7 +443,7 @@ func ValidateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "ConfigMap: Name"))
 		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
+			errs = append(errs, fmt.Errorf(invalidName, v.Name, strings.Join(err, ",")))
 		}
 		if v.MountPath == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "ConfigMap: Mount path"))
@@ -466,8 +466,8 @@ func ValidateDeploymentFromFile(deploy *api_apps.Deployment) []error {
 		errs = append(errs, fmt.Errorf(invalidResourceKind, deploy.Kind, deploymentKind))
 	}
 
-	if deploy.APIVersion != "" && deploy.APIVersion != deploymentApiVersion {
-		errs = append(errs, fmt.Errorf(invalidApiVersion, deploy.APIVersion, deploymentApiVersion))
+	if deploy.APIVersion != "" && deploy.APIVersion != deploymentAPIVersion {
+		errs = append(errs, fmt.Errorf(invalidAPIVersion, deploy.APIVersion, deploymentAPIVersion))
 	}
 
 	if deploy.GetLabels()[ownerLabel] == "" {
@@ -479,7 +479,7 @@ func ValidateDeploymentFromFile(deploy *api_apps.Deployment) []error {
 	if deploy.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
 	} else if err := api_validation.IsDNS1123Label(deploy.Name); len(err) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, deploy.Name, strings.Join(err, ","))))
+		errs = append(errs, fmt.Errorf(invalidName, deploy.Name, strings.Join(err, ",")))
 	}
 
 	if len(api_validation.IsInRange(int(*deploy.Spec.Replicas), 1, maxDeployReplicas)) > 0 {
@@ -501,7 +501,7 @@ func ValidateDeploymentFromFile(deploy *api_apps.Deployment) []error {
 			if p.Name == "" {
 				errs = append(errs, fmt.Errorf(fieldShouldExist, "Port: Name"))
 			} else if err := api_validation.IsValidPortName(p.Name); len(err) > 0 {
-				errs = append(errs, errors.New(fmt.Sprintf(invalidName, p.Name, strings.Join(err, ","))))
+				errs = append(errs, fmt.Errorf(invalidName, p.Name, strings.Join(err, ",")))
 			}
 			if len(api_validation.IsValidPortNum(int(p.ContainerPort))) > 0 {
 				errs = append(errs, fmt.Errorf(invalidPort, p.ContainerPort, minport, maxport))
@@ -512,7 +512,7 @@ func ValidateDeploymentFromFile(deploy *api_apps.Deployment) []error {
 			if e.Name == "" {
 				errs = append(errs, fmt.Errorf(fieldShouldExist, "Env: Name"))
 			} else if err := api_validation.IsEnvVarName(e.Name); len(err) > 0 {
-				errs = append(errs, errors.New(fmt.Sprintf(invalidName, e.Name, strings.Join(err, ","))))
+				errs = append(errs, fmt.Errorf(invalidName, e.Name, strings.Join(err, ",")))
 			}
 		}
 
@@ -520,7 +520,7 @@ func ValidateDeploymentFromFile(deploy *api_apps.Deployment) []error {
 			if m.Name == "" {
 				errs = append(errs, fmt.Errorf(fieldShouldExist, "Volume: Name"))
 			} else if err := api_validation.IsDNS1123Label(m.Name); len(err) > 0 {
-				errs = append(errs, errors.New(fmt.Sprintf(invalidName, m.Name, strings.Join(err, ","))))
+				errs = append(errs, fmt.Errorf(invalidName, m.Name, strings.Join(err, ",")))
 			}
 			if m.MountPath == "" {
 				errs = append(errs, fmt.Errorf(fieldShouldExist, "Volume: Mount path"))

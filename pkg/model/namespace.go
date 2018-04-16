@@ -35,9 +35,9 @@ type NamespaceWithOwner struct {
 	Access string `json:"access,omitempty"`
 }
 
-// ParseResourceQuotaList parses kubernetes v1.ResourceQuotaList to more convenient []Namespace struct.
+// ParseKubeResourceQuotaList parses kubernetes v1.ResourceQuotaList to more convenient []Namespace struct.
 // (resource quouta contains all fields that parent namespace contains)
-func ParseResourceQuotaList(quotas interface{}, parseforadmin bool) (*NamespacesList, error) {
+func ParseKubeResourceQuotaList(quotas interface{}, parseforadmin bool) (*NamespacesList, error) {
 	objects := quotas.(*api_core.ResourceQuotaList)
 	if objects == nil {
 		return nil, ErrUnableConvertNamespaceList
@@ -45,7 +45,7 @@ func ParseResourceQuotaList(quotas interface{}, parseforadmin bool) (*Namespaces
 
 	namespaces := make([]NamespaceWithOwner, 0)
 	for _, quota := range objects.Items {
-		ns, err := ParseResourceQuota(&quota, parseforadmin)
+		ns, err := ParseKubeResourceQuota(&quota, parseforadmin)
 		if err != nil {
 			return nil, err
 		}
@@ -54,9 +54,9 @@ func ParseResourceQuotaList(quotas interface{}, parseforadmin bool) (*Namespaces
 	return &NamespacesList{namespaces}, nil
 }
 
-// ParseResourceQuota parses kubernetes v1.ResourceQuota to more convenient Namespace struct.
+// ParseKubeResourceQuota parses kubernetes v1.ResourceQuota to more convenient Namespace struct.
 // (resource quouta contains all fields that parent namespace contains)
-func ParseResourceQuota(quota interface{}, parseforadmin bool) (*NamespaceWithOwner, error) {
+func ParseKubeResourceQuota(quota interface{}, parseforadmin bool) (*NamespaceWithOwner, error) {
 	obj := quota.(*api_core.ResourceQuota)
 	if obj == nil {
 		return nil, ErrUnableConvertNamespace
@@ -73,7 +73,6 @@ func ParseResourceQuota(quota interface{}, parseforadmin bool) (*NamespaceWithOw
 		Owner: owner,
 		Name:  obj.GetNamespace(),
 		Namespace: kube_types.Namespace{
-			//Label:     obj.GetNamespace(),
 			CreatedAt: &createdAt,
 			Resources: kube_types.Resources{
 				Hard: kube_types.Resource{
@@ -95,9 +94,9 @@ func ParseResourceQuota(quota interface{}, parseforadmin bool) (*NamespaceWithOw
 	return &ns, nil
 }
 
-// MakeNamespace creates kubernetes v1.Namespace from Namespace struct
-func MakeNamespace(ns NamespaceWithOwner) (*api_core.Namespace, []error) {
-	err := ValidateNamespace(ns)
+// ToKube creates kubernetes v1.Namespace from Namespace struct
+func (ns *NamespaceWithOwner) ToKube() (*api_core.Namespace, []error) {
+	err := ns.Validate()
 	if err != nil {
 		return nil, err
 	}
@@ -162,15 +161,15 @@ func ParseNamespaceListForUser(headers UserHeaderDataMap, nsl []NamespaceWithOwn
 	nso := make([]NamespaceWithOwner, 0)
 	ret := NamespacesList{nso}
 	for _, ns := range nsl {
-		nsp := ParseNamespaceForUser(headers, &ns)
-		if nsp.Label != "" {
-			ret.Namespaces = append(ret.Namespaces, *nsp)
+		ns.ParseForUser(headers)
+		if ns.Label != "" {
+			ret.Namespaces = append(ret.Namespaces, ns)
 		}
 	}
 	return &ret
 }
 
-func ParseNamespaceForUser(headers UserHeaderDataMap, ns *NamespaceWithOwner) *NamespaceWithOwner {
+func (ns *NamespaceWithOwner) ParseForUser(headers UserHeaderDataMap) *NamespaceWithOwner {
 	for _, n := range headers {
 		if ns.Name == n.ID {
 			ns.Label = n.Label
@@ -182,13 +181,13 @@ func ParseNamespaceForUser(headers UserHeaderDataMap, ns *NamespaceWithOwner) *N
 	return ns
 }
 
-func ValidateNamespace(ns NamespaceWithOwner) []error {
+func (ns *NamespaceWithOwner) Validate() []error {
 	errs := []error{}
 
 	if ns.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
 	} else if err := api_validation.IsDNS1123Label(ns.Name); len(err) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, ns.Name, strings.Join(err, ","))))
+		errs = append(errs, fmt.Errorf(invalidName, ns.Name, strings.Join(err, ",")))
 	}
 	if ns.Owner == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))

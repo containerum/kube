@@ -24,11 +24,11 @@ type SecretWithOwner struct {
 
 const (
 	secretKind       = "Secret"
-	secretApiVersion = "v1"
+	secretAPIVersion = "v1"
 )
 
-// ParseSecretList parses kubernetes v1.SecretList to more convenient []Secret struct.
-func ParseSecretList(secreti interface{}, parseforuser bool) (*SecretsList, error) {
+// ParseKubeSecretList parses kubernetes v1.SecretList to more convenient []Secret struct.
+func ParseKubeSecretList(secreti interface{}, parseforuser bool) (*SecretsList, error) {
 	secrets := secreti.(*api_core.SecretList)
 	if secrets == nil {
 		return nil, ErrUnableConvertSecretList
@@ -36,7 +36,7 @@ func ParseSecretList(secreti interface{}, parseforuser bool) (*SecretsList, erro
 
 	newSecrets := make([]SecretWithOwner, 0)
 	for _, secret := range secrets.Items {
-		newSecret, err := ParseSecret(&secret, false)
+		newSecret, err := ParseKubeSecret(&secret, false)
 		if err != nil {
 			return nil, err
 		}
@@ -51,8 +51,8 @@ func ParseSecretList(secreti interface{}, parseforuser bool) (*SecretsList, erro
 	return &SecretsList{newSecrets}, nil
 }
 
-// ParseSecret parses kubernetes v1.Secret to more convenient Secret struct.
-func ParseSecret(secreti interface{}, parseforuser bool) (*SecretWithOwner, error) {
+// ParseKubeSecret parses kubernetes v1.Secret to more convenient Secret struct.
+func ParseKubeSecret(secreti interface{}, parseforuser bool) (*SecretWithOwner, error) {
 	secret := secreti.(*api_core.Secret)
 	if secret == nil {
 		return nil, ErrUnableConvertSecret
@@ -83,9 +83,9 @@ func ParseSecret(secreti interface{}, parseforuser bool) (*SecretWithOwner, erro
 
 }
 
-// MakeSecret creates kubernetes v1.Secret from Secret struct and namespace labels
-func MakeSecret(nsName string, secret SecretWithOwner, labels map[string]string) (*api_core.Secret, []error) {
-	err := ValidateSecret(secret)
+// ToKube creates kubernetes v1.Secret from Secret struct and namespace labels
+func (secret *SecretWithOwner) ToKube(nsName string, labels map[string]string) (*api_core.Secret, []error) {
+	err := secret.Validate()
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func MakeSecret(nsName string, secret SecretWithOwner, labels map[string]string)
 	newSecret := api_core.Secret{
 		TypeMeta: api_meta.TypeMeta{
 			Kind:       secretKind,
-			APIVersion: secretApiVersion,
+			APIVersion: secretAPIVersion,
 		},
 		ObjectMeta: api_meta.ObjectMeta{
 			Labels:    labels,
@@ -122,8 +122,9 @@ func makeSecretData(data map[string]string) map[string][]byte {
 	return newData
 }
 
-func ValidateSecret(secret SecretWithOwner) []error {
+func (secret *SecretWithOwner) Validate() []error {
 	errs := []error{}
+
 	if secret.Owner == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
 	} else if !IsValidUUID(secret.Owner) {
@@ -132,7 +133,7 @@ func ValidateSecret(secret SecretWithOwner) []error {
 	if secret.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
 	} else if err := api_validation.IsDNS1123Label(secret.Name); len(err) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, secret.Name, strings.Join(err, ","))))
+		errs = append(errs, fmt.Errorf(invalidName, secret.Name, strings.Join(err, ",")))
 	}
 	for k := range secret.Data {
 		if err := api_validation.IsConfigMapKey(k); len(err) > 0 {
@@ -152,8 +153,8 @@ func ValidateSecretFromFile(secret *api_core.Secret) []error {
 		errs = append(errs, fmt.Errorf(invalidResourceKind, secret.Kind, secretKind))
 	}
 
-	if secret.APIVersion != "" && secret.APIVersion != secretApiVersion {
-		errs = append(errs, fmt.Errorf(invalidApiVersion, secret.APIVersion, secretApiVersion))
+	if secret.APIVersion != "" && secret.APIVersion != secretAPIVersion {
+		errs = append(errs, fmt.Errorf(invalidAPIVersion, secret.APIVersion, secretAPIVersion))
 	}
 
 	if secret.GetLabels()[ownerLabel] == "" {
@@ -165,7 +166,7 @@ func ValidateSecretFromFile(secret *api_core.Secret) []error {
 	if secret.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
 	} else if err := api_validation.IsDNS1123Label(secret.Name); len(err) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, secret.Name, strings.Join(err, ","))))
+		errs = append(errs, fmt.Errorf(invalidName, secret.Name, strings.Join(err, ",")))
 	}
 
 	for k := range secret.Data {

@@ -39,13 +39,15 @@ var wsupgrader = websocket.Upgrader{
 }
 
 func GetPodList(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	owner := ctx.Query(ownerQuery)
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
-		"Owner":           ctx.Query(ownerQuery),
+		"Namespace":       namespace,
+		"Owner":           owner,
 	}).Debug("Get pod list Call")
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-	pods, err := kube.GetPodList(ctx.MustGet(m.NamespaceKey).(string), ctx.Query(ownerQuery))
+	pods, err := kube.GetPodList(namespace, owner)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
@@ -53,18 +55,20 @@ func GetPodList(ctx *gin.Context) {
 	}
 
 	role := ctx.MustGet(m.UserRole).(string)
-	podList := model.ParsePodList(pods, role == "user")
+	podList := model.ParseKubePodList(pods, role == m.RoleUser)
 	ctx.JSON(http.StatusOK, podList)
 }
 
 func GetPod(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	podP := ctx.Query(podParam)
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
-		"Pod":             ctx.Param(podParam),
+		"Namespace":       namespace,
+		"Pod":             podP,
 	}).Debug("Get pod list Call")
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-	pod, err := kube.GetPod(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(podParam))
+	pod, err := kube.GetPod(namespace, podP)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableGetResource()), ctx)
@@ -72,18 +76,20 @@ func GetPod(ctx *gin.Context) {
 	}
 
 	role := ctx.MustGet(m.UserRole).(string)
-	po := model.ParsePod(pod, role == "user")
+	po := model.ParseKubePod(pod, role == m.RoleUser)
 	ctx.JSON(http.StatusOK, po)
 }
 
 func DeletePod(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	podP := ctx.Query(podParam)
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
-		"Pod":             ctx.Param(podParam),
+		"Namespace":       namespace,
+		"Pod":             podP,
 	}).Debug("Delete pod Call")
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-	err := kube.DeletePod(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(podParam))
+	err := kube.DeletePod(namespace, podP)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableDeleteResource()), ctx)

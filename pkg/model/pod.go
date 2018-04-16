@@ -20,18 +20,18 @@ type PodWithOwner struct {
 	Owner string `json:"owner,omitempty"`
 }
 
-// ParsePodList parses kubernetes v1.PodList to more convenient []Pod struct.
-func ParsePodList(pods interface{}, parseforuser bool) *PodsList {
-	objects := pods.(*api_core.PodList)
-	pos := make([]PodWithOwner, 0)
-	for _, po := range objects.Items {
-		pos = append(pos, ParsePod(&po, parseforuser))
+// ParseKubePodList parses kubernetes v1.PodList to more convenient []Pod struct.
+func ParseKubePodList(pods interface{}, parseforuser bool) *PodsList {
+	podList := pods.(*api_core.PodList)
+	ret := make([]PodWithOwner, 0)
+	for _, po := range podList.Items {
+		ret = append(ret, ParseKubePod(&po, parseforuser))
 	}
-	return &PodsList{pos}
+	return &PodsList{ret}
 }
 
-// ParsePod parses kubernetes v1.PodList to more convenient Pod struct.
-func ParsePod(pod interface{}, parseforuser bool) PodWithOwner {
+// ParseKubePod parses kubernetes v1.PodList to more convenient Pod struct.
+func ParseKubePod(pod interface{}, parseforuser bool) PodWithOwner {
 	obj := pod.(*api_core.Pod)
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
 	containers, cpu, mem := getContainers(obj.Spec.Containers, nil, 1)

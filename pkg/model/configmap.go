@@ -24,16 +24,16 @@ type ConfigMapWithOwner struct {
 	Owner string `json:"owner,omitempty"`
 }
 
-// ParseConfigMapList parses kubernetes v1.ConfigMapList to more convenient []ConfigMap struct.
-func ParseConfigMapList(cmi interface{}, parseforuser bool) (*ConfigMapsList, error) {
-	cm := cmi.(*api_core.ConfigMapList)
-	if cm == nil {
+// ParseKubeConfigMapList parses kubernetes v1.ConfigMapList to more convenient []ConfigMap struct.
+func ParseKubeConfigMapList(cmi interface{}, parseforuser bool) (*ConfigMapsList, error) {
+	cmList := cmi.(*api_core.ConfigMapList)
+	if cmList == nil {
 		return nil, ErrUnableConvertConfigMapList
 	}
 
 	newCms := make([]ConfigMapWithOwner, 0)
-	for _, cm := range cm.Items {
-		newCm, err := ParseConfigMap(&cm, parseforuser)
+	for _, cm := range cmList.Items {
+		newCm, err := ParseKubeConfigMap(&cm, parseforuser)
 		if err != nil {
 			return nil, err
 		}
@@ -42,8 +42,8 @@ func ParseConfigMapList(cmi interface{}, parseforuser bool) (*ConfigMapsList, er
 	return &ConfigMapsList{newCms}, nil
 }
 
-// ParseConfigMap parses kubernetes v1.ConfigMap to more convenient ConfigMap struct.
-func ParseConfigMap(cmi interface{}, parseforuser bool) (*ConfigMapWithOwner, error) {
+// ParseKubeConfigMap parses kubernetes v1.ConfigMap to more convenient ConfigMap struct.
+func ParseKubeConfigMap(cmi interface{}, parseforuser bool) (*ConfigMapWithOwner, error) {
 	cm := cmi.(*api_core.ConfigMap)
 	if cm == nil {
 		return nil, ErrUnableConvertConfigMap
@@ -73,9 +73,9 @@ func ParseConfigMap(cmi interface{}, parseforuser bool) (*ConfigMapWithOwner, er
 	return &newCm, nil
 }
 
-// MakeConfigMap creates kubernetes v1.ConfigMap from ConfigMap struct and namespace labels
-func MakeConfigMap(nsName string, cm ConfigMapWithOwner, labels map[string]string) (*api_core.ConfigMap, []error) {
-	err := ValidateConfigMap(cm)
+// ToKube creates kubernetes v1.ConfigMap from ConfigMap struct and namespace labels
+func (cm *ConfigMapWithOwner) ToKube(nsName string, labels map[string]string) (*api_core.ConfigMap, []error) {
+	err := cm.Validate()
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +107,7 @@ func MakeConfigMap(nsName string, cm ConfigMapWithOwner, labels map[string]strin
 	return &newCm, nil
 }
 
-func ValidateConfigMap(cm ConfigMapWithOwner) []error {
+func (cm *ConfigMapWithOwner) Validate() []error {
 	errs := []error{}
 	if cm.Owner == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
@@ -117,7 +117,7 @@ func ValidateConfigMap(cm ConfigMapWithOwner) []error {
 	if cm.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
 	} else if err := api_validation.IsDNS1123Label(cm.Name); len(err) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, cm.Name, strings.Join(err, ","))))
+		errs = append(errs, fmt.Errorf(invalidName, cm.Name, strings.Join(err, ",")))
 	}
 	for k := range cm.Data {
 		if err := api_validation.IsConfigMapKey(k); len(err) > 0 {
