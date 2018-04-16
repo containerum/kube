@@ -177,7 +177,7 @@ func makeIngressRules(rules []kube_types.Rule) ([]api_extensions.IngressRule, []
 		if v.TLSSecret != nil {
 			tls = true
 			secrets = append(secrets, api_extensions.IngressTLS{
-				Hosts:      []string{v.Host},
+				Hosts:      []string{v.Host + ingressHostSuffix},
 				SecretName: *v.TLSSecret,
 			})
 		}
