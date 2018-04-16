@@ -26,10 +26,10 @@ const (
 
 	glusterFSEndpoint = "ch-glusterfs"
 
-	minDeployCPU      = "10m"
-	minDeployMemory   = "10Mi"
-	maxDeployCPU      = "12"
-	maxDeployMemory   = "16Gi"
+	minDeployCPU      = 10    //m
+	minDeployMemory   = 10    //Mi
+	maxDeployCPU      = 12000 //m
+	maxDeployMemory   = 16384 //Mi
 	maxDeployReplicas = 15
 )
 
@@ -95,8 +95,8 @@ func ParseKubeDeployment(deployment interface{}, parseforuser bool) (*Deployment
 				UnavailableReplicas: int(deploy.Status.UnavailableReplicas),
 			},
 			Containers:  containers,
-			TotalCPU:    totalcpu.String(),
-			TotalMemory: totalmem.String(),
+			TotalCPU:    uint(totalcpu.ScaledValue(api_resource.Milli)),
+			TotalMemory: uint(totalmem.ScaledValue(api_resource.Mega)),
 		},
 		Owner: owner,
 	}
@@ -199,13 +199,11 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, []
 			container.Ports = makeContainerPorts(c.Ports)
 		}
 
-		rq, err := makeContainerResourceQuota(c.Limits.CPU, c.Limits.Memory)
-		if err != nil {
-			return nil, nil, nil, []error{err}
-		}
+		rq := makeContainerResourceQuota(c.Limits.CPU, c.Limits.Memory)
+
 		container.Resources = *rq
 
-		errs := validateContainer(c, *container.Resources.Limits.Cpu(), *container.Resources.Limits.Memory())
+		errs := validateContainer(c, c.Limits.CPU, c.Limits.Memory)
 		if errs != nil {
 			return nil, nil, nil, errs
 		}
@@ -279,28 +277,26 @@ func makeContainerCommands(commands []string) []string {
 	return contcommands
 }
 
-func makeContainerResourceQuota(cpu string, memory string) (*api_core.ResourceRequirements, error) {
+func makeContainerResourceQuota(cpu, memory uint) *api_core.ResourceRequirements {
 	limits := make(map[api_core.ResourceName]api_resource.Quantity)
 	requests := make(map[api_core.ResourceName]api_resource.Quantity)
 
-	lcpu, err := api_resource.ParseQuantity(cpu)
-	if err != nil {
-		return nil, ErrInvalidCPUFormat
-	}
-	lmem, err := api_resource.ParseQuantity(memory)
-	if err != nil {
-		return nil, ErrInvalidMemoryFormat
-	}
+	lcpu := api_resource.NewScaledQuantity(int64(cpu), api_resource.Milli)
+	lmem := api_resource.NewScaledQuantity(int64(memory), api_resource.Mega)
+	lmem.Format = api_resource.BinarySI
+	rcpu := api_resource.NewScaledQuantity(int64(cpu/2), api_resource.Milli)
+	rmem := api_resource.NewScaledQuantity(int64(memory/2), api_resource.Mega)
+	rmem.Format = api_resource.BinarySI
 
-	limits["cpu"] = lcpu
-	limits["memory"] = lmem
-	requests["cpu"] = *api_resource.NewMilliQuantity(lcpu.MilliValue()/2, api_resource.BinarySI)
-	requests["memory"] = *api_resource.NewQuantity(lmem.Value()/2, api_resource.BinarySI)
+	limits["cpu"] = *lcpu
+	limits["memory"] = *lmem
+	requests["cpu"] = *rcpu
+	requests["memory"] = *rmem
 
 	return &api_core.ResourceRequirements{
 		Limits:   limits,
 		Requests: requests,
-	}, nil
+	}
 }
 
 func UpdateImage(deployment interface{}, containerName, newimage string) (*api_apps.Deployment, error) {
@@ -381,12 +377,7 @@ func (deploy *DeploymentWithOwner) Validate() []error {
 	return nil
 }
 
-var mincpu, _ = api_resource.ParseQuantity(minDeployCPU)
-var maxcpu, _ = api_resource.ParseQuantity(maxDeployCPU)
-var minmem, _ = api_resource.ParseQuantity(minDeployMemory)
-var maxmem, _ = api_resource.ParseQuantity(maxDeployMemory)
-
-func validateContainer(container kube_types.Container, cpu, mem api_resource.Quantity) []error {
+func validateContainer(container kube_types.Container, cpu, mem uint) []error {
 	errs := []error{}
 
 	if container.Name == "" {
@@ -395,12 +386,12 @@ func validateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 		errs = append(errs, fmt.Errorf(invalidName, container.Name, strings.Join(err, ",")))
 	}
 
-	if cpu.Cmp(mincpu) == -1 || cpu.Cmp(maxcpu) == 1 {
-		errs = append(errs, fmt.Errorf(invalidCPUQuota, cpu.String(), minDeployCPU, maxDeployCPU))
+	if cpu < minDeployCPU || cpu > maxDeployCPU {
+		errs = append(errs, fmt.Errorf(invalidCPUQuota, cpu, minDeployCPU, maxDeployCPU))
 	}
 
-	if mem.Cmp(minmem) == -1 || mem.Cmp(maxmem) == 1 {
-		errs = append(errs, fmt.Errorf(invalidMemoryQuota, mem.String(), minDeployMemory, maxDeployMemory))
+	if mem < minDeployMemory || mem > maxDeployMemory {
+		errs = append(errs, fmt.Errorf(invalidMemoryQuota, mem, minDeployMemory, maxDeployMemory))
 	}
 
 	for _, v := range container.Ports {
@@ -459,6 +450,11 @@ func validateContainer(container kube_types.Container, cpu, mem api_resource.Qua
 	return nil
 }
 
+var mincpu = api_resource.NewScaledQuantity(minDeployCPU, api_resource.Milli)
+var maxcpu = api_resource.NewScaledQuantity(maxDeployCPU, api_resource.Milli)
+var minmem = api_resource.NewScaledQuantity(minDeployMemory, api_resource.Mega)
+var maxmem = api_resource.NewScaledQuantity(maxDeployMemory, api_resource.Mega)
+
 func ValidateDeploymentFromFile(deploy *api_apps.Deployment) []error {
 	errs := []error{}
 
@@ -490,10 +486,10 @@ func ValidateDeploymentFromFile(deploy *api_apps.Deployment) []error {
 	}
 
 	for _, c := range deploy.Spec.Template.Spec.Containers {
-		if c.Resources.Limits.Cpu().Cmp(mincpu) == -1 || c.Resources.Limits.Cpu().Cmp(maxcpu) == 1 {
+		if c.Resources.Limits.Cpu().Cmp(*mincpu) == -1 || c.Resources.Limits.Cpu().Cmp(*maxcpu) == 1 {
 			errs = append(errs, fmt.Errorf(invalidCPUQuota, c.Resources.Limits.Cpu().String(), minDeployCPU, maxDeployCPU))
 		}
-		if c.Resources.Limits.Memory().Cmp(minmem) == -1 || c.Resources.Limits.Memory().Cmp(maxmem) == 1 {
+		if c.Resources.Limits.Memory().Cmp(*minmem) == -1 || c.Resources.Limits.Memory().Cmp(*maxmem) == 1 {
 			errs = append(errs, fmt.Errorf(invalidMemoryQuota, c.Resources.Limits.Memory().String(), minDeployMemory, maxDeployMemory))
 		}
 
