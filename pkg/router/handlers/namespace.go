@@ -18,8 +18,6 @@ import (
 const (
 	ownerQuery     = "owner"
 	namespaceParam = "namespace"
-
-	userIDHeader = "X-User-Id"
 )
 
 func GetNamespaceList(ctx *gin.Context) {
