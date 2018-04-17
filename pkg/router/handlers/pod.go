@@ -61,7 +61,7 @@ func GetPodList(ctx *gin.Context) {
 
 func GetPod(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
-	podP := ctx.Query(podParam)
+	podP := ctx.Param(podParam)
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
 		"Namespace":       namespace,
@@ -82,7 +82,7 @@ func GetPod(ctx *gin.Context) {
 
 func DeletePod(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
-	podP := ctx.Query(podParam)
+	podP := ctx.Param(podParam)
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
 		"Namespace":       namespace,
