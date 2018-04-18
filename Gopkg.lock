@@ -2,12 +2,6 @@
 
 
 [[projects]]
-  branch = "master"
-  name = "git.containerum.net/ch/json-types"
-  packages = ["kube-api"]
-  revision = "541a20ce28e4ad5e21e92f006e2809d5ee5df9e7"
-
-[[projects]]
   name = "git.containerum.net/ch/kube-client"
   packages = [
     "pkg/cherry",
@@ -16,8 +10,8 @@
     "pkg/cherry/kube-api",
     "pkg/model"
   ]
-  revision = "700f0c61dc2a3dcf3c3be6e8c4ba787f85c13942"
-  version = "v0.9.1"
+  revision = "3064009dcf9774053ef4a1179adfe8c348fb1a17"
+  version = "v0.9.3"
 
 [[projects]]
   name = "github.com/PuerkitoBio/purell"
@@ -49,8 +43,8 @@
     ".",
     "log"
   ]
-  revision = "26b41036311f2da8242db402557a0dbd09dc83da"
-  version = "v2.6.0"
+  revision = "92cd0815dd1a028a6e69faee9757c7436238e252"
+  version = "v2.6.1"
 
 [[projects]]
   name = "github.com/ghodss/yaml"
@@ -328,7 +322,7 @@
     "idna",
     "lex/httplex"
   ]
-  revision = "8d16fa6dc9a85c1cd3ed24ad08ff21cf94f10888"
+  revision = "d41e8174641f662c5a2d1c7a5f9e828788eb8706"
 
 [[projects]]
   branch = "master"
@@ -337,7 +331,7 @@
     "unix",
     "windows"
   ]
-  revision = "ecfd8b563e1320e7282dccf28ad48ec2c68aaebf"
+  revision = "b126b21c05a91c856b027c16779c12e3bf236954"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -518,6 +512,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d62a27bb7c3d1c8875ddd9b5bde0372569e4ca8d1f57e16b4202b9260e690649"
+  inputs-digest = "eee49247a32af6e6481d48c3a1d805962ab5aecfd8bba61b64ba2692465c2693"
   solver-name = "gps-cdcl"
   solver-version = 1

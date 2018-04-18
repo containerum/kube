@@ -7,7 +7,6 @@ import (
 
 	"time"
 
-	json_types "git.containerum.net/ch/json-types/kube-api"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	api_validation "k8s.io/apimachinery/pkg/util/validation"
@@ -17,7 +16,26 @@ type EndpointsList struct {
 	Endpoints []Endpoint `json:"endpoints"`
 }
 
-type Endpoint json_types.Endpoint
+type Endpoint struct {
+	Name      string   `json:"name"`
+	Owner     *string  `json:"owner,omitempty"`
+	CreatedAt *string  `json:"created_at,omitempty"`
+	Addresses []string `json:"addresses"`
+	Ports     []Port   `json:"ports"`
+}
+
+type Protocol string
+
+const (
+	UDP Protocol = "UDP"
+	TCP Protocol = "TCP"
+)
+
+type Port struct {
+	Name     string   `json:"name"`
+	Port     int      `json:"port"`
+	Protocol Protocol `json:"protocol"`
+}
 
 // ParseKubeEndpointList parses kubernetes v1.EndpointsList to more convenient []Endpoint struct
 func ParseKubeEndpointList(endpointi interface{}) (*EndpointsList, error) {
@@ -43,7 +61,7 @@ func ParseKubeEndpoint(endpointi interface{}) (*Endpoint, error) {
 		return nil, ErrUnableConvertEndpoint
 	}
 
-	ports := make([]json_types.Port, 0)
+	ports := make([]Port, 0)
 	addresses := make([]string, 0)
 
 	createdAt := endpoint.GetCreationTimestamp().Format(time.RFC3339)
@@ -71,12 +89,12 @@ func ParseKubeEndpoint(endpointi interface{}) (*Endpoint, error) {
 	return &newEndpoint, nil
 }
 
-func parseEndpointPort(np interface{}) json_types.Port {
+func parseEndpointPort(np interface{}) Port {
 	nativePort := np.(api_core.EndpointPort)
-	return json_types.Port{
+	return Port{
 		Name:     nativePort.Name,
 		Port:     int(nativePort.Port),
-		Protocol: json_types.Protocol(nativePort.Protocol),
+		Protocol: Protocol(nativePort.Protocol),
 	}
 }
 
@@ -121,7 +139,7 @@ func (endpoint *Endpoint) ToKube(nsName string, labels map[string]string) (*api_
 	return &newEndpoint, nil
 }
 
-func makeEndpointPorts(ports []json_types.Port) []api_core.EndpointPort {
+func makeEndpointPorts(ports []Port) []api_core.EndpointPort {
 	endpointports := make([]api_core.EndpointPort, 0)
 	if ports != nil {
 		for _, v := range ports {
