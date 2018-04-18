@@ -12,7 +12,7 @@ func (kube *Kube) GetEndpointList(namespace string) (*api_core.EndpointsList, er
 	if err != nil {
 		log.WithFields(log.Fields{
 			"Namespace": namespace,
-		}).Error(ErrUnableGetEndpointList)
+		}).Error(err)
 		return nil, err
 	}
 	return endpointsAfter, nil
@@ -25,7 +25,7 @@ func (kube *Kube) GetEndpoint(namespace, endpoint string) (*api_core.Endpoints, 
 		log.WithFields(log.Fields{
 			"Namespace": namespace,
 			"Endpoint":  endpoint,
-		}).Error(ErrUnableGetEndpoint)
+		}).Error(err)
 		return nil, err
 	}
 	return endpointAfter, nil
@@ -38,7 +38,7 @@ func (kube *Kube) CreateEndpoint(endpoint *api_core.Endpoints) (*api_core.Endpoi
 		log.WithFields(log.Fields{
 			"Namespace": endpoint.Namespace,
 			"Endpoint":  endpoint.Name,
-		}).Error(ErrUnableCreateEndpoint)
+		}).Error(err)
 		return nil, err
 	}
 	return endpointAfter, nil
@@ -51,7 +51,7 @@ func (kube *Kube) UpdateEndpoint(endpoint *api_core.Endpoints) (*api_core.Endpoi
 		log.WithFields(log.Fields{
 			"Namespace": endpoint.Namespace,
 			"Endpoint":  endpoint.Name,
-		}).Error(ErrUnableUpdateEndpoint)
+		}).Error(err)
 		return nil, err
 	}
 	return endpointAfter, nil
@@ -64,7 +64,7 @@ func (kube *Kube) DeleteEndpoint(namespace, endpoint string) error {
 		log.WithFields(log.Fields{
 			"Namespace": namespace,
 			"Endpoint":  endpoint,
-		}).Error(ErrUnableDeleteEndpoint)
+		}).Error(err)
 		return err
 	}
 	return nil

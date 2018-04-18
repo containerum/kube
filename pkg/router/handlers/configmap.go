@@ -58,7 +58,7 @@ func GetConfigMap(ctx *gin.Context) {
 	cm, err := kube.GetConfigMap(namespace, configMap)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableGetResource()), ctx)
 		return
 	}
 
@@ -89,10 +89,10 @@ func CreateConfigMap(ctx *gin.Context) {
 		return
 	}
 
-	quota, err := kube.GetNamespaceQuota(namespace)
+	quota, err := kube.GetNamespace(namespace)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -110,7 +110,7 @@ func CreateConfigMap(ctx *gin.Context) {
 	cmAfter, err := kube.CreateConfigMap(cm)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -140,17 +140,17 @@ func UpdateConfigMap(ctx *gin.Context) {
 		return
 	}
 
-	quota, err := kube.GetNamespaceQuota(namespace)
+	quota, err := kube.GetNamespace(namespace)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	oldCm, err := kube.GetConfigMap(namespace, ctx.Param(deploymentParam))
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -166,7 +166,7 @@ func UpdateConfigMap(ctx *gin.Context) {
 	cmAfter, err := kube.UpdateConfigMap(newCm)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -193,7 +193,7 @@ func DeleteConfigMap(ctx *gin.Context) {
 	err := kube.DeleteConfigMap(namespace, configMap)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
 		return
 	}
 

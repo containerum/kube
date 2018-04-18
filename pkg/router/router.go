@@ -55,7 +55,6 @@ func initRoutes(e *gin.Engine) {
 			service.GET("", m.ReadAccess, h.GetServiceList)
 			service.GET("/:service", m.ReadAccess, h.GetService)
 			service.POST("", h.CreateService)
-			service.POST("/file", m.ReadAccess, h.CreateServiceFromFile)
 			service.PUT("/:service", h.UpdateService)
 			service.DELETE("/:service", h.DeleteService)
 		}
@@ -65,7 +64,6 @@ func initRoutes(e *gin.Engine) {
 			deployment.GET("", m.ReadAccess, h.GetDeploymentList)
 			deployment.GET("/:deployment", m.ReadAccess, h.GetDeployment)
 			deployment.POST("", h.CreateDeployment)
-			deployment.POST("/file", m.ReadAccess, h.CreateDeploymentFromFile)
 			deployment.PUT("/:deployment", h.UpdateDeployment)
 			deployment.PUT("/:deployment/replicas", h.UpdateDeploymentReplicas)
 			deployment.PUT("/:deployment/image", h.UpdateDeploymentImage)
@@ -77,7 +75,6 @@ func initRoutes(e *gin.Engine) {
 			secret.GET("", m.ReadAccess, h.GetSecretList)
 			secret.GET("/:secret", m.ReadAccess, h.GetSecret)
 			secret.POST("", m.ReadAccess, h.CreateSecret)
-			secret.POST("/file", m.ReadAccess, h.CreateSecretFromFile)
 			secret.PUT("/:secret", m.ReadAccess, h.UpdateSecret)
 			secret.DELETE("/:secret", m.ReadAccess, h.DeleteSecret)
 		}
@@ -87,7 +84,6 @@ func initRoutes(e *gin.Engine) {
 			ingress.GET("", m.ReadAccess, h.GetIngressList)
 			ingress.GET("/:ingress", m.ReadAccess, h.GetIngress)
 			ingress.POST("", h.CreateIngress)
-			ingress.POST("/file", m.ReadAccess, h.CreateIngressFromFile)
 			ingress.PUT("/:ingress", h.UpdateIngress)
 			ingress.DELETE("/:ingress", h.DeleteIngress)
 		}

@@ -11,7 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
-	api_core "k8s.io/api/core/v1"
 )
 
 const (
@@ -59,7 +58,7 @@ func GetSecret(ctx *gin.Context) {
 	secret, err := kube.GetSecret(namespace, sct)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableGetResource()), ctx)
 		return
 	}
 
@@ -93,7 +92,7 @@ func CreateSecret(ctx *gin.Context) {
 	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -111,7 +110,7 @@ func CreateSecret(ctx *gin.Context) {
 	secretAfter, err := kube.CreateSecret(newSecret)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -144,14 +143,14 @@ func UpdateSecret(ctx *gin.Context) {
 	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	oldSecret, err := kube.GetIngress(namespace, sct)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -167,7 +166,7 @@ func UpdateSecret(ctx *gin.Context) {
 	secretAfter, err := kube.UpdateSecret(newSecret)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -192,64 +191,8 @@ func DeleteSecret(ctx *gin.Context) {
 	err := kube.DeleteSecret(namespace, sct)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
 		return
 	}
 	ctx.Status(http.StatusAccepted)
-}
-
-func CreateSecretFromFile(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
-	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-	}).Debug("Create secret Call")
-
-	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-
-	var secret api_core.Secret
-	if err := ctx.ShouldBindWith(&secret, binding.JSON); err != nil {
-		ctx.Error(err)
-		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
-		return
-	}
-
-	role := ctx.MustGet(m.UserRole).(string)
-	if role == m.RoleUser {
-		if secret.Labels == nil {
-			secret.Labels = map[string]string{}
-		}
-		secret.Labels["owner"] = ctx.MustGet(m.UserID).(string)
-
-		secret.Namespace = namespace
-	} else {
-		secret.Namespace = ctx.Param(namespaceParam)
-	}
-
-	errs := model.ValidateSecretFromFile(&secret)
-	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
-		return
-	}
-
-	_, err := kube.GetNamespaceQuota(namespace)
-	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
-		return
-	}
-
-	secretAfter, err := kube.CreateSecret(&secret)
-	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailsErr(err), ctx)
-		return
-	}
-
-	ret, err := model.ParseKubeSecret(secretAfter, role == m.RoleUser)
-	if err != nil {
-		ctx.Error(err)
-	}
-
-	ctx.JSON(http.StatusCreated, ret)
 }

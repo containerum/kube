@@ -57,7 +57,7 @@ func GetEndpoint(ctx *gin.Context) {
 	endpoint, err := kube.GetEndpoint(namespace, ep)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableGetResource()), ctx)
 		return
 	}
 
@@ -89,7 +89,7 @@ func CreateEndpoint(ctx *gin.Context) {
 	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -108,7 +108,7 @@ func CreateEndpoint(ctx *gin.Context) {
 	endpointAfter, err := kube.CreateEndpoint(newEndpoint)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -141,14 +141,14 @@ func UpdateEndpoint(ctx *gin.Context) {
 	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	oldEndpoint, err := kube.GetEndpoint(namespace, ep)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -165,7 +165,7 @@ func UpdateEndpoint(ctx *gin.Context) {
 	endpointAfter, err := kube.UpdateEndpoint(newEndpoint)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -190,7 +190,7 @@ func DeleteEndpoint(ctx *gin.Context) {
 
 	err := kube.DeleteEndpoint(namespace, ep)
 	if err != nil {
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
 		return
 	}
 

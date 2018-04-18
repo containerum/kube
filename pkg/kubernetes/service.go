@@ -10,7 +10,7 @@ import (
 func (kube *Kube) GetServiceList(nsname string) (interface{}, error) {
 	svcAfter, err := kube.CoreV1().Services(nsname).List(api_meta.ListOptions{})
 	if err != nil {
-		log.WithField("Namespace", nsname).Error(ErrUnableGetServiceList)
+		log.WithField("Namespace", nsname).Error(err)
 		return nil, err
 	}
 	return svcAfter, nil
@@ -23,7 +23,7 @@ func (kube *Kube) GetService(namespace, serviceName string) (*api_core.Service, 
 		log.WithFields(log.Fields{
 			"Namespace": namespace,
 			"Service":   serviceName,
-		}).Error(ErrUnableGetService)
+		}).Error(err)
 		return nil, err
 	}
 	return nativeService, nil
@@ -36,7 +36,7 @@ func (kube *Kube) CreateService(svc *api_core.Service) (*api_core.Service, error
 		log.WithFields(log.Fields{
 			"Namespace": svc.Namespace,
 			"Service":   svc.Name,
-		}).Error(ErrUnableCreateService)
+		}).Error(err)
 		return nil, err
 	}
 	return svcAfter, nil
@@ -51,7 +51,7 @@ func (kube *Kube) UpdateService(service *api_core.Service) (*api_core.Service, e
 		log.WithFields(log.Fields{
 			"Namespace": service.Namespace,
 			"Service":   service.Name,
-		}).Error(ErrUnableUpdateService)
+		}).Error(err)
 		return nil, err
 	}
 	return newService, nil
@@ -65,7 +65,7 @@ func (kube *Kube) DeleteService(namespace, serviceName string) error {
 		log.WithFields(log.Fields{
 			"Namespace": namespace,
 			"Service":   serviceName,
-		}).Error(ErrUnableDeleteService)
+		}).Error(err)
 		return err
 	}
 	return nil

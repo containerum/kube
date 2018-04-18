@@ -71,7 +71,7 @@ func GetPod(ctx *gin.Context) {
 	pod, err := kube.GetPod(namespace, podP)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableGetResource()), ctx)
 		return
 	}
 
@@ -92,7 +92,7 @@ func DeletePod(ctx *gin.Context) {
 	err := kube.DeletePod(namespace, podP)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
 		return
 	}
 	ctx.Status(http.StatusAccepted)
