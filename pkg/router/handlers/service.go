@@ -8,8 +8,6 @@ import (
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
 	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
-	api_core "k8s.io/api/core/v1"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
@@ -28,7 +26,6 @@ func GetServiceList(ctx *gin.Context) {
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	svcList, err := kube.GetServiceList(namespace)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 		return
 	}
@@ -56,8 +53,7 @@ func GetService(ctx *gin.Context) {
 
 	svc, err := kube.GetService(namespace, service)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableGetResource()), ctx)
 		return
 	}
 
@@ -78,7 +74,7 @@ func CreateService(ctx *gin.Context) {
 		"Namespace Param": ctx.Param(namespaceParam),
 		"Namespace":       namespace,
 	}).Debug("Create service Call")
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
 	var svc model.ServiceWithOwner
 	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
@@ -87,10 +83,9 @@ func CreateService(ctx *gin.Context) {
 		return
 	}
 
-	quota, err := kubecli.GetNamespaceQuota(namespace)
+	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -100,10 +95,9 @@ func CreateService(ctx *gin.Context) {
 		return
 	}
 
-	svcAfter, err := kubecli.CreateService(newSvc)
+	svcAfter, err := kube.CreateService(newSvc)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -125,7 +119,7 @@ func UpdateService(ctx *gin.Context) {
 		"Service":         service,
 	}).Debug("Update service Call")
 
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
 	var svc model.ServiceWithOwner
 	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
@@ -134,19 +128,17 @@ func UpdateService(ctx *gin.Context) {
 		return
 	}
 
-	quota, err := kubecli.GetNamespaceQuota(namespace)
+	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	svc.Name = ctx.Param(serviceParam)
 
-	oldSvc, err := kubecli.GetService(namespace, service)
+	oldSvc, err := kube.GetService(namespace, service)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -162,9 +154,8 @@ func UpdateService(ctx *gin.Context) {
 	newSvc.ResourceVersion = oldSvc.ResourceVersion
 	newSvc.Spec.ClusterIP = oldSvc.Spec.ClusterIP
 
-	updatedService, err := kubecli.UpdateService(newSvc)
+	updatedService, err := kube.UpdateService(newSvc)
 	if err != nil {
-		ctx.Error(err)
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
@@ -190,61 +181,8 @@ func DeleteService(ctx *gin.Context) {
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	err := kube.DeleteService(namespace, service)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
 		return
 	}
 	ctx.Status(http.StatusAccepted)
-}
-
-func CreateServiceFromFile(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
-	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-	}).Debug("Create service Call")
-
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-
-	var svc api_core.Service
-	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
-		ctx.Error(err)
-		gonic.Gonic(cherry.ErrUnableCreateResource(), ctx)
-		return
-	}
-
-	role := ctx.MustGet(m.UserRole).(string)
-	if role == m.RoleUser {
-		svc.Labels["owner"] = ctx.MustGet(m.UserID).(string)
-		svc.Namespace = namespace
-	} else {
-		svc.Namespace = ctx.Param(namespaceParam)
-	}
-
-	errs := model.ValidateServiceFromFile(&svc)
-	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
-		return
-	}
-
-	_, err := kubecli.GetNamespaceQuota(namespace)
-	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
-		return
-	}
-
-	svcAfter, err := kubecli.CreateService(&svc)
-	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailsErr(err), ctx)
-		return
-	}
-
-	ret, err := model.ParseKubeService(svcAfter, role == m.RoleUser)
-	if err != nil {
-		ctx.Error(err)
-	}
-
-	ctx.JSON(http.StatusCreated, ret)
 }

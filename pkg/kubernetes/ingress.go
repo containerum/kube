@@ -12,7 +12,7 @@ func (k *Kube) GetIngressList(ns string) (*api_extensions.IngressList, error) {
 	if err != nil {
 		log.WithFields(log.Fields{
 			"Namespace": ns,
-		}).Error(ErrUnableGetIngressList)
+		}).Error(err)
 		return nil, err
 	}
 	return ingressList, nil
@@ -25,7 +25,7 @@ func (k *Kube) GetIngress(ns string, ingress string) (*api_extensions.Ingress, e
 		log.WithFields(log.Fields{
 			"Namespace": ns,
 			"Ingress":   ingress,
-		}).Error(ErrUnableGetIngress)
+		}).Error(err)
 		return nil, err
 	}
 	return ingressAfter, nil
@@ -38,7 +38,7 @@ func (k *Kube) CreateIngress(ingress *api_extensions.Ingress) (*api_extensions.I
 		log.WithFields(log.Fields{
 			"Namespace": ingress.Namespace,
 			"Ingress":   ingress.Name,
-		}).Error(ErrUnableCreateIngress)
+		}).Error(err)
 		return nil, err
 	}
 	return ingressAfter, nil
@@ -51,7 +51,7 @@ func (k *Kube) UpdateIngress(ingress *api_extensions.Ingress) (*api_extensions.I
 		log.WithFields(log.Fields{
 			"Namespace": ingress.Namespace,
 			"Ingress":   ingress.Name,
-		}).Error(ErrUnableUpdateIngress)
+		}).Error(err)
 		return nil, err
 	}
 	return ingressAfter, nil
@@ -64,7 +64,7 @@ func (k *Kube) DeleteIngress(ns string, ingress string) error {
 		log.WithFields(log.Fields{
 			"Namespace": ns,
 			"Ingress":   ingress,
-		}).Error(ErrUnableDeleteIngress)
+		}).Error(err)
 		return err
 	}
 	return nil

@@ -16,17 +16,27 @@ func (k *Kube) GetNamespaceQuotaList(owner string) (*api_core.ResourceQuotaList,
 		LabelSelector: getOwnerLabel(owner),
 	})
 	if err != nil {
-		log.WithField("Owner", owner).Error(ErrUnableGetNamespaceList)
+		log.WithField("Owner", owner).Error(err)
 		return nil, err
 	}
 	return quotas, nil
+}
+
+//GetNamespace returns namespace
+func (k *Kube) GetNamespace(nsName string) (*api_core.Namespace, error) {
+	ns, err := k.CoreV1().Namespaces().Get(nsName, api_meta.GetOptions{})
+	if err != nil {
+		log.WithField("Namespace", ns).Error(err)
+		return nil, err
+	}
+	return ns, nil
 }
 
 //GetNamespaceQuota returns namespace (quota)
 func (k *Kube) GetNamespaceQuota(ns string) (*api_core.ResourceQuota, error) {
 	quota, err := k.CoreV1().ResourceQuotas(ns).Get(quotaName, api_meta.GetOptions{})
 	if err != nil {
-		log.WithField("Namespace", ns).Error(ErrUnableGetNamespace)
+		log.WithField("Namespace", ns).Error(err)
 		return nil, err
 	}
 	return quota, nil
@@ -36,7 +46,7 @@ func (k *Kube) GetNamespaceQuota(ns string) (*api_core.ResourceQuota, error) {
 func (k *Kube) CreateNamespace(ns *api_core.Namespace) (*api_core.Namespace, error) {
 	nsAfter, err := k.CoreV1().Namespaces().Create(ns)
 	if err != nil {
-		log.WithField("Namespace", ns.Name).Error(ErrUnableCreateNamespace)
+		log.WithField("Namespace", ns.Name).Error(err)
 		return nil, err
 	}
 	return nsAfter, nil
@@ -46,7 +56,7 @@ func (k *Kube) CreateNamespace(ns *api_core.Namespace) (*api_core.Namespace, err
 func (k *Kube) CreateNamespaceQuota(nsName string, quota *api_core.ResourceQuota) (*api_core.ResourceQuota, error) {
 	quotaAfter, err := k.CoreV1().ResourceQuotas(nsName).Create(quota)
 	if err != nil {
-		log.WithField("Namespace", nsName).Error(ErrUnableCreateNamespaceQuota)
+		log.WithField("Namespace", nsName).Error(err)
 		return nil, err
 	}
 	return quotaAfter, nil
@@ -56,7 +66,7 @@ func (k *Kube) CreateNamespaceQuota(nsName string, quota *api_core.ResourceQuota
 func (k *Kube) UpdateNamespaceQuota(nsName string, quota *api_core.ResourceQuota) (*api_core.ResourceQuota, error) {
 	quotaAfter, err := k.CoreV1().ResourceQuotas(nsName).Update(quota)
 	if err != nil {
-		log.WithField("Namespace", nsName).Error(ErrUnableUpdateNamespaceQuota)
+		log.WithField("Namespace", nsName).Error(err)
 		return nil, err
 	}
 	return quotaAfter, nil
@@ -66,7 +76,7 @@ func (k *Kube) UpdateNamespaceQuota(nsName string, quota *api_core.ResourceQuota
 func (k *Kube) DeleteNamespace(nsName string) error {
 	err := k.CoreV1().Namespaces().Delete(nsName, &api_meta.DeleteOptions{})
 	if err != nil {
-		log.WithField("Namespace", nsName).Error(ErrUnableDeleteNamespace)
+		log.WithField("Namespace", nsName).Error(err)
 		return err
 	}
 	return nil

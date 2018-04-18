@@ -15,7 +15,7 @@ func (k *Kube) GetDeploymentList(ns string, owner string) (*api_apps.DeploymentL
 		log.WithFields(log.Fields{
 			"Namespace": ns,
 			"Owner":     owner,
-		}).Error(ErrUnableGetDeploymentList)
+		}).Error(err)
 		return nil, err
 	}
 	return deployments, nil
@@ -28,7 +28,7 @@ func (k *Kube) GetDeployment(ns string, deploy string) (*api_apps.Deployment, er
 		log.WithFields(log.Fields{
 			"Namespace":  ns,
 			"Deployment": deploy,
-		}).Error(ErrUnableGetDeployment)
+		}).Error(err)
 		return nil, err
 	}
 	return deployment, nil
@@ -41,7 +41,7 @@ func (k *Kube) CreateDeployment(depl *api_apps.Deployment) (*api_apps.Deployment
 		log.WithFields(log.Fields{
 			"Namespace":  depl.Namespace,
 			"Deployment": depl.Name,
-		}).Error(ErrUnableCreateDeployment)
+		}).Error(err)
 		return nil, err
 	}
 	return deployment, nil
@@ -54,7 +54,7 @@ func (k *Kube) DeleteDeployment(ns string, deployName string) error {
 		log.WithFields(log.Fields{
 			"Namespace":  ns,
 			"Deployment": deployName,
-		}).Error(ErrUnableDeleteDeployment)
+		}).Error(err)
 		return err
 	}
 	return nil
@@ -67,7 +67,7 @@ func (k *Kube) UpdateDeployment(depl *api_apps.Deployment) (*api_apps.Deployment
 		log.WithFields(log.Fields{
 			"Namespace":  depl.Namespace,
 			"Deployment": depl.Name,
-		}).Error(ErrUnableUpdateDeployment)
+		}).Error(err)
 		return nil, err
 	}
 	return deployment, nil

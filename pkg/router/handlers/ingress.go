@@ -11,7 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
-	api_extensions "k8s.io/api/extensions/v1beta1"
 )
 
 const (
@@ -29,7 +28,6 @@ func GetIngressList(ctx *gin.Context) {
 
 	ingressList, err := kube.GetIngressList(namespace)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 		return
 	}
@@ -58,8 +56,7 @@ func GetIngress(ctx *gin.Context) {
 
 	ingress, err := kube.GetIngress(namespace, ingr)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableGetResource()), ctx)
 		return
 	}
 
@@ -92,8 +89,7 @@ func CreateIngress(ctx *gin.Context) {
 
 	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -110,8 +106,7 @@ func CreateIngress(ctx *gin.Context) {
 
 	ingressAfter, err := kube.CreateIngress(newIngress)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -143,15 +138,13 @@ func UpdateIngress(ctx *gin.Context) {
 
 	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	oldIngress, err := kube.GetIngress(namespace, ingr)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -166,8 +159,7 @@ func UpdateIngress(ctx *gin.Context) {
 
 	ingressAfter, err := kube.UpdateIngress(newIngress)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -193,8 +185,7 @@ func DeleteIngress(ctx *gin.Context) {
 
 	err := kube.DeleteIngress(namespace, ingr)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
 		return
 	}
 
@@ -215,7 +206,6 @@ func GetSelectedIngresses(ctx *gin.Context) {
 
 			ingressList, err := kube.GetIngressList(n.ID)
 			if err != nil {
-				ctx.Error(err)
 				gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 				return
 			}
@@ -232,55 +222,4 @@ func GetSelectedIngresses(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, ingresses)
-}
-
-func CreateIngressFromFile(ctx *gin.Context) {
-	log.WithFields(log.Fields{
-		"Namespace_Param": ctx.Param(namespaceParam),
-		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
-	}).Debug("Create ingress from file Call")
-
-	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-
-	var ingress api_extensions.Ingress
-	if err := ctx.ShouldBindWith(&ingress, binding.JSON); err != nil {
-		ctx.Error(err)
-		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
-		return
-	}
-
-	errs := model.ValidateIngressFromFile(&ingress)
-	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
-		return
-	}
-
-	role := ctx.MustGet(m.UserRole).(string)
-	if role == m.RoleUser {
-		ingress.Labels["owner"] = ctx.MustGet(m.UserID).(string)
-		ingress.Namespace = ctx.MustGet(m.NamespaceKey).(string)
-	} else {
-		ingress.Namespace = ctx.Param(namespaceParam)
-	}
-
-	_, err := kube.GetNamespaceQuota(ctx.MustGet(m.NamespaceKey).(string))
-	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
-		return
-	}
-
-	ingressAfter, err := kube.CreateIngress(&ingress)
-	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailsErr(err), ctx)
-		return
-	}
-
-	ret, err := model.ParseKubeIngress(ingressAfter, role == m.RoleUser)
-	if err != nil {
-		ctx.Error(err)
-	}
-
-	ctx.JSON(http.StatusCreated, ret)
 }
