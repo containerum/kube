@@ -26,7 +26,6 @@ func GetServiceList(ctx *gin.Context) {
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	svcList, err := kube.GetServiceList(namespace)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 		return
 	}
@@ -54,7 +53,6 @@ func GetService(ctx *gin.Context) {
 
 	svc, err := kube.GetService(namespace, service)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableGetResource()), ctx)
 		return
 	}
@@ -76,7 +74,7 @@ func CreateService(ctx *gin.Context) {
 		"Namespace Param": ctx.Param(namespaceParam),
 		"Namespace":       namespace,
 	}).Debug("Create service Call")
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
 	var svc model.ServiceWithOwner
 	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
@@ -85,9 +83,8 @@ func CreateService(ctx *gin.Context) {
 		return
 	}
 
-	quota, err := kubecli.GetNamespaceQuota(namespace)
+	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
@@ -98,9 +95,8 @@ func CreateService(ctx *gin.Context) {
 		return
 	}
 
-	svcAfter, err := kubecli.CreateService(newSvc)
+	svcAfter, err := kube.CreateService(newSvc)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
@@ -123,7 +119,7 @@ func UpdateService(ctx *gin.Context) {
 		"Service":         service,
 	}).Debug("Update service Call")
 
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
 	var svc model.ServiceWithOwner
 	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
@@ -132,18 +128,16 @@ func UpdateService(ctx *gin.Context) {
 		return
 	}
 
-	quota, err := kubecli.GetNamespaceQuota(namespace)
+	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	svc.Name = ctx.Param(serviceParam)
 
-	oldSvc, err := kubecli.GetService(namespace, service)
+	oldSvc, err := kube.GetService(namespace, service)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
@@ -160,9 +154,8 @@ func UpdateService(ctx *gin.Context) {
 	newSvc.ResourceVersion = oldSvc.ResourceVersion
 	newSvc.Spec.ClusterIP = oldSvc.Spec.ClusterIP
 
-	updatedService, err := kubecli.UpdateService(newSvc)
+	updatedService, err := kube.UpdateService(newSvc)
 	if err != nil {
-		ctx.Error(err)
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
@@ -188,7 +181,6 @@ func DeleteService(ctx *gin.Context) {
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	err := kube.DeleteService(namespace, service)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
 		return
 	}

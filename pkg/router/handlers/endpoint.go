@@ -28,7 +28,6 @@ func GetEndpointList(ctx *gin.Context) {
 
 	endpoints, err := kube.GetEndpointList(namespace)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 		return
 	}
@@ -88,7 +87,6 @@ func CreateEndpoint(ctx *gin.Context) {
 
 	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
@@ -107,7 +105,6 @@ func CreateEndpoint(ctx *gin.Context) {
 
 	endpointAfter, err := kube.CreateEndpoint(newEndpoint)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
@@ -140,14 +137,12 @@ func UpdateEndpoint(ctx *gin.Context) {
 
 	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	oldEndpoint, err := kube.GetEndpoint(namespace, ep)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
@@ -164,7 +159,6 @@ func UpdateEndpoint(ctx *gin.Context) {
 
 	endpointAfter, err := kube.UpdateEndpoint(newEndpoint)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}

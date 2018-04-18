@@ -28,7 +28,6 @@ func GetIngressList(ctx *gin.Context) {
 
 	ingressList, err := kube.GetIngressList(namespace)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 		return
 	}
@@ -57,7 +56,6 @@ func GetIngress(ctx *gin.Context) {
 
 	ingress, err := kube.GetIngress(namespace, ingr)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableGetResource()), ctx)
 		return
 	}
@@ -91,7 +89,6 @@ func CreateIngress(ctx *gin.Context) {
 
 	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
@@ -109,7 +106,6 @@ func CreateIngress(ctx *gin.Context) {
 
 	ingressAfter, err := kube.CreateIngress(newIngress)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
@@ -142,14 +138,12 @@ func UpdateIngress(ctx *gin.Context) {
 
 	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	oldIngress, err := kube.GetIngress(namespace, ingr)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
@@ -165,7 +159,6 @@ func UpdateIngress(ctx *gin.Context) {
 
 	ingressAfter, err := kube.UpdateIngress(newIngress)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
@@ -192,7 +185,6 @@ func DeleteIngress(ctx *gin.Context) {
 
 	err := kube.DeleteIngress(namespace, ingr)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
 		return
 	}
@@ -214,7 +206,6 @@ func GetSelectedIngresses(ctx *gin.Context) {
 
 			ingressList, err := kube.GetIngressList(n.ID)
 			if err != nil {
-				ctx.Error(err)
 				gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 				return
 			}
