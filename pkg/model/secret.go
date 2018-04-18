@@ -145,38 +145,3 @@ func (secret *SecretWithOwner) Validate() []error {
 	}
 	return nil
 }
-
-func ValidateSecretFromFile(secret *api_core.Secret) []error {
-	errs := []error{}
-
-	if secret.Kind != secretKind {
-		errs = append(errs, fmt.Errorf(invalidResourceKind, secret.Kind, secretKind))
-	}
-
-	if secret.APIVersion != "" && secret.APIVersion != secretAPIVersion {
-		errs = append(errs, fmt.Errorf(invalidAPIVersion, secret.APIVersion, secretAPIVersion))
-	}
-
-	if secret.GetLabels()[ownerLabel] == "" {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Label: Owner"))
-	} else if !IsValidUUID(secret.GetLabels()[ownerLabel]) {
-		errs = append(errs, errors.New(invalidOwner))
-	}
-
-	if secret.Name == "" {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-	} else if err := api_validation.IsDNS1123Label(secret.Name); len(err) > 0 {
-		errs = append(errs, fmt.Errorf(invalidName, secret.Name, strings.Join(err, ",")))
-	}
-
-	for k := range secret.Data {
-		if err := api_validation.IsConfigMapKey(k); len(err) > 0 {
-			errs = append(errs, fmt.Errorf(invalidName, k, strings.Join(err, ",")))
-		}
-	}
-
-	if len(errs) > 0 {
-		return errs
-	}
-	return nil
-}
