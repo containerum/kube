@@ -1,4 +1,4 @@
-FROM golang:1.9-alpine as builder
+FROM golang:1.10-alpine as builder
 WORKDIR /go/src/git.containerum.net/ch/kube-api
 COPY . .
 WORKDIR cmd/kube-api
@@ -11,4 +11,4 @@ ENV CH_KUBE_API_KUBE_CONF="/cfg/kube.conf" \
     CH_KUBE_API_TEXTLOG="true"
 VOLUME ["/cfg"]
 EXPOSE 1212
-ENTRYPOINT ["/kube-api"]
+CMD ["/kube-api"]
