@@ -50,7 +50,7 @@ func server(c *cli.Context) error {
 	}
 
 	kube := kubernetes.Kube{}
-	kube.RegisterClient(c.String("kubeconf"))
+	go exitOnErr(kube.RegisterClient(c.String("kubeconf")))
 
 	app := router.CreateRouter(&kube, c.Bool("debug"))
 
