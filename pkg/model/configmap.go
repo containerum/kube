@@ -55,7 +55,7 @@ func ParseKubeConfigMap(cmi interface{}, parseforuser bool) (*ConfigMapWithOwner
 	}
 
 	owner := cm.GetObjectMeta().GetLabels()[ownerLabel]
-	createdAt := cm.CreationTimestamp.Format(time.RFC3339)
+	createdAt := cm.CreationTimestamp.UTC().Format(time.RFC3339)
 
 	newCm := ConfigMapWithOwner{
 		ConfigMap: kube_types.ConfigMap{

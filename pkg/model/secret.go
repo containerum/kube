@@ -64,7 +64,7 @@ func ParseKubeSecret(secreti interface{}, parseforuser bool) (*SecretWithOwner, 
 	}
 
 	owner := secret.GetObjectMeta().GetLabels()[ownerLabel]
-	createdAt := secret.CreationTimestamp.Format(time.RFC3339)
+	createdAt := secret.CreationTimestamp.UTC().Format(time.RFC3339)
 
 	newSecret := SecretWithOwner{
 		Secret: kube_types.Secret{

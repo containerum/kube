@@ -86,8 +86,8 @@ func ParseKubeDeployment(deployment interface{}, parseforuser bool) (*Deployment
 			Name:     deploy.GetName(),
 			Replicas: replicas,
 			Status: &kube_types.DeploymentStatus{
-				CreatedAt:           deploy.ObjectMeta.CreationTimestamp.Format(time.RFC3339),
-				UpdatedAt:           updated.Format(time.RFC3339),
+				CreatedAt:           deploy.ObjectMeta.CreationTimestamp.UTC().Format(time.RFC3339),
+				UpdatedAt:           updated.UTC().Format(time.RFC3339),
 				Replicas:            int(deploy.Status.Replicas),
 				ReadyReplicas:       int(deploy.Status.ReadyReplicas),
 				AvailableReplicas:   int(deploy.Status.AvailableReplicas),

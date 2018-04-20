@@ -67,7 +67,7 @@ func ParseKubeResourceQuota(quota interface{}, parseforadmin bool) (*NamespaceWi
 	cpuUsed := obj.Status.Used[api_core.ResourceLimitsCPU]
 	memoryUsed := obj.Status.Used[api_core.ResourceLimitsMemory]
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
-	createdAt := obj.ObjectMeta.CreationTimestamp.Format(time.RFC3339)
+	createdAt := obj.ObjectMeta.CreationTimestamp.UTC().Format(time.RFC3339)
 
 	ns := NamespaceWithOwner{
 		Owner: owner,

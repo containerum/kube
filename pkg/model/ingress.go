@@ -55,7 +55,7 @@ func ParseKubeIngress(ingressi interface{}, parseforuser bool) (*IngressWithOwne
 	if ingress == nil {
 		return nil, ErrUnableConvertIngress
 	}
-	createdAt := ingress.CreationTimestamp.Format(time.RFC3339)
+	createdAt := ingress.CreationTimestamp.UTC().Format(time.RFC3339)
 	owner := ingress.GetObjectMeta().GetLabels()[ownerLabel]
 
 	secrets := parseTLS(ingress.Spec.TLS)
