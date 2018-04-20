@@ -26,10 +26,10 @@ const (
 
 	glusterFSEndpoint = "ch-glusterfs"
 
-	minDeployCPU      = 10    //m
-	minDeployMemory   = 10    //Mi
-	maxDeployCPU      = 12000 //m
-	maxDeployMemory   = 16384 //Mi
+	minDeployCPU      = 10   //m
+	minDeployMemory   = 10   //Mi
+	maxDeployCPU      = 3000 //m
+	maxDeployMemory   = 8000 //Mi
 	maxDeployReplicas = 15
 )
 
@@ -96,7 +96,7 @@ func ParseKubeDeployment(deployment interface{}, parseforuser bool) (*Deployment
 			},
 			Containers:  containers,
 			TotalCPU:    uint(totalcpu.ScaledValue(api_resource.Milli)),
-			TotalMemory: uint(totalmem.ScaledValue(api_resource.Mega)),
+			TotalMemory: uint(totalmem.Value() / 1024 / 1024),
 		},
 		Owner: owner,
 	}
@@ -282,11 +282,9 @@ func makeContainerResourceQuota(cpu, memory uint) *api_core.ResourceRequirements
 	requests := make(map[api_core.ResourceName]api_resource.Quantity)
 
 	lcpu := api_resource.NewScaledQuantity(int64(cpu), api_resource.Milli)
-	lmem := api_resource.NewScaledQuantity(int64(memory), api_resource.Mega)
-	lmem.Format = api_resource.BinarySI
+	lmem := api_resource.NewQuantity(int64(memory)*1024*1024, api_resource.BinarySI)
 	rcpu := api_resource.NewScaledQuantity(int64(cpu/2), api_resource.Milli)
-	rmem := api_resource.NewScaledQuantity(int64(memory/2), api_resource.Mega)
-	rmem.Format = api_resource.BinarySI
+	rmem := api_resource.NewQuantity(int64(memory/2)*1024*1024, api_resource.BinarySI)
 
 	limits["cpu"] = *lcpu
 	limits["memory"] = *lmem

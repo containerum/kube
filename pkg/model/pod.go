@@ -49,7 +49,7 @@ func ParseKubePod(pod interface{}, parseforuser bool) PodWithOwner {
 				Phase: string(obj.Status.Phase),
 			},
 			TotalCPU:    uint(cpu.ScaledValue(api_resource.Milli)),
-			TotalMemory: uint(mem.ScaledValue(api_resource.Mega)),
+			TotalMemory: uint(mem.Value() / 1024 / 1024),
 		},
 		Owner: owner,
 	}
@@ -84,7 +84,7 @@ func getContainers(cListi interface{}, mode map[string]int32, replicas int) (con
 			Commands:     c.Command,
 			Limits: model.Resource{
 				CPU:    uint(cpu.ScaledValue(api_resource.Milli)),
-				Memory: uint(mem.ScaledValue(api_resource.Mega)),
+				Memory: uint(mem.Value() / 1024 / 1024),
 			},
 		})
 	}
