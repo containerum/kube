@@ -13,6 +13,8 @@ import (
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 
+	"text/tabwriter"
+
 	"github.com/urfave/cli"
 )
 
@@ -23,8 +25,15 @@ var flags = []cli.Flag{
 		Usage:  "start the server in debug mode",
 	},
 	cli.StringFlag{
+		EnvVar: "CH_KUBE_API_PORT",
+		Name:   "port",
+		Value:  "1212",
+		Usage:  "port for kube-api server",
+	},
+	cli.StringFlag{
 		EnvVar: "CH_KUBE_API_KUBE_CONF",
 		Name:   "kubeconf",
+		Value:  "config",
 		Usage:  "config file for kubernetes apiserver client",
 	},
 	cli.BoolFlag{
@@ -49,6 +58,12 @@ func server(c *cli.Context) error {
 		log.SetFormatter(&log.JSONFormatter{})
 	}
 
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent|tabwriter.Debug)
+	for _, f := range c.GlobalFlagNames() {
+		fmt.Fprintf(w, "Flag: %s\t Value: %s\n", f, c.String(f))
+	}
+	w.Flush()
+
 	kube := kubernetes.Kube{}
 	go exitOnErr(kube.RegisterClient(c.String("kubeconf")))
 
@@ -56,7 +71,7 @@ func server(c *cli.Context) error {
 
 	// for graceful shutdown
 	srv := &http.Server{
-		Addr:    ":1212",
+		Addr:    ":" + c.String("port"),
 		Handler: app,
 	}
 
