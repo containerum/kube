@@ -16,11 +16,11 @@ type Kube struct {
 func (k *Kube) RegisterClient(cfgpath string) error {
 	config, err := clientcmd.BuildConfigFromFlags("", cfgpath)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	kubecli, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	k.Clientset = kubecli
 	return nil
