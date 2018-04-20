@@ -36,7 +36,7 @@ func ParseKubePod(pod interface{}, parseforuser bool) PodWithOwner {
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
 	containers, cpu, mem := getContainers(obj.Spec.Containers, nil, 1)
 	deploy := obj.GetObjectMeta().GetLabels()[appLabel]
-	createdAt := obj.ObjectMeta.CreationTimestamp.Format(time.RFC3339)
+	createdAt := obj.ObjectMeta.CreationTimestamp.UTC().Format(time.RFC3339)
 
 	newPod := PodWithOwner{
 		Pod: model.Pod{

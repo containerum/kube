@@ -64,7 +64,7 @@ func ParseKubeEndpoint(endpointi interface{}) (*Endpoint, error) {
 	ports := make([]Port, 0)
 	addresses := make([]string, 0)
 
-	createdAt := endpoint.GetCreationTimestamp().Format(time.RFC3339)
+	createdAt := endpoint.GetCreationTimestamp().UTC().Format(time.RFC3339)
 	owner := endpoint.GetObjectMeta().GetLabels()[ownerLabel]
 
 	newEndpoint := Endpoint{
