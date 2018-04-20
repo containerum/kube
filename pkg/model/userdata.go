@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 
 	"git.containerum.net/ch/kube-client/pkg/model"
-	jsoniter "github.com/json-iterator/go"
+	"github.com/json-iterator/go"
 	log "github.com/sirupsen/logrus"
 )
 

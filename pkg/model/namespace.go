@@ -77,11 +77,11 @@ func ParseKubeResourceQuota(quota interface{}, parseforadmin bool) (*NamespaceWi
 			Resources: kube_types.Resources{
 				Hard: kube_types.Resource{
 					CPU:    uint(cpuLimit.ScaledValue(api_resource.Milli)),
-					Memory: uint(memoryLimit.ScaledValue(api_resource.Mega)),
+					Memory: uint(memoryLimit.Value() / 1024 / 1024),
 				},
 				Used: &kube_types.Resource{
 					CPU:    uint(cpuUsed.ScaledValue(api_resource.Milli)),
-					Memory: uint(memoryUsed.ScaledValue(api_resource.Mega)),
+					Memory: uint(memoryUsed.Value() / 1024 / 1024),
 				},
 			},
 		},
@@ -127,11 +127,9 @@ func MakeResourceQuota(ns string, labels map[string]string, resources kube_types
 	}
 
 	cpuLim := api_resource.NewScaledQuantity(int64(resources.CPU), api_resource.Milli)
-	memLim := api_resource.NewScaledQuantity(int64(resources.Memory), api_resource.Mega)
-	memLim.Format = api_resource.BinarySI
+	memLim := api_resource.NewQuantity(int64(resources.Memory)*1024*1024, api_resource.BinarySI)
 	cpuReq := api_resource.NewScaledQuantity(int64(resources.CPU/10), api_resource.Milli)
-	memReq := api_resource.NewScaledQuantity(int64(resources.Memory/8), api_resource.Mega)
-	memReq.Format = api_resource.BinarySI
+	memReq := api_resource.NewQuantity(int64(resources.Memory/8)*1024*1024, api_resource.BinarySI)
 
 	newRq := api_core.ResourceQuota{
 		TypeMeta: api_meta.TypeMeta{
