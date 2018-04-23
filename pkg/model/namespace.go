@@ -128,8 +128,8 @@ func MakeResourceQuota(ns string, labels map[string]string, resources kube_types
 
 	cpuLim := api_resource.NewScaledQuantity(int64(resources.CPU), api_resource.Milli)
 	memLim := api_resource.NewQuantity(int64(resources.Memory)*1024*1024, api_resource.BinarySI)
-	cpuReq := api_resource.NewScaledQuantity(int64(resources.CPU/10), api_resource.Milli)
-	memReq := api_resource.NewQuantity(int64(resources.Memory/8)*1024*1024, api_resource.BinarySI)
+	cpuReq := cpuLim
+	memReq := memLim
 
 	newRq := api_core.ResourceQuota{
 		TypeMeta: api_meta.TypeMeta{
