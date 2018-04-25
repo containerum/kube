@@ -2,16 +2,23 @@
 
 
 [[projects]]
+  branch = "develop"
+  name = "git.containerum.net/ch/api-gateway"
+  packages = ["pkg/utils/headers"]
+  revision = "25814d45e36ce93606bac69f89a92c9f9f1eecf9"
+
+[[projects]]
   name = "git.containerum.net/ch/kube-client"
   packages = [
+    ".",
     "pkg/cherry",
     "pkg/cherry/adaptors/cherrylog",
     "pkg/cherry/adaptors/gonic",
     "pkg/cherry/kube-api",
     "pkg/model"
   ]
-  revision = "3064009dcf9774053ef4a1179adfe8c348fb1a17"
-  version = "v0.9.3"
+  revision = "7046267a91860d1f897451d0b41d9d9e4c2e79f0"
+  version = "v0.10.1"
 
 [[projects]]
   name = "github.com/PuerkitoBio/purell"
@@ -43,14 +50,20 @@
     ".",
     "log"
   ]
-  revision = "92cd0815dd1a028a6e69faee9757c7436238e252"
-  version = "v2.6.1"
+  revision = "2810ccc68e0ca445fa81ebfa03fbf70aca5c41ae"
+  version = "v2.7.0"
 
 [[projects]]
   name = "github.com/ghodss/yaml"
   packages = ["."]
   revision = "0ca9ea5df5451ffdf184b4428c902747c2c11cd7"
   version = "v1.0.0"
+
+[[projects]]
+  name = "github.com/gin-contrib/cors"
+  packages = ["."]
+  revision = "cf4846e6a636a76237a28d9286f163c132e841bc"
+  version = "v1.2"
 
 [[projects]]
   branch = "master"
@@ -157,7 +170,7 @@
   branch = "master"
   name = "github.com/gopherjs/gopherjs"
   packages = ["js"]
-  revision = "e14987c0ef06db387b90fec85e8d06dc05598e24"
+  revision = "8dffc02ea1cb8398bb73f30424697c60fcf8d4c5"
 
 [[projects]]
   name = "github.com/gorilla/websocket"
@@ -310,19 +323,22 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "d6449816ce06963d9d136eee5a56fca5b0616e7e"
+  revision = "b0697eccbea9adec5b7ba8008f4c33d98d733388"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = [
+    "context",
     "http/httpguts",
     "http2",
     "http2/hpack",
     "idna",
-    "lex/httplex"
+    "lex/httplex",
+    "webdav",
+    "webdav/internal/xml"
   ]
-  revision = "d41e8174641f662c5a2d1c7a5f9e828788eb8706"
+  revision = "5f9ae10d9af5b1c89ae6904293b14b064d4ada23"
 
 [[projects]]
   branch = "master"
@@ -331,7 +347,7 @@
     "unix",
     "windows"
   ]
-  revision = "b126b21c05a91c856b027c16779c12e3bf236954"
+  revision = "79b0c6888797020a994db17c8510466c72fe75d9"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -507,11 +523,11 @@
   branch = "master"
   name = "k8s.io/kube-openapi"
   packages = ["pkg/common"]
-  revision = "f442ecb314a3679150c272e2b9713d8deed5955d"
+  revision = "1e45fb05b06309c0d807d0930e1a81fe0a1cd4b8"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "eee49247a32af6e6481d48c3a1d805962ab5aecfd8bba61b64ba2692465c2693"
+  inputs-digest = "d51669373a6aed3043605e1ab487277dfd67efc1e288e8cf2d6ad7266434e73b"
   solver-name = "gps-cdcl"
   solver-version = 1
