@@ -165,12 +165,6 @@ func CreateEndpoint(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
-	if role == m.RoleUser {
-		owner := ctx.MustGet(m.UserID).(string)
-		endpointReq.Owner = &owner
-	}
-
 	newEndpoint, errs := endpointReq.ToKube(namespace, quota.Labels)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)

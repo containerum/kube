@@ -174,11 +174,6 @@ func CreateDeployment(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
-	if role == m.RoleUser {
-		deployReq.Owner = ctx.MustGet(m.UserID).(string)
-	}
-
 	deploy, errs := deployReq.ToKube(namespace, quota.Labels)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
@@ -191,6 +186,7 @@ func CreateDeployment(ctx *gin.Context) {
 		return
 	}
 
+	role := ctx.MustGet(m.UserRole).(string)
 	ret, err := model.ParseKubeDeployment(deployAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
