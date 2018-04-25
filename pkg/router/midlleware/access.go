@@ -2,11 +2,11 @@ package middleware
 
 import (
 	"git.containerum.net/ch/api-gateway/pkg/utils/headers"
+	cherry "git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	"git.containerum.net/ch/kube-api/pkg/model"
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
 	kubeModel "git.containerum.net/ch/kube-client/pkg/model"
 
-	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
+	"git.containerum.net/ch/cherry/adaptors/gonic"
 	"github.com/gin-gonic/gin"
 )
 

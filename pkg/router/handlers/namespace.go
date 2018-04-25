@@ -3,15 +3,15 @@ package handlers
 import (
 	"net/http"
 
+	cherry "git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 
-	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
+	"git.containerum.net/ch/cherry/adaptors/gonic"
 	"github.com/gin-gonic/gin/binding"
 )
 

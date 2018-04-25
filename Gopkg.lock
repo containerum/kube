@@ -8,13 +8,19 @@
   revision = "25814d45e36ce93606bac69f89a92c9f9f1eecf9"
 
 [[projects]]
+  name = "git.containerum.net/ch/cherry"
+  packages = [
+    ".",
+    "adaptors/cherrylog",
+    "adaptors/gonic"
+  ]
+  revision = "82e4d22be24efe6d9e6925376119a24f789bddc7"
+  version = "v1.0.1-rc2"
+
+[[projects]]
   name = "git.containerum.net/ch/kube-client"
   packages = [
     ".",
-    "pkg/cherry",
-    "pkg/cherry/adaptors/cherrylog",
-    "pkg/cherry/adaptors/gonic",
-    "pkg/cherry/kube-api",
     "pkg/model"
   ]
   revision = "7046267a91860d1f897451d0b41d9d9e4c2e79f0"
@@ -528,6 +534,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d51669373a6aed3043605e1ab487277dfd67efc1e288e8cf2d6ad7266434e73b"
+  inputs-digest = "4a34e683546705518e972dfe4a766cb12d65082f32b38047e71b537ebc693be2"
   solver-name = "gps-cdcl"
   solver-version = 1
