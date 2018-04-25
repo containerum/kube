@@ -29,6 +29,13 @@ var (
 	}
 )
 
+var (
+	writeLevels = []AccessLevel{
+		levelOwner,
+		levelWrite,
+	}
+)
+
 const (
 	namespaceParam = "namespace"
 	RoleUser       = "user"
@@ -56,6 +63,32 @@ func ReadAccess(c *gin.Context) {
 		}
 		if userNsData != nil {
 			if ok := containsAccess(userNsData.Access, readLevels...); ok {
+				c.Set(NamespaceKey, userNsData.ID)
+				c.Set(NamespaceLabelKey, userNsData.Label)
+				return
+			}
+			gonic.Gonic(cherry.ErrAccessError(), c)
+			return
+		}
+		gonic.Gonic(cherry.ErrResourceNotExist(), c)
+		return
+	}
+	return
+}
+
+func WriteAccess(c *gin.Context) {
+	ns := c.MustGet(NamespaceKey).(string)
+	if c.MustGet(UserRole).(string) == RoleUser {
+		var userNsData *kubeModel.UserHeaderData
+		nsList := c.MustGet(UserNamespaces).(*model.UserHeaderDataMap)
+		for _, n := range *nsList {
+			if ns == n.Label {
+				userNsData = &n
+				break
+			}
+		}
+		if userNsData != nil {
+			if ok := containsAccess(userNsData.Access, writeLevels...); ok {
 				c.Set(NamespaceKey, userNsData.ID)
 				c.Set(NamespaceLabelKey, userNsData.Label)
 				return
