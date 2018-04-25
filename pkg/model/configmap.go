@@ -15,12 +15,25 @@ import (
 	api_validation "k8s.io/apimachinery/pkg/util/validation"
 )
 
+// SelectedConfigMapsList -- model for config maps list from all namespaces
+//
+// swagger:model
+type SelectedConfigMapsList map[string]ConfigMapsList
+
+// ConfigMapsList -- model for config maps list
+//
+// swagger:model
 type ConfigMapsList struct {
 	ConfigMaps []ConfigMapWithOwner `json:"configmaps"`
 }
 
+// ConfigMapWithOwner -- model for config map with owner
+//
+// swagger:model
 type ConfigMapWithOwner struct {
+	// swagger: allOf
 	kube_types.ConfigMap
+	// required: true
 	Owner string `json:"owner,omitempty"`
 }
 

@@ -17,6 +17,28 @@ const (
 	ingressParam = "ingress"
 )
 
+// swagger:operation GET /namespaces/{namespace}/ingresses Ingress GetIngressList
+// Get ingresses list.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-ingress-list
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '200':
+//    description: ingresses list
+//    schema:
+//      $ref: '#/definitions/IngressesList'
+//  configmap:
+//    description: error
 func GetIngressList(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -43,6 +65,32 @@ func GetIngressList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
+// swagger:operation GET /namespaces/{namespace}/ingresses/{ingress} Ingress GetIngress
+// Get ingresses list.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-ingress
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: ingress
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '200':
+//    description: ingresses
+//    schema:
+//      $ref: '#/definitions/IngressWithOwner'
+//  configmap:
+//    description: error
 func GetIngress(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	ingr := ctx.Param(ingressParam)
@@ -71,6 +119,32 @@ func GetIngress(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
+// swagger:operation POST /namespaces/{namespace}/ingresses Ingress CreateIngress
+// Create ingress.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-ingress
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/IngressWithOwner'
+// responses:
+//  '201':
+//    description: ingress created
+//    schema:
+//      $ref: '#/definitions/IngressWithOwner'
+//  default:
+//    description: error
 func CreateIngress(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -118,6 +192,36 @@ func CreateIngress(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
+// swagger:operation PUT /namespaces/{namespace}/ingresses/{ingress} Ingress UpdateIngress
+// Update ingress.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-ingress
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: ingress
+//    in: path
+//    type: string
+//    required: true
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/IngressWithOwner'
+// responses:
+//  '201':
+//    description: ingress updated
+//    schema:
+//      $ref: '#/definitions/IngressWithOwner'
+//  default:
+//    description: error
 func UpdateIngress(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	ingr := ctx.Param(ingressParam)
@@ -172,6 +276,30 @@ func UpdateIngress(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, ret)
 }
 
+// swagger:operation DELETE /namespaces/{namespace}/ingresses/{ingress} Ingress DeleteIngress
+// Delete ingress.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-ingress
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: ingress
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '202':
+//    description: ingress deleted
+//  default:
+//    description: error
 func DeleteIngress(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	ingr := ctx.Param(ingressParam)
@@ -192,12 +320,29 @@ func DeleteIngress(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
+// swagger:operation GET /ingresses Ingress GetSelectedIngresses
+// Get ingresses from all user namespaces.
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+// responses:
+//  '200':
+//    description: ingresses list from all users namespaces
+//    schema:
+//      $ref: '#/definitions/SelectedIngressesList'
+//  default:
+//    description: error
 func GetSelectedIngresses(ctx *gin.Context) {
 	log.Debug("Get selected ingresses Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	ingresses := make(map[string]model.IngressesList, 0)
+	ingresses := make(model.SelectedIngressesList, 0)
 
 	role := ctx.MustGet(m.UserRole).(string)
 	if role == m.RoleUser {

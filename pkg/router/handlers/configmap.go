@@ -17,6 +17,28 @@ const (
 	configMapParam = "configmap"
 )
 
+// swagger:operation GET /namespaces/{namespace}/configmaps ConfigMap GetConfigMapList
+// Get config maps list.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#configmaps-list
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '200':
+//    description: config maps list
+//    schema:
+//      $ref: '#/definitions/ConfigMapsList'
+//  default:
+//    description: error
 func GetConfigMapList(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -43,6 +65,32 @@ func GetConfigMapList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
+// swagger:operation GET /namespaces/{namespace}/configmaps/{configmap} ConfigMap GetConfigMap
+// Get config map.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-configmap
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: configmap
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '200':
+//    description: config map
+//    schema:
+//      $ref: '#/definitions/ConfigMapWithOwner'
+//  default:
+//    description: error
 func GetConfigMap(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	configMap := ctx.Param(configMapParam)
@@ -71,6 +119,32 @@ func GetConfigMap(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
+// swagger:operation POST /namespaces/{namespace}/configmaps ConfigMap CreateConfigMap
+// Create config map.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-configmap
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/ConfigMapWithOwner'
+// responses:
+//  '201':
+//    description: config map created
+//    schema:
+//      $ref: '#/definitions/ConfigMapWithOwner'
+//  default:
+//    description: error
 func CreateConfigMap(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -119,6 +193,36 @@ func CreateConfigMap(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
+// swagger:operation PUT /namespaces/{namespace}/configmaps/{configmap} ConfigMap UpdateConfigMap
+// Update config map.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-configmap
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: configmap
+//    in: path
+//    type: string
+//    required: true
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/ConfigMapWithOwner'
+// responses:
+//  '202':
+//    description: config map updated
+//    schema:
+//      $ref: '#/definitions/ConfigMapWithOwner'
+//  default:
+//    description: error
 func UpdateConfigMap(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	configMap := ctx.Param(configMapParam)
@@ -173,6 +277,30 @@ func UpdateConfigMap(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, ret)
 }
 
+// swagger:operation DELETE /namespaces/{namespace}/configmaps/{configmap} ConfigMap DeleteConfigMap
+// Delete config map.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-configmap
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: configmap
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '202':
+//    description: config map deleted
+//  default:
+//    description: error
 func DeleteConfigMap(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	configMap := ctx.Param(configMapParam)
@@ -193,12 +321,29 @@ func DeleteConfigMap(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
+// swagger:operation GET /configmaps ConfigMap GetSelectedConfigMaps
+// Get config maps from all user namespaces.
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+// responses:
+//  '200':
+//    description: config maps list from all users namespaces
+//    schema:
+//      $ref: '#/definitions/SelectedConfigMapsList'
+//  default:
+//    description: error
 func GetSelectedConfigMaps(ctx *gin.Context) {
 	log.Debug("Get selected config maps Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	ret := make(map[string]model.ConfigMapsList, 0)
+	ret := make(model.SelectedConfigMapsList, 0)
 
 	role := ctx.MustGet(m.UserRole).(string)
 	if role == m.RoleUser {

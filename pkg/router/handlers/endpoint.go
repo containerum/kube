@@ -17,6 +17,28 @@ const (
 	endpointParam = "endpoint"
 )
 
+// swagger:operation GET /namespaces/{namespace}/endpoints Endpoint GetEndpointList
+// Get endpoints list.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-endpoint-list
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '200':
+//    description: endpoints list
+//    schema:
+//      $ref: '#/definitions/EndpointsList'
+//  configmap:
+//    description: error
 func GetEndpointList(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -42,6 +64,32 @@ func GetEndpointList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
+// swagger:operation GET /namespaces/{namespace}/endpoints/{endpoint} Endpoint GetEndpointList
+// Get endpoint.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-endpoint
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: endpoint
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '200':
+//    description: endpoint
+//    schema:
+//      $ref: '#/definitions/Endpoint'
+//  configmap:
+//    description: error
 func GetEndpoint(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	ep := ctx.Param(endpointParam)
@@ -70,6 +118,32 @@ func GetEndpoint(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
+// swagger:operation POST /namespaces/{namespace}/endpoints Endpoint CreateEndpoint
+// Create endpoint.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#post-endpoint
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/Endpoint'
+// responses:
+//  '201':
+//    description: endpoint created
+//    schema:
+//      $ref: '#/definitions/Endpoint'
+//  default:
+//    description: error
 func CreateEndpoint(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -117,6 +191,36 @@ func CreateEndpoint(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
+// swagger:operation PUT /namespaces/{namespace}/endpoints/{endpoint} Endpoint UpdateEndpoint
+// Update endpoint.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-endpoint
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: endpoint
+//    in: path
+//    type: string
+//    required: true
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/Endpoint'
+// responses:
+//  '201':
+//    description: endpoint updated
+//    schema:
+//      $ref: '#/definitions/Endpoint'
+//  default:
+//    description: error
 func UpdateEndpoint(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	ep := ctx.Param(endpointParam)
@@ -171,6 +275,30 @@ func UpdateEndpoint(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, ret)
 }
 
+// swagger:operation DELETE /namespaces/{namespace}/endpoints/{endpoint} Endpoint DeleteEndpoint
+// Delete endpoint.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-endpoint
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: endpoint
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '202':
+//    description: endpoint deleted
+//  default:
+//    description: error
 func DeleteEndpoint(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	ep := ctx.Param(endpointParam)

@@ -1,0 +1,52 @@
+swagger: "3.0"
+parameters:
+  UserIDHeader:
+    name: X-User-ID
+    in: header
+    type: string
+    format: uuid
+    required: true
+  UserRoleHeader:
+    name: X-User-Role
+    in: header
+    type: string
+    enum:
+      - user
+      - admin
+    required: true
+  UserNamespaceHeader:
+    name: X-User-Namespace
+    in: header
+    type: string
+    format: base64
+    required: false
+  UserVolumeHeader:
+    name: X-User-Volume
+    in: header
+    type: string
+    format: base64
+    required: false
+  UpgradeHeader:
+    name: Upgrade
+    in: header
+    type: string
+    format: string
+    required: true
+  ConnectionHeader:
+    name: Connection
+    in: header
+    type: string
+    format: string
+    required: true
+  SecWebSocketKeyHeader:
+    name: Sec-WebSocket-Key
+    in: header
+    type: string
+    format: string
+    required: true
+  SecWebsocketVersionHeader:
+    name: Sec-Websocket-Version
+    in: header
+    type: integer
+    format: int
+    required: true

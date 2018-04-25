@@ -1,0 +1,93 @@
+# File for noice errors generation
+
+Name = "kubeErrors"
+SID = 2
+
+# errors
+[[error]]
+    Name = "ErrAdminRequired"
+    StatusHTTP = 403
+    Message = "Admin access required"
+    Comment = "User is not admin and has no permissions"
+    Kind = 1
+
+[[error]]
+    Name = "ErrRequiredHeadersNotProvided"
+    StatusHTTP = 400
+    Message = "Required headers not provided"
+    Comment = "Required headers not provided"
+    Kind = 2
+
+[[error]]
+    Name = "ErrRequestValidationFailed"
+    StatusHTTP = 400
+    Message = "Request validation failed"
+    Comment = "Validation error when parsing request"
+    Kind = 3
+
+#resources errors
+[[error]]
+    Name = "ErrUnableGetResourcesList"
+    StatusHTTP = 500
+    Message = "Unable to get resources list"
+    Kind = 4
+
+[[error]]
+    Name = "ErrUnableGetResource"
+    StatusHTTP = 500
+    Message = "Unable to get resource"
+    Kind = 5
+
+[[error]]
+    Name = "ErrUnableCreateResource"
+    StatusHTTP = 500
+    Message = "Unable to create resource"
+    Kind = 6
+
+[[error]]
+    Name = "ErrUnableUpdateResource"
+    StatusHTTP = 500
+    Message = "Unable to update resource"
+    Kind = 7
+
+[[error]]
+    Name = "ErrUnableDeleteResource"
+    StatusHTTP = 500
+    Message = "Unable to delete resource"
+    Kind = 8
+
+[[error]]
+    Name = "ErrResourceAlreadyExists"
+    StatusHTTP = 409
+    Message = "Resource with this name already exists"
+    Kind = 9
+
+[[error]]
+    Name = "ErrResourceNotExist"
+    StatusHTTP = 404
+    Message = "Resource with this name doesn't exist"
+    Kind = 10
+
+[[error]]
+    Name = "ErrInvalidRole"
+    StatusHTTP = 403
+    Message = "Invalid user role"
+    Kind = 11
+
+[[error]]
+    Name = "ErrAccessError"
+    StatusHTTP = 403
+    Message = "Access denied"
+    Kind = 12
+
+[[error]]
+    Name = "ErrInternalError"
+    StatusHTTP = 500
+    Message = "Internal error"
+    Kind = 13
+
+[[error]]
+    Name = "ErrUnableGetPodLogs"
+    StatusHTTP = 500
+    Message = "Unable to read logs from the pod"
+    Kind = 14

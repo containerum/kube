@@ -20,6 +20,28 @@ const (
 	namespaceParam = "namespace"
 )
 
+// swagger:operation GET /namespaces Namespace GetNamespaceList
+// Get namespaces list.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-namespace-list
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: owner
+//    in: query
+//    type: string
+//    required: false
+// responses:
+//  '200':
+//    description: ingresses list
+//    schema:
+//      $ref: '#/definitions/NamespacesList'
+//  default:
+//    description: error
 func GetNamespaceList(ctx *gin.Context) {
 	owner := ctx.Query(ownerQuery)
 
@@ -53,6 +75,28 @@ func GetNamespaceList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
+// swagger:operation GET /namespaces/{namespace} Namespace GetNamespace
+// Get namespace.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-namespace
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '200':
+//    description: namespace
+//    schema:
+//      $ref: '#/definitions/NamespaceWithOwner'
+//  default:
+//    description: error
 func GetNamespace(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -84,6 +128,28 @@ func GetNamespace(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
+// swagger:operation POST /namespaces Namespace CreateNamespace
+// Create namespace.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-namespace
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/NamespaceWithOwner'
+// responses:
+//  '201':
+//    description: namespace created
+//    schema:
+//      $ref: '#/definitions/NamespaceWithOwner'
+//  default:
+//    description: error
 func CreateNamespace(ctx *gin.Context) {
 	log.Debug("Create namespace Call")
 
@@ -129,6 +195,32 @@ func CreateNamespace(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
+// swagger:operation PUT /namespaces/{namespace} Namespace UpdateNamespace
+// Update namespace.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-namespace
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/NamespaceWithOwner'
+// responses:
+//  '201':
+//    description: namespace updated
+//    schema:
+//      $ref: '#/definitions/NamespaceWithOwner'
+//  default:
+//    description: error
 func UpdateNamespace(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -175,6 +267,26 @@ func UpdateNamespace(ctx *gin.Context) {
 
 }
 
+// swagger:operation DELETE /namespaces/{namespace} Namespace DeleteNamespace
+// Delete namespace.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-namespace
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '202':
+//    description: namespace deleted
+//  default:
+//    description: error
 func DeleteNamespace(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
