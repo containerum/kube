@@ -9,6 +9,8 @@ import (
 
 	"fmt"
 
+	"net/textproto"
+
 	"git.containerum.net/ch/api-gateway/pkg/utils/headers"
 	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
@@ -34,7 +36,7 @@ func RequiredUserHeaders() gin.HandlerFunc {
 		} else {
 			//User-Role: user, check User-Namespace, X-User-Volume
 			if isUser {
-				notFoundHeaders := requireHeaders(ctx, headers.UserRoleXHeader, headers.UserVolumesXHeader, headers.UserIDXHeader)
+				notFoundHeaders := requireHeaders(ctx, headers.UserRoleXHeader, headers.UserNamespacesXHeader, headers.UserVolumesXHeader, headers.UserIDXHeader)
 				if len(notFoundHeaders) > 0 {
 					gonic.Gonic(cherry.ErrRequiredHeadersNotProvided().AddDetails(notFoundHeaders...), ctx)
 					return
@@ -80,7 +82,7 @@ func checkUserVolume(userVolume string) (*model.UserHeaderDataMap, error) {
 
 func requireHeaders(ctx *gin.Context, headers ...string) (notFoundHeaders []string) {
 	for _, v := range headers {
-		if ctx.GetHeader(v) == "" {
+		if ctx.GetHeader(textproto.CanonicalMIMEHeaderKey(v)) == "" {
 			notFoundHeaders = append(notFoundHeaders, v)
 		}
 	}
