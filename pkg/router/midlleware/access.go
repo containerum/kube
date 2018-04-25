@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"git.containerum.net/ch/api-gateway/pkg/utils/headers"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
 	kubeModel "git.containerum.net/ch/kube-client/pkg/model"
@@ -35,7 +36,7 @@ const (
 )
 
 func IsAdmin(ctx *gin.Context) {
-	if role := ctx.GetHeader(userRoleXHeader); role != RoleAdmin {
+	if role := ctx.GetHeader(headers.UserRoleXHeader); role != RoleAdmin {
 		gonic.Gonic(cherry.ErrAdminRequired(), ctx)
 		return
 	}
