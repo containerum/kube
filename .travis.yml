@@ -1,0 +1,13 @@
+sudo: required
+
+services:
+  - docker
+
+jobs:
+  include:
+    - stage: docker build test
+      branches:
+        except:
+        - develop
+        - master
+      script: docker build -t containerum/kube-api:"$TRAVIS_COMMIT" .
