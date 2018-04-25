@@ -167,11 +167,6 @@ func CreateSecret(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
-	if role == m.RoleUser {
-		secretReq.Owner = ctx.MustGet(m.UserID).(string)
-	}
-
 	newSecret, errs := secretReq.ToKube(namespace, quota.Labels)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
@@ -184,6 +179,7 @@ func CreateSecret(ctx *gin.Context) {
 		return
 	}
 
+	role := ctx.MustGet(m.UserRole).(string)
 	ret, err := model.ParseKubeSecret(secretAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)

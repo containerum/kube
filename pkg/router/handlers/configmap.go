@@ -167,11 +167,6 @@ func CreateConfigMap(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
-	if role == m.RoleUser {
-		cmReq.Owner = ctx.MustGet(m.UserID).(string)
-	}
-
 	cm, errs := cmReq.ToKube(namespace, quota.Labels)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
@@ -185,6 +180,7 @@ func CreateConfigMap(ctx *gin.Context) {
 		return
 	}
 
+	role := ctx.MustGet(m.UserRole).(string)
 	ret, err := model.ParseKubeConfigMap(cmAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)

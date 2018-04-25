@@ -167,11 +167,6 @@ func CreateIngress(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
-	if role == m.RoleUser {
-		ingressReq.Owner = ctx.MustGet(m.UserID).(string)
-	}
-
 	newIngress, errs := ingressReq.ToKube(namespace, quota.Labels)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
@@ -184,6 +179,7 @@ func CreateIngress(ctx *gin.Context) {
 		return
 	}
 
+	role := ctx.MustGet(m.UserRole).(string)
 	ret, err := model.ParseKubeIngress(ingressAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
