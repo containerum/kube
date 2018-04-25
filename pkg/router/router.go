@@ -31,7 +31,7 @@ func initMiddlewares(e gin.IRouter, kube *kubernetes.Kube) {
 	/* CORS */
 	cfg := cors.DefaultConfig()
 	cfg.AllowAllOrigins = true
-	cfg.AddAllowMethods("DELETE")
+	cfg.AddAllowMethods(http.MethodDelete)
 	cfg.AddAllowHeaders(headers.UserRoleXHeader, headers.UserIDXHeader, headers.UserNamespacesXHeader, headers.UserVolumesXHeader)
 	e.Use(cors.New(cfg))
 	e.Group("/static").
@@ -81,9 +81,9 @@ func initRoutes(e gin.IRouter) {
 		{
 			secret.GET("", m.ReadAccess, h.GetSecretList)
 			secret.GET("/:secret", m.ReadAccess, h.GetSecret)
-			secret.POST("", m.ReadAccess, h.CreateSecret)
-			secret.PUT("/:secret", m.ReadAccess, h.UpdateSecret)
-			secret.DELETE("/:secret", m.ReadAccess, h.DeleteSecret)
+			secret.POST("", m.WriteAccess, h.CreateSecret)
+			secret.PUT("/:secret", m.WriteAccess, h.UpdateSecret)
+			secret.DELETE("/:secret", m.WriteAccess, h.DeleteSecret)
 		}
 
 		ingress := namespace.Group("/:namespace/ingresses")
@@ -108,9 +108,9 @@ func initRoutes(e gin.IRouter) {
 		{
 			configmap.GET("", m.ReadAccess, h.GetConfigMapList)
 			configmap.GET("/:configmap", m.ReadAccess, h.GetConfigMap)
-			configmap.POST("", m.ReadAccess, h.CreateConfigMap)
-			configmap.PUT("/:configmap", m.ReadAccess, h.UpdateConfigMap)
-			configmap.DELETE("/:configmap", m.ReadAccess, h.DeleteConfigMap)
+			configmap.POST("", m.WriteAccess, h.CreateConfigMap)
+			configmap.PUT("/:configmap", m.WriteAccess, h.UpdateConfigMap)
+			configmap.DELETE("/:configmap", m.WriteAccess, h.DeleteConfigMap)
 		}
 
 		pod := namespace.Group("/:namespace/pods")
