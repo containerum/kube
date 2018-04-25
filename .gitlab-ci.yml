@@ -82,7 +82,7 @@ dev github:
   script:
     - git remote show
     - if [ $(git remote show | grep github) ]; then git remote rm github; fi
-    - git remote add git@github.com:containerum/kube-api.git
+    - git remote add github git@github.com:containerum/kube-api.git
     - git pull origin develop
     - git fetch github
     - git checkout origin/develop
