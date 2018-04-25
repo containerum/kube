@@ -18,6 +18,32 @@ const (
 	deploymentParam = "deployment"
 )
 
+// swagger:operation GET /namespaces/{namespace}/deployments Deployment GetDeploymentList
+// Get deployments list.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-deployments
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: owner
+//    in: query
+//    type: string
+//    required: false
+// responses:
+//  '200':
+//    description: deployments list
+//    schema:
+//      $ref: '#/definitions/DeploymentsList'
+//  default:
+//    description: error
 func GetDeploymentList(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -46,6 +72,32 @@ func GetDeploymentList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
+// swagger:operation GET /namespaces/{namespace}/deployments/{deployment} Deployment GetDeployment
+// Get deployment.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-deployment
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: deployment
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '200':
+//    description: deployment
+//    schema:
+//      $ref: '#/definitions/DeploymentWithOwner'
+//  default:
+//    description: error
 func GetDeployment(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	deployment := ctx.Param(deploymentParam)
@@ -74,6 +126,32 @@ func GetDeployment(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
+// swagger:operation POST /namespaces/{namespace}/deployments Deployment CreateDeployment
+// Create deployment.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-deployment
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/DeploymentWithOwner'
+// responses:
+//  '201':
+//    description: deployment created
+//    schema:
+//      $ref: '#/definitions/DeploymentWithOwner'
+//  default:
+//    description: error
 func CreateDeployment(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -120,6 +198,36 @@ func CreateDeployment(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
+// swagger:operation PUT /namespaces/{namespace}/deployments/{deployment} Deployment UpdateDeployment
+// Update deployment.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#replace-deployment
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: deployment
+//    in: path
+//    type: string
+//    required: true
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/DeploymentWithOwner'
+// responses:
+//  '202':
+//    description: deployment updated
+//    schema:
+//      $ref: '#/definitions/DeploymentWithOwner'
+//  default:
+//    description: error
 func UpdateDeployment(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	deployment := ctx.Param(deploymentParam)
@@ -175,6 +283,36 @@ func UpdateDeployment(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, ret)
 }
 
+// swagger:operation PUT /namespaces/{namespace}/deployments/{deployment}/replicas Deployment UpdateDeploymentReplicas
+// Update deployments replicas count.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#change-replicas-count
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: deployment
+//    in: path
+//    type: string
+//    required: true
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/UpdateReplicas'
+// responses:
+//  '202':
+//    description: deployment updated
+//    schema:
+//      $ref: '#/definitions/DeploymentWithOwner'
+//  default:
+//    description: error
 func UpdateDeploymentReplicas(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	deployment := ctx.Param(deploymentParam)
@@ -217,6 +355,36 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, ret)
 }
 
+// swagger:operation PUT /namespaces/{namespace}/deployments/{deployment}/image Deployment UpdateDeploymentImage
+// Update image in deployments container.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#replace-deployment-image
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: deployment
+//    in: path
+//    type: string
+//    required: true
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/UpdateImage'
+// responses:
+//  '202':
+//    description: deployment updated
+//    schema:
+//      $ref: '#/definitions/DeploymentWithOwner'
+//  default:
+//    description: error
 func UpdateDeploymentImage(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	deployment := ctx.Param(deploymentParam)
@@ -263,6 +431,30 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, ret)
 }
 
+// swagger:operation DELETE /namespaces/{namespace}/deployments/{deployment} Deployment DeleteDeployment
+// Delete deployment.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-deployment
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: deployment
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '202':
+//    description: deployment deleted
+//  default:
+//    description: error
 func DeleteDeployment(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	deployment := ctx.Param(deploymentParam)

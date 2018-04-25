@@ -11,11 +11,18 @@ import (
 	api_resource "k8s.io/apimachinery/pkg/api/resource"
 )
 
+// PodsList -- model for pods list
+//
+// swagger:model
 type PodsList struct {
 	Pods []PodWithOwner `json:"pods"`
 }
 
+// PodWithOwner -- model for pod with owner
+//
+// swagger:model
 type PodWithOwner struct {
+	// swagger: allOf
 	kube_types.Pod
 	Owner string `json:"owner,omitempty"`
 }

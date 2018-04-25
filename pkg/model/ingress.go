@@ -16,12 +16,25 @@ import (
 	api_validation "k8s.io/apimachinery/pkg/util/validation"
 )
 
+// SelectedIngressesList -- model for ingresses list from all namespaces
+//
+// swagger:model
+type SelectedIngressesList map[string]IngressesList
+
+// IngressesList -- model for ingresses list
+//
+// swagger:model
 type IngressesList struct {
 	Ingress []IngressWithOwner `json:"ingresses"`
 }
 
+// IngressWithOwner -- model for ingress with owner
+//
+// swagger:model
 type IngressWithOwner struct {
+	// swagger: allOf
 	kube_types.Ingress
+	// required: true
 	Owner string `json:"owner,omitempty"`
 }
 

@@ -49,7 +49,7 @@ else
 	temp_executable=$(temp_build_dir)/$(EXECUTABLE)
 endif)
 @echo go build -tags="dev" -ldflags="$(RELEASE_LDFLAGS)"  -v -o $(temp_executable) ./$(CMD_DIR)
-@GOOS=$(1) GOARCH=$(2) go build -tags="dev" -ldflags="$(RELEASE_LDFLAGS)"  -v -o $(temp_executable) ./$(CMD_DIR)
+@GOOS=$(1) GOARCH=$(2) go build -tags="dev" -ldflags="$(RELEASE_LDFLAGS)" -v -o $(temp_executable) ./$(CMD_DIR)
 $(eval ifeq ($(1),windows)
 	pack_cmd = $(call pack_win,$(temp_build_dir))
 else

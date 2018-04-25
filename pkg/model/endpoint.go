@@ -7,34 +7,44 @@ import (
 
 	"time"
 
+	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	api_validation "k8s.io/apimachinery/pkg/util/validation"
 )
 
+// EndpointsList -- model for endpoints list
+//
+// swagger:model
 type EndpointsList struct {
 	Endpoints []Endpoint `json:"endpoints"`
 }
 
+// Endpoint -- model for endpoint
+//
+// swagger:model
 type Endpoint struct {
-	Name      string   `json:"name"`
-	Owner     *string  `json:"owner,omitempty"`
-	CreatedAt *string  `json:"created_at,omitempty"`
+	// required: true
+	Name  string  `json:"name"`
+	Owner *string `json:"owner,omitempty"`
+	//creation date in RFC3339 format
+	CreatedAt *string `json:"created_at,omitempty"`
+	// required: true
 	Addresses []string `json:"addresses"`
-	Ports     []Port   `json:"ports"`
+	// required: true
+	Ports []Port `json:"ports"`
 }
 
-type Protocol string
-
-const (
-	UDP Protocol = "UDP"
-	TCP Protocol = "TCP"
-)
-
+// Port -- model for endpoint port
+//
+// swagger:model
 type Port struct {
-	Name     string   `json:"name"`
-	Port     int      `json:"port"`
-	Protocol Protocol `json:"protocol"`
+	// required: true
+	Name string `json:"name"`
+	// required: true
+	Port int `json:"port"`
+	// required: true
+	Protocol kube_types.Protocol `json:"protocol"`
 }
 
 // ParseKubeEndpointList parses kubernetes v1.EndpointsList to more convenient []Endpoint struct
@@ -94,7 +104,7 @@ func parseEndpointPort(np interface{}) Port {
 	return Port{
 		Name:     nativePort.Name,
 		Port:     int(nativePort.Port),
-		Protocol: Protocol(nativePort.Protocol),
+		Protocol: kube_types.Protocol(nativePort.Protocol),
 	}
 }
 

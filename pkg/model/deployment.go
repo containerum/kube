@@ -33,12 +33,20 @@ const (
 	maxDeployReplicas = 15
 )
 
+// DeploymentsList -- model for deployments list
+//
+// swagger:model
 type DeploymentsList struct {
 	Deployments []DeploymentWithOwner `json:"deployments"`
 }
 
+// DeploymentWithOwner -- model for deployment with owner
+//
+// swagger:model
 type DeploymentWithOwner struct {
+	// swagger: allOf
 	kube_types.Deployment
+	// required: true
 	Owner string `json:"owner,omitempty"`
 }
 
@@ -324,7 +332,7 @@ func makeTemplateVolumes(volumes []string, cmaps map[string]int64, owner string)
 				VolumeSource: api_core.VolumeSource{
 					Glusterfs: &api_core.GlusterfsVolumeSource{
 						EndpointsName: glusterFSEndpoint,
-						Path:          fmt.Sprintf("cli_%x", (sha256.Sum256([]byte(v + owner)))),
+						Path:          fmt.Sprintf("cli_%x", sha256.Sum256([]byte(v+owner))),
 					},
 				},
 			}

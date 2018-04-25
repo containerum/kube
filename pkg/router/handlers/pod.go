@@ -38,6 +38,32 @@ var wsupgrader = websocket.Upgrader{
 	},
 }
 
+// swagger:operation GET /namespaces/{namespace}/pods Pod GetPodList
+// Get pods list.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-pod-list
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: owner
+//    in: query
+//    type: string
+//    required: false
+// responses:
+//  '200':
+//    description: pod list
+//    schema:
+//      $ref: '#/definitions/PodsList'
+//  configmap:
+//    description: error
 func GetPodList(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	owner := ctx.Query(ownerQuery)
@@ -58,6 +84,32 @@ func GetPodList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, podList)
 }
 
+// swagger:operation GET /namespaces/{namespace}/pods/{pod} Pod GetPod
+// Get pod.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-pod
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: pod
+//    in: query
+//    type: string
+//    required: true
+// responses:
+//  '200':
+//    description: pod
+//    schema:
+//      $ref: '#/definitions/PodWithOwner'
+//  default:
+//    description: error
 func GetPod(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	podP := ctx.Param(podParam)
@@ -78,6 +130,30 @@ func GetPod(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, po)
 }
 
+// swagger:operation DELETE /namespaces/{namespace}/pods/{pod} Pod DeletePod
+// Delete pod.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-pod
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: pod
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '202':
+//    description: pod deleted
+//  default:
+//    description: error
 func DeletePod(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	podP := ctx.Param(podParam)
@@ -95,6 +171,50 @@ func DeletePod(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
+// swagger:operation GET /namespaces/{namespace}/pods/{pod}/log Pod GetPodLogs
+// Get pod logs.
+// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-pod
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - $ref: '#/parameters/UserVolumeHeader'
+//  - $ref: '#/parameters/UpgradeHeader'
+//  - $ref: '#/parameters/ConnectionHeader'
+//  - $ref: '#/parameters/SecWebSocketKeyHeader'
+//  - $ref: '#/parameters/SecWebsocketVersionHeader'
+//  - name: namespace
+//    in: header
+//    type: string
+//    required: true
+//  - name: pod
+//    in: path
+//    type: string
+//    required: true
+//  - name: follow
+//    in: query
+//    type: bool
+//    required: false
+//  - name: tail
+//    in: query
+//    type: integer
+//    required: false
+//  - name: container
+//    in: query
+//    type: string
+//    required: false
+//  - name: previous
+//    in: query
+//    type: bool
+//    required: false
+// responses:
+//  '101':
+//    description: pod logs
+//  default:
+//    description: error
 func GetPodLogs(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),

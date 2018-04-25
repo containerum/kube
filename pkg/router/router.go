@@ -6,6 +6,7 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	h "git.containerum.net/ch/kube-api/pkg/router/handlers"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
+	"git.containerum.net/ch/kube-api/static"
 	"github.com/sirupsen/logrus"
 
 	"time"
@@ -13,6 +14,7 @@ import (
 	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/cherrylog"
 	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
+	"github.com/gin-gonic/contrib/cors"
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
 )
@@ -25,6 +27,9 @@ func CreateRouter(kube *kubernetes.Kube, debug bool) http.Handler {
 }
 
 func initMiddlewares(e *gin.Engine, kube *kubernetes.Kube) {
+	e.Group("/static").
+		Use(cors.Default()).
+		StaticFS("/", static.HTTP)
 	/* System */
 	e.Use(ginrus.Ginrus(logrus.WithField("component", "gin"), time.RFC3339, true))
 	e.Use(gonic.Recovery(cherry.ErrInternalError, cherrylog.NewLogrusAdapter(logrus.WithField("component", "gin"))))
@@ -38,7 +43,6 @@ func initRoutes(e *gin.Engine) {
 	e.NoRoute(func(c *gin.Context) {
 		c.Status(http.StatusNotFound)
 	})
-
 	e.GET("/ingresses", h.GetSelectedIngresses)
 	e.GET("/configmaps", h.GetSelectedConfigMaps)
 

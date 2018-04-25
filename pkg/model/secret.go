@@ -13,12 +13,20 @@ import (
 	api_validation "k8s.io/apimachinery/pkg/util/validation"
 )
 
+// SecretsList -- model for secrets list
+//
+// swagger:model
 type SecretsList struct {
 	Secrets []SecretWithOwner `json:"secrets"`
 }
 
+// SecretWithOwner -- model for secret with owner
+//
+// swagger:model
 type SecretWithOwner struct {
+	// swagger: allOf
 	kube_types.Secret
+	// required: true
 	Owner string `json:"owner,omitempty"`
 }
 

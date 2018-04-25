@@ -31,15 +31,25 @@ const (
 	serviceAPIVersion = "v1"
 )
 
+// ServicesList -- model for services list
+//
+// swagger:model
 type ServicesList struct {
 	Services []ServiceWithOwner `json:"services"`
 }
 
+// ServiceWithOwner -- model for service with owner
+//
+// swagger:model
 type ServiceWithOwner struct {
+	// swagger: allOf
 	kube_types.Service
-	Owner      string `json:"owner,omitempty"`
-	Hidden     bool   `json:"hidden,omitempty"`
-	NoSelector bool   `json:"no_selector,omitempty"`
+	// required: true
+	Owner string `json:"owner,omitempty"`
+	//hide service from users
+	Hidden bool `json:"hidden,omitempty"`
+	//don't add selectors to service (so don't create endpoint)
+	NoSelector bool `json:"no_selector,omitempty"`
 }
 
 // ParseKubeServiceList parses kubernetes v1.ServiceList to more convenient Service struct.

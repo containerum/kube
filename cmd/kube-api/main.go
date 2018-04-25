@@ -7,6 +7,8 @@ import (
 	"github.com/urfave/cli"
 )
 
+//go:generate swagger generate spec -m -i ../../swagger-basic.yml -o ../../swagger.json
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "ch-kube-api-server"

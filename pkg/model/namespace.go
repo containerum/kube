@@ -24,14 +24,23 @@ const (
 	maxNamespaceMemory = 28672 //Mi
 )
 
+// NamespacesList -- model for namespaces list
+//
+// swagger:model
 type NamespacesList struct {
 	Namespaces []NamespaceWithOwner `json:"namespaces"`
 }
 
+// NamespaceWithOwner -- model for namespace with owner
+//
+// swagger:model
 type NamespaceWithOwner struct {
+	// swagger: allOf
 	kube_types.Namespace
-	Name   string `json:"name,omitempty"`
-	Owner  string `json:"owner,omitempty"`
+	//hosting-internal name
+	Name  string `json:"name,omitempty"`
+	Owner string `json:"owner,omitempty"`
+	//access from X-User-Namespace header
 	Access string `json:"access,omitempty"`
 }
 
