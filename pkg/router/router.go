@@ -31,6 +31,7 @@ func initMiddlewares(e gin.IRouter, kube *kubernetes.Kube) {
 	/* CORS */
 	cfg := cors.DefaultConfig()
 	cfg.AllowAllOrigins = true
+	cfg.AddAllowMethods("DELETE")
 	cfg.AddAllowHeaders(headers.UserRoleXHeader, headers.UserIDXHeader, headers.UserNamespacesXHeader, headers.UserVolumesXHeader)
 	e.Use(cors.New(cfg))
 	e.Group("/static").
