@@ -1,5 +1,6 @@
 stages:
   - test
+  - build
   - dev-release
   - dev-deploy
 
@@ -11,8 +12,6 @@ variables:
   CONTAINER_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}
   DEVELOP_NAMESPACE: hosting
 
-
-  
 test-build:
   services:
   image: docker:latest
@@ -58,3 +57,38 @@ dev-deploy:
     - helm upgrade --install  --namespace=${DEVELOP_NAMESPACE} ${CI_PROJECT_NAME} --set image.tag=${TAG_DEV}-${CI_BUILD_REF} --set environment=develop --values values.yaml --values env/develop.yaml .
   only:
     - develop
+
+
+dev github:
+  image: alpine
+  stage: build
+  tags:
+    - build
+  before_script:
+    - apk update
+    - apk upgrade
+    - apk add --no-cache bash git openssh
+    - git config --global user.email "info@containerum.io"
+    - git config --global user.name "Containerum Bot"
+    - mkdir -p ~/.ssh
+    - echo ${ID_RSA_GITHUB} | base64 -d > ~/.ssh/id_rsa
+    - echo ${ID_RSA_PUB_GITHUB} | base64 -d > ~/.ssh/id_rsa.pub
+    - chmod 600 ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa.pub
+    - eval `ssh-agent -s`
+    - ssh-add ~/.ssh/id_rsa
+    - ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+
+  script:
+    - git remote show
+    - if [ $(git remote show | grep github) ]; then git remote rm github; fi
+    - git remote add git@github.com:containerum/kube-api.git
+    - git pull origin develop
+    - git fetch github
+    - git checkout origin/develop
+    - git checkout -b pub
+    - git push -u github pub:develop --force
+    - git remote rm github
+  only:
+    - develop
+  when: always
