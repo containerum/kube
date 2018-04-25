@@ -11,8 +11,8 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
 
-	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
+	"git.containerum.net/ch/cherry/adaptors/gonic"
+	cherry "git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"

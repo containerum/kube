@@ -1,7 +1,7 @@
 # File for noice errors generation
 
 Name = "kubeErrors"
-SID = 2
+SID = "2"
 
 # errors
 [[error]]

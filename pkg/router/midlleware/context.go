@@ -11,12 +11,10 @@ const (
 	UserRole       = "user-role"
 	UserID         = "user-id"
 
-	KubeClient     = "kubernetes-client"
-	ResourceClient = "rs-client"
+	KubeClient = "kubernetes-client"
 
 	NamespaceKey      = "namespace"
 	NamespaceLabelKey = "namespace-key"
-	ServiceKey        = "service"
 )
 
 func RegisterKubeClient(kube *kubernetes.Kube) gin.HandlerFunc {

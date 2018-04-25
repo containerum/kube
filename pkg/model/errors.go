@@ -5,8 +5,8 @@ import (
 
 	"fmt"
 
-	ch "git.containerum.net/ch/kube-client/pkg/cherry"
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/kube-api"
+	ch "git.containerum.net/ch/cherry"
+	cherry "git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	api_errors "k8s.io/apimachinery/pkg/api/errors"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
