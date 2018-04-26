@@ -11,8 +11,7 @@ import (
 
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/router"
-	log "github.com/sirupsen/logrus"
-
+	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
 
@@ -41,7 +40,7 @@ func initServer(c *cli.Context) error {
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt) // subscribe on interrupt event
 	<-quit                            // wait for event
-	log.Infoln("shutting down server...")
+	logrus.Infoln("shutting down server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

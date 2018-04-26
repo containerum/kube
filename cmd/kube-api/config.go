@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
 
@@ -34,15 +34,15 @@ var flags = []cli.Flag{
 func setupLogs(c *cli.Context) {
 	if c.Bool("debug") {
 		gin.SetMode(gin.DebugMode)
-		log.SetLevel(log.DebugLevel)
+		logrus.SetLevel(logrus.DebugLevel)
 	} else {
 		gin.SetMode(gin.ReleaseMode)
-		log.SetLevel(log.InfoLevel)
+		logrus.SetLevel(logrus.InfoLevel)
 	}
 
 	if c.Bool("textlog") {
-		log.SetFormatter(&log.TextFormatter{})
+		logrus.SetFormatter(&logrus.TextFormatter{})
 	} else {
-		log.SetFormatter(&log.JSONFormatter{})
+		logrus.SetFormatter(&logrus.JSONFormatter{})
 	}
 }
