@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	ch "git.containerum.net/ch/cherry"
-	cherry "git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	api_errors "k8s.io/apimachinery/pkg/api/errors"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -63,11 +63,11 @@ func ParseKubernetesResourceError(in interface{}, defaultErr *ch.Err) *ch.Err {
 		switch sE.ErrStatus.Reason {
 		case api_meta.StatusReasonNotFound:
 			if sE.Status().Details.Kind == "resourcequotas" {
-				return cherry.ErrResourceNotExist().AddDetails(noNamespace)
+				return kubeErrors.ErrResourceNotExist().AddDetails(noNamespace)
 			}
-			return cherry.ErrResourceNotExist().AddDetailsErr(fmt.Errorf(noResource, sE.Status().Details.Name, sE.Status().Details.Kind))
+			return kubeErrors.ErrResourceNotExist().AddDetailsErr(fmt.Errorf(noResource, sE.Status().Details.Name, sE.Status().Details.Kind))
 		case api_meta.StatusReasonAlreadyExists:
-			return cherry.ErrResourceAlreadyExists().AddDetailsErr(fmt.Errorf(resourceAlreadyExists, sE.Status().Details.Name, sE.Status().Details.Kind))
+			return kubeErrors.ErrResourceAlreadyExists().AddDetailsErr(fmt.Errorf(resourceAlreadyExists, sE.Status().Details.Name, sE.Status().Details.Kind))
 		default:
 			return defaultErr
 		}

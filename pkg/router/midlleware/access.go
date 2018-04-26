@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"git.containerum.net/ch/api-gateway/pkg/utils/headers"
-	cherry "git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	kubeModel "git.containerum.net/ch/kube-client/pkg/model"
 
@@ -44,7 +44,7 @@ const (
 
 func IsAdmin(ctx *gin.Context) {
 	if role := GetHeader(ctx, headers.UserRoleXHeader); role != RoleAdmin {
-		gonic.Gonic(cherry.ErrAdminRequired(), ctx)
+		gonic.Gonic(kubeErrors.ErrAdminRequired(), ctx)
 		return
 	}
 	return
@@ -67,10 +67,10 @@ func ReadAccess(c *gin.Context) {
 				c.Set(NamespaceLabelKey, userNsData.Label)
 				return
 			}
-			gonic.Gonic(cherry.ErrAccessError(), c)
+			gonic.Gonic(kubeErrors.ErrAccessError(), c)
 			return
 		}
-		gonic.Gonic(cherry.ErrResourceNotExist(), c)
+		gonic.Gonic(kubeErrors.ErrResourceNotExist(), c)
 		return
 	}
 	return
@@ -93,10 +93,10 @@ func WriteAccess(c *gin.Context) {
 				c.Set(NamespaceLabelKey, userNsData.Label)
 				return
 			}
-			gonic.Gonic(cherry.ErrAccessError(), c)
+			gonic.Gonic(kubeErrors.ErrAccessError(), c)
 			return
 		}
-		gonic.Gonic(cherry.ErrResourceNotExist(), c)
+		gonic.Gonic(kubeErrors.ErrResourceNotExist(), c)
 		return
 	}
 	return
