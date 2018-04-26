@@ -43,7 +43,7 @@ const (
 )
 
 func IsAdmin(ctx *gin.Context) {
-	if role := ctx.GetHeader(headers.UserRoleXHeader); role != RoleAdmin {
+	if role := GetHeader(ctx, headers.UserRoleXHeader); role != RoleAdmin {
 		gonic.Gonic(cherry.ErrAdminRequired(), ctx)
 		return
 	}
