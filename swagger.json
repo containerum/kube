@@ -1,0 +1,3327 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "swagger": "3.0",
+  "info": {
+    "description": "Kube API service is service for connection with Kubernetes.",
+    "title": "Kube API"
+  },
+  "paths": {
+    "/configmaps": {
+      "get": {
+        "tags": [
+          "ConfigMap"
+        ],
+        "summary": "Get config maps from all user namespaces.",
+        "operationId": "GetSelectedConfigMaps",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "config maps list from all users namespaces",
+            "schema": {
+              "$ref": "#/definitions/SelectedConfigMapsList"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/ingresses": {
+      "get": {
+        "tags": [
+          "Ingress"
+        ],
+        "summary": "Get ingresses from all user namespaces.",
+        "operationId": "GetSelectedIngresses",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ingresses list from all users namespaces",
+            "schema": {
+              "$ref": "#/definitions/SelectedIngressesList"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/namespaces": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-namespace-list",
+        "tags": [
+          "Namespace"
+        ],
+        "summary": "Get namespaces list.",
+        "operationId": "GetNamespaceList",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "owner",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ingresses list",
+            "schema": {
+              "$ref": "#/definitions/NamespacesList"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-namespace",
+        "tags": [
+          "Namespace"
+        ],
+        "summary": "Create namespace.",
+        "operationId": "CreateNamespace",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/NamespaceWithOwner"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "namespace created",
+            "schema": {
+              "$ref": "#/definitions/NamespaceWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/namespaces/{namespace}": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-namespace",
+        "tags": [
+          "Namespace"
+        ],
+        "summary": "Get namespace.",
+        "operationId": "GetNamespace",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "namespace",
+            "schema": {
+              "$ref": "#/definitions/NamespaceWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "put": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-namespace",
+        "tags": [
+          "Namespace"
+        ],
+        "summary": "Update namespace.",
+        "operationId": "UpdateNamespace",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/NamespaceWithOwner"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "namespace updated",
+            "schema": {
+              "$ref": "#/definitions/NamespaceWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      },
+      "delete": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-namespace",
+        "tags": [
+          "Namespace"
+        ],
+        "summary": "Delete namespace.",
+        "operationId": "DeleteNamespace",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "namespace deleted"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/namespaces/{namespace}/configmaps": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#configmaps-list",
+        "tags": [
+          "ConfigMap"
+        ],
+        "summary": "Get config maps list.",
+        "operationId": "GetConfigMapList",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "config maps list",
+            "schema": {
+              "$ref": "#/definitions/ConfigMapsList"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-configmap",
+        "tags": [
+          "ConfigMap"
+        ],
+        "summary": "Create config map.",
+        "operationId": "CreateConfigMap",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ConfigMapWithOwner"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "config map created",
+            "schema": {
+              "$ref": "#/definitions/ConfigMapWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/namespaces/{namespace}/configmaps/{configmap}": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-configmap",
+        "tags": [
+          "ConfigMap"
+        ],
+        "summary": "Get config map.",
+        "operationId": "GetConfigMap",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "configmap",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "config map",
+            "schema": {
+              "$ref": "#/definitions/ConfigMapWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "put": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-configmap",
+        "tags": [
+          "ConfigMap"
+        ],
+        "summary": "Update config map.",
+        "operationId": "UpdateConfigMap",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "configmap",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ConfigMapWithOwner"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "config map updated",
+            "schema": {
+              "$ref": "#/definitions/ConfigMapWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "delete": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-configmap",
+        "tags": [
+          "ConfigMap"
+        ],
+        "summary": "Delete config map.",
+        "operationId": "DeleteConfigMap",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "configmap",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "config map deleted"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/namespaces/{namespace}/deployments": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-deployments",
+        "tags": [
+          "Deployment"
+        ],
+        "summary": "Get deployments list.",
+        "operationId": "GetDeploymentList",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "owner",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "deployments list",
+            "schema": {
+              "$ref": "#/definitions/DeploymentsList"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-deployment",
+        "tags": [
+          "Deployment"
+        ],
+        "summary": "Create deployment.",
+        "operationId": "CreateDeployment",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/DeploymentWithOwner"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "deployment created",
+            "schema": {
+              "$ref": "#/definitions/DeploymentWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/namespaces/{namespace}/deployments/{deployment}": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-deployment",
+        "tags": [
+          "Deployment"
+        ],
+        "summary": "Get deployment.",
+        "operationId": "GetDeployment",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "deployment",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "deployment",
+            "schema": {
+              "$ref": "#/definitions/DeploymentWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "put": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#replace-deployment",
+        "tags": [
+          "Deployment"
+        ],
+        "summary": "Update deployment.",
+        "operationId": "UpdateDeployment",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "deployment",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/DeploymentWithOwner"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "deployment updated",
+            "schema": {
+              "$ref": "#/definitions/DeploymentWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      },
+      "delete": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-deployment",
+        "tags": [
+          "Deployment"
+        ],
+        "summary": "Delete deployment.",
+        "operationId": "DeleteDeployment",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "deployment",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "deployment deleted"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/namespaces/{namespace}/deployments/{deployment}/image": {
+      "put": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#replace-deployment-image",
+        "tags": [
+          "Deployment"
+        ],
+        "summary": "Update image in deployments container.",
+        "operationId": "UpdateDeploymentImage",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "deployment",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UpdateImage"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "deployment updated",
+            "schema": {
+              "$ref": "#/definitions/DeploymentWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/namespaces/{namespace}/deployments/{deployment}/replicas": {
+      "put": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#change-replicas-count",
+        "tags": [
+          "Deployment"
+        ],
+        "summary": "Update deployments replicas count.",
+        "operationId": "UpdateDeploymentReplicas",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "deployment",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UpdateReplicas"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "deployment updated",
+            "schema": {
+              "$ref": "#/definitions/DeploymentWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/namespaces/{namespace}/endpoints": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-endpoint-list",
+        "tags": [
+          "Endpoint"
+        ],
+        "summary": "Get endpoints list.",
+        "operationId": "GetEndpointList",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "endpoints list",
+            "schema": {
+              "$ref": "#/definitions/EndpointsList"
+            }
+          }
+        },
+        "x-method-visibility": "private"
+      },
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#post-endpoint",
+        "tags": [
+          "Endpoint"
+        ],
+        "summary": "Create endpoint.",
+        "operationId": "CreateEndpoint",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Endpoint"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "endpoint created",
+            "schema": {
+              "$ref": "#/definitions/Endpoint"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/namespaces/{namespace}/endpoints/{endpoint}": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-endpoint",
+        "tags": [
+          "Endpoint"
+        ],
+        "summary": "Get endpoint.",
+        "operationId": "GetEndpointList",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "endpoint",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "endpoint",
+            "schema": {
+              "$ref": "#/definitions/Endpoint"
+            }
+          }
+        },
+        "x-method-visibility": "private"
+      },
+      "put": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-endpoint",
+        "tags": [
+          "Endpoint"
+        ],
+        "summary": "Update endpoint.",
+        "operationId": "UpdateEndpoint",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "endpoint",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Endpoint"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "endpoint updated",
+            "schema": {
+              "$ref": "#/definitions/Endpoint"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      },
+      "delete": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-endpoint",
+        "tags": [
+          "Endpoint"
+        ],
+        "summary": "Delete endpoint.",
+        "operationId": "DeleteEndpoint",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "endpoint",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "endpoint deleted"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/namespaces/{namespace}/ingresses": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-ingress-list",
+        "tags": [
+          "Ingress"
+        ],
+        "summary": "Get ingresses list.",
+        "operationId": "GetIngressList",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ingresses list",
+            "schema": {
+              "$ref": "#/definitions/IngressesList"
+            }
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-ingress",
+        "tags": [
+          "Ingress"
+        ],
+        "summary": "Create ingress.",
+        "operationId": "CreateIngress",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/IngressWithOwner"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "ingress created",
+            "schema": {
+              "$ref": "#/definitions/IngressWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/namespaces/{namespace}/ingresses/{ingress}": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-ingress",
+        "tags": [
+          "Ingress"
+        ],
+        "summary": "Get ingresses list.",
+        "operationId": "GetIngress",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "ingress",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ingresses",
+            "schema": {
+              "$ref": "#/definitions/IngressWithOwner"
+            }
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "put": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-ingress",
+        "tags": [
+          "Ingress"
+        ],
+        "summary": "Update ingress.",
+        "operationId": "UpdateIngress",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "ingress",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/IngressWithOwner"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "ingress updated",
+            "schema": {
+              "$ref": "#/definitions/IngressWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      },
+      "delete": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-ingress",
+        "tags": [
+          "Ingress"
+        ],
+        "summary": "Delete ingress.",
+        "operationId": "DeleteIngress",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "ingress",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "ingress deleted"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/namespaces/{namespace}/pods": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-pod-list",
+        "tags": [
+          "Pod"
+        ],
+        "summary": "Get pods list.",
+        "operationId": "GetPodList",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "owner",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "pod list",
+            "schema": {
+              "$ref": "#/definitions/PodsList"
+            }
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/namespaces/{namespace}/pods/{pod}": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-pod",
+        "tags": [
+          "Pod"
+        ],
+        "summary": "Get pod.",
+        "operationId": "GetPod",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "pod",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "pod",
+            "schema": {
+              "$ref": "#/definitions/PodWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "delete": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-pod",
+        "tags": [
+          "Pod"
+        ],
+        "summary": "Delete pod.",
+        "operationId": "DeletePod",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "pod",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "pod deleted"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/namespaces/{namespace}/pods/{pod}/log": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-pod",
+        "tags": [
+          "Pod"
+        ],
+        "summary": "Get pod logs.",
+        "operationId": "GetPodLogs",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "$ref": "#/parameters/UpgradeHeader"
+          },
+          {
+            "$ref": "#/parameters/ConnectionHeader"
+          },
+          {
+            "$ref": "#/parameters/SecWebSocketKeyHeader"
+          },
+          {
+            "$ref": "#/parameters/SecWebsocketVersionHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "pod",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "bool",
+            "name": "follow",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "name": "tail",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "name": "container",
+            "in": "query"
+          },
+          {
+            "type": "bool",
+            "name": "previous",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "101": {
+            "description": "pod logs"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/namespaces/{namespace}/secrets": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-secrets-list",
+        "tags": [
+          "Secret"
+        ],
+        "summary": "Get secrets list.",
+        "operationId": "GetSecretList",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "secrets list",
+            "schema": {
+              "$ref": "#/definitions/SecretsList"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-secret",
+        "tags": [
+          "Secret"
+        ],
+        "summary": "Create secret.",
+        "operationId": "CreateSecret",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/SecretWithOwner"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "secret created",
+            "schema": {
+              "$ref": "#/definitions/SecretWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/namespaces/{namespace}/secrets/{secret}": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-secret",
+        "tags": [
+          "Secret"
+        ],
+        "summary": "Get secret.",
+        "operationId": "GetSecret",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "secret",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "secret",
+            "schema": {
+              "$ref": "#/definitions/SecretWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "put": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-secret",
+        "tags": [
+          "Secret"
+        ],
+        "summary": "Update secret.",
+        "operationId": "UpdateSecret",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "secret",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/SecretWithOwner"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "secret updated",
+            "schema": {
+              "$ref": "#/definitions/SecretWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      },
+      "delete": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-secret",
+        "tags": [
+          "Secret"
+        ],
+        "summary": "Delete secret.",
+        "operationId": "DeleteSecret",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "secret",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "secret deleted"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/namespaces/{namespace}/services": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-service-list",
+        "tags": [
+          "Service"
+        ],
+        "summary": "Get services list.",
+        "operationId": "GetServiceList",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "services list",
+            "schema": {
+              "$ref": "#/definitions/ServicesList"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-service",
+        "tags": [
+          "Service"
+        ],
+        "summary": "Create service.",
+        "operationId": "CreateService",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ServiceWithOwner"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "service created",
+            "schema": {
+              "$ref": "#/definitions/ServiceWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/namespaces/{namespace}/services/{service}": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-service",
+        "tags": [
+          "Service"
+        ],
+        "summary": "Get services list.",
+        "operationId": "GetService",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "service",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "secrets list",
+            "schema": {
+              "$ref": "#/definitions/ServiceWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "put": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-service",
+        "tags": [
+          "Service"
+        ],
+        "summary": "Update service.",
+        "operationId": "UpdateService",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "service",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ServiceWithOwner"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "service updated",
+            "schema": {
+              "$ref": "#/definitions/ServiceWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      },
+      "delete": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-service",
+        "tags": [
+          "Service"
+        ],
+        "summary": "Delete service.",
+        "operationId": "DeleteService",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "service",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "service deleted"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    }
+  },
+  "definitions": {
+    "ConfigMap": {
+      "description": "ConfigMap -- model for config map",
+      "type": "object",
+      "required": [
+        "name",
+        "data"
+      ],
+      "properties": {
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "data": {
+          "description": "key-value data",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-name": "Data"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "ConfigMapWithOwner": {
+      "description": "ConfigMapWithOwner -- model for config map with owner",
+      "type": "object",
+      "required": [
+        "name",
+        "data",
+        "owner"
+      ],
+      "properties": {
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "data": {
+          "description": "key-value data",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-name": "Data"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+    },
+    "ConfigMapsList": {
+      "description": "ConfigMapsList -- model for config maps list",
+      "type": "object",
+      "properties": {
+        "configmaps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConfigMapWithOwner"
+          },
+          "x-go-name": "ConfigMaps"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+    },
+    "Container": {
+      "description": "Container -- model for container in deployment",
+      "type": "object",
+      "required": [
+        "image",
+        "name",
+        "limits"
+      ],
+      "properties": {
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Commands"
+        },
+        "config_maps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ContainerVolume"
+          },
+          "x-go-name": "ConfigMaps"
+        },
+        "env": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Env"
+          },
+          "x-go-name": "Env"
+        },
+        "image": {
+          "type": "string",
+          "x-go-name": "Image"
+        },
+        "limits": {
+          "$ref": "#/definitions/Resource"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "ports": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ContainerPort"
+          },
+          "x-go-name": "Ports"
+        },
+        "volume_mounts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ContainerVolume"
+          },
+          "x-go-name": "VolumeMounts"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "ContainerPort": {
+      "description": "ContainerPort -- model for port in container",
+      "type": "object",
+      "required": [
+        "name",
+        "port",
+        "protocol"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Port"
+        },
+        "protocol": {
+          "$ref": "#/definitions/Protocol"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "ContainerVolume": {
+      "description": "ContainerVolume -- volume (or config map) mounted in container",
+      "type": "object",
+      "required": [
+        "name",
+        "mount_path"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "x-go-name": "Mode"
+        },
+        "mount_path": {
+          "type": "string",
+          "x-go-name": "MountPath"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "sub_path": {
+          "type": "string",
+          "x-go-name": "SubPath"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "Deployment": {
+      "description": "Deployment -- model for deployments",
+      "type": "object",
+      "required": [
+        "containers",
+        "name",
+        "replicas"
+      ],
+      "properties": {
+        "containers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Container"
+          },
+          "x-go-name": "Containers"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "replicas": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Replicas"
+        },
+        "status": {
+          "$ref": "#/definitions/DeploymentStatus"
+        },
+        "total_cpu": {
+          "description": "total CPU usage by all containers in this deployment",
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "TotalCPU"
+        },
+        "total_memory": {
+          "description": "total RAM usage by all containers in this deployment",
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "TotalMemory"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "DeploymentStatus": {
+      "description": "DeploymentStatus -- kubernetes status of deployment",
+      "type": "object",
+      "properties": {
+        "available_replicas": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "AvailableReplicas"
+        },
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "ready_replicas": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ReadyReplicas"
+        },
+        "replicas": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Replicas"
+        },
+        "unavailable_replicas": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "UnavailableReplicas"
+        },
+        "updated_at": {
+          "description": "update date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "UpdatedAt"
+        },
+        "updated_replicas": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "UpdatedReplicas"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "DeploymentWithOwner": {
+      "description": "DeploymentWithOwner -- model for deployment with owner",
+      "type": "object",
+      "required": [
+        "containers",
+        "name",
+        "replicas",
+        "owner"
+      ],
+      "properties": {
+        "containers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Container"
+          },
+          "x-go-name": "Containers"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
+        },
+        "replicas": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Replicas"
+        },
+        "status": {
+          "$ref": "#/definitions/DeploymentStatus"
+        },
+        "total_cpu": {
+          "description": "total CPU usage by all containers in this deployment",
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "TotalCPU"
+        },
+        "total_memory": {
+          "description": "total RAM usage by all containers in this deployment",
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "TotalMemory"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+    },
+    "DeploymentsList": {
+      "description": "DeploymentsList -- model for deployments list",
+      "type": "object",
+      "properties": {
+        "deployments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DeploymentWithOwner"
+          },
+          "x-go-name": "Deployments"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+    },
+    "Endpoint": {
+      "description": "Endpoint -- model for endpoint",
+      "type": "object",
+      "required": [
+        "name",
+        "addresses",
+        "ports"
+      ],
+      "properties": {
+        "addresses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Addresses"
+        },
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
+        },
+        "ports": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Port"
+          },
+          "x-go-name": "Ports"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+    },
+    "EndpointsList": {
+      "description": "EndpointsList -- model for endpoints list",
+      "type": "object",
+      "properties": {
+        "endpoints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Endpoint"
+          },
+          "x-go-name": "Endpoints"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+    },
+    "Env": {
+      "description": "Env -- key-value pair of enviroment variables",
+      "type": "object",
+      "required": [
+        "value",
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "value": {
+          "type": "string",
+          "x-go-name": "Value"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "Err": {
+      "description": "Err -- standard serializable API error\nMessage -- constant error message:\n+ \"invalid username\"\n+ \"quota exceeded\"\n+ \"validation error\"\n...etc...\nID -- unique error identification code\nDetails -- optional context error messages kinda\n+ \"field 'Replicas' must be non-zero value\"\n+ \"not enough tights to feed gopher\"\n+ \"resource 'God' does't exist\"\nFields -- optional set of key-value pairs",
+      "type": "object",
+      "properties": {
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Details"
+        },
+        "fields": {
+          "$ref": "#/definitions/Fields"
+        },
+        "id": {
+          "$ref": "#/definitions/ErrID"
+        },
+        "message": {
+          "type": "string",
+          "x-go-name": "Message"
+        },
+        "status_http": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "StatusHTTP"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/cherry"
+    },
+    "ErrID": {
+      "description": "ErrID -- represents unique error ID",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/definitions/ErrKind"
+        },
+        "sid": {
+          "$ref": "#/definitions/ErrSID"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/cherry"
+    },
+    "ErrKind": {
+      "description": "ErrKind -- represents kind of error",
+      "type": "integer",
+      "format": "uint64",
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/cherry"
+    },
+    "ErrSID": {
+      "description": "ErrSID -- represents service ID of error",
+      "type": "string",
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/cherry"
+    },
+    "Fields": {
+      "description": "Fields -- represents additional key-value fields of error",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/cherry"
+    },
+    "Ingress": {
+      "description": "Ingress -- model for ingress",
+      "type": "object",
+      "required": [
+        "name",
+        "rules"
+      ],
+      "properties": {
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Rule"
+          },
+          "x-go-name": "Rules"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "IngressWithOwner": {
+      "description": "IngressWithOwner -- model for ingress with owner",
+      "type": "object",
+      "required": [
+        "name",
+        "rules",
+        "owner"
+      ],
+      "properties": {
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Rule"
+          },
+          "x-go-name": "Rules"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+    },
+    "IngressesList": {
+      "description": "IngressesList -- model for ingresses list",
+      "type": "object",
+      "properties": {
+        "ingresses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/IngressWithOwner"
+          },
+          "x-go-name": "Ingress"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+    },
+    "Namespace": {
+      "description": "Namespace -- namespace representation provided by resource-service\nhttps://ch.pages.containerum.net/api-docs/modules/resource-service/index.html#get-namespace",
+      "type": "object",
+      "required": [
+        "resources"
+      ],
+      "properties": {
+        "access": {
+          "type": "string",
+          "x-go-name": "Access"
+        },
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "label": {
+          "description": "user-visible label for the namespace",
+          "type": "string",
+          "x-go-name": "Label"
+        },
+        "max_ext_service": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "MaxExtService"
+        },
+        "max_int_service": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "MaxIntService"
+        },
+        "max_traffic": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "MaxTraffic"
+        },
+        "resources": {
+          "$ref": "#/definitions/Resources"
+        },
+        "volumes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Volume"
+          },
+          "x-go-name": "Volumes"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "NamespaceWithOwner": {
+      "description": "NamespaceWithOwner -- model for namespace with owner",
+      "type": "object",
+      "required": [
+        "resources"
+      ],
+      "properties": {
+        "access": {
+          "description": "access from X-User-Namespace header",
+          "type": "string",
+          "x-go-name": "Access"
+        },
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "label": {
+          "description": "user-visible label for the namespace",
+          "type": "string",
+          "x-go-name": "Label"
+        },
+        "max_ext_service": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "MaxExtService"
+        },
+        "max_int_service": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "MaxIntService"
+        },
+        "max_traffic": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "MaxTraffic"
+        },
+        "name": {
+          "description": "hosting-internal name",
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
+        },
+        "resources": {
+          "$ref": "#/definitions/Resources"
+        },
+        "volumes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Volume"
+          },
+          "x-go-name": "Volumes"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+    },
+    "NamespacesList": {
+      "description": "NamespacesList -- model for namespaces list",
+      "type": "object",
+      "properties": {
+        "namespaces": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/NamespaceWithOwner"
+          },
+          "x-go-name": "Namespaces"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+    },
+    "Path": {
+      "description": "Path -- ingress path",
+      "type": "object",
+      "required": [
+        "path",
+        "service_name",
+        "service_port"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "x-go-name": "Path"
+        },
+        "service_name": {
+          "type": "string",
+          "x-go-name": "ServiceName"
+        },
+        "service_port": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ServicePort"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "Pod": {
+      "description": "Pod -- model for pod",
+      "type": "object",
+      "properties": {
+        "containers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Container"
+          },
+          "x-go-name": "Containers"
+        },
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "deploy": {
+          "type": "string",
+          "x-go-name": "Deploy"
+        },
+        "hostname": {
+          "type": "string",
+          "x-go-name": "Hostname"
+        },
+        "image_pull_secret": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-name": "ImagePullSecret"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "status": {
+          "$ref": "#/definitions/PodStatus"
+        },
+        "total_cpu": {
+          "description": "total CPU usage by all containers in this pod",
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "TotalCPU"
+        },
+        "total_memory": {
+          "description": "total RAM usage by all containers in this pod",
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "TotalMemory"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "PodStatus": {
+      "description": "PodStatus -- kubernetes status of pod",
+      "type": "object",
+      "properties": {
+        "phase": {
+          "type": "string",
+          "x-go-name": "Phase"
+        },
+        "restart_count": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "RestartCount"
+        },
+        "start_at": {
+          "description": "pod start date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "StartAt"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "PodWithOwner": {
+      "description": "PodWithOwner -- model for pod with owner",
+      "type": "object",
+      "properties": {
+        "containers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Container"
+          },
+          "x-go-name": "Containers"
+        },
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "deploy": {
+          "type": "string",
+          "x-go-name": "Deploy"
+        },
+        "hostname": {
+          "type": "string",
+          "x-go-name": "Hostname"
+        },
+        "image_pull_secret": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-name": "ImagePullSecret"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
+        },
+        "status": {
+          "$ref": "#/definitions/PodStatus"
+        },
+        "total_cpu": {
+          "description": "total CPU usage by all containers in this pod",
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "TotalCPU"
+        },
+        "total_memory": {
+          "description": "total RAM usage by all containers in this pod",
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "TotalMemory"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+    },
+    "PodsList": {
+      "description": "PodsList -- model for pods list",
+      "type": "object",
+      "properties": {
+        "pods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PodWithOwner"
+          },
+          "x-go-name": "Pods"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+    },
+    "Port": {
+      "description": "Port -- model for endpoint port",
+      "type": "object",
+      "required": [
+        "name",
+        "port",
+        "protocol"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Port"
+        },
+        "protocol": {
+          "$ref": "#/definitions/Protocol"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+    },
+    "Protocol": {
+      "description": "represents port protocol type (TCP or UDP)",
+      "type": "string",
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "Resource": {
+      "description": "Resource -- represents namespace CPU and RAM",
+      "type": "object",
+      "required": [
+        "cpu",
+        "memory"
+      ],
+      "properties": {
+        "cpu": {
+          "description": "CPU in m",
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "CPU"
+        },
+        "memory": {
+          "description": "RAM in Mi",
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "Memory"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "Resources": {
+      "type": "object",
+      "title": "Resources -- represents namespace limits and user resources,",
+      "required": [
+        "hard"
+      ],
+      "properties": {
+        "hard": {
+          "$ref": "#/definitions/Resource"
+        },
+        "used": {
+          "$ref": "#/definitions/Resource"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "Rule": {
+      "description": "Rule -- ingress rule",
+      "type": "object",
+      "required": [
+        "host",
+        "path"
+      ],
+      "properties": {
+        "host": {
+          "type": "string",
+          "x-go-name": "Host"
+        },
+        "path": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Path"
+          },
+          "x-go-name": "Path"
+        },
+        "tls_secret": {
+          "type": "string",
+          "x-go-name": "TLSSecret"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "Secret": {
+      "description": "model for secret",
+      "type": "object",
+      "required": [
+        "name",
+        "data"
+      ],
+      "properties": {
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-name": "Data"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "SecretWithOwner": {
+      "description": "SecretWithOwner -- model for secret with owner",
+      "type": "object",
+      "required": [
+        "name",
+        "data",
+        "owner"
+      ],
+      "properties": {
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-name": "Data"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+    },
+    "SecretsList": {
+      "description": "SecretsList -- model for secrets list",
+      "type": "object",
+      "properties": {
+        "secrets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SecretWithOwner"
+          },
+          "x-go-name": "Secrets"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+    },
+    "SelectedConfigMapsList": {
+      "description": "SelectedConfigMapsList -- model for config maps list from all namespaces",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/ConfigMapsList"
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+    },
+    "SelectedIngressesList": {
+      "description": "SelectedIngressesList -- model for ingresses list from all namespaces",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/IngressesList"
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+    },
+    "Service": {
+      "description": "represents service",
+      "type": "object",
+      "required": [
+        "name",
+        "ports"
+      ],
+      "properties": {
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "deploy": {
+          "type": "string",
+          "x-go-name": "Deploy"
+        },
+        "domain": {
+          "type": "string",
+          "x-go-name": "Domain"
+        },
+        "ips": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "IPs"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "ports": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ServicePort"
+          },
+          "x-go-name": "Ports"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "ServicePort": {
+      "description": "represent service port",
+      "type": "object",
+      "required": [
+        "name",
+        "target_port",
+        "protocol"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Port"
+        },
+        "protocol": {
+          "$ref": "#/definitions/Protocol"
+        },
+        "target_port": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "TargetPort"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "ServiceType": {
+      "description": "represents service type",
+      "type": "string",
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "ServiceWithOwner": {
+      "description": "ServiceWithOwner -- model for service with owner",
+      "type": "object",
+      "required": [
+        "name",
+        "ports",
+        "owner"
+      ],
+      "properties": {
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "deploy": {
+          "type": "string",
+          "x-go-name": "Deploy"
+        },
+        "domain": {
+          "type": "string",
+          "x-go-name": "Domain"
+        },
+        "hidden": {
+          "description": "hide service from users",
+          "type": "boolean",
+          "x-go-name": "Hidden"
+        },
+        "ips": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "IPs"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "no_selector": {
+          "description": "don't add selectors to service (so don't create endpoint)",
+          "type": "boolean",
+          "x-go-name": "NoSelector"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
+        },
+        "ports": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ServicePort"
+          },
+          "x-go-name": "Ports"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+    },
+    "ServicesList": {
+      "description": "ServicesList -- model for services list",
+      "type": "object",
+      "properties": {
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ServiceWithOwner"
+          },
+          "x-go-name": "Services"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+    },
+    "UpdateImage": {
+      "description": "UpdateImage -- model for update container image request",
+      "type": "object",
+      "required": [
+        "container_name",
+        "image"
+      ],
+      "properties": {
+        "container_name": {
+          "type": "string",
+          "x-go-name": "Container"
+        },
+        "image": {
+          "type": "string",
+          "x-go-name": "Image"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "UpdateNamespaceName": {
+      "description": "UpdateNamespaceName -- contains new namespace label",
+      "type": "object",
+      "required": [
+        "label"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "x-go-name": "Label"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "UpdateReplicas": {
+      "description": "UpdateReplicas -- contains new number of replicas",
+      "type": "object",
+      "required": [
+        "replicas"
+      ],
+      "properties": {
+        "replicas": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Replicas"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "UserHeaderData": {
+      "description": "represents header data for X-User-Namespace and X-User-Volume headers (encoded in base64)",
+      "type": "object",
+      "required": [
+        "id",
+        "label",
+        "access"
+      ],
+      "properties": {
+        "access": {
+          "description": "one of: \"owner\", \"read\", \"write\", \"read-delete\", \"none\"",
+          "type": "string",
+          "x-go-name": "Access"
+        },
+        "id": {
+          "description": "hosting-internal name",
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "label": {
+          "description": "user-visible label for the object",
+          "type": "string",
+          "x-go-name": "Label"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    },
+    "Volume": {
+      "description": "Volume -- volume representation\nprovided by resource-service\nhttps://ch.pages.containerum.net/api-docs/modules/resource-service/index.html#get-namespace",
+      "type": "object",
+      "properties": {
+        "access": {
+          "type": "string",
+          "x-go-name": "Access"
+        },
+        "access_change_time": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "AccessChangeTime"
+        },
+        "create_time": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "CreateTime"
+        },
+        "label": {
+          "type": "string",
+          "x-go-name": "Label"
+        },
+        "replicas": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Replicas"
+        },
+        "storage": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Storage"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+    }
+  },
+  "parameters": {
+    "ConnectionHeader": {
+      "type": "string",
+      "format": "string",
+      "name": "Connection",
+      "in": "header",
+      "required": true
+    },
+    "SecWebSocketKeyHeader": {
+      "type": "string",
+      "format": "string",
+      "name": "Sec-WebSocket-Key",
+      "in": "header",
+      "required": true
+    },
+    "SecWebsocketVersionHeader": {
+      "type": "integer",
+      "format": "int",
+      "name": "Sec-Websocket-Version",
+      "in": "header",
+      "required": true
+    },
+    "UpgradeHeader": {
+      "type": "string",
+      "format": "string",
+      "name": "Upgrade",
+      "in": "header",
+      "required": true
+    },
+    "UserIDHeader": {
+      "$ref": "vendor/git.containerum.net/ch/api-gateway/pkg/utils/headers/swagger.json#/parameters/UserIDHeader"
+    },
+    "UserNamespaceHeader": {
+      "$ref": "vendor/git.containerum.net/ch/api-gateway/pkg/utils/headers/swagger.json#/parameters/UserNamespacesHeader"
+    },
+    "UserRoleHeader": {
+      "$ref": "vendor/git.containerum.net/ch/api-gateway/pkg/utils/headers/swagger.json#/parameters/UserRoleHeader"
+    },
+    "UserVolumeHeader": {
+      "$ref": "vendor/git.containerum.net/ch/api-gateway/pkg/utils/headers/swagger.json#/parameters/UserVolumesHeader"
+    }
+  },
+  "responses": {
+    "error": {
+      "description": "cherry error",
+      "schema": {
+        "$ref": "vendor/git.containerum.net/ch/cherry/swagger.json#/definitions/Err"
+      }
+    }
+  }
+}

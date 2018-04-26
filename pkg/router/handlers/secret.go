@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"git.containerum.net/ch/cherry/adaptors/gonic"
-	cherry "git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
@@ -38,7 +38,7 @@ const (
 //    schema:
 //      $ref: '#/definitions/SecretsList'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func GetSecretList(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -50,7 +50,7 @@ func GetSecretList(ctx *gin.Context) {
 
 	secrets, err := kube.GetSecretList(namespace)
 	if err != nil {
-		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
@@ -58,7 +58,7 @@ func GetSecretList(ctx *gin.Context) {
 	ret, err := model.ParseKubeSecretList(secrets, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
@@ -90,7 +90,7 @@ func GetSecretList(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/SecretWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func GetSecret(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	sct := ctx.Param(secretParam)
@@ -104,7 +104,7 @@ func GetSecret(ctx *gin.Context) {
 
 	secret, err := kube.GetSecret(namespace, sct)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
 		return
 	}
 
@@ -112,7 +112,7 @@ func GetSecret(ctx *gin.Context) {
 	ret, err := model.ParseKubeSecret(secret, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
+		gonic.Gonic(kubeErrors.ErrUnableGetResource(), ctx)
 		return
 	}
 
@@ -144,7 +144,7 @@ func GetSecret(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/SecretWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func CreateSecret(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -157,25 +157,25 @@ func CreateSecret(ctx *gin.Context) {
 	var secretReq model.SecretWithOwner
 	if err := ctx.ShouldBindWith(&secretReq, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
 	newSecret, errs := secretReq.ToKube(namespace, quota.Labels)
 	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	secretAfter, err := kube.CreateSecret(newSecret)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -217,7 +217,7 @@ func CreateSecret(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/SecretWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func UpdateSecret(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	sct := ctx.Param(secretParam)
@@ -232,19 +232,19 @@ func UpdateSecret(ctx *gin.Context) {
 	var secretReq model.SecretWithOwner
 	if err := ctx.ShouldBindWith(&secretReq, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	oldSecret, err := kube.GetIngress(namespace, sct)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -253,13 +253,13 @@ func UpdateSecret(ctx *gin.Context) {
 
 	newSecret, errs := secretReq.ToKube(namespace, quota.Labels)
 	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	secretAfter, err := kube.UpdateSecret(newSecret)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -295,7 +295,7 @@ func UpdateSecret(ctx *gin.Context) {
 //  '202':
 //    description: secret deleted
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func DeleteSecret(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	sct := ctx.Param(secretParam)
@@ -307,7 +307,7 @@ func DeleteSecret(ctx *gin.Context) {
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	err := kube.DeleteSecret(namespace, sct)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
 		return
 	}
 	ctx.Status(http.StatusAccepted)

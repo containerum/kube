@@ -20,7 +20,7 @@
 #  name = "github.com/x/y"
 #  version = "2.4.0"
 
-required=["git.containerum.net/ch/kube-client"]
+required=["git.containerum.net/ch/kube-client", "git.containerum.net/ch/api-gateway", "git.containerum.net/ch/cherry"]
 
 [prune]
   non-go = true
@@ -29,6 +29,14 @@ required=["git.containerum.net/ch/kube-client"]
 
   [[prune.project]]
     name = "git.containerum.net/ch/kube-client"
+    non-go = false
+
+  [[prune.project]]
+    name = "git.containerum.net/ch/api-gateway"
+    non-go = false
+
+  [[prune.project]]
+    name = "git.containerum.net/ch/cherry"
     non-go = false
 
 [[constraint]]

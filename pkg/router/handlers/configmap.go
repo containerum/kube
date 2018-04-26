@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"git.containerum.net/ch/cherry/adaptors/gonic"
-	cherry "git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
@@ -38,7 +38,7 @@ const (
 //    schema:
 //      $ref: '#/definitions/ConfigMapsList'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func GetConfigMapList(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -50,7 +50,7 @@ func GetConfigMapList(ctx *gin.Context) {
 
 	cmList, err := kube.GetConfigMapList(namespace)
 	if err != nil {
-		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
@@ -58,7 +58,7 @@ func GetConfigMapList(ctx *gin.Context) {
 	ret, err := model.ParseKubeConfigMapList(cmList, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
@@ -90,7 +90,7 @@ func GetConfigMapList(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/ConfigMapWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func GetConfigMap(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	configMap := ctx.Param(configMapParam)
@@ -104,7 +104,7 @@ func GetConfigMap(ctx *gin.Context) {
 
 	cm, err := kube.GetConfigMap(namespace, configMap)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
 		return
 	}
 
@@ -112,7 +112,7 @@ func GetConfigMap(ctx *gin.Context) {
 	ret, err := model.ParseKubeConfigMap(cm, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
+		gonic.Gonic(kubeErrors.ErrUnableGetResource(), ctx)
 		return
 	}
 
@@ -144,7 +144,7 @@ func GetConfigMap(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/ConfigMapWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func CreateConfigMap(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -157,26 +157,26 @@ func CreateConfigMap(ctx *gin.Context) {
 	var cmReq model.ConfigMapWithOwner
 	if err := ctx.ShouldBindWith(&cmReq, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	quota, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
 	cm, errs := cmReq.ToKube(namespace, quota.Labels)
 	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	cmAfter, err := kube.CreateConfigMap(cm)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -218,7 +218,7 @@ func CreateConfigMap(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/ConfigMapWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func UpdateConfigMap(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	configMap := ctx.Param(configMapParam)
@@ -233,19 +233,19 @@ func UpdateConfigMap(ctx *gin.Context) {
 	var cmReq model.ConfigMapWithOwner
 	if err := ctx.ShouldBindWith(&cmReq, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	quota, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	oldCm, err := kube.GetConfigMap(namespace, ctx.Param(deploymentParam))
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -254,13 +254,13 @@ func UpdateConfigMap(ctx *gin.Context) {
 
 	newCm, errs := cmReq.ToKube(namespace, quota.Labels)
 	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	cmAfter, err := kube.UpdateConfigMap(newCm)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -296,7 +296,7 @@ func UpdateConfigMap(ctx *gin.Context) {
 //  '202':
 //    description: config map deleted
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func DeleteConfigMap(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	configMap := ctx.Param(configMapParam)
@@ -310,7 +310,7 @@ func DeleteConfigMap(ctx *gin.Context) {
 
 	err := kube.DeleteConfigMap(namespace, configMap)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
 		return
 	}
 
@@ -333,7 +333,7 @@ func DeleteConfigMap(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/SelectedConfigMapsList'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func GetSelectedConfigMaps(ctx *gin.Context) {
 	log.Debug("Get selected config maps Call")
 
@@ -347,13 +347,13 @@ func GetSelectedConfigMaps(ctx *gin.Context) {
 		for _, n := range *nsList {
 			cmList, err := kube.GetConfigMapList(n.ID)
 			if err != nil {
-				gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+				gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
 				return
 			}
 
 			cm, err := model.ParseKubeConfigMapList(cmList, role == m.RoleUser)
 			if err != nil {
-				gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+				gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
 				return
 			}
 

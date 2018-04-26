@@ -353,7 +353,7 @@
     "unix",
     "windows"
   ]
-  revision = "79b0c6888797020a994db17c8510466c72fe75d9"
+  revision = "bb9c189858d91f42db229b04d45a4c3d23a7662a"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -529,11 +529,11 @@
   branch = "master"
   name = "k8s.io/kube-openapi"
   packages = ["pkg/common"]
-  revision = "1e45fb05b06309c0d807d0930e1a81fe0a1cd4b8"
+  revision = "3a0c53868c9444e4224c3dd5dc2caa9b5107ff7b"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4a34e683546705518e972dfe4a766cb12d65082f32b38047e71b537ebc693be2"
+  inputs-digest = "db368f9b76c1b56d830c870e767450e7e07f98ff5be145c3ba19a68e312a230a"
   solver-name = "gps-cdcl"
   solver-version = 1

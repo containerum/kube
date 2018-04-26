@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"git.containerum.net/ch/cherry/adaptors/gonic"
-	cherry "git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
@@ -38,7 +38,7 @@ const (
 //    schema:
 //      $ref: '#/definitions/EndpointsList'
 //  configmap:
-//    description: error
+//    $ref: '#/responses/error'
 func GetEndpointList(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -50,14 +50,14 @@ func GetEndpointList(ctx *gin.Context) {
 
 	endpoints, err := kube.GetEndpointList(namespace)
 	if err != nil {
-		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
 	ret, err := model.ParseKubeEndpointList(endpoints)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
@@ -89,7 +89,7 @@ func GetEndpointList(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/Endpoint'
 //  configmap:
-//    description: error
+//    $ref: '#/responses/error'
 func GetEndpoint(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	ep := ctx.Param(endpointParam)
@@ -104,14 +104,14 @@ func GetEndpoint(ctx *gin.Context) {
 	endpoint, err := kube.GetEndpoint(namespace, ep)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
 		return
 	}
 
 	ret, err := model.ParseKubeEndpoint(endpoint)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
+		gonic.Gonic(kubeErrors.ErrUnableGetResource(), ctx)
 		return
 	}
 
@@ -143,7 +143,7 @@ func GetEndpoint(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/Endpoint'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func CreateEndpoint(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -155,25 +155,25 @@ func CreateEndpoint(ctx *gin.Context) {
 
 	var endpointReq model.Endpoint
 	if err := ctx.ShouldBindWith(&endpointReq, binding.JSON); err != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
 	newEndpoint, errs := endpointReq.ToKube(namespace, quota.Labels)
 	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	endpointAfter, err := kube.CreateEndpoint(newEndpoint)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -214,7 +214,7 @@ func CreateEndpoint(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/Endpoint'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func UpdateEndpoint(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	ep := ctx.Param(endpointParam)
@@ -229,19 +229,19 @@ func UpdateEndpoint(ctx *gin.Context) {
 	var endpointReq model.Endpoint
 	if err := ctx.ShouldBindWith(&endpointReq, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	oldEndpoint, err := kube.GetEndpoint(namespace, ep)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -251,13 +251,13 @@ func UpdateEndpoint(ctx *gin.Context) {
 
 	newEndpoint, errs := endpointReq.ToKube(namespace, quota.Labels)
 	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	endpointAfter, err := kube.UpdateEndpoint(newEndpoint)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -292,7 +292,7 @@ func UpdateEndpoint(ctx *gin.Context) {
 //  '202':
 //    description: endpoint deleted
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func DeleteEndpoint(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	ep := ctx.Param(endpointParam)
@@ -306,7 +306,7 @@ func DeleteEndpoint(ctx *gin.Context) {
 
 	err := kube.DeleteEndpoint(namespace, ep)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
 		return
 	}
 
