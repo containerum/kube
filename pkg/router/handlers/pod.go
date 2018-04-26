@@ -238,14 +238,14 @@ func GetPodLogs(ctx *gin.Context) {
 	rc, err := kube.GetPodLogs(ns, ctx.Param(podParam), &logOpt)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrUnableGetPodLogs().AddDetailsErr(err), ctx)
+		gonic.Gonic(kubeErrors.ErrUnableGetPodLogs().AddDetailsErr(err), ctx)
 		return
 	}
 
 	conn, err := wsupgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrUnableGetPodLogs().AddDetailsErr(err), ctx)
+		gonic.Gonic(kubeErrors.ErrUnableGetPodLogs().AddDetailsErr(err), ctx)
 		return
 	}
 
