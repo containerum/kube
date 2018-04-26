@@ -5,7 +5,7 @@ import (
 
 	"fmt"
 
-	ch "git.containerum.net/ch/cherry"
+	"git.containerum.net/ch/cherry"
 	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	api_errors "k8s.io/apimachinery/pkg/api/errors"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -57,7 +57,7 @@ const (
 )
 
 //ParseKubernetesResourceError checks error status
-func ParseKubernetesResourceError(in interface{}, defaultErr *ch.Err) *ch.Err {
+func ParseKubernetesResourceError(in interface{}, defaultErr *cherry.Err) *cherry.Err {
 	sE, isStatusErrorCode := in.(*api_errors.StatusError)
 	if isStatusErrorCode {
 		switch sE.ErrStatus.Reason {
