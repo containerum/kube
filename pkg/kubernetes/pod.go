@@ -1,9 +1,9 @@
 package kubernetes
 
 import (
-	"bytes"
+	"io"
 
-	v1 "k8s.io/api/core/v1"
+	"k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	log "github.com/sirupsen/logrus"
@@ -11,11 +11,10 @@ import (
 
 //TODO: Imp struct to GetPodLogs func
 type LogOptions struct {
-	Follow     bool
-	StopFollow chan struct{}
-	Tail       int64
-	Previous   bool
-	Container  string
+	Follow    bool
+	Tail      int64
+	Previous  bool
+	Container string
 }
 
 //GetPodList returns pods list
@@ -60,37 +59,13 @@ func (k *Kube) DeletePod(ns string, po string) error {
 }
 
 //GetPodLogs attaches client to pod log
-func (k *Kube) GetPodLogs(ns string, po string, out *bytes.Buffer, opt *LogOptions) error {
-	defer log.Debug("STOP FOLLOW LOGS STREAM")
+func (k *Kube) GetPodLogs(ns string, po string, opt *LogOptions) (io.ReadCloser, error) {
 	req := k.CoreV1().Pods(ns).GetLogs(po, &v1.PodLogOptions{
 		TailLines: &opt.Tail,
 		Follow:    opt.Follow,
 		Previous:  opt.Previous,
 		Container: opt.Container,
 	})
-	readCloser, err := req.Stream()
-	if err != nil {
-		log.WithError(err).Debug("STREAM")
-		return err
-	}
-	defer readCloser.Close()
-	for {
-		select {
-		case <-opt.StopFollow:
-			log.WithError(err).Debug("FOLLOW")
-			return nil
-		default:
-			buf := make([]byte, 1024)
-			_, err := readCloser.Read(buf)
-			if err != nil {
-				log.WithError(err).Debug("READ")
-				return err
-			}
-			_, err = out.Write(buf)
-			if err != nil {
-				log.WithError(err).Debug("WRITE")
-				return err
-			}
-		}
-	}
+
+	return req.Stream()
 }
