@@ -17,12 +17,11 @@ import (
 const (
 	ownerLabel = "owner"
 	appLabel   = "app"
-	nameLabel  = "name"
 
-	minNamespaceCPU    = "0.3"
-	minNamespaceMemory = "0.5Gi"
-	maxNamespaceCPU    = "10"
-	maxNamespaceMemory = "10Gi"
+	minNamespaceCPU    = 300   //m
+	minNamespaceMemory = 512   //Mi
+	maxNamespaceCPU    = 12000 //m
+	maxNamespaceMemory = 28672 //Mi
 )
 
 type NamespacesList struct {
@@ -36,9 +35,9 @@ type NamespaceWithOwner struct {
 	Access string `json:"access,omitempty"`
 }
 
-// ParseResourceQuotaList parses kubernetes v1.ResourceQuotaList to more convenient []Namespace struct.
+// ParseKubeResourceQuotaList parses kubernetes v1.ResourceQuotaList to more convenient []Namespace struct.
 // (resource quouta contains all fields that parent namespace contains)
-func ParseResourceQuotaList(quotas interface{}, parseforadmin bool) (*NamespacesList, error) {
+func ParseKubeResourceQuotaList(quotas interface{}, parseforadmin bool) (*NamespacesList, error) {
 	objects := quotas.(*api_core.ResourceQuotaList)
 	if objects == nil {
 		return nil, ErrUnableConvertNamespaceList
@@ -46,7 +45,7 @@ func ParseResourceQuotaList(quotas interface{}, parseforadmin bool) (*Namespaces
 
 	namespaces := make([]NamespaceWithOwner, 0, objects.Size())
 	for _, quota := range objects.Items {
-		ns, err := ParseResourceQuota(&quota, parseforadmin)
+		ns, err := ParseKubeResourceQuota(&quota, parseforadmin)
 		if err != nil {
 			return nil, err
 		}
@@ -55,9 +54,9 @@ func ParseResourceQuotaList(quotas interface{}, parseforadmin bool) (*Namespaces
 	return &NamespacesList{namespaces}, nil
 }
 
-// ParseResourceQuota parses kubernetes v1.ResourceQuota to more convenient Namespace struct.
+// ParseKubeResourceQuota parses kubernetes v1.ResourceQuota to more convenient Namespace struct.
 // (resource quouta contains all fields that parent namespace contains)
-func ParseResourceQuota(quota interface{}, parseforadmin bool) (*NamespaceWithOwner, error) {
+func ParseKubeResourceQuota(quota interface{}, parseforadmin bool) (*NamespaceWithOwner, error) {
 	obj := quota.(*api_core.ResourceQuota)
 	if obj == nil {
 		return nil, ErrUnableConvertNamespace
@@ -68,22 +67,21 @@ func ParseResourceQuota(quota interface{}, parseforadmin bool) (*NamespaceWithOw
 	cpuUsed := obj.Status.Used[api_core.ResourceLimitsCPU]
 	memoryUsed := obj.Status.Used[api_core.ResourceLimitsMemory]
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
-	createdAt := obj.ObjectMeta.CreationTimestamp.Format(time.RFC3339)
+	createdAt := obj.ObjectMeta.CreationTimestamp.UTC().Format(time.RFC3339)
 
 	ns := NamespaceWithOwner{
 		Owner: owner,
 		Name:  obj.GetNamespace(),
 		Namespace: kube_types.Namespace{
-			//Label:     obj.GetNamespace(),
 			CreatedAt: &createdAt,
 			Resources: kube_types.Resources{
 				Hard: kube_types.Resource{
-					CPU:    cpuLimit.String(),
-					Memory: memoryLimit.String(),
+					CPU:    uint(cpuLimit.ScaledValue(api_resource.Milli)),
+					Memory: uint(memoryLimit.Value() / 1024 / 1024),
 				},
 				Used: &kube_types.Resource{
-					CPU:    cpuUsed.String(),
-					Memory: memoryUsed.String(),
+					CPU:    uint(cpuUsed.ScaledValue(api_resource.Milli)),
+					Memory: uint(memoryUsed.Value() / 1024 / 1024),
 				},
 			},
 		},
@@ -96,9 +94,9 @@ func ParseResourceQuota(quota interface{}, parseforadmin bool) (*NamespaceWithOw
 	return &ns, nil
 }
 
-// MakeNamespace creates kubernetes v1.Namespace from Namespace struct
-func MakeNamespace(ns NamespaceWithOwner) (*api_core.Namespace, []error) {
-	err := ValidateNamespace(ns)
+// ToKube creates kubernetes v1.Namespace from Namespace struct
+func (ns *NamespaceWithOwner) ToKube() (*api_core.Namespace, []error) {
+	err := ns.Validate()
 	if err != nil {
 		return nil, err
 	}
@@ -123,19 +121,15 @@ func MakeNamespace(ns NamespaceWithOwner) (*api_core.Namespace, []error) {
 
 // MakeResourceQuota creates kubernetes v1.ResourceQuota from cpu, memory, labels and namespace name
 func MakeResourceQuota(ns string, labels map[string]string, resources kube_types.Resource) (*api_core.ResourceQuota, []error) {
-	cpuq, err := api_resource.ParseQuantity(resources.CPU)
-	if err != nil {
-		return nil, []error{ErrInvalidCPUFormat}
-	}
-	memoryq, err := api_resource.ParseQuantity(resources.Memory)
-	if err != nil {
-		return nil, []error{ErrInvalidMemoryFormat}
-	}
-
-	errs := ValidateResourceQuota(cpuq, memoryq)
+	errs := ValidateResourceQuota(resources.CPU, resources.Memory)
 	if errs != nil {
 		return nil, errs
 	}
+
+	cpuLim := api_resource.NewScaledQuantity(int64(resources.CPU), api_resource.Milli)
+	memLim := api_resource.NewQuantity(int64(resources.Memory)*1024*1024, api_resource.BinarySI)
+	cpuReq := cpuLim
+	memReq := memLim
 
 	newRq := api_core.ResourceQuota{
 		TypeMeta: api_meta.TypeMeta{
@@ -149,10 +143,10 @@ func MakeResourceQuota(ns string, labels map[string]string, resources kube_types
 		},
 		Spec: api_core.ResourceQuotaSpec{
 			Hard: api_core.ResourceList{
-				api_core.ResourceRequestsCPU:    cpuq,
-				api_core.ResourceLimitsCPU:      cpuq,
-				api_core.ResourceRequestsMemory: memoryq,
-				api_core.ResourceLimitsMemory:   memoryq,
+				api_core.ResourceRequestsCPU:    *cpuReq,
+				api_core.ResourceLimitsCPU:      *cpuLim,
+				api_core.ResourceRequestsMemory: *memReq,
+				api_core.ResourceLimitsMemory:   *memLim,
 			},
 		},
 	}
@@ -163,15 +157,15 @@ func ParseNamespaceListForUser(headers UserHeaderDataMap, nsl []NamespaceWithOwn
 	nso := make([]NamespaceWithOwner, 0)
 	ret := NamespacesList{nso}
 	for _, ns := range nsl {
-		nsp := ParseNamespaceForUser(headers, &ns)
-		if nsp.Label != "" {
-			ret.Namespaces = append(ret.Namespaces, *nsp)
+		ns.ParseForUser(headers)
+		if ns.Label != "" {
+			ret.Namespaces = append(ret.Namespaces, ns)
 		}
 	}
 	return &ret
 }
 
-func ParseNamespaceForUser(headers UserHeaderDataMap, ns *NamespaceWithOwner) *NamespaceWithOwner {
+func (ns *NamespaceWithOwner) ParseForUser(headers UserHeaderDataMap) *NamespaceWithOwner {
 	for _, n := range headers {
 		if ns.Name == n.ID {
 			ns.Label = n.Label
@@ -183,13 +177,13 @@ func ParseNamespaceForUser(headers UserHeaderDataMap, ns *NamespaceWithOwner) *N
 	return ns
 }
 
-func ValidateNamespace(ns NamespaceWithOwner) []error {
+func (ns *NamespaceWithOwner) Validate() []error {
 	errs := []error{}
 
 	if ns.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
 	} else if err := api_validation.IsDNS1123Label(ns.Name); len(err) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, ns.Name, strings.Join(err, ","))))
+		errs = append(errs, fmt.Errorf(invalidName, ns.Name, strings.Join(err, ",")))
 	}
 	if ns.Owner == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
@@ -202,20 +196,15 @@ func ValidateNamespace(ns NamespaceWithOwner) []error {
 	return nil
 }
 
-func ValidateResourceQuota(cpu, mem api_resource.Quantity) []error {
+func ValidateResourceQuota(cpu, mem uint) []error {
 	errs := []error{}
 
-	mincpu, _ := api_resource.ParseQuantity(minNamespaceCPU)
-	maxcpu, _ := api_resource.ParseQuantity(maxNamespaceCPU)
-	minmem, _ := api_resource.ParseQuantity(minNamespaceMemory)
-	maxmem, _ := api_resource.ParseQuantity(maxNamespaceMemory)
-
-	if cpu.Cmp(mincpu) == -1 || cpu.Cmp(maxcpu) == 1 {
-		errs = append(errs, fmt.Errorf(invalidCPUQuota, cpu.String(), minNamespaceCPU, maxNamespaceCPU))
+	if cpu < minNamespaceCPU || cpu > maxNamespaceCPU {
+		errs = append(errs, fmt.Errorf(invalidCPUQuota, cpu, minNamespaceCPU, maxNamespaceCPU))
 	}
 
-	if mem.Cmp(minmem) == -1 || mem.Cmp(maxmem) == 1 {
-		errs = append(errs, fmt.Errorf(invalidMemoryQuota, mem.String(), minNamespaceMemory, maxNamespaceMemory))
+	if mem < minNamespaceMemory || mem > maxNamespaceMemory {
+		errs = append(errs, fmt.Errorf(invalidMemoryQuota, mem, minNamespaceMemory, maxNamespaceMemory))
 	}
 
 	if len(errs) > 0 {

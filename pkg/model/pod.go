@@ -20,36 +20,36 @@ type PodWithOwner struct {
 	Owner string `json:"owner,omitempty"`
 }
 
-// ParsePodList parses kubernetes v1.PodList to more convenient []Pod struct.
-func ParsePodList(pods interface{}, parseforuser bool) *PodsList {
-	objects := pods.(*api_core.PodList)
-	pos := make([]PodWithOwner, 0)
-	for _, po := range objects.Items {
-		pos = append(pos, ParsePod(&po, parseforuser))
+// ParseKubePodList parses kubernetes v1.PodList to more convenient []Pod struct.
+func ParseKubePodList(pods interface{}, parseforuser bool) *PodsList {
+	podList := pods.(*api_core.PodList)
+	ret := make([]PodWithOwner, 0)
+	for _, po := range podList.Items {
+		ret = append(ret, ParseKubePod(&po, parseforuser))
 	}
-	return &PodsList{pos}
+	return &PodsList{ret}
 }
 
-// ParsePod parses kubernetes v1.PodList to more convenient Pod struct.
-func ParsePod(pod interface{}, parseforuser bool) PodWithOwner {
+// ParseKubePod parses kubernetes v1.PodList to more convenient Pod struct.
+func ParseKubePod(pod interface{}, parseforuser bool) PodWithOwner {
 	obj := pod.(*api_core.Pod)
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
 	containers, cpu, mem := getContainers(obj.Spec.Containers, nil, 1)
 	deploy := obj.GetObjectMeta().GetLabels()[appLabel]
-	createdAt := obj.ObjectMeta.CreationTimestamp.Format(time.RFC3339)
+	createdAt := obj.ObjectMeta.CreationTimestamp.UTC().Format(time.RFC3339)
 
 	newPod := PodWithOwner{
 		Pod: model.Pod{
-			CreatedAt:   &createdAt,
-			TotalMemory: mem.String(),
-			TotalCPU:    cpu.String(),
-			Deploy:      &deploy,
-			Name:        obj.GetName(),
-			Containers:  containers,
-			Hostname:    &obj.Spec.Hostname,
+			CreatedAt:  &createdAt,
+			Deploy:     &deploy,
+			Name:       obj.GetName(),
+			Containers: containers,
+			Hostname:   &obj.Spec.Hostname,
 			Status: &model.PodStatus{
 				Phase: string(obj.Status.Phase),
 			},
+			TotalCPU:    uint(cpu.ScaledValue(api_resource.Milli)),
+			TotalMemory: uint(mem.Value() / 1024 / 1024),
 		},
 		Owner: owner,
 	}
@@ -83,8 +83,8 @@ func getContainers(cListi interface{}, mode map[string]int32, replicas int) (con
 			ConfigMaps:   configMaps,
 			Commands:     c.Command,
 			Limits: model.Resource{
-				CPU:    cpu.String(),
-				Memory: mem.String(),
+				CPU:    uint(cpu.ScaledValue(api_resource.Milli)),
+				Memory: uint(mem.Value() / 1024 / 1024),
 			},
 		})
 	}

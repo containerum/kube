@@ -2,9 +2,9 @@ package model
 
 import (
 	"encoding/base64"
-	"encoding/json"
 
 	"git.containerum.net/ch/kube-client/pkg/model"
+	"github.com/json-iterator/go"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -18,7 +18,7 @@ func ParseUserHeaderData(str string) (*UserHeaderDataMap, error) {
 		return nil, ErrUnableDecodeUserHeaderData
 	}
 	var userData []model.UserHeaderData
-	err = json.Unmarshal(data, &userData)
+	err = jsoniter.Unmarshal(data, &userData)
 	if err != nil {
 		log.WithError(err).WithField("Value", string(data)).Warn(ErrUnableUnmarshalUserHeaderData)
 		return nil, ErrUnableUnmarshalUserHeaderData

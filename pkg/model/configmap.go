@@ -7,6 +7,8 @@ import (
 
 	"time"
 
+	"encoding/base64"
+
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,16 +24,16 @@ type ConfigMapWithOwner struct {
 	Owner string `json:"owner,omitempty"`
 }
 
-// ParseConfigMapList parses kubernetes v1.ConfigMapList to more convenient []ConfigMap struct.
-func ParseConfigMapList(cmi interface{}) (*ConfigMapsList, error) {
-	cm := cmi.(*api_core.ConfigMapList)
-	if cm == nil {
+// ParseKubeConfigMapList parses kubernetes v1.ConfigMapList to more convenient []ConfigMap struct.
+func ParseKubeConfigMapList(cmi interface{}, parseforuser bool) (*ConfigMapsList, error) {
+	cmList := cmi.(*api_core.ConfigMapList)
+	if cmList == nil {
 		return nil, ErrUnableConvertConfigMapList
 	}
 
 	newCms := make([]ConfigMapWithOwner, 0)
-	for _, cm := range cm.Items {
-		newCm, err := ParseConfigMap(&cm)
+	for _, cm := range cmList.Items {
+		newCm, err := ParseKubeConfigMap(&cm, parseforuser)
 		if err != nil {
 			return nil, err
 		}
@@ -40,8 +42,8 @@ func ParseConfigMapList(cmi interface{}) (*ConfigMapsList, error) {
 	return &ConfigMapsList{newCms}, nil
 }
 
-// ParseConfigMap parses kubernetes v1.ConfigMap to more convenient ConfigMap struct.
-func ParseConfigMap(cmi interface{}) (*ConfigMapWithOwner, error) {
+// ParseKubeConfigMap parses kubernetes v1.ConfigMap to more convenient ConfigMap struct.
+func ParseKubeConfigMap(cmi interface{}, parseforuser bool) (*ConfigMapWithOwner, error) {
 	cm := cmi.(*api_core.ConfigMap)
 	if cm == nil {
 		return nil, ErrUnableConvertConfigMap
@@ -53,21 +55,27 @@ func ParseConfigMap(cmi interface{}) (*ConfigMapWithOwner, error) {
 	}
 
 	owner := cm.GetObjectMeta().GetLabels()[ownerLabel]
-	createdAt := cm.CreationTimestamp.Format(time.RFC3339)
+	createdAt := cm.CreationTimestamp.UTC().Format(time.RFC3339)
 
-	return &ConfigMapWithOwner{
+	newCm := ConfigMapWithOwner{
 		ConfigMap: kube_types.ConfigMap{
 			Name:      cm.GetName(),
 			CreatedAt: &createdAt,
 			Data:      newData,
 		},
 		Owner: owner,
-	}, nil
+	}
+
+	if parseforuser {
+		newCm.Owner = ""
+	}
+
+	return &newCm, nil
 }
 
-// MakeConfigMap creates kubernetes v1.ConfigMap from ConfigMap struct and namespace labels
-func MakeConfigMap(nsName string, cm ConfigMapWithOwner, labels map[string]string) (*api_core.ConfigMap, []error) {
-	err := ValidateConfigMap(cm)
+// ToKube creates kubernetes v1.ConfigMap from ConfigMap struct and namespace labels
+func (cm *ConfigMapWithOwner) ToKube(nsName string, labels map[string]string) (*api_core.ConfigMap, []error) {
+	err := cm.Validate()
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +84,13 @@ func MakeConfigMap(nsName string, cm ConfigMapWithOwner, labels map[string]strin
 		labels = make(map[string]string, 0)
 	}
 	labels[ownerLabel] = cm.Owner
-	labels[nameLabel] = cm.Name
+
+	for k, v := range cm.Data {
+		dec, err := base64.StdEncoding.DecodeString(v)
+		if err == nil {
+			cm.Data[k] = string(dec)
+		}
+	}
 
 	newCm := api_core.ConfigMap{
 		TypeMeta: api_meta.TypeMeta{
@@ -93,18 +107,17 @@ func MakeConfigMap(nsName string, cm ConfigMapWithOwner, labels map[string]strin
 	return &newCm, nil
 }
 
-func ValidateConfigMap(cm ConfigMapWithOwner) []error {
+func (cm *ConfigMapWithOwner) Validate() []error {
 	errs := []error{}
 	if cm.Owner == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
 	} else if !IsValidUUID(cm.Owner) {
 		errs = append(errs, errors.New(invalidOwner))
 	}
-
 	if cm.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
 	} else if err := api_validation.IsDNS1123Label(cm.Name); len(err) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, cm.Name, strings.Join(err, ","))))
+		errs = append(errs, fmt.Errorf(invalidName, cm.Name, strings.Join(err, ",")))
 	}
 	for k := range cm.Data {
 		if err := api_validation.IsConfigMapKey(k); len(err) > 0 {

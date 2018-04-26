@@ -26,12 +26,8 @@
   go-tests = true
 
 [[constraint]]
-  branch = "master"
-  name = "git.containerum.net/ch/json-types"
-
-[[constraint]]
   name = "git.containerum.net/ch/kube-client"
-  version = "~0.8.0"
+  version = "~0.9.0"
 
 [[constraint]]
   name = "github.com/appleboy/gofight"

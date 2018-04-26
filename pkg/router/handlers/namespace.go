@@ -18,8 +18,6 @@ import (
 const (
 	ownerQuery     = "owner"
 	namespaceParam = "namespace"
-
-	userIDHeader = "X-User-Id"
 )
 
 func GetNamespaceList(ctx *gin.Context) {
@@ -27,7 +25,7 @@ func GetNamespaceList(ctx *gin.Context) {
 
 	role := ctx.MustGet(m.UserRole).(string)
 	//TODO: Show only namespaces with owner = X-User-Id
-	/*if role == "user" {
+	/*if role == m.RoleUser {
 		owner = ctx.MustGet(m.UserID).(string)
 	}*/
 
@@ -37,19 +35,18 @@ func GetNamespaceList(ctx *gin.Context) {
 
 	quotas, err := kube.GetNamespaceQuotaList(owner)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
-	ret, err := model.ParseResourceQuotaList(quotas, role == "admin")
+	ret, err := model.ParseKubeResourceQuotaList(quotas, role == m.RoleAdmin)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
-	if role == "user" {
+	if role == m.RoleUser {
 		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
 		ret = model.ParseNamespaceListForUser(*nsList, ret.Namespaces)
 	}
@@ -57,31 +54,31 @@ func GetNamespaceList(ctx *gin.Context) {
 }
 
 func GetNamespace(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+		"Namespace":       namespace,
 	}).Debug("Get namespace Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	quota, err := kube.GetNamespaceQuota(ctx.MustGet(m.NamespaceKey).(string))
+	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableGetResource()), ctx)
 		return
 	}
 
 	role := ctx.MustGet(m.UserRole).(string)
-	ret, err := model.ParseResourceQuota(quota, role == "admin")
+	ret, err := model.ParseKubeResourceQuota(quota, role == m.RoleAdmin)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
 		return
 	}
 
-	if role == "user" {
+	if role == m.RoleUser {
 		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
-		ret = model.ParseNamespaceForUser(*nsList, ret)
+		ret.ParseForUser(*nsList)
 	}
 
 	ctx.JSON(http.StatusOK, ret)
@@ -99,7 +96,7 @@ func CreateNamespace(ctx *gin.Context) {
 		return
 	}
 
-	newNs, errs := model.MakeNamespace(ns)
+	newNs, errs := ns.ToKube()
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
@@ -113,19 +110,18 @@ func CreateNamespace(ctx *gin.Context) {
 
 	_, err := kube.CreateNamespace(newNs)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
 	quotaCreated, err := kube.CreateNamespaceQuota(ns.Name, newQuota)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
-	ret, err := model.ParseResourceQuota(quotaCreated, true)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseKubeResourceQuota(quotaCreated, role == m.RoleAdmin)
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -134,9 +130,13 @@ func CreateNamespace(ctx *gin.Context) {
 }
 
 func UpdateNamespace(ctx *gin.Context) {
-	log.WithField("Namespace", ctx.Param(namespaceParam)).Debug("Update namespace Call")
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	log.WithFields(log.Fields{
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       namespace,
+	}).Debug("Update namespace Call")
 
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
 	var res model.NamespaceWithOwner
 	if err := ctx.ShouldBindWith(&res, binding.JSON); err != nil {
@@ -145,10 +145,10 @@ func UpdateNamespace(ctx *gin.Context) {
 		return
 	}
 
-	quotaOld, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
+	quotaOld, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -158,14 +158,15 @@ func UpdateNamespace(ctx *gin.Context) {
 		return
 	}
 
-	quotaAfter, err := kubecli.UpdateNamespaceQuota(ctx.Param(namespaceParam), quota)
+	quotaAfter, err := kube.UpdateNamespaceQuota(namespace, quota)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
-	ret, err := model.ParseResourceQuota(quotaAfter, true)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseKubeResourceQuota(quotaAfter, role == m.RoleAdmin)
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -175,14 +176,17 @@ func UpdateNamespace(ctx *gin.Context) {
 }
 
 func DeleteNamespace(ctx *gin.Context) {
-	log.WithField("Namespace", ctx.Param(namespaceParam)).Debug("Delete namespace Call")
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	log.WithFields(log.Fields{
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       namespace,
+	}).Debug("Delete namespace Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	err := kube.DeleteNamespace(ctx.Param(namespaceParam))
+	err := kube.DeleteNamespace(namespace)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
 		return
 	}
 

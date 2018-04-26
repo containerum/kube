@@ -11,7 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
-	api_core "k8s.io/api/core/v1"
 )
 
 const (
@@ -19,22 +18,22 @@ const (
 )
 
 func GetSecretList(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+		"Namespace":       namespace,
 	}).Debug("Get secret list Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	secrets, err := kube.GetSecretList(ctx.MustGet(m.NamespaceKey).(string))
+	secrets, err := kube.GetSecretList(namespace)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
 	role := ctx.MustGet(m.UserRole).(string)
-	ret, err := model.ParseSecretList(secrets, role == "user")
+	ret, err := model.ParseKubeSecretList(secrets, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
@@ -45,23 +44,24 @@ func GetSecretList(ctx *gin.Context) {
 }
 
 func GetSecret(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	sct := ctx.Param(secretParam)
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
-		"Secret":          ctx.Param(secretParam),
+		"Namespace":       namespace,
+		"Secret":          sct,
 	}).Debug("Get secret Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	secret, err := kube.GetSecret(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(secretParam))
+	secret, err := kube.GetSecret(namespace, sct)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableGetResource()), ctx)
 		return
 	}
 
 	role := ctx.MustGet(m.UserRole).(string)
-	ret, err := model.ParseSecret(secret, role == "user")
+	ret, err := model.ParseKubeSecret(secret, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
@@ -72,41 +72,45 @@ func GetSecret(ctx *gin.Context) {
 }
 
 func CreateSecret(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
-		"Namespace": ctx.Param(namespaceParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       namespace,
 	}).Debug("Create secret Call")
 
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var secret model.SecretWithOwner
-	if err := ctx.ShouldBindWith(&secret, binding.JSON); err != nil {
+	var secretReq model.SecretWithOwner
+	if err := ctx.ShouldBindWith(&secretReq, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
-	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
+	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
-	newSecret, errs := model.MakeSecret(ctx.Param(namespaceParam), secret, quota.Labels)
+	role := ctx.MustGet(m.UserRole).(string)
+	if role == m.RoleUser {
+		secretReq.Owner = ctx.MustGet(m.UserID).(string)
+	}
+
+	newSecret, errs := secretReq.ToKube(namespace, quota.Labels)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
-	secretAfter, err := kubecli.CreateSecret(newSecret)
+	secretAfter, err := kube.CreateSecret(newSecret)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
-	ret, err := model.ParseSecret(secretAfter, role == "user")
+	ret, err := model.ParseKubeSecret(secretAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -115,44 +119,52 @@ func CreateSecret(ctx *gin.Context) {
 }
 
 func UpdateSecret(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	sct := ctx.Param(secretParam)
 	log.WithFields(log.Fields{
-		"Namespace": ctx.Param(namespaceParam),
-		"Secret":    ctx.Param(secretParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       namespace,
+		"Secret":          sct,
 	}).Debug("Create secret Call")
 
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var secret model.SecretWithOwner
-	if err := ctx.ShouldBindWith(&secret, binding.JSON); err != nil {
+	var secretReq model.SecretWithOwner
+	if err := ctx.ShouldBindWith(&secretReq, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
-	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
+	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
-	secret.Name = ctx.Param(secretParam)
+	oldSecret, err := kube.GetIngress(namespace, sct)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		return
+	}
 
-	newSecret, errs := model.MakeSecret(ctx.Param(namespaceParam), secret, quota.Labels)
+	secretReq.Name = sct
+	secretReq.Owner = oldSecret.GetObjectMeta().GetLabels()[ownerQuery]
+
+	newSecret, errs := secretReq.ToKube(namespace, quota.Labels)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
-	secretAfter, err := kubecli.UpdateSecret(newSecret)
+	secretAfter, err := kube.UpdateSecret(newSecret)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	role := ctx.MustGet(m.UserRole).(string)
-	ret, err := model.ParseSecret(secretAfter, role == "user")
+	ret, err := model.ParseKubeSecret(secretAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -161,71 +173,18 @@ func UpdateSecret(ctx *gin.Context) {
 }
 
 func DeleteSecret(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	sct := ctx.Param(secretParam)
 	log.WithFields(log.Fields{
-		"Namespace": ctx.Param(namespaceParam),
-		"Secret":    ctx.Param(secretParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       namespace,
+		"Secret":          sct,
 	}).Debug("Delete secret Call")
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-	err := kube.DeleteSecret(ctx.Param(namespaceParam), ctx.Param(secretParam))
+	err := kube.DeleteSecret(namespace, sct)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
 		return
 	}
 	ctx.Status(http.StatusAccepted)
-}
-
-func CreateSecretFromFile(ctx *gin.Context) {
-	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
-	}).Debug("Create secret Call")
-
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-
-	var secret api_core.Secret
-	if err := ctx.ShouldBindWith(&secret, binding.JSON); err != nil {
-		ctx.Error(err)
-		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
-		return
-	}
-
-	role := ctx.MustGet(m.UserRole).(string)
-	if role == "user" {
-		if secret.Labels == nil {
-			secret.Labels = map[string]string{}
-		}
-		secret.Labels["owner"] = ctx.MustGet(m.UserID).(string)
-
-		secret.Namespace = ctx.MustGet(m.NamespaceKey).(string)
-	} else {
-		secret.Namespace = ctx.Param(namespaceParam)
-	}
-
-	errs := model.ValidateSecretFromFile(&secret)
-	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
-		return
-	}
-
-	_, err := kubecli.GetNamespaceQuota(ctx.MustGet(m.NamespaceKey).(string))
-	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
-		return
-	}
-
-	secretAfter, err := kubecli.CreateSecret(&secret)
-	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailsErr(err), ctx)
-		return
-	}
-
-	ret, err := model.ParseSecret(secretAfter, role == "user")
-	if err != nil {
-		ctx.Error(err)
-	}
-
-	ctx.JSON(http.StatusCreated, ret)
 }

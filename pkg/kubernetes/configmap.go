@@ -12,7 +12,7 @@ func (kube *Kube) GetConfigMapList(namespace string) (*api_core.ConfigMapList, e
 	if err != nil {
 		log.WithFields(log.Fields{
 			"Namespace": namespace,
-		}).Error(ErrUnableGetConfigMapList)
+		}).Error(err)
 		return nil, err
 	}
 	return cmAfter, nil
@@ -25,7 +25,7 @@ func (kube *Kube) GetConfigMap(namespace, cm string) (*api_core.ConfigMap, error
 		log.WithFields(log.Fields{
 			"Namespace": namespace,
 			"ConfigMap": cm,
-		}).Error(ErrUnableGetConfigMap)
+		}).Error(err)
 		return nil, err
 	}
 	return cmAfter, nil
@@ -38,7 +38,7 @@ func (kube *Kube) CreateConfigMap(cm *api_core.ConfigMap) (*api_core.ConfigMap, 
 		log.WithFields(log.Fields{
 			"Namespace": cm.Namespace,
 			"ConfigMap": cm.Name,
-		}).Error(ErrUnableCreateConfigMap)
+		}).Error(err)
 		return nil, err
 	}
 	return cmAfter, nil
@@ -51,7 +51,7 @@ func (kube *Kube) UpdateConfigMap(cm *api_core.ConfigMap) (*api_core.ConfigMap, 
 		log.WithFields(log.Fields{
 			"Namespace": cm.Namespace,
 			"ConfigMap": cm.Name,
-		}).Error(ErrUnableUpdateConfigMap)
+		}).Error(err)
 		return nil, err
 	}
 	return cmAfter, nil
@@ -64,7 +64,7 @@ func (kube *Kube) DeleteConfigMap(namespace, cm string) error {
 		log.WithFields(log.Fields{
 			"Namespace": namespace,
 			"ConfigMap": cm,
-		}).Error(ErrUnableDeleteConfigMap)
+		}).Error(err)
 		return err
 	}
 	return nil

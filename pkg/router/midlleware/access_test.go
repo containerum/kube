@@ -59,7 +59,7 @@ func TestIsAdmin(t *testing.T) {
 		Convey("Check user User-Role", func() {
 			r.GET("/test").
 				SetHeader(gofight.H{
-					userRoleXHeader: "user",
+					userRoleXHeader: RoleUser,
 				}).
 				Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
 					So(r.Code, ShouldEqual, http.StatusForbidden)
@@ -68,7 +68,7 @@ func TestIsAdmin(t *testing.T) {
 		Convey("Check admin User-Role", func() {
 			r.GET("/test").
 				SetHeader(gofight.H{
-					userRoleXHeader: "admin",
+					userRoleXHeader: RoleAdmin,
 				}).
 				Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
 					So(r.Code, ShouldEqual, http.StatusOK)

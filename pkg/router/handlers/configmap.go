@@ -18,21 +18,22 @@ const (
 )
 
 func GetConfigMapList(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
+		"Namespace":       namespace,
 	}).Debug("Get config maps list Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	cm, err := kube.GetConfigMapList(ctx.MustGet(m.NamespaceKey).(string))
+	cmList, err := kube.GetConfigMapList(namespace)
 	if err != nil {
-		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
-	ret, err := model.ParseConfigMapList(cm)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseKubeConfigMapList(cmList, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
@@ -43,22 +44,24 @@ func GetConfigMapList(ctx *gin.Context) {
 }
 
 func GetConfigMap(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	configMap := ctx.Param(configMapParam)
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
-		"ConfigMap":       ctx.Param(configMapParam),
+		"Namespace":       namespace,
+		"ConfigMap":       configMap,
 	}).Debug("Get config map Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	cm, err := kube.GetConfigMap(ctx.MustGet(m.NamespaceKey).(string), ctx.Param(configMapParam))
+	cm, err := kube.GetConfigMap(namespace, configMap)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableGetResource()), ctx)
 		return
 	}
 
-	ret, err := model.ParseConfigMap(cm)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseKubeConfigMap(cm, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
@@ -69,40 +72,46 @@ func GetConfigMap(ctx *gin.Context) {
 }
 
 func CreateConfigMap(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
-		"Namespace": ctx.Param(namespaceParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       namespace,
 	}).Debug("Create config map Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var cm model.ConfigMapWithOwner
-	if err := ctx.ShouldBindWith(&cm, binding.JSON); err != nil {
+	var cmReq model.ConfigMapWithOwner
+	if err := ctx.ShouldBindWith(&cmReq, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
-	quota, err := kube.GetNamespaceQuota(ctx.Param(namespaceParam))
+	quota, err := kube.GetNamespace(namespace)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
-	newCm, errs := model.MakeConfigMap(ctx.Param(namespaceParam), cm, quota.Labels)
+	role := ctx.MustGet(m.UserRole).(string)
+	if role == m.RoleUser {
+		cmReq.Owner = ctx.MustGet(m.UserID).(string)
+	}
+
+	cm, errs := cmReq.ToKube(namespace, quota.Labels)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
-	cmAfter, err := kube.CreateConfigMap(newCm)
+	cmAfter, err := kube.CreateConfigMap(cm)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
 		return
 	}
 
-	ret, err := model.ParseConfigMap(cmAfter)
+	ret, err := model.ParseKubeConfigMap(cmAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -111,43 +120,52 @@ func CreateConfigMap(ctx *gin.Context) {
 }
 
 func UpdateConfigMap(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	configMap := ctx.Param(configMapParam)
 	log.WithFields(log.Fields{
-		"Namespace": ctx.Param(namespaceParam),
-		"ConfigMap": ctx.Param(configMapParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       namespace,
+		"ConfigMap":       configMap,
 	}).Debug("Create config map Call")
 
-	kubecli := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var cm model.ConfigMapWithOwner
-	if err := ctx.ShouldBindWith(&cm, binding.JSON); err != nil {
+	var cmReq model.ConfigMapWithOwner
+	if err := ctx.ShouldBindWith(&cmReq, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
-	quota, err := kubecli.GetNamespaceQuota(ctx.Param(namespaceParam))
+	quota, err := kube.GetNamespace(namespace)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()).AddDetailF(noNamespace, ctx.Param(namespaceParam)), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
-	cm.Name = ctx.Param(configMapParam)
+	oldCm, err := kube.GetConfigMap(namespace, ctx.Param(deploymentParam))
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		return
+	}
 
-	newCm, errs := model.MakeConfigMap(ctx.Param(namespaceParam), cm, quota.Labels)
+	cmReq.Name = configMap
+	cmReq.Owner = oldCm.GetObjectMeta().GetLabels()[ownerQuery]
+
+	newCm, errs := cmReq.ToKube(namespace, quota.Labels)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
-	cmAfter, err := kubecli.UpdateConfigMap(newCm)
+	cmAfter, err := kube.UpdateConfigMap(newCm)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
-	ret, err := model.ParseConfigMap(cmAfter)
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseKubeConfigMap(cmAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -156,16 +174,51 @@ func UpdateConfigMap(ctx *gin.Context) {
 }
 
 func DeleteConfigMap(ctx *gin.Context) {
+	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	configMap := ctx.Param(configMapParam)
 	log.WithFields(log.Fields{
-		"Namespace": ctx.Param(namespaceParam),
-		"ConfigMap": ctx.Param(configMapParam),
+		"Namespace Param": ctx.Param(namespaceParam),
+		"Namespace":       namespace,
+		"ConfigMap":       configMap,
 	}).Debug("Delete config map Call")
+
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-	err := kube.DeleteConfigMap(ctx.Param(namespaceParam), ctx.Param(configMapParam))
+
+	err := kube.DeleteConfigMap(namespace, configMap)
 	if err != nil {
-		ctx.Error(err)
-		gonic.Gonic(model.ParseResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
 		return
 	}
+
 	ctx.Status(http.StatusAccepted)
+}
+
+func GetSelectedConfigMaps(ctx *gin.Context) {
+	log.Debug("Get selected config maps Call")
+
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	ret := make(map[string]model.ConfigMapsList, 0)
+
+	role := ctx.MustGet(m.UserRole).(string)
+	if role == m.RoleUser {
+		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
+		for _, n := range *nsList {
+			cmList, err := kube.GetConfigMapList(n.ID)
+			if err != nil {
+				gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+				return
+			}
+
+			cm, err := model.ParseKubeConfigMapList(cmList, role == m.RoleUser)
+			if err != nil {
+				gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+				return
+			}
+
+			ret[n.Label] = *cm
+		}
+	}
+
+	ctx.JSON(http.StatusOK, ret)
 }

@@ -28,7 +28,7 @@ const (
 
 const (
 	serviceKind       = "Service"
-	serviceApiVersion = "v1"
+	serviceAPIVersion = "v1"
 )
 
 type ServicesList struct {
@@ -42,8 +42,8 @@ type ServiceWithOwner struct {
 	NoSelector bool   `json:"no_selector,omitempty"`
 }
 
-// ParseServiceList parses kubernetes v1.ServiceList to more convenient Service struct.
-func ParseServiceList(ns interface{}, parseforuser bool) (*ServicesList, error) {
+// ParseKubeServiceList parses kubernetes v1.ServiceList to more convenient Service struct.
+func ParseKubeServiceList(ns interface{}, parseforuser bool) (*ServicesList, error) {
 	nativeServices := ns.(*api_core.ServiceList)
 	if nativeServices == nil {
 		return nil, ErrUnableConvertServiceList
@@ -51,7 +51,7 @@ func ParseServiceList(ns interface{}, parseforuser bool) (*ServicesList, error) 
 
 	serviceList := make([]ServiceWithOwner, 0, nativeServices.Size())
 	for _, nativeService := range nativeServices.Items {
-		service, err := ParseService(&nativeService, false)
+		service, err := ParseKubeService(&nativeService, false)
 		if err != nil {
 			return nil, err
 		}
@@ -66,8 +66,8 @@ func ParseServiceList(ns interface{}, parseforuser bool) (*ServicesList, error) 
 	return &ServicesList{serviceList}, nil
 }
 
-// ParseService parses kubernetes v1.Service to more convenient Service struct.
-func ParseService(srv interface{}, parseforuser bool) (*ServiceWithOwner, error) {
+// ParseKubeService parses kubernetes v1.Service to more convenient Service struct.
+func ParseKubeService(srv interface{}, parseforuser bool) (*ServiceWithOwner, error) {
 	native := srv.(*api_core.Service)
 	if native == nil {
 		return nil, ErrUnableConvertService
@@ -75,7 +75,7 @@ func ParseService(srv interface{}, parseforuser bool) (*ServiceWithOwner, error)
 
 	ports := make([]kube_types.ServicePort, 0, 1)
 
-	createdAt := native.GetCreationTimestamp().Format(time.RFC3339)
+	createdAt := native.GetCreationTimestamp().UTC().UTC().Format(time.RFC3339)
 	owner := native.GetObjectMeta().GetLabels()[ownerLabel]
 	deploy := native.GetObjectMeta().GetLabels()[appLabel]
 	domain := native.GetObjectMeta().GetLabels()[domainLabel]
@@ -123,9 +123,9 @@ func parseServicePort(np interface{}) kube_types.ServicePort {
 	}
 }
 
-// MakeService creates kubernetes v1.Service from Service struct and namespace labels
-func MakeService(nsName string, service ServiceWithOwner, labels map[string]string) (*api_core.Service, []error) {
-	err := ValidateService(service)
+// ToKube creates kubernetes v1.Service from Service struct and namespace labels
+func (service *ServiceWithOwner) ToKube(nsName string, labels map[string]string) (*api_core.Service, []error) {
+	err := service.Validate()
 	if err != nil {
 		return nil, err
 	}
@@ -135,13 +135,12 @@ func MakeService(nsName string, service ServiceWithOwner, labels map[string]stri
 	}
 	labels[appLabel] = service.Deploy
 	labels[ownerLabel] = service.Owner
-	labels[nameLabel] = service.Name
 	labels[hiddenLabel] = strconv.FormatBool(service.Hidden)
 
 	newService := api_core.Service{
 		TypeMeta: api_meta.TypeMeta{
 			Kind:       serviceKind,
-			APIVersion: serviceApiVersion,
+			APIVersion: serviceAPIVersion,
 		},
 		ObjectMeta: api_meta.ObjectMeta{
 			Labels:    labels,
@@ -155,7 +154,10 @@ func MakeService(nsName string, service ServiceWithOwner, labels map[string]stri
 	}
 
 	if !service.NoSelector {
-		newService.Spec.Selector = labels
+		selector := make(map[string]string, 0)
+		selector[appLabel] = service.Deploy
+		selector[ownerLabel] = service.Owner
+		newService.Spec.Selector = selector
 	}
 
 	if service.IPs != nil {
@@ -187,7 +189,7 @@ func makeServicePorts(ports []kube_types.ServicePort) []api_core.ServicePort {
 	return serviceports
 }
 
-func ValidateService(service ServiceWithOwner) []error {
+func (service *ServiceWithOwner) Validate() []error {
 	errs := []error{}
 	if service.Owner == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
@@ -197,7 +199,7 @@ func ValidateService(service ServiceWithOwner) []error {
 	if service.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
 	} else if err := api_validation.IsDNS1035Label(service.Name); len(err) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, service.Name, strings.Join(err, ","))))
+		errs = append(errs, fmt.Errorf(invalidName, service.Name, strings.Join(err, ",")))
 	}
 	if service.Deploy == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Deploy"))
@@ -209,7 +211,7 @@ func ValidateService(service ServiceWithOwner) []error {
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port name"))
 		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
+			errs = append(errs, fmt.Errorf(invalidName, v.Name, strings.Join(err, ",")))
 		}
 		if v.Protocol == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port protocol"))
@@ -219,50 +221,6 @@ func ValidateService(service ServiceWithOwner) []error {
 		if len(service.IPs) > 0 {
 			if len(api_validation.IsInRange(*v.Port, minport, maxport)) > 0 {
 				errs = append(errs, fmt.Errorf(invalidPort, *v.Port, minport, maxport))
-			}
-		}
-	}
-	if len(errs) > 0 {
-		return errs
-	}
-	return nil
-}
-
-func ValidateServiceFromFile(svc *api_core.Service) []error {
-	errs := []error{}
-
-	if svc.Kind != serviceKind {
-		errs = append(errs, fmt.Errorf(invalidResourceKind, svc.Kind, serviceKind))
-	}
-
-	if svc.APIVersion != "" && svc.APIVersion != serviceApiVersion {
-		errs = append(errs, fmt.Errorf(invalidApiVersion, svc.APIVersion, serviceApiVersion))
-	}
-
-	if svc.GetLabels()[ownerLabel] == "" {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Label: Owner"))
-	} else if !IsValidUUID(svc.GetLabels()[ownerLabel]) {
-		errs = append(errs, errors.New(invalidOwner))
-	}
-
-	if svc.Name == "" {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-	} else if err := api_validation.IsDNS1035Label(svc.Name); len(err) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, svc.Name, strings.Join(err, ","))))
-	}
-	if svc.Spec.Ports == nil || len(svc.Spec.Ports) == 0 {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Ports"))
-	}
-	for _, v := range svc.Spec.Ports {
-
-		if v.Name == "" {
-			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port name"))
-		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
-		}
-		if len(svc.Spec.ExternalIPs) > 0 {
-			if len(api_validation.IsInRange(int(v.Port), minport, maxport)) > 0 {
-				errs = append(errs, fmt.Errorf(invalidPort, v.Port, minport, maxport))
 			}
 		}
 	}

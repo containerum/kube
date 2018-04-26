@@ -68,9 +68,9 @@ func RequiredUserHeaders() gin.HandlerFunc {
 
 func checkIsUserRole(userRole string) (bool, error) {
 	switch userRole {
-	case "", "admin":
+	case "", RoleAdmin:
 		return false, nil
-	case "user":
+	case RoleUser:
 		return true, nil
 	}
 	return false, ErrInvalidUserRole

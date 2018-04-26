@@ -27,20 +27,20 @@ type IngressWithOwner struct {
 
 const (
 	ingressKind       = "Ingress"
-	ingressApiVersion = "extensions/v1beta1"
+	ingressAPIVersion = "extensions/v1beta1"
 
 	ingressHostSuffix = ".hub.containerum.io"
 )
 
-// ParseIngressList parses kubernetes v1beta1.IngressList to more convenient []Ingress struct
-func ParseIngressList(ingressi interface{}, parseforuser bool) (*IngressesList, error) {
+// ParseKubeIngressList parses kubernetes v1beta1.IngressList to more convenient []Ingress struct
+func ParseKubeIngressList(ingressi interface{}, parseforuser bool) (*IngressesList, error) {
 	ingresses := ingressi.(*api_extensions.IngressList)
 	if ingresses == nil {
 		return nil, ErrUnableConvertIngressList
 	}
 	newIngresses := make([]IngressWithOwner, 0)
 	for _, ingress := range ingresses.Items {
-		newIngress, err := ParseIngress(&ingress, parseforuser)
+		newIngress, err := ParseKubeIngress(&ingress, parseforuser)
 		if err != nil {
 			return nil, err
 		}
@@ -49,13 +49,13 @@ func ParseIngressList(ingressi interface{}, parseforuser bool) (*IngressesList, 
 	return &IngressesList{newIngresses}, nil
 }
 
-// ParseIngress parses kubernetes v1beta1.Ingress to more convenient Ingress struct
-func ParseIngress(ingressi interface{}, parseforuser bool) (*IngressWithOwner, error) {
+// ParseKubeIngress parses kubernetes v1beta1.Ingress to more convenient Ingress struct
+func ParseKubeIngress(ingressi interface{}, parseforuser bool) (*IngressWithOwner, error) {
 	ingress := ingressi.(*api_extensions.Ingress)
 	if ingress == nil {
 		return nil, ErrUnableConvertIngress
 	}
-	createdAt := ingress.CreationTimestamp.Format(time.RFC3339)
+	createdAt := ingress.CreationTimestamp.UTC().Format(time.RFC3339)
 	owner := ingress.GetObjectMeta().GetLabels()[ownerLabel]
 
 	secrets := parseTLS(ingress.Spec.TLS)
@@ -113,9 +113,9 @@ func parseTLS(tlss []api_extensions.IngressTLS) map[string]string {
 	return secrets
 }
 
-// MakeIngress creates kubernetes v1beta1.Ingress from Ingress struct and namespace labels
-func MakeIngress(nsName string, ingress IngressWithOwner, labels map[string]string) (*api_extensions.Ingress, []error) {
-	err := ValidateIngress(ingress)
+// ToKube creates kubernetes v1beta1.Ingress from Ingress struct and namespace labels
+func (ingress *IngressWithOwner) ToKube(nsName string, labels map[string]string) (*api_extensions.Ingress, []error) {
+	err := ingress.Validate()
 	if err != nil {
 		return nil, err
 	}
@@ -123,14 +123,13 @@ func MakeIngress(nsName string, ingress IngressWithOwner, labels map[string]stri
 		labels = make(map[string]string, 0)
 	}
 	labels[ownerLabel] = ingress.Owner
-	labels[nameLabel] = ingress.Name
 
 	rules, secrets, tls := makeIngressRules(ingress.Rules)
 
 	newIngress := api_extensions.Ingress{
 		TypeMeta: api_meta.TypeMeta{
 			Kind:       ingressKind,
-			APIVersion: ingressApiVersion,
+			APIVersion: ingressAPIVersion,
 		},
 		ObjectMeta: api_meta.ObjectMeta{
 			Labels:      labels,
@@ -178,7 +177,7 @@ func makeIngressRules(rules []kube_types.Rule) ([]api_extensions.IngressRule, []
 		if v.TLSSecret != nil {
 			tls = true
 			secrets = append(secrets, api_extensions.IngressTLS{
-				Hosts:      []string{v.Host},
+				Hosts:      []string{v.Host + ingressHostSuffix},
 				SecretName: *v.TLSSecret,
 			})
 		}
@@ -186,7 +185,7 @@ func makeIngressRules(rules []kube_types.Rule) ([]api_extensions.IngressRule, []
 	return newRules, secrets, tls
 }
 
-func ValidateIngress(ingress IngressWithOwner) []error {
+func (ingress *IngressWithOwner) Validate() []error {
 	errs := []error{}
 	if ingress.Owner == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
@@ -196,7 +195,7 @@ func ValidateIngress(ingress IngressWithOwner) []error {
 	if ingress.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
 	} else if err := api_validation.IsDNS1123Subdomain(ingress.Name); len(err) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, ingress.Name, strings.Join(err, ","))))
+		errs = append(errs, fmt.Errorf(invalidName, ingress.Name, strings.Join(err, ",")))
 	}
 	if ingress.Rules == nil || len(ingress.Rules) == 0 {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Rules"))
@@ -209,61 +208,10 @@ func ValidateIngress(ingress IngressWithOwner) []error {
 			if p.ServiceName == "" {
 				errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
 			} else if err := api_validation.IsDNS1035Label(p.ServiceName); len(err) > 0 {
-				errs = append(errs, errors.New(fmt.Sprintf(invalidName, p.ServiceName, strings.Join(err, ","))))
+				errs = append(errs, fmt.Errorf(invalidName, p.ServiceName, strings.Join(err, ",")))
 			}
 			if len(api_validation.IsValidPortNum(p.ServicePort)) > 0 {
 				errs = append(errs, fmt.Errorf(invalidPort, p.ServicePort, 1, maxport))
-			}
-			if p.Path == "" {
-				errs = append(errs, fmt.Errorf(fieldShouldExist, "Path"))
-			}
-		}
-	}
-
-	if len(errs) > 0 {
-		return errs
-	}
-	return nil
-}
-
-func ValidateIngressFromFile(ingress *api_extensions.Ingress) []error {
-	errs := []error{}
-
-	if ingress.Kind != ingressKind {
-		errs = append(errs, fmt.Errorf(invalidResourceKind, ingress.Kind, ingressKind))
-	}
-
-	if ingress.APIVersion != "" && ingress.APIVersion != ingressApiVersion {
-		errs = append(errs, fmt.Errorf(invalidApiVersion, ingress.APIVersion, ingressApiVersion))
-	}
-
-	if ingress.GetLabels()[ownerLabel] == "" {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Label: Owner"))
-	} else if !IsValidUUID(ingress.GetLabels()[ownerLabel]) {
-		errs = append(errs, errors.New(invalidOwner))
-	}
-
-	if ingress.Name == "" {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-	} else if err := api_validation.IsDNS1123Subdomain(ingress.Name); len(err) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, ingress.Name, strings.Join(err, ","))))
-	}
-
-	if ingress.Spec.Rules == nil || len(ingress.Spec.Rules) == 0 {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Rules"))
-	}
-	for _, r := range ingress.Spec.Rules {
-		if r.HTTP.Paths == nil || len(r.HTTP.Paths) == 0 {
-			errs = append(errs, fmt.Errorf(fieldShouldExist, "Path"))
-		}
-		for _, p := range r.HTTP.Paths {
-			if p.Backend.ServiceName == "" {
-				errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-			} else if err := api_validation.IsDNS1035Label(p.Backend.ServiceName); len(err) > 0 {
-				errs = append(errs, errors.New(fmt.Sprintf(invalidName, p.Backend.ServiceName, strings.Join(err, ","))))
-			}
-			if len(api_validation.IsValidPortNum(int(p.Backend.ServicePort.IntVal))) > 0 {
-				errs = append(errs, fmt.Errorf(invalidPort, p.Backend.ServicePort.IntVal, 1, maxport))
 			}
 			if p.Path == "" {
 				errs = append(errs, fmt.Errorf(fieldShouldExist, "Path"))

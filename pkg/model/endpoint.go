@@ -7,25 +7,45 @@ import (
 
 	"time"
 
-	json_types "git.containerum.net/ch/json-types/kube-api"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	api_validation "k8s.io/apimachinery/pkg/util/validation"
 )
 
 type EndpointsList struct {
-	Endpoints []json_types.Endpoint `json:"endpoints"`
+	Endpoints []Endpoint `json:"endpoints"`
 }
 
-// ParseEndpointList parses kubernetes v1.EndpointsList to more convenient []Endpoint struct
-func ParseEndpointList(endpointi interface{}) (*EndpointsList, error) {
+type Endpoint struct {
+	Name      string   `json:"name"`
+	Owner     *string  `json:"owner,omitempty"`
+	CreatedAt *string  `json:"created_at,omitempty"`
+	Addresses []string `json:"addresses"`
+	Ports     []Port   `json:"ports"`
+}
+
+type Protocol string
+
+const (
+	UDP Protocol = "UDP"
+	TCP Protocol = "TCP"
+)
+
+type Port struct {
+	Name     string   `json:"name"`
+	Port     int      `json:"port"`
+	Protocol Protocol `json:"protocol"`
+}
+
+// ParseKubeEndpointList parses kubernetes v1.EndpointsList to more convenient []Endpoint struct
+func ParseKubeEndpointList(endpointi interface{}) (*EndpointsList, error) {
 	endpoints := endpointi.(*api_core.EndpointsList)
 	if endpoints == nil {
 		return nil, ErrUnableConvertEndpointList
 	}
-	newEndpoints := make([]json_types.Endpoint, 0)
+	newEndpoints := make([]Endpoint, 0)
 	for _, ingress := range endpoints.Items {
-		newEndpoint, err := ParseEndpoint(&ingress)
+		newEndpoint, err := ParseKubeEndpoint(&ingress)
 		if err != nil {
 			return nil, err
 		}
@@ -34,20 +54,20 @@ func ParseEndpointList(endpointi interface{}) (*EndpointsList, error) {
 	return &EndpointsList{newEndpoints}, nil
 }
 
-// ParseEndpoint parses kubernetes v1.Endpoint to more convenient Endpoint struct
-func ParseEndpoint(endpointi interface{}) (*json_types.Endpoint, error) {
+// ParseKubeEndpoint parses kubernetes v1.Endpoint to more convenient Endpoint struct
+func ParseKubeEndpoint(endpointi interface{}) (*Endpoint, error) {
 	endpoint := endpointi.(*api_core.Endpoints)
 	if endpoint == nil {
 		return nil, ErrUnableConvertEndpoint
 	}
 
-	ports := make([]json_types.Port, 0)
+	ports := make([]Port, 0)
 	addresses := make([]string, 0)
 
-	createdAt := endpoint.GetCreationTimestamp().Format(time.RFC3339)
+	createdAt := endpoint.GetCreationTimestamp().UTC().Format(time.RFC3339)
 	owner := endpoint.GetObjectMeta().GetLabels()[ownerLabel]
 
-	newEndpoint := json_types.Endpoint{
+	newEndpoint := Endpoint{
 		Name:      endpoint.Name,
 		Owner:     &owner,
 		CreatedAt: &createdAt,
@@ -69,23 +89,23 @@ func ParseEndpoint(endpointi interface{}) (*json_types.Endpoint, error) {
 	return &newEndpoint, nil
 }
 
-func parseEndpointPort(np interface{}) json_types.Port {
+func parseEndpointPort(np interface{}) Port {
 	nativePort := np.(api_core.EndpointPort)
-	return json_types.Port{
+	return Port{
 		Name:     nativePort.Name,
 		Port:     int(nativePort.Port),
-		Protocol: json_types.Protocol(nativePort.Protocol),
+		Protocol: Protocol(nativePort.Protocol),
 	}
 }
 
-// MakeEndpoint creates kubernetes v1.Endpoint from Endpoint struct and namespace labels
-func MakeEndpoint(nsName string, endpoint json_types.Endpoint, labels map[string]string) (*api_core.Endpoints, []error) {
-	err := ValidateEndpoint(endpoint)
+// ToKube creates kubernetes v1.Endpoint from Endpoint struct and namespace labels
+func (endpoint *Endpoint) ToKube(nsName string, labels map[string]string) (*api_core.Endpoints, []error) {
+	err := endpoint.Validate()
 	if err != nil {
 		return nil, err
 	}
 
-	ipaddrs := []api_core.EndpointAddress{}
+	ipaddrs := make([]api_core.EndpointAddress, 0)
 	for _, v := range endpoint.Addresses {
 		ipaddrs = append(ipaddrs, api_core.EndpointAddress{
 			IP: v,
@@ -97,7 +117,6 @@ func MakeEndpoint(nsName string, endpoint json_types.Endpoint, labels map[string
 	}
 
 	labels[ownerLabel] = *endpoint.Owner
-	labels[nameLabel] = endpoint.Name
 
 	newEndpoint := api_core.Endpoints{
 		TypeMeta: api_meta.TypeMeta{
@@ -120,7 +139,7 @@ func MakeEndpoint(nsName string, endpoint json_types.Endpoint, labels map[string
 	return &newEndpoint, nil
 }
 
-func makeEndpointPorts(ports []json_types.Port) []api_core.EndpointPort {
+func makeEndpointPorts(ports []Port) []api_core.EndpointPort {
 	endpointports := make([]api_core.EndpointPort, 0)
 	if ports != nil {
 		for _, v := range ports {
@@ -130,7 +149,7 @@ func makeEndpointPorts(ports []json_types.Port) []api_core.EndpointPort {
 	return endpointports
 }
 
-func ValidateEndpoint(endpoint json_types.Endpoint) []error {
+func (endpoint *Endpoint) Validate() []error {
 	errs := []error{}
 	if endpoint.Owner == nil {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
@@ -140,7 +159,7 @@ func ValidateEndpoint(endpoint json_types.Endpoint) []error {
 	if endpoint.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
 	} else if err := api_validation.IsDNS1123Label(endpoint.Name); len(err) > 0 {
-		errs = append(errs, errors.New(fmt.Sprintf(invalidName, endpoint.Name, strings.Join(err, ","))))
+		errs = append(errs, fmt.Errorf(invalidName, endpoint.Name, strings.Join(err, ",")))
 	}
 	if endpoint.Addresses == nil || len(endpoint.Addresses) == 0 {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "Addresses"))
@@ -157,7 +176,7 @@ func ValidateEndpoint(endpoint json_types.Endpoint) []error {
 		if v.Name == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port name"))
 		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
-			errs = append(errs, errors.New(fmt.Sprintf(invalidName, v.Name, strings.Join(err, ","))))
+			errs = append(errs, fmt.Errorf(invalidName, v.Name, strings.Join(err, ",")))
 		}
 		if v.Protocol == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port protocol"))
