@@ -1,31 +1,13 @@
 swagger: "3.0"
 parameters:
   UserIDHeader:
-    name: X-User-ID
-    in: header
-    type: string
-    format: uuid
-    required: true
+    $ref: "vendor/git.containerum.net/ch/api-gateway/pkg/utils/headers/swagger.json#/parameters/UserIDHeader"
   UserRoleHeader:
-    name: X-User-Role
-    in: header
-    type: string
-    enum:
-      - user
-      - admin
-    required: true
+    $ref: "vendor/git.containerum.net/ch/api-gateway/pkg/utils/headers/swagger.json#/parameters/UserRoleHeader"
   UserNamespaceHeader:
-    name: X-User-Namespace
-    in: header
-    type: string
-    format: base64
-    required: false
+    $ref: "vendor/git.containerum.net/ch/api-gateway/pkg/utils/headers/swagger.json#/parameters/UserNamespacesHeader"
   UserVolumeHeader:
-    name: X-User-Volume
-    in: header
-    type: string
-    format: base64
-    required: false
+    $ref: "vendor/git.containerum.net/ch/api-gateway/pkg/utils/headers/swagger.json#/parameters/UserVolumesHeader"
   UpgradeHeader:
     name: Upgrade
     in: header
@@ -50,3 +32,8 @@ parameters:
     type: integer
     format: int
     required: true
+responses:
+  error:
+    description: cherry error
+    schema:
+      $ref: "vendor/git.containerum.net/ch/cherry/swagger.json#/definitions/Err"

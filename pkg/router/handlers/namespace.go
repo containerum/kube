@@ -41,7 +41,7 @@ const (
 //    schema:
 //      $ref: '#/definitions/NamespacesList'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func GetNamespaceList(ctx *gin.Context) {
 	owner := ctx.Query(ownerQuery)
 
@@ -96,7 +96,7 @@ func GetNamespaceList(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/NamespaceWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func GetNamespace(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -149,7 +149,7 @@ func GetNamespace(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/NamespaceWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func CreateNamespace(ctx *gin.Context) {
 	log.Debug("Create namespace Call")
 
@@ -220,7 +220,7 @@ func CreateNamespace(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/NamespaceWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func UpdateNamespace(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -286,7 +286,7 @@ func UpdateNamespace(ctx *gin.Context) {
 //  '202':
 //    description: namespace deleted
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func DeleteNamespace(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{

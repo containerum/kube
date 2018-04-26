@@ -38,7 +38,7 @@ const (
 //    schema:
 //      $ref: '#/definitions/ServicesList'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func GetServiceList(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -87,7 +87,7 @@ func GetServiceList(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/ServiceWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func GetService(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	service := ctx.Param(serviceParam)
@@ -141,7 +141,7 @@ func GetService(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/ServiceWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func CreateService(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -213,7 +213,7 @@ func CreateService(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/ServiceWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func UpdateService(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	service := ctx.Param(serviceParam)
@@ -296,7 +296,7 @@ func UpdateService(ctx *gin.Context) {
 //  '202':
 //    description: service deleted
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func DeleteService(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	service := ctx.Param(serviceParam)

@@ -38,7 +38,7 @@ const (
 //    schema:
 //      $ref: '#/definitions/ConfigMapsList'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func GetConfigMapList(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -90,7 +90,7 @@ func GetConfigMapList(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/ConfigMapWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func GetConfigMap(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	configMap := ctx.Param(configMapParam)
@@ -144,7 +144,7 @@ func GetConfigMap(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/ConfigMapWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func CreateConfigMap(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -218,7 +218,7 @@ func CreateConfigMap(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/ConfigMapWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func UpdateConfigMap(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	configMap := ctx.Param(configMapParam)
@@ -296,7 +296,7 @@ func UpdateConfigMap(ctx *gin.Context) {
 //  '202':
 //    description: config map deleted
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func DeleteConfigMap(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	configMap := ctx.Param(configMapParam)
@@ -333,7 +333,7 @@ func DeleteConfigMap(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/SelectedConfigMapsList'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func GetSelectedConfigMaps(ctx *gin.Context) {
 	log.Debug("Get selected config maps Call")
 

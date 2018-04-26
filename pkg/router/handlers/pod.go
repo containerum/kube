@@ -63,7 +63,7 @@ var wsupgrader = websocket.Upgrader{
 //    schema:
 //      $ref: '#/definitions/PodsList'
 //  configmap:
-//    description: error
+//    $ref: '#/responses/error'
 func GetPodList(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	owner := ctx.Query(ownerQuery)
@@ -109,7 +109,7 @@ func GetPodList(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/PodWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func GetPod(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	podP := ctx.Param(podParam)
@@ -153,7 +153,7 @@ func GetPod(ctx *gin.Context) {
 //  '202':
 //    description: pod deleted
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func DeletePod(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	podP := ctx.Param(podParam)
@@ -214,7 +214,7 @@ func DeletePod(ctx *gin.Context) {
 //  '101':
 //    description: pod logs
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func GetPodLogs(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace Param": ctx.Param(namespaceParam),

@@ -38,7 +38,7 @@ const (
 //    schema:
 //      $ref: '#/definitions/EndpointsList'
 //  configmap:
-//    description: error
+//    $ref: '#/responses/error'
 func GetEndpointList(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -89,7 +89,7 @@ func GetEndpointList(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/Endpoint'
 //  configmap:
-//    description: error
+//    $ref: '#/responses/error'
 func GetEndpoint(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	ep := ctx.Param(endpointParam)
@@ -143,7 +143,7 @@ func GetEndpoint(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/Endpoint'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func CreateEndpoint(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -214,7 +214,7 @@ func CreateEndpoint(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/Endpoint'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func UpdateEndpoint(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	ep := ctx.Param(endpointParam)
@@ -292,7 +292,7 @@ func UpdateEndpoint(ctx *gin.Context) {
 //  '202':
 //    description: endpoint deleted
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func DeleteEndpoint(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	ep := ctx.Param(endpointParam)

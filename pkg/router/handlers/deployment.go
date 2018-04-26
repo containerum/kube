@@ -43,7 +43,7 @@ const (
 //    schema:
 //      $ref: '#/definitions/DeploymentsList'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func GetDeploymentList(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -97,7 +97,7 @@ func GetDeploymentList(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/DeploymentWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func GetDeployment(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	deployment := ctx.Param(deploymentParam)
@@ -151,7 +151,7 @@ func GetDeployment(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/DeploymentWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func CreateDeployment(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -223,7 +223,7 @@ func CreateDeployment(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/DeploymentWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func UpdateDeployment(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	deployment := ctx.Param(deploymentParam)
@@ -308,7 +308,7 @@ func UpdateDeployment(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/DeploymentWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func UpdateDeploymentReplicas(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	deployment := ctx.Param(deploymentParam)
@@ -380,7 +380,7 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/DeploymentWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func UpdateDeploymentImage(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	deployment := ctx.Param(deploymentParam)
@@ -450,7 +450,7 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 //  '202':
 //    description: deployment deleted
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func DeleteDeployment(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	deployment := ctx.Param(deploymentParam)

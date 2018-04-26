@@ -38,7 +38,7 @@ const (
 //    schema:
 //      $ref: '#/definitions/IngressesList'
 //  configmap:
-//    description: error
+//    $ref: '#/responses/error'
 func GetIngressList(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -90,7 +90,7 @@ func GetIngressList(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/IngressWithOwner'
 //  configmap:
-//    description: error
+//    $ref: '#/responses/error'
 func GetIngress(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	ingr := ctx.Param(ingressParam)
@@ -144,7 +144,7 @@ func GetIngress(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/IngressWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func CreateIngress(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	log.WithFields(log.Fields{
@@ -217,7 +217,7 @@ func CreateIngress(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/IngressWithOwner'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func UpdateIngress(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	ingr := ctx.Param(ingressParam)
@@ -295,7 +295,7 @@ func UpdateIngress(ctx *gin.Context) {
 //  '202':
 //    description: ingress deleted
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func DeleteIngress(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
 	ingr := ctx.Param(ingressParam)
@@ -332,7 +332,7 @@ func DeleteIngress(ctx *gin.Context) {
 //    schema:
 //      $ref: '#/definitions/SelectedIngressesList'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func GetSelectedIngresses(ctx *gin.Context) {
 	log.Debug("Get selected ingresses Call")
 
