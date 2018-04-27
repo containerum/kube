@@ -2,31 +2,6 @@
 
 
 [[projects]]
-  branch = "develop"
-  name = "git.containerum.net/ch/api-gateway"
-  packages = ["pkg/utils/headers"]
-  revision = "25814d45e36ce93606bac69f89a92c9f9f1eecf9"
-
-[[projects]]
-  name = "git.containerum.net/ch/cherry"
-  packages = [
-    ".",
-    "adaptors/cherrylog",
-    "adaptors/gonic"
-  ]
-  revision = "82e4d22be24efe6d9e6925376119a24f789bddc7"
-  version = "v1.0.1-rc2"
-
-[[projects]]
-  name = "git.containerum.net/ch/kube-client"
-  packages = [
-    ".",
-    "pkg/model"
-  ]
-  revision = "7046267a91860d1f897451d0b41d9d9e4c2e79f0"
-  version = "v0.10.1"
-
-[[projects]]
   name = "github.com/PuerkitoBio/purell"
   packages = ["."]
   revision = "0bcb03f4b4d0a9428594752bd2a3b9aa0a9d4bd4"
@@ -43,6 +18,31 @@
   packages = ["."]
   revision = "beadc315fb676177c07a89c34159b9ca4e1aafd9"
   version = "v2.0.0"
+
+[[projects]]
+  name = "github.com/containerum/cherry"
+  packages = [
+    ".",
+    "adaptors/cherrylog",
+    "adaptors/gonic"
+  ]
+  revision = "3076e36aee79538b125d060e5b671649cbb2db4e"
+  version = "v1.0.1-rc2"
+
+[[projects]]
+  name = "github.com/containerum/kube-client"
+  packages = [
+    ".",
+    "pkg/model"
+  ]
+  revision = "f5726b4cacfa4f7d1d53c651ca3606c5be518435"
+  version = "v0.11.0"
+
+[[projects]]
+  name = "github.com/containerum/utils"
+  packages = ["httputil"]
+  revision = "5e922affb542eaeb55ab395ff3c7161179df54b3"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -116,6 +116,21 @@
   name = "github.com/go-openapi/swag"
   packages = ["."]
   revision = "811b1089cde9dad18d4d0c2d09fbdbf28dbd27a5"
+
+[[projects]]
+  name = "github.com/go-playground/locales"
+  packages = [
+    ".",
+    "currency"
+  ]
+  revision = "f63010822830b6fe52288ee52d5a1151088ce039"
+  version = "v0.12.1"
+
+[[projects]]
+  name = "github.com/go-playground/universal-translator"
+  packages = ["."]
+  revision = "b32fa301c9fe55953584134cb6853a13c87ec0a1"
+  version = "v0.16.0"
 
 [[projects]]
   name = "github.com/gogo/protobuf"
@@ -329,7 +344,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "b0697eccbea9adec5b7ba8008f4c33d98d733388"
+  revision = "b49d69b5da943f7ef3c9cf91c8777c1f78a0cc3c"
 
 [[projects]]
   branch = "master"
@@ -382,6 +397,12 @@
   packages = ["."]
   revision = "5f1438d3fca68893a817e4a66806cea46a9e4ebf"
   version = "v8.18.2"
+
+[[projects]]
+  name = "gopkg.in/go-playground/validator.v9"
+  packages = ["."]
+  revision = "14984d91328f9612b58443cbdf4a077d4fd71091"
+  version = "v9.15.0"
 
 [[projects]]
   name = "gopkg.in/inf.v0"
@@ -534,6 +555,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "db368f9b76c1b56d830c870e767450e7e07f98ff5be145c3ba19a68e312a230a"
+  inputs-digest = "711ceac1c74aa185694f2145ce7351468fb3edd90600a2df828e90f5d07ede89"
   solver-name = "gps-cdcl"
   solver-version = 1
