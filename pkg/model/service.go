@@ -3,7 +3,7 @@ package model
 import (
 	"errors"
 
-	kube_types "git.containerum.net/ch/kube-client/pkg/model"
+	kube_types "github.com/containerum/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	api_validation "k8s.io/apimachinery/pkg/util/validation"

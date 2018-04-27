@@ -1,13 +1,13 @@
 package middleware
 
 import (
-	"git.containerum.net/ch/api-gateway/pkg/utils/headers"
 	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	"git.containerum.net/ch/kube-api/pkg/model"
-	kubeModel "git.containerum.net/ch/kube-client/pkg/model"
-
-	"git.containerum.net/ch/cherry/adaptors/gonic"
+	headers "github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/gin"
+
+	"github.com/containerum/cherry/adaptors/gonic"
+	kubeModel "github.com/containerum/kube-client/pkg/model"
 )
 
 type AccessLevel string

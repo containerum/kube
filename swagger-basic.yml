@@ -1,13 +1,13 @@
 swagger: "3.0"
 parameters:
   UserIDHeader:
-    $ref: "vendor/git.containerum.net/ch/api-gateway/pkg/utils/headers/swagger.json#/parameters/UserIDHeader"
+    $ref: "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserIDHeader"
   UserRoleHeader:
-    $ref: "vendor/git.containerum.net/ch/api-gateway/pkg/utils/headers/swagger.json#/parameters/UserRoleHeader"
+    $ref: "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserRoleHeader"
   UserNamespaceHeader:
-    $ref: "vendor/git.containerum.net/ch/api-gateway/pkg/utils/headers/swagger.json#/parameters/UserNamespacesHeader"
+    $ref: "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserNamespacesHeader"
   UserVolumeHeader:
-    $ref: "vendor/git.containerum.net/ch/api-gateway/pkg/utils/headers/swagger.json#/parameters/UserVolumesHeader"
+    $ref: "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserVolumesHeader"
   UpgradeHeader:
     name: Upgrade
     in: header
@@ -36,4 +36,4 @@ responses:
   error:
     description: cherry error
     schema:
-      $ref: "vendor/git.containerum.net/ch/cherry/swagger.json#/definitions/Err"
+      $ref: "vendor/github.com/containerum/cherry/swagger.json#/definitions/Err"

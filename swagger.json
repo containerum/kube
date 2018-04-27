@@ -2030,7 +2030,7 @@
           "x-go-name": "Name"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "ConfigMapWithOwner": {
       "description": "ConfigMapWithOwner -- model for config map with owner",
@@ -2135,7 +2135,7 @@
           "x-go-name": "VolumeMounts"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "ContainerPort": {
       "description": "ContainerPort -- model for port in container",
@@ -2159,7 +2159,7 @@
           "$ref": "#/definitions/Protocol"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "ContainerVolume": {
       "description": "ContainerVolume -- volume (or config map) mounted in container",
@@ -2186,7 +2186,7 @@
           "x-go-name": "SubPath"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Deployment": {
       "description": "Deployment -- model for deployments",
@@ -2229,7 +2229,7 @@
           "x-go-name": "TotalMemory"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "DeploymentStatus": {
       "description": "DeploymentStatus -- kubernetes status of deployment",
@@ -2271,7 +2271,7 @@
           "x-go-name": "UpdatedReplicas"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "DeploymentWithOwner": {
       "description": "DeploymentWithOwner -- model for deployment with owner",
@@ -2405,7 +2405,7 @@
           "x-go-name": "Value"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Err": {
       "description": "Err -- standard serializable API error\nMessage -- constant error message:\n+ \"invalid username\"\n+ \"quota exceeded\"\n+ \"validation error\"\n...etc...\nID -- unique error identification code\nDetails -- optional context error messages kinda\n+ \"field 'Replicas' must be non-zero value\"\n+ \"not enough tights to feed gopher\"\n+ \"resource 'God' does't exist\"\nFields -- optional set of key-value pairs",
@@ -2434,7 +2434,7 @@
           "x-go-name": "StatusHTTP"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/cherry"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/cherry"
     },
     "ErrID": {
       "description": "ErrID -- represents unique error ID",
@@ -2447,18 +2447,18 @@
           "$ref": "#/definitions/ErrSID"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/cherry"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/cherry"
     },
     "ErrKind": {
       "description": "ErrKind -- represents kind of error",
       "type": "integer",
       "format": "uint64",
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/cherry"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/cherry"
     },
     "ErrSID": {
       "description": "ErrSID -- represents service ID of error",
       "type": "string",
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/cherry"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/cherry"
     },
     "Fields": {
       "description": "Fields -- represents additional key-value fields of error",
@@ -2466,7 +2466,7 @@
       "additionalProperties": {
         "type": "string"
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/cherry"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/cherry"
     },
     "Ingress": {
       "description": "Ingress -- model for ingress",
@@ -2493,7 +2493,7 @@
           "x-go-name": "Rules"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "IngressWithOwner": {
       "description": "IngressWithOwner -- model for ingress with owner",
@@ -2588,7 +2588,7 @@
           "x-go-name": "Volumes"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "NamespaceWithOwner": {
       "description": "NamespaceWithOwner -- model for namespace with owner",
@@ -2686,7 +2686,7 @@
           "x-go-name": "ServicePort"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Pod": {
       "description": "Pod -- model for pod",
@@ -2739,7 +2739,7 @@
           "x-go-name": "TotalMemory"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "PodStatus": {
       "description": "PodStatus -- kubernetes status of pod",
@@ -2760,7 +2760,7 @@
           "x-go-name": "StartAt"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "PodWithOwner": {
       "description": "PodWithOwner -- model for pod with owner",
@@ -2860,7 +2860,7 @@
     "Protocol": {
       "description": "represents port protocol type (TCP or UDP)",
       "type": "string",
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Resource": {
       "description": "Resource -- represents namespace CPU and RAM",
@@ -2883,7 +2883,7 @@
           "x-go-name": "Memory"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Resources": {
       "type": "object",
@@ -2899,7 +2899,7 @@
           "$ref": "#/definitions/Resource"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Rule": {
       "description": "Rule -- ingress rule",
@@ -2925,7 +2925,7 @@
           "x-go-name": "TLSSecret"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Secret": {
       "description": "model for secret",
@@ -2952,7 +2952,7 @@
           "x-go-name": "Name"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "SecretWithOwner": {
       "description": "SecretWithOwner -- model for secret with owner",
@@ -3056,7 +3056,7 @@
           "x-go-name": "Ports"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "ServicePort": {
       "description": "represent service port",
@@ -3085,12 +3085,12 @@
           "x-go-name": "TargetPort"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "ServiceType": {
       "description": "represents service type",
       "type": "string",
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "ServiceWithOwner": {
       "description": "ServiceWithOwner -- model for service with owner",
@@ -3180,7 +3180,7 @@
           "x-go-name": "Image"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "UpdateNamespaceName": {
       "description": "UpdateNamespaceName -- contains new namespace label",
@@ -3194,7 +3194,7 @@
           "x-go-name": "Label"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "UpdateReplicas": {
       "description": "UpdateReplicas -- contains new number of replicas",
@@ -3209,7 +3209,7 @@
           "x-go-name": "Replicas"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "UserHeaderData": {
       "description": "represents header data for X-User-Namespace and X-User-Volume headers (encoded in base64)",
@@ -3236,7 +3236,7 @@
           "x-go-name": "Label"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Volume": {
       "description": "Volume -- volume representation\nprovided by resource-service\nhttps://ch.pages.containerum.net/api-docs/modules/resource-service/index.html#get-namespace",
@@ -3271,7 +3271,7 @@
           "x-go-name": "Storage"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/git.containerum.net/ch/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     }
   },
   "parameters": {
@@ -3304,23 +3304,23 @@
       "required": true
     },
     "UserIDHeader": {
-      "$ref": "vendor/git.containerum.net/ch/api-gateway/pkg/utils/headers/swagger.json#/parameters/UserIDHeader"
+      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserIDHeader"
     },
     "UserNamespaceHeader": {
-      "$ref": "vendor/git.containerum.net/ch/api-gateway/pkg/utils/headers/swagger.json#/parameters/UserNamespacesHeader"
+      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserNamespacesHeader"
     },
     "UserRoleHeader": {
-      "$ref": "vendor/git.containerum.net/ch/api-gateway/pkg/utils/headers/swagger.json#/parameters/UserRoleHeader"
+      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserRoleHeader"
     },
     "UserVolumeHeader": {
-      "$ref": "vendor/git.containerum.net/ch/api-gateway/pkg/utils/headers/swagger.json#/parameters/UserVolumesHeader"
+      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserVolumesHeader"
     }
   },
   "responses": {
     "error": {
       "description": "cherry error",
       "schema": {
-        "$ref": "vendor/git.containerum.net/ch/cherry/swagger.json#/definitions/Err"
+        "$ref": "vendor/github.com/containerum/cherry/swagger.json#/definitions/Err"
       }
     }
   }

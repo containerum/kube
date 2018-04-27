@@ -3,7 +3,7 @@ package kubeErrors
 
 import (
 	bytes "bytes"
-	cherry "git.containerum.net/ch/cherry"
+	cherry "github.com/containerum/cherry"
 	template "text/template"
 )
 

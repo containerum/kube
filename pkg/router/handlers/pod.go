@@ -13,8 +13,8 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/utils/watchdog"
 	"git.containerum.net/ch/kube-api/pkg/utils/wsutils"
 
-	"git.containerum.net/ch/cherry/adaptors/gonic"
 	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"github.com/containerum/cherry/adaptors/gonic"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"

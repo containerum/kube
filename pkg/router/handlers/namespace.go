@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 
-	"git.containerum.net/ch/cherry/adaptors/gonic"
+	"github.com/containerum/cherry/adaptors/gonic"
 	"github.com/gin-gonic/gin/binding"
 )
 

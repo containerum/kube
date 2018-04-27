@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"testing"
 
-	"git.containerum.net/ch/api-gateway/pkg/utils/headers"
 	"github.com/appleboy/gofight"
+	headers "github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/gin"
 
 	. "github.com/smartystreets/goconvey/convey"

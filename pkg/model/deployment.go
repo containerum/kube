@@ -11,7 +11,7 @@ import (
 
 	"time"
 
-	kube_types "git.containerum.net/ch/kube-client/pkg/model"
+	kube_types "github.com/containerum/kube-client/pkg/model"
 	"github.com/pkg/errors"
 	api_apps "k8s.io/api/apps/v1"
 	api_core "k8s.io/api/core/v1"
