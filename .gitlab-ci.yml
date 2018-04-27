@@ -1,8 +1,8 @@
 stages:
   - test
   - build
-  - dev-release
-  - dev-deploy
+  - release
+  - deploy
 
 
 
@@ -29,7 +29,7 @@ test-build:
 
 dev-release:
   image: docker:latest
-  stage: dev-release
+  stage: release
   tags:
     - build
   script:
@@ -42,7 +42,7 @@ dev-release:
 
 dev-deploy:
   image: exon/helm
-  stage: dev-deploy
+  stage: deploy
   tags:
     - develop
   before_script:
@@ -61,7 +61,7 @@ dev-deploy:
 
 dev github:
   image: alpine
-  stage: build
+  stage: deploy
   tags:
     - build
   before_script:
