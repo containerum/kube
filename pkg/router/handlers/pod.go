@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"bytes"
 	"io"
 	"net/http"
 	"strconv"
@@ -10,6 +9,9 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
+	"git.containerum.net/ch/kube-api/pkg/utils/timeoutreader"
+	"git.containerum.net/ch/kube-api/pkg/utils/watchdog"
+	"git.containerum.net/ch/kube-api/pkg/utils/wsutils"
 
 	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	"github.com/containerum/cherry/adaptors/gonic"
@@ -28,11 +30,14 @@ const (
 	logsBufferSize = 1024
 	tailDefault    = 100
 	tailMax        = 1000
+
+	wsTimeout    = 5 * time.Second
+	wsPingPeriod = time.Second
 )
 
 var wsupgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
+	ReadBufferSize:  logsBufferSize,
+	WriteBufferSize: logsBufferSize,
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
@@ -226,50 +231,115 @@ func GetPodLogs(ctx *gin.Context) {
 		"Previous":        ctx.Query(previousQuery),
 	}).Debug("Get pod logs Call")
 
-	conn, err := wsupgrader.Upgrade(ctx.Writer, ctx.Request, nil)
-	if err != nil {
-		ctx.Error(err)
-		log.WithError(err).Error("unable to upgrade http to socket")
-		return
-	}
-	stream := new(bytes.Buffer)
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	logOpt := makeLogOption(ctx)
 	ns := ctx.MustGet(m.NamespaceKey).(string)
 
-	go kube.GetPodLogs(ns, ctx.Param(podParam), stream, &logOpt)
-	go writeLogs(conn, stream, &logOpt.StopFollow, logOpt.Follow)
+	rc, err := kube.GetPodLogs(ns, ctx.Param(podParam), &logOpt)
+	if err != nil {
+		ctx.Error(err)
+		gonic.Gonic(kubeErrors.ErrUnableGetPodLogs().AddDetailsErr(err), ctx)
+		return
+	}
+
+	conn, err := wsupgrader.Upgrade(ctx.Writer, ctx.Request, nil)
+	if err != nil {
+		ctx.Error(err)
+		gonic.Gonic(kubeErrors.ErrUnableGetPodLogs().AddDetailsErr(err), ctx)
+		return
+	}
+
+	if logOpt.Follow {
+		rc = timeoutreader.NewTimeoutReader(rc, 30*time.Minute, true)
+	} else {
+		rc = timeoutreader.NewTimeoutReader(rc, 10*time.Second, true)
+	}
+
+	// watchdog for reader, resets by websocket pong
+	closeWd := watchdog.New(wsTimeout, func() { rc.Close() })
+
+	conn.SetPongHandler(func(appData string) error {
+		conn.SetWriteDeadline(time.Now().Add(wsTimeout))
+		conn.SetReadDeadline(time.Now().Add(wsTimeout))
+		closeWd.Kick()
+		return nil
+	})
+	conn.SetWriteDeadline(time.Now().Add(wsTimeout))
+	conn.SetReadDeadline(time.Now().Add(wsTimeout))
+
+	var (
+		done = make(chan struct{})
+		data = make(chan []byte)
+	)
+	go readConn(conn)
+	go readLogs(rc, data, done)
+	go writeLogs(conn, data, done)
 }
 
-func writeLogs(conn *websocket.Conn, logs *bytes.Buffer, done *chan struct{}, follow bool) {
-	defer func(done *chan struct{}) {
-		conn.Close()
-		*done <- struct{}{}
-	}(done)
+func readLogs(logs io.ReadCloser, ch chan<- []byte, done chan<- struct{}) {
+	buf := [logsBufferSize]byte{}
+	defer func() { logs.Close(); done <- struct{}{} }()
 
 	for {
-		time.Sleep(time.Millisecond * 5)
-		buf := make([]byte, logsBufferSize)
-		_, err := logs.Read(buf)
-		if err != nil {
-			if err == io.EOF {
-				if !follow { // if we are not following logs just close connection
-					return
-				}
-			} else {
-				log.WithError(err).Error("Unable read logs stream") //TODO: Write good err
-				return
-			}
-			continue
+		readBytes, err := logs.Read(buf[:])
+		switch err {
+		case nil:
+			// pass
+		case io.EOF, timeoutreader.ErrReadTimeout:
+			return
+		default:
+			log.WithError(err).Error("Log read failed")
+			return
 		}
-		if err := conn.WriteMessage(websocket.TextMessage, buf); err != nil {
+
+		ch <- buf[:readBytes]
+	}
+}
+
+func writeLogs(conn *websocket.Conn, ch <-chan []byte, done <-chan struct{}) {
+	defer conn.Close()
+	pingTimer := time.NewTicker(wsPingPeriod)
+
+	for {
+		var err error
+		select {
+		case <-done:
+			return
+		case <-pingTimer.C:
+			err = conn.WriteMessage(websocket.PingMessage, nil)
+		case data := <-ch:
+			err = conn.WriteMessage(websocket.TextMessage, data)
+		}
+
+		switch {
+		case err == nil,
+			wsutils.IsNetTemporary(err):
+			// pass
+		case err == timeoutreader.ErrReadTimeout,
+			err == websocket.ErrCloseSent, // connection closed by us
+			wsutils.IsNetTimeout(err),     // deadline failed
+			wsutils.IsBrokenPipe(err),     // connection closed by client
+			wsutils.IsClose(err):
+			return
+		default:
+			log.WithError(err).Errorf("Log send failed")
 			return
 		}
 	}
 }
 
+func readConn(conn *websocket.Conn) {
+	for {
+		_, _, err := conn.ReadMessage() // to trigger pong handlers and check connection though
+		if err != nil {
+			conn.Close()
+			return
+		}
+	}
+	log.Debugf("End writing logs")
+}
+
 func makeLogOption(c *gin.Context) kubernetes.LogOptions {
-	stop := make(chan struct{}, 1)
 	followStr := c.Query(followQuery)
 	previousStr := c.Query(previousQuery)
 	container := c.Query(containerQuery)
@@ -278,10 +348,9 @@ func makeLogOption(c *gin.Context) kubernetes.LogOptions {
 		tail = tailDefault
 	}
 	return kubernetes.LogOptions{
-		Tail:       int64(tail),
-		Follow:     followStr == "true",
-		StopFollow: stop,
-		Previous:   previousStr == "true",
-		Container:  container,
+		Tail:      int64(tail),
+		Follow:    followStr == "true",
+		Previous:  previousStr == "true",
+		Container: container,
 	}
 }

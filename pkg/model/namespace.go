@@ -52,7 +52,7 @@ func ParseKubeResourceQuotaList(quotas interface{}, parseforadmin bool) (*Namesp
 		return nil, ErrUnableConvertNamespaceList
 	}
 
-	namespaces := make([]NamespaceWithOwner, 0)
+	namespaces := make([]NamespaceWithOwner, 0, objects.Size())
 	for _, quota := range objects.Items {
 		ns, err := ParseKubeResourceQuota(&quota, parseforadmin)
 		if err != nil {
