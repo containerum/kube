@@ -278,7 +278,8 @@ func GetPodLogs(ctx *gin.Context) {
 
 func readLogs(logs io.ReadCloser, ch chan<- []byte, done chan<- struct{}) {
 	buf := [logsBufferSize]byte{}
-	defer func() { logs.Close(); done <- struct{}{} }()
+	defer logs.Close()
+	defer func() { done <- struct{}{} }()
 
 	for {
 		readBytes, err := logs.Read(buf[:])
@@ -297,7 +298,10 @@ func readLogs(logs io.ReadCloser, ch chan<- []byte, done chan<- struct{}) {
 }
 
 func writeLogs(conn *websocket.Conn, ch <-chan []byte, done <-chan struct{}) {
-	defer conn.Close()
+	defer func() {
+		conn.WriteMessage(websocket.CloseMessage, nil)
+		conn.Close()
+	}()
 	pingTimer := time.NewTicker(wsPingPeriod)
 
 	for {
