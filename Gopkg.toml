@@ -6,7 +6,7 @@ required = ["github.com/containerum/kube-client"]
   go-tests = true
 
   [[prune.project]]
-    name = "git.containerum.net/ch/kube-client"
+    name = "github.com/containerum/kube-client"
     non-go = false
 
   [[prune.project]]
