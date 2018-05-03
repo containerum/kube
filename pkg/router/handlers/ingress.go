@@ -109,7 +109,7 @@ func GetIngress(ctx *gin.Context) {
 	}
 
 	role := ctx.MustGet(m.UserRole).(string)
-	ret, err := model.ParseKubeIngressList(ingress, role == m.RoleUser)
+	ret, err := model.ParseKubeIngress(ingress, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(kubeErrors.ErrUnableGetResource(), ctx)
