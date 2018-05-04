@@ -26,7 +26,7 @@ func initServer(c *cli.Context) error {
 
 	kube := kubernetes.Kube{}
 	go exitOnErr(kube.RegisterClient(c.String("kubeconf")))
-	app := router.CreateRouter(&kube)
+	app := router.CreateRouter(&kube, c.Bool("cors"))
 
 	srv := &http.Server{
 		Addr:    ":" + c.String("port"),

@@ -29,6 +29,11 @@ var flags = []cli.Flag{
 		Name:   "textlog",
 		Usage:  "output log in text format",
 	},
+	cli.BoolFlag{
+		EnvVar: "CH_KUBE_API_CORS",
+		Name:   "cors",
+		Usage:  "enable CORS",
+	},
 }
 
 func setupLogs(c *cli.Context) {
