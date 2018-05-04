@@ -20,20 +20,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CreateRouter(kube *kubernetes.Kube) http.Handler {
+func CreateRouter(kube *kubernetes.Kube, enableCORS bool) http.Handler {
 	e := gin.New()
-	initMiddlewares(e, kube)
+	initMiddlewares(e, kube, enableCORS)
 	initRoutes(e)
 	return e
 }
 
-func initMiddlewares(e gin.IRouter, kube *kubernetes.Kube) {
+func initMiddlewares(e gin.IRouter, kube *kubernetes.Kube, enableCORS bool) {
 	/* CORS */
-	cfg := cors.DefaultConfig()
-	cfg.AllowAllOrigins = true
-	cfg.AddAllowMethods(http.MethodDelete)
-	cfg.AddAllowHeaders(headers.UserRoleXHeader, headers.UserIDXHeader, headers.UserNamespacesXHeader, headers.UserVolumesXHeader)
-	e.Use(cors.New(cfg))
+	if enableCORS {
+		cfg := cors.DefaultConfig()
+		cfg.AllowAllOrigins = true
+		cfg.AddAllowMethods(http.MethodDelete)
+		cfg.AddAllowHeaders(headers.UserRoleXHeader, headers.UserIDXHeader, headers.UserNamespacesXHeader, headers.UserVolumesXHeader)
+		e.Use(cors.New(cfg))
+	}
 	e.Group("/static").
 		StaticFS("/", static.HTTP)
 	/* System */
