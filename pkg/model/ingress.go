@@ -41,8 +41,6 @@ type IngressWithOwner struct {
 const (
 	ingressKind       = "Ingress"
 	ingressAPIVersion = "extensions/v1beta1"
-
-	ingressHostSuffix = ".hub.containerum.io"
 )
 
 // ParseKubeIngressList parses kubernetes v1beta1.IngressList to more convenient []Ingress struct
