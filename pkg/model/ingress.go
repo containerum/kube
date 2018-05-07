@@ -179,7 +179,7 @@ func makeIngressRules(rules []kube_types.Rule) ([]api_extensions.IngressRule, []
 			})
 		}
 		newRules = append(newRules, api_extensions.IngressRule{
-			Host: v.Host + ingressHostSuffix,
+			Host: v.Host,
 			IngressRuleValue: api_extensions.IngressRuleValue{
 				HTTP: &api_extensions.HTTPIngressRuleValue{
 					Paths: paths,
@@ -190,7 +190,7 @@ func makeIngressRules(rules []kube_types.Rule) ([]api_extensions.IngressRule, []
 		if v.TLSSecret != nil {
 			tls = true
 			secrets = append(secrets, api_extensions.IngressTLS{
-				Hosts:      []string{v.Host + ingressHostSuffix},
+				Hosts:      []string{v.Host},
 				SecretName: *v.TLSSecret,
 			})
 		}
