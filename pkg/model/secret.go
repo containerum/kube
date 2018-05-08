@@ -1,12 +1,12 @@
 package model
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"time"
 
+	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	kube_types "github.com/containerum/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,7 +27,8 @@ type SecretWithOwner struct {
 	// swagger: allOf
 	kube_types.Secret
 	// required: true
-	Owner string `json:"owner,omitempty"`
+	Owner  string `json:"owner,omitempty"`
+	Hidden bool   `json:"hidden,omitempty"`
 }
 
 const (
@@ -37,26 +38,22 @@ const (
 
 // ParseKubeSecretList parses kubernetes v1.SecretList to more convenient []Secret struct.
 func ParseKubeSecretList(secreti interface{}, parseforuser bool) (*SecretsList, error) {
-	secrets := secreti.(*api_core.SecretList)
-	if secrets == nil {
+	nativeSecrets := secreti.(*api_core.SecretList)
+	if nativeSecrets == nil {
 		return nil, ErrUnableConvertSecretList
 	}
 
-	newSecrets := make([]SecretWithOwner, 0)
-	for _, secret := range secrets.Items {
-		newSecret, err := ParseKubeSecret(&secret, false)
+	secrets := make([]SecretWithOwner, 0)
+	for _, secret := range nativeSecrets.Items {
+		newSecret, err := ParseKubeSecret(&secret, parseforuser)
 		if err != nil {
 			return nil, err
 		}
-
-		if newSecret.Owner != "" || !parseforuser {
-			if parseforuser {
-				newSecret.Owner = ""
-			}
-			newSecrets = append(newSecrets, *newSecret)
+		if !newSecret.Hidden || !parseforuser {
+			secrets = append(secrets, *newSecret)
 		}
 	}
-	return &SecretsList{newSecrets}, nil
+	return &SecretsList{secrets}, nil
 }
 
 // ParseKubeSecret parses kubernetes v1.Secret to more convenient Secret struct.
@@ -83,9 +80,7 @@ func ParseKubeSecret(secreti interface{}, parseforuser bool) (*SecretWithOwner, 
 		Owner: owner,
 	}
 
-	if parseforuser {
-		newSecret.Owner = ""
-	}
+	newSecret.ParseForUser()
 
 	return &newSecret, nil
 
@@ -99,9 +94,8 @@ func (secret *SecretWithOwner) ToKube(nsName string, labels map[string]string) (
 	}
 
 	if labels == nil {
-		labels = make(map[string]string, 0)
+		return nil, []error{kubeErrors.ErrInternalError()}
 	}
-	labels[ownerLabel] = secret.Owner
 
 	newSecret := api_core.Secret{
 		TypeMeta: api_meta.TypeMeta{
@@ -132,24 +126,31 @@ func makeSecretData(data map[string]string) map[string][]byte {
 
 func (secret *SecretWithOwner) Validate() []error {
 	errs := []error{}
-
-	if secret.Owner == "" {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
-	} else if !IsValidUUID(secret.Owner) {
-		errs = append(errs, errors.New(invalidOwner))
-	}
 	if secret.Name == "" {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "name"))
 	} else if err := api_validation.IsDNS1123Label(secret.Name); len(err) > 0 {
 		errs = append(errs, fmt.Errorf(invalidName, secret.Name, strings.Join(err, ",")))
 	}
-	for k := range secret.Data {
-		if err := api_validation.IsConfigMapKey(k); len(err) > 0 {
-			errs = append(errs, fmt.Errorf(invalidName, k, strings.Join(err, ",")))
+	if len(secret.Data) == 0 {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "data"))
+	} else {
+		for k := range secret.Data {
+			if err := api_validation.IsConfigMapKey(k); len(err) > 0 {
+				errs = append(errs, fmt.Errorf(invalidName, k, strings.Join(err, ",")))
+			}
 		}
 	}
 	if len(errs) > 0 {
 		return errs
 	}
 	return nil
+}
+
+// ParseForUser removes information not interesting for users
+func (secret *SecretWithOwner) ParseForUser() {
+	if secret.Owner == "" {
+		secret.Hidden = true
+		return
+	}
+	secret.Owner = ""
 }

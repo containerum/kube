@@ -11,8 +11,8 @@ import (
 
 	"time"
 
+	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	kube_types "github.com/containerum/kube-client/pkg/model"
-	"github.com/pkg/errors"
 	api_apps "k8s.io/api/apps/v1"
 	api_core "k8s.io/api/core/v1"
 	api_resource "k8s.io/apimachinery/pkg/api/resource"
@@ -110,7 +110,7 @@ func ParseKubeDeployment(deployment interface{}, parseforuser bool) (*Deployment
 	}
 
 	if parseforuser {
-		newDeploy.Owner = ""
+		newDeploy.ParseForUser()
 	}
 
 	return &newDeploy, nil
@@ -140,10 +140,9 @@ func (deploy *DeploymentWithOwner) ToKube(nsName string, labels map[string]strin
 	}
 
 	if labels == nil {
-		labels = make(map[string]string, 0)
+		return nil, []error{kubeErrors.ErrInternalError()}
 	}
 	labels[appLabel] = deploy.Name
-	labels[ownerLabel] = deploy.Owner
 
 	newDeploy := api_apps.Deployment{
 		TypeMeta: api_meta.TypeMeta{
@@ -166,7 +165,7 @@ func (deploy *DeploymentWithOwner) ToKube(nsName string, labels map[string]strin
 					NodeSelector: map[string]string{
 						"role": "slave",
 					},
-					Volumes: makeTemplateVolumes(volumes, cmaps, deploy.Owner),
+					Volumes: makeTemplateVolumes(volumes, cmaps, labels[ownerLabel]),
 				},
 				ObjectMeta: api_meta.ObjectMeta{
 					Labels: labels,
@@ -361,13 +360,8 @@ func makeTemplateVolumes(volumes []string, cmaps map[string]int64, owner string)
 
 func (deploy *DeploymentWithOwner) Validate() []error {
 	errs := []error{}
-	if deploy.Owner == "" {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
-	} else if !IsValidUUID(deploy.Owner) {
-		errs = append(errs, errors.New(invalidOwner))
-	}
 	if deploy.Name == "" {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "name"))
 	} else if err := api_validation.IsDNS1123Label(deploy.Name); len(err) > 0 {
 		errs = append(errs, fmt.Errorf(invalidName, deploy.Name, strings.Join(err, ",")))
 	}
@@ -387,7 +381,7 @@ func validateContainer(container kube_types.Container, cpu, mem uint) []error {
 	errs := []error{}
 
 	if container.Name == "" {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "name"))
 	} else if err := api_validation.IsDNS1123Label(container.Name); len(err) > 0 {
 		errs = append(errs, fmt.Errorf(invalidName, container.Name, strings.Join(err, ",")))
 	}
@@ -402,11 +396,13 @@ func validateContainer(container kube_types.Container, cpu, mem uint) []error {
 
 	for _, v := range container.Ports {
 		if v.Name == "" {
-			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port: Name"))
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "container.ports.name"))
 		} else if err := api_validation.IsValidPortName(v.Name); len(err) > 0 {
 			errs = append(errs, fmt.Errorf(invalidName, v.Name, strings.Join(err, ",")))
 		}
-		if v.Protocol != kube_types.UDP && v.Protocol != kube_types.TCP {
+		if v.Protocol == "" {
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "container.ports.protocol"))
+		} else if v.Protocol != kube_types.UDP && v.Protocol != kube_types.TCP {
 			errs = append(errs, fmt.Errorf(invalidProtocol, v.Protocol))
 		}
 		if len(api_validation.IsValidPortNum(v.Port)) > 0 {
@@ -416,7 +412,7 @@ func validateContainer(container kube_types.Container, cpu, mem uint) []error {
 
 	for _, v := range container.Env {
 		if v.Name == "" {
-			errs = append(errs, fmt.Errorf(fieldShouldExist, "Env: Name"))
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "container.env.name"))
 		} else if err := api_validation.IsEnvVarName(v.Name); len(err) > 0 {
 			errs = append(errs, fmt.Errorf(invalidName, v.Name, strings.Join(err, ",")))
 		}
@@ -424,12 +420,12 @@ func validateContainer(container kube_types.Container, cpu, mem uint) []error {
 
 	for _, v := range container.VolumeMounts {
 		if v.Name == "" {
-			errs = append(errs, fmt.Errorf(fieldShouldExist, "Volume: Name"))
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "container.volume_mounts.name"))
 		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
 			errs = append(errs, fmt.Errorf(invalidName, v.Name, strings.Join(err, ",")))
 		}
 		if v.MountPath == "" {
-			errs = append(errs, fmt.Errorf(fieldShouldExist, "Volume: Mount path"))
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "container.volume_mounts.mount_path"))
 		}
 		if v.SubPath != nil && path.IsAbs(*v.SubPath) {
 			errs = append(errs, fmt.Errorf(subPathRelative, *v.SubPath))
@@ -438,12 +434,12 @@ func validateContainer(container kube_types.Container, cpu, mem uint) []error {
 
 	for _, v := range container.ConfigMaps {
 		if v.Name == "" {
-			errs = append(errs, fmt.Errorf(fieldShouldExist, "ConfigMap: Name"))
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "container.config_maps.name"))
 		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
 			errs = append(errs, fmt.Errorf(invalidName, v.Name, strings.Join(err, ",")))
 		}
 		if v.MountPath == "" {
-			errs = append(errs, fmt.Errorf(fieldShouldExist, "ConfigMap: Mount path"))
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "container.config_maps.mount_path"))
 		}
 		if v.SubPath != nil && path.IsAbs(*v.SubPath) {
 			errs = append(errs, fmt.Errorf(subPathRelative, *v.SubPath))
@@ -454,4 +450,9 @@ func validateContainer(container kube_types.Container, cpu, mem uint) []error {
 		return errs
 	}
 	return nil
+}
+
+// ParseForUser removes information not interesting for users
+func (deploy *DeploymentWithOwner) ParseForUser() {
+	deploy.Owner = ""
 }

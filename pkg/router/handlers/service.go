@@ -45,7 +45,15 @@ func GetServiceList(ctx *gin.Context) {
 		"Namespace Param": ctx.Param(namespaceParam),
 		"Namespace":       namespace,
 	}).Debug("Get service list call")
+
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResourcesList()), ctx)
+		return
+	}
+
 	svcList, err := kube.GetServiceList(namespace)
 	if err != nil {
 		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
@@ -98,6 +106,12 @@ func GetService(ctx *gin.Context) {
 	}).Debug("Get service call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
+		return
+	}
 
 	svc, err := kube.GetService(namespace, service)
 	if err != nil {
@@ -157,13 +171,13 @@ func CreateService(ctx *gin.Context) {
 		return
 	}
 
-	quota, err := kube.GetNamespaceQuota(namespace)
+	ns, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
-	newSvc, errs := svc.ToKube(namespace, quota.Labels)
+	newSvc, errs := svc.ToKube(namespace, ns.Labels)
 	if errs != nil {
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
@@ -232,7 +246,7 @@ func UpdateService(ctx *gin.Context) {
 		return
 	}
 
-	quota, err := kube.GetNamespaceQuota(namespace)
+	ns, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
@@ -249,7 +263,7 @@ func UpdateService(ctx *gin.Context) {
 	svc.Name = ctx.Param(serviceParam)
 	svc.Owner = oldSvc.GetObjectMeta().GetLabels()[ownerQuery]
 
-	newSvc, errs := svc.ToKube(namespace, quota.Labels)
+	newSvc, errs := svc.ToKube(namespace, ns.Labels)
 	if errs != nil {
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
@@ -307,7 +321,14 @@ func DeleteService(ctx *gin.Context) {
 	}).Debug("Delete service call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-	err := kube.DeleteService(namespace, service)
+
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		return
+	}
+
+	err = kube.DeleteService(namespace, service)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
 		return

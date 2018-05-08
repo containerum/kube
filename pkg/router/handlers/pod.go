@@ -77,7 +77,15 @@ func GetPodList(ctx *gin.Context) {
 		"Namespace":       namespace,
 		"Owner":           owner,
 	}).Debug("Get pod list Call")
+
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResourcesList()), ctx)
+		return
+	}
+
 	pods, err := kube.GetPodList(namespace, owner)
 	if err != nil {
 		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
@@ -123,7 +131,15 @@ func GetPod(ctx *gin.Context) {
 		"Namespace":       namespace,
 		"Pod":             podP,
 	}).Debug("Get pod list Call")
+
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
+		return
+	}
+
 	pod, err := kube.GetPod(namespace, podP)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
@@ -167,8 +183,16 @@ func DeletePod(ctx *gin.Context) {
 		"Namespace":       namespace,
 		"Pod":             podP,
 	}).Debug("Delete pod Call")
+
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-	err := kube.DeletePod(namespace, podP)
+
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		return
+	}
+
+	err = kube.DeletePod(namespace, podP)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
 		return
@@ -333,6 +357,7 @@ func writeLogs(conn *websocket.Conn, ch <-chan []byte, done <-chan struct{}) {
 }
 
 func readConn(conn *websocket.Conn) {
+	defer log.Debugf("End writing logs")
 	for {
 		_, _, err := conn.ReadMessage() // to trigger pong handlers and check connection though
 		if err != nil {
@@ -340,7 +365,6 @@ func readConn(conn *websocket.Conn) {
 			return
 		}
 	}
-	log.Debugf("End writing logs")
 }
 
 func makeLogOption(c *gin.Context) kubernetes.LogOptions {

@@ -48,6 +48,12 @@ func GetIngressList(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResourcesList()), ctx)
+		return
+	}
+
 	ingressList, err := kube.GetIngressList(namespace)
 	if err != nil {
 		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
@@ -101,6 +107,12 @@ func GetIngress(ctx *gin.Context) {
 	}).Debug("Get ingress Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
+		return
+	}
 
 	ingress, err := kube.GetIngress(namespace, ingr)
 	if err != nil {
@@ -236,7 +248,7 @@ func UpdateIngress(ctx *gin.Context) {
 		return
 	}
 
-	quota, err := kube.GetNamespaceQuota(namespace)
+	ns, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
@@ -251,7 +263,7 @@ func UpdateIngress(ctx *gin.Context) {
 	ingressReq.Name = ingr
 	ingressReq.Owner = oldIngress.GetObjectMeta().GetLabels()[ownerQuery]
 
-	newIngress, errs := ingressReq.ToKube(namespace, quota.Labels)
+	newIngress, errs := ingressReq.ToKube(namespace, ns.Labels)
 	if errs != nil {
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
@@ -307,7 +319,13 @@ func DeleteIngress(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	err := kube.DeleteIngress(namespace, ingr)
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		return
+	}
+
+	err = kube.DeleteIngress(namespace, ingr)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
 		return

@@ -38,22 +38,20 @@ var (
 )
 
 const (
-	noContainer           = "container %v is not found in deployment"
-	fieldShouldExist      = "field %v should be provided"
+	noContainer           = "container '%v' is not found in deployment"
+	fieldShouldExist      = "field '%v' should be provided"
 	invalidReplicas       = "invalid replicas number: %v. It must be between 1 and %v"
 	invalidPort           = "invalid port: %v. It must be between %v and %v"
 	invalidProtocol       = "invalid protocol: %v. It must be TCP or UDP"
-	invalidOwner          = "owner should be UUID"
+	invalidOwner          = "invalid owner ID. It must be UUID"
 	invalidName           = "invalid name: %v. %v"
 	invalidIP             = "invalid IP: %v. It must be a valid IP address, (e.g. 10.9.8.7)"
-	invalidCPUQuota       = "invalid CPU quota: %v. It must be between %vm and %vm"
-	invalidMemoryQuota    = "invalid memory quota: %v. It must be between %vMi and %vMi"
+	invalidCPUQuota       = "invalid CPU quota: %v. It must be between %v(m) and %v(m)"
+	invalidMemoryQuota    = "invalid memory quota: %v. It must be between %v(Mi) and %v(Mi)"
 	subPathRelative       = "invalid Sub Path: %v. It must be relative path"
-	invalidResourceKind   = "invalid resource kind: %v. Shoud be %v"
-	invalidAPIVersion     = "invalid API Version: %v. Shoud be %v"
-	noResource            = "unable to find %v in %v"
-	noNamespace           = "unable to find namesapce"
-	resourceAlreadyExists = "%v already exists in %v"
+	noResource            = "resource '%v' is not found in %v"
+	noNamespace           = "namespace is not found"
+	resourceAlreadyExists = "resource '%v' already exists in %v"
 )
 
 //ParseKubernetesResourceError checks error status
