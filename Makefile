@@ -15,8 +15,7 @@ VERSION?=$(LATEST_TAG:v%=%)
 # make directory and store path to variable
 BUILDS_DIR:=$(PWD)/build
 EXECUTABLE:=kube-api
-LDFLAGS=-X '$(PACKAGE)/$(CLI_DIR)/mode.API_ADDR=$(CONTAINERUM_API)' \
-	-X '$(PACKAGE)/$(CLI_DIR).VERSION=v$(VERSION)'
+LDFLAGS=-X '$(PACKAGE)/$(CLI_DIR).VERSION=v$(VERSION)'
 
 # go has build artifacts caching so soruce tracking not needed
 build:
