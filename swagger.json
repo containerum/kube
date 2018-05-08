@@ -5,7 +5,7 @@
   "produces": [
     "application/json"
   ],
-  "swagger": "3.0",
+  "swagger": "2.0",
   "info": {
     "description": "Kube API service is service for connection with Kubernetes.",
     "title": "Kube API"
