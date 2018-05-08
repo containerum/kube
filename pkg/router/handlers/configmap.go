@@ -19,7 +19,6 @@ const (
 
 // swagger:operation GET /namespaces/{namespace}/configmaps ConfigMap GetConfigMapList
 // Get config maps list.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#configmaps-list
 //
 // ---
 // x-method-visibility: public
@@ -73,7 +72,6 @@ func GetConfigMapList(ctx *gin.Context) {
 
 // swagger:operation GET /namespaces/{namespace}/configmaps/{configmap} ConfigMap GetConfigMap
 // Get config map.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-configmap
 //
 // ---
 // x-method-visibility: public
@@ -133,7 +131,6 @@ func GetConfigMap(ctx *gin.Context) {
 
 // swagger:operation POST /namespaces/{namespace}/configmaps ConfigMap CreateConfigMap
 // Create config map.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-configmap
 //
 // ---
 // x-method-visibility: public
@@ -203,7 +200,6 @@ func CreateConfigMap(ctx *gin.Context) {
 
 // swagger:operation PUT /namespaces/{namespace}/configmaps/{configmap} ConfigMap UpdateConfigMap
 // Update config map.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-configmap
 //
 // ---
 // x-method-visibility: public
@@ -286,7 +282,6 @@ func UpdateConfigMap(ctx *gin.Context) {
 
 // swagger:operation DELETE /namespaces/{namespace}/configmaps/{configmap} ConfigMap DeleteConfigMap
 // Delete config map.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-configmap
 //
 // ---
 // x-method-visibility: public

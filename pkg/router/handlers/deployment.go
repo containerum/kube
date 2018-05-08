@@ -20,7 +20,6 @@ const (
 
 // swagger:operation GET /namespaces/{namespace}/deployments Deployment GetDeploymentList
 // Get deployments list.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-deployments
 //
 // ---
 // x-method-visibility: public
@@ -80,7 +79,6 @@ func GetDeploymentList(ctx *gin.Context) {
 
 // swagger:operation GET /namespaces/{namespace}/deployments/{deployment} Deployment GetDeployment
 // Get deployment.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-deployment
 //
 // ---
 // x-method-visibility: public
@@ -140,7 +138,6 @@ func GetDeployment(ctx *gin.Context) {
 
 // swagger:operation POST /namespaces/{namespace}/deployments Deployment CreateDeployment
 // Create deployment.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-deployment
 //
 // ---
 // x-method-visibility: private
@@ -208,7 +205,6 @@ func CreateDeployment(ctx *gin.Context) {
 
 // swagger:operation PUT /namespaces/{namespace}/deployments/{deployment} Deployment UpdateDeployment
 // Update deployment.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#replace-deployment
 //
 // ---
 // x-method-visibility: private
@@ -292,7 +288,6 @@ func UpdateDeployment(ctx *gin.Context) {
 
 // swagger:operation PUT /namespaces/{namespace}/deployments/{deployment}/replicas Deployment UpdateDeploymentReplicas
 // Update deployments replicas count.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#change-replicas-count
 //
 // ---
 // x-method-visibility: private
@@ -370,7 +365,6 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 
 // swagger:operation PUT /namespaces/{namespace}/deployments/{deployment}/image Deployment UpdateDeploymentImage
 // Update image in deployments container.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#replace-deployment-image
 //
 // ---
 // x-method-visibility: private
@@ -452,7 +446,6 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 
 // swagger:operation DELETE /namespaces/{namespace}/deployments/{deployment} Deployment DeleteDeployment
 // Delete deployment.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-deployment
 //
 // ---
 // x-method-visibility: private

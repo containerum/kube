@@ -19,7 +19,6 @@ const (
 
 // swagger:operation GET /namespaces/{namespace}/services Service GetServiceList
 // Get services list.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-service-list
 //
 // ---
 // x-method-visibility: public
@@ -72,7 +71,6 @@ func GetServiceList(ctx *gin.Context) {
 
 // swagger:operation GET /namespaces/{namespace}/services/{service} Service GetService
 // Get services list.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-service
 //
 // ---
 // x-method-visibility: public
@@ -132,7 +130,6 @@ func GetService(ctx *gin.Context) {
 
 // swagger:operation POST /namespaces/{namespace}/services Service CreateService
 // Create service.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-service
 //
 // ---
 // x-method-visibility: private
@@ -200,7 +197,6 @@ func CreateService(ctx *gin.Context) {
 
 // swagger:operation PUT /namespaces/{namespace}/services/{service} Service UpdateService
 // Update service.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-service
 //
 // ---
 // x-method-visibility: private
@@ -289,7 +285,6 @@ func UpdateService(ctx *gin.Context) {
 
 // swagger:operation DELETE /namespaces/{namespace}/services/{service} Service DeleteService
 // Delete service.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-service
 //
 // ---
 // x-method-visibility: public

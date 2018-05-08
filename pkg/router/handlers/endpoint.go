@@ -19,7 +19,6 @@ const (
 
 // swagger:operation GET /namespaces/{namespace}/endpoints Endpoint GetEndpointList
 // Get endpoints list.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-endpoint-list
 //
 // ---
 // x-method-visibility: private
@@ -72,7 +71,6 @@ func GetEndpointList(ctx *gin.Context) {
 
 // swagger:operation GET /namespaces/{namespace}/endpoints/{endpoint} Endpoint GetEndpointList
 // Get endpoint.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-endpoint
 //
 // ---
 // x-method-visibility: private
@@ -132,7 +130,6 @@ func GetEndpoint(ctx *gin.Context) {
 
 // swagger:operation POST /namespaces/{namespace}/endpoints Endpoint CreateEndpoint
 // Create endpoint.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#post-endpoint
 //
 // ---
 // x-method-visibility: private
@@ -199,7 +196,6 @@ func CreateEndpoint(ctx *gin.Context) {
 
 // swagger:operation PUT /namespaces/{namespace}/endpoints/{endpoint} Endpoint UpdateEndpoint
 // Update endpoint.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-endpoint
 //
 // ---
 // x-method-visibility: private
@@ -281,7 +277,6 @@ func UpdateEndpoint(ctx *gin.Context) {
 
 // swagger:operation DELETE /namespaces/{namespace}/endpoints/{endpoint} Endpoint DeleteEndpoint
 // Delete endpoint.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-endpoint
 //
 // ---
 // x-method-visibility: private

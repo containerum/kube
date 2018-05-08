@@ -45,7 +45,6 @@ var wsupgrader = websocket.Upgrader{
 
 // swagger:operation GET /namespaces/{namespace}/pods Pod GetPodList
 // Get pods list.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-pod-list
 //
 // ---
 // x-method-visibility: public
@@ -99,7 +98,6 @@ func GetPodList(ctx *gin.Context) {
 
 // swagger:operation GET /namespaces/{namespace}/pods/{pod} Pod GetPod
 // Get pod.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-pod
 //
 // ---
 // x-method-visibility: public
@@ -153,7 +151,6 @@ func GetPod(ctx *gin.Context) {
 
 // swagger:operation DELETE /namespaces/{namespace}/pods/{pod} Pod DeletePod
 // Delete pod.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-pod
 //
 // ---
 // x-method-visibility: public
@@ -202,7 +199,6 @@ func DeletePod(ctx *gin.Context) {
 
 // swagger:operation GET /namespaces/{namespace}/pods/{pod}/log Pod GetPodLogs
 // Get pod logs.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-pod
 //
 // ---
 // x-method-visibility: public

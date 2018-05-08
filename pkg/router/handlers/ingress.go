@@ -19,7 +19,6 @@ const (
 
 // swagger:operation GET /namespaces/{namespace}/ingresses Ingress GetIngressList
 // Get ingresses list.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-ingress-list
 //
 // ---
 // x-method-visibility: public
@@ -73,7 +72,6 @@ func GetIngressList(ctx *gin.Context) {
 
 // swagger:operation GET /namespaces/{namespace}/ingresses/{ingress} Ingress GetIngress
 // Get ingresses list.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-ingress
 //
 // ---
 // x-method-visibility: public
@@ -133,7 +131,6 @@ func GetIngress(ctx *gin.Context) {
 
 // swagger:operation POST /namespaces/{namespace}/ingresses Ingress CreateIngress
 // Create ingress.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-ingress
 //
 // ---
 // x-method-visibility: private
@@ -202,7 +199,6 @@ func CreateIngress(ctx *gin.Context) {
 
 // swagger:operation PUT /namespaces/{namespace}/ingresses/{ingress} Ingress UpdateIngress
 // Update ingress.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-ingress
 //
 // ---
 // x-method-visibility: private
@@ -286,7 +282,6 @@ func UpdateIngress(ctx *gin.Context) {
 
 // swagger:operation DELETE /namespaces/{namespace}/ingresses/{ingress} Ingress DeleteIngress
 // Delete ingress.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-ingress
 //
 // ---
 // x-method-visibility: private

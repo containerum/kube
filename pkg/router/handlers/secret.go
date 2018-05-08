@@ -19,7 +19,6 @@ const (
 
 // swagger:operation GET /namespaces/{namespace}/secrets Secret GetSecretList
 // Get secrets list.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-secrets-list
 //
 // ---
 // x-method-visibility: public
@@ -73,7 +72,6 @@ func GetSecretList(ctx *gin.Context) {
 
 // swagger:operation GET /namespaces/{namespace}/secrets/{secret} Secret GetSecret
 // Get secret.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-secret
 //
 // ---
 // x-method-visibility: public
@@ -133,7 +131,6 @@ func GetSecret(ctx *gin.Context) {
 
 // swagger:operation POST /namespaces/{namespace}/secrets Secret CreateSecret
 // Create secret.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-secret
 //
 // ---
 // x-method-visibility: private
@@ -202,7 +199,6 @@ func CreateSecret(ctx *gin.Context) {
 
 // swagger:operation PUT /namespaces/{namespace}/secrets/{secret} Secret UpdateSecret
 // Update secret.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-secret
 //
 // ---
 // x-method-visibility: private
@@ -285,7 +281,6 @@ func UpdateSecret(ctx *gin.Context) {
 
 // swagger:operation DELETE /namespaces/{namespace}/secrets/{secret} Secret DeleteSecret
 // Delete secret.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-secret
 //
 // ---
 // x-method-visibility: public
