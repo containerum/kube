@@ -173,7 +173,8 @@ func ParseNamespaceListForUser(headers UserHeaderDataMap, nsl []NamespaceWithOwn
 	return &ret
 }
 
-func (ns *NamespaceWithOwner) ParseForUser(headers UserHeaderDataMap) *NamespaceWithOwner {
+func (ns *NamespaceWithOwner) ParseForUser(headers UserHeaderDataMap) {
+	ns.Label = ""
 	for _, n := range headers {
 		if ns.Name == n.ID {
 			ns.Label = n.Label
@@ -182,7 +183,6 @@ func (ns *NamespaceWithOwner) ParseForUser(headers UserHeaderDataMap) *Namespace
 	}
 	ns.Name = ""
 	ns.Owner = ""
-	return ns
 }
 
 func (ns *NamespaceWithOwner) Validate() []error {
