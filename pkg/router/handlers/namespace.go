@@ -22,7 +22,6 @@ const (
 
 // swagger:operation GET /namespaces Namespace GetNamespaceList
 // Get namespaces list.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-namespace-list
 //
 // ---
 // x-method-visibility: public
@@ -77,7 +76,6 @@ func GetNamespaceList(ctx *gin.Context) {
 
 // swagger:operation GET /namespaces/{namespace} Namespace GetNamespace
 // Get namespace.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-namespace
 //
 // ---
 // x-method-visibility: public
@@ -130,7 +128,6 @@ func GetNamespace(ctx *gin.Context) {
 
 // swagger:operation POST /namespaces Namespace CreateNamespace
 // Create namespace.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-namespace
 //
 // ---
 // x-method-visibility: private
@@ -197,7 +194,6 @@ func CreateNamespace(ctx *gin.Context) {
 
 // swagger:operation PUT /namespaces/{namespace} Namespace UpdateNamespace
 // Update namespace.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-namespace
 //
 // ---
 // x-method-visibility: private
@@ -269,7 +265,6 @@ func UpdateNamespace(ctx *gin.Context) {
 
 // swagger:operation DELETE /namespaces/{namespace} Namespace DeleteNamespace
 // Delete namespace.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-namespace
 //
 // ---
 // x-method-visibility: private

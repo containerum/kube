@@ -19,7 +19,6 @@ const (
 
 // swagger:operation GET /namespaces/{namespace}/endpoints Endpoint GetEndpointList
 // Get endpoints list.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-endpoint-list
 //
 // ---
 // x-method-visibility: private
@@ -48,6 +47,12 @@ func GetEndpointList(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResourcesList()), ctx)
+		return
+	}
+
 	endpoints, err := kube.GetEndpointList(namespace)
 	if err != nil {
 		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
@@ -66,7 +71,6 @@ func GetEndpointList(ctx *gin.Context) {
 
 // swagger:operation GET /namespaces/{namespace}/endpoints/{endpoint} Endpoint GetEndpointList
 // Get endpoint.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-endpoint
 //
 // ---
 // x-method-visibility: private
@@ -101,6 +105,12 @@ func GetEndpoint(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
+		return
+	}
+
 	endpoint, err := kube.GetEndpoint(namespace, ep)
 	if err != nil {
 		ctx.Error(err)
@@ -120,7 +130,6 @@ func GetEndpoint(ctx *gin.Context) {
 
 // swagger:operation POST /namespaces/{namespace}/endpoints Endpoint CreateEndpoint
 // Create endpoint.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#post-endpoint
 //
 // ---
 // x-method-visibility: private
@@ -187,7 +196,6 @@ func CreateEndpoint(ctx *gin.Context) {
 
 // swagger:operation PUT /namespaces/{namespace}/endpoints/{endpoint} Endpoint UpdateEndpoint
 // Update endpoint.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-endpoint
 //
 // ---
 // x-method-visibility: private
@@ -233,23 +241,21 @@ func UpdateEndpoint(ctx *gin.Context) {
 		return
 	}
 
-	quota, err := kube.GetNamespaceQuota(namespace)
+	ns, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
-	oldEndpoint, err := kube.GetEndpoint(namespace, ep)
+	_, err = kube.GetEndpoint(namespace, ep)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	endpointReq.Name = ep
-	owner := oldEndpoint.GetObjectMeta().GetLabels()[ownerQuery]
-	endpointReq.Owner = &owner
 
-	newEndpoint, errs := endpointReq.ToKube(namespace, quota.Labels)
+	newEndpoint, errs := endpointReq.ToKube(namespace, ns.Labels)
 	if errs != nil {
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
@@ -271,7 +277,6 @@ func UpdateEndpoint(ctx *gin.Context) {
 
 // swagger:operation DELETE /namespaces/{namespace}/endpoints/{endpoint} Endpoint DeleteEndpoint
 // Delete endpoint.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-endpoint
 //
 // ---
 // x-method-visibility: private
@@ -304,7 +309,13 @@ func DeleteEndpoint(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	err := kube.DeleteEndpoint(namespace, ep)
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		return
+	}
+
+	err = kube.DeleteEndpoint(namespace, ep)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
 		return

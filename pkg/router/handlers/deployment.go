@@ -20,7 +20,6 @@ const (
 
 // swagger:operation GET /namespaces/{namespace}/deployments Deployment GetDeploymentList
 // Get deployments list.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-deployments
 //
 // ---
 // x-method-visibility: public
@@ -54,6 +53,12 @@ func GetDeploymentList(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResourcesList()), ctx)
+		return
+	}
+
 	deploy, err := kube.GetDeploymentList(namespace, ctx.Query(ownerQuery))
 	if err != nil {
 		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
@@ -74,7 +79,6 @@ func GetDeploymentList(ctx *gin.Context) {
 
 // swagger:operation GET /namespaces/{namespace}/deployments/{deployment} Deployment GetDeployment
 // Get deployment.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-deployment
 //
 // ---
 // x-method-visibility: public
@@ -109,6 +113,12 @@ func GetDeployment(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
+		return
+	}
+
 	deploy, err := kube.GetDeployment(namespace, deployment)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
@@ -128,7 +138,6 @@ func GetDeployment(ctx *gin.Context) {
 
 // swagger:operation POST /namespaces/{namespace}/deployments Deployment CreateDeployment
 // Create deployment.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-deployment
 //
 // ---
 // x-method-visibility: private
@@ -168,13 +177,13 @@ func CreateDeployment(ctx *gin.Context) {
 		return
 	}
 
-	quota, err := kube.GetNamespace(namespace)
+	ns, err := kube.GetNamespace(namespace)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
-	deploy, errs := deployReq.ToKube(namespace, quota.Labels)
+	deploy, errs := deployReq.ToKube(namespace, ns.Labels)
 	if errs != nil {
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
@@ -196,7 +205,6 @@ func CreateDeployment(ctx *gin.Context) {
 
 // swagger:operation PUT /namespaces/{namespace}/deployments/{deployment} Deployment UpdateDeployment
 // Update deployment.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#replace-deployment
 //
 // ---
 // x-method-visibility: private
@@ -242,22 +250,21 @@ func UpdateDeployment(ctx *gin.Context) {
 		return
 	}
 
-	quota, err := kube.GetNamespace(namespace)
+	ns, err := kube.GetNamespace(namespace)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
-	oldDeploy, err := kube.GetDeployment(namespace, deployment)
+	_, err = kube.GetDeployment(namespace, deployment)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	deployReq.Name = deployment
-	deployReq.Owner = oldDeploy.GetObjectMeta().GetLabels()[ownerQuery]
 
-	deploy, errs := deployReq.ToKube(namespace, quota.Labels)
+	deploy, errs := deployReq.ToKube(namespace, ns.Labels)
 	if errs != nil {
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
@@ -281,7 +288,6 @@ func UpdateDeployment(ctx *gin.Context) {
 
 // swagger:operation PUT /namespaces/{namespace}/deployments/{deployment}/replicas Deployment UpdateDeploymentReplicas
 // Update deployments replicas count.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#change-replicas-count
 //
 // ---
 // x-method-visibility: private
@@ -327,6 +333,12 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 		return
 	}
 
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
+		return
+	}
+
 	deploy, err := kube.GetDeployment(namespace, deployment)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
@@ -353,7 +365,6 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 
 // swagger:operation PUT /namespaces/{namespace}/deployments/{deployment}/image Deployment UpdateDeploymentImage
 // Update image in deployments container.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#replace-deployment-image
 //
 // ---
 // x-method-visibility: private
@@ -399,6 +410,12 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 		return
 	}
 
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
+		return
+	}
+
 	deploy, err := kube.GetDeployment(namespace, deployment)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
@@ -429,7 +446,6 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 
 // swagger:operation DELETE /namespaces/{namespace}/deployments/{deployment} Deployment DeleteDeployment
 // Delete deployment.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-deployment
 //
 // ---
 // x-method-visibility: private
@@ -462,7 +478,13 @@ func DeleteDeployment(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	err := kube.DeleteDeployment(namespace, deployment)
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		return
+	}
+
+	err = kube.DeleteDeployment(namespace, deployment)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
 		return

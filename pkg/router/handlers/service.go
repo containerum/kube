@@ -19,7 +19,6 @@ const (
 
 // swagger:operation GET /namespaces/{namespace}/services Service GetServiceList
 // Get services list.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-service-list
 //
 // ---
 // x-method-visibility: public
@@ -45,7 +44,15 @@ func GetServiceList(ctx *gin.Context) {
 		"Namespace Param": ctx.Param(namespaceParam),
 		"Namespace":       namespace,
 	}).Debug("Get service list call")
+
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResourcesList()), ctx)
+		return
+	}
+
 	svcList, err := kube.GetServiceList(namespace)
 	if err != nil {
 		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
@@ -64,7 +71,6 @@ func GetServiceList(ctx *gin.Context) {
 
 // swagger:operation GET /namespaces/{namespace}/services/{service} Service GetService
 // Get services list.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-service
 //
 // ---
 // x-method-visibility: public
@@ -99,6 +105,12 @@ func GetService(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
+		return
+	}
+
 	svc, err := kube.GetService(namespace, service)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
@@ -118,7 +130,6 @@ func GetService(ctx *gin.Context) {
 
 // swagger:operation POST /namespaces/{namespace}/services Service CreateService
 // Create service.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-service
 //
 // ---
 // x-method-visibility: private
@@ -157,13 +168,13 @@ func CreateService(ctx *gin.Context) {
 		return
 	}
 
-	quota, err := kube.GetNamespaceQuota(namespace)
+	ns, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
-	newSvc, errs := svc.ToKube(namespace, quota.Labels)
+	newSvc, errs := svc.ToKube(namespace, ns.Labels)
 	if errs != nil {
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
@@ -186,7 +197,6 @@ func CreateService(ctx *gin.Context) {
 
 // swagger:operation PUT /namespaces/{namespace}/services/{service} Service UpdateService
 // Update service.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-service
 //
 // ---
 // x-method-visibility: private
@@ -232,7 +242,7 @@ func UpdateService(ctx *gin.Context) {
 		return
 	}
 
-	quota, err := kube.GetNamespaceQuota(namespace)
+	ns, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
@@ -249,7 +259,7 @@ func UpdateService(ctx *gin.Context) {
 	svc.Name = ctx.Param(serviceParam)
 	svc.Owner = oldSvc.GetObjectMeta().GetLabels()[ownerQuery]
 
-	newSvc, errs := svc.ToKube(namespace, quota.Labels)
+	newSvc, errs := svc.ToKube(namespace, ns.Labels)
 	if errs != nil {
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
@@ -275,7 +285,6 @@ func UpdateService(ctx *gin.Context) {
 
 // swagger:operation DELETE /namespaces/{namespace}/services/{service} Service DeleteService
 // Delete service.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-service
 //
 // ---
 // x-method-visibility: public
@@ -307,7 +316,14 @@ func DeleteService(ctx *gin.Context) {
 	}).Debug("Delete service call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
-	err := kube.DeleteService(namespace, service)
+
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		return
+	}
+
+	err = kube.DeleteService(namespace, service)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
 		return

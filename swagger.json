@@ -5,7 +5,7 @@
   "produces": [
     "application/json"
   ],
-  "swagger": "3.0",
+  "swagger": "2.0",
   "info": {
     "description": "Kube API service is service for connection with Kubernetes.",
     "title": "Kube API"
@@ -83,7 +83,6 @@
     },
     "/namespaces": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-namespace-list",
         "tags": [
           "Namespace"
         ],
@@ -122,7 +121,6 @@
         "x-method-visibility": "public"
       },
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-namespace",
         "tags": [
           "Namespace"
         ],
@@ -165,7 +163,6 @@
     },
     "/namespaces/{namespace}": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-namespace",
         "tags": [
           "Namespace"
         ],
@@ -205,7 +202,6 @@
         "x-method-visibility": "public"
       },
       "put": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-namespace",
         "tags": [
           "Namespace"
         ],
@@ -252,7 +248,6 @@
         "x-method-visibility": "private"
       },
       "delete": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-namespace",
         "tags": [
           "Namespace"
         ],
@@ -291,7 +286,6 @@
     },
     "/namespaces/{namespace}/configmaps": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#configmaps-list",
         "tags": [
           "ConfigMap"
         ],
@@ -331,7 +325,6 @@
         "x-method-visibility": "public"
       },
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-configmap",
         "tags": [
           "ConfigMap"
         ],
@@ -380,7 +373,6 @@
     },
     "/namespaces/{namespace}/configmaps/{configmap}": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-configmap",
         "tags": [
           "ConfigMap"
         ],
@@ -426,7 +418,6 @@
         "x-method-visibility": "public"
       },
       "put": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-configmap",
         "tags": [
           "ConfigMap"
         ],
@@ -479,7 +470,6 @@
         "x-method-visibility": "public"
       },
       "delete": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-configmap",
         "tags": [
           "ConfigMap"
         ],
@@ -524,7 +514,6 @@
     },
     "/namespaces/{namespace}/deployments": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-deployments",
         "tags": [
           "Deployment"
         ],
@@ -569,7 +558,6 @@
         "x-method-visibility": "public"
       },
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-deployment",
         "tags": [
           "Deployment"
         ],
@@ -618,7 +606,6 @@
     },
     "/namespaces/{namespace}/deployments/{deployment}": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-deployment",
         "tags": [
           "Deployment"
         ],
@@ -664,7 +651,6 @@
         "x-method-visibility": "public"
       },
       "put": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#replace-deployment",
         "tags": [
           "Deployment"
         ],
@@ -717,7 +703,6 @@
         "x-method-visibility": "private"
       },
       "delete": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-deployment",
         "tags": [
           "Deployment"
         ],
@@ -762,7 +747,6 @@
     },
     "/namespaces/{namespace}/deployments/{deployment}/image": {
       "put": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#replace-deployment-image",
         "tags": [
           "Deployment"
         ],
@@ -817,7 +801,6 @@
     },
     "/namespaces/{namespace}/deployments/{deployment}/replicas": {
       "put": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#change-replicas-count",
         "tags": [
           "Deployment"
         ],
@@ -872,7 +855,6 @@
     },
     "/namespaces/{namespace}/endpoints": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-endpoint-list",
         "tags": [
           "Endpoint"
         ],
@@ -909,7 +891,6 @@
         "x-method-visibility": "private"
       },
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#post-endpoint",
         "tags": [
           "Endpoint"
         ],
@@ -958,7 +939,6 @@
     },
     "/namespaces/{namespace}/endpoints/{endpoint}": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-endpoint",
         "tags": [
           "Endpoint"
         ],
@@ -1001,7 +981,6 @@
         "x-method-visibility": "private"
       },
       "put": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-endpoint",
         "tags": [
           "Endpoint"
         ],
@@ -1054,7 +1033,6 @@
         "x-method-visibility": "private"
       },
       "delete": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-endpoint",
         "tags": [
           "Endpoint"
         ],
@@ -1099,7 +1077,6 @@
     },
     "/namespaces/{namespace}/ingresses": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-ingress-list",
         "tags": [
           "Ingress"
         ],
@@ -1136,7 +1113,6 @@
         "x-method-visibility": "public"
       },
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-ingress",
         "tags": [
           "Ingress"
         ],
@@ -1185,7 +1161,6 @@
     },
     "/namespaces/{namespace}/ingresses/{ingress}": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-ingress",
         "tags": [
           "Ingress"
         ],
@@ -1228,7 +1203,6 @@
         "x-method-visibility": "public"
       },
       "put": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-ingress",
         "tags": [
           "Ingress"
         ],
@@ -1281,7 +1255,6 @@
         "x-method-visibility": "private"
       },
       "delete": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-ingress",
         "tags": [
           "Ingress"
         ],
@@ -1326,7 +1299,6 @@
     },
     "/namespaces/{namespace}/pods": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-pod-list",
         "tags": [
           "Pod"
         ],
@@ -1370,7 +1342,6 @@
     },
     "/namespaces/{namespace}/pods/{pod}": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-pod",
         "tags": [
           "Pod"
         ],
@@ -1416,7 +1387,6 @@
         "x-method-visibility": "public"
       },
       "delete": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-pod",
         "tags": [
           "Pod"
         ],
@@ -1461,7 +1431,6 @@
     },
     "/namespaces/{namespace}/pods/{pod}/log": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-pod",
         "tags": [
           "Pod"
         ],
@@ -1538,7 +1507,6 @@
     },
     "/namespaces/{namespace}/secrets": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-secrets-list",
         "tags": [
           "Secret"
         ],
@@ -1578,7 +1546,6 @@
         "x-method-visibility": "public"
       },
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-secret",
         "tags": [
           "Secret"
         ],
@@ -1627,7 +1594,6 @@
     },
     "/namespaces/{namespace}/secrets/{secret}": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-secret",
         "tags": [
           "Secret"
         ],
@@ -1673,7 +1639,6 @@
         "x-method-visibility": "public"
       },
       "put": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-secret",
         "tags": [
           "Secret"
         ],
@@ -1726,7 +1691,6 @@
         "x-method-visibility": "private"
       },
       "delete": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-secret",
         "tags": [
           "Secret"
         ],
@@ -1771,7 +1735,6 @@
     },
     "/namespaces/{namespace}/services": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-service-list",
         "tags": [
           "Service"
         ],
@@ -1811,7 +1774,6 @@
         "x-method-visibility": "public"
       },
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-service",
         "tags": [
           "Service"
         ],
@@ -1860,7 +1822,6 @@
     },
     "/namespaces/{namespace}/services/{service}": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-service",
         "tags": [
           "Service"
         ],
@@ -1906,7 +1867,6 @@
         "x-method-visibility": "public"
       },
       "put": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-service",
         "tags": [
           "Service"
         ],
@@ -1959,7 +1919,6 @@
         "x-method-visibility": "private"
       },
       "delete": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-service",
         "tags": [
           "Service"
         ],
@@ -2004,6 +1963,62 @@
     }
   },
   "definitions": {
+    "AvailableSolution": {
+      "description": "AvailableSolution -- solution which user can run",
+      "type": "object",
+      "properties": {
+        "Active": {
+          "type": "boolean"
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Images"
+        },
+        "limits": {
+          "$ref": "#/definitions/SolutionLimits"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "url": {
+          "type": "string",
+          "x-go-name": "URL"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
+    },
+    "AvailableSolutionsList": {
+      "description": "AvailableSolutionsList -- list of available solutions",
+      "type": "object",
+      "properties": {
+        "solutions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AvailableSolution"
+          },
+          "x-go-name": "Solutions"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
+    },
+    "ConfigFile": {
+      "type": "object",
+      "properties": {
+        "config_file": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "type": {
+          "type": "string",
+          "x-go-name": "Type"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
+    },
     "ConfigMap": {
       "description": "ConfigMap -- model for config map",
       "type": "object",
@@ -2927,6 +2942,30 @@
       },
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
+    "RunSolutionResponce": {
+      "description": "RunSolutionResponce -- responce to run solution request",
+      "type": "object",
+      "properties": {
+        "created": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Created"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Errors"
+        },
+        "not_created": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "NotCreated"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
+    },
     "Secret": {
       "description": "model for secret",
       "type": "object",
@@ -2974,6 +3013,10 @@
             "type": "string"
           },
           "x-go-name": "Data"
+        },
+        "hidden": {
+          "type": "boolean",
+          "x-go-name": "Hidden"
         },
         "name": {
           "type": "string",
@@ -3163,6 +3206,50 @@
       },
       "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
     },
+    "SolutionEnv": {
+      "description": "SolutionEnv -- solution environment variables",
+      "type": "object",
+      "properties": {
+        "env": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-name": "Env"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
+    },
+    "SolutionLimits": {
+      "description": "SolutionLimits -- solution resources limits",
+      "type": "object",
+      "properties": {
+        "cpu": {
+          "type": "string",
+          "x-go-name": "CPU"
+        },
+        "ram": {
+          "type": "string",
+          "x-go-name": "RAM"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
+    },
+    "SolutionResources": {
+      "description": "SolutionResources -- list of solution resources",
+      "type": "object",
+      "properties": {
+        "resources": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "x-go-name": "Resources"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
+    },
     "UpdateImage": {
       "description": "UpdateImage -- model for update container image request",
       "type": "object",
@@ -3234,6 +3321,55 @@
           "description": "user-visible label for the object",
           "type": "string",
           "x-go-name": "Label"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
+    },
+    "UserSolution": {
+      "description": "UserSolution -- running solution",
+      "type": "object",
+      "required": [
+        "template",
+        "name",
+        "namespace"
+      ],
+      "properties": {
+        "branch": {
+          "type": "string",
+          "x-go-name": "Branch"
+        },
+        "env": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-name": "Env"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "namespace": {
+          "type": "string",
+          "x-go-name": "Namespace"
+        },
+        "template": {
+          "type": "string",
+          "x-go-name": "Template"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
+    },
+    "UserSolutionsList": {
+      "description": "UserSolutionsList -- list of running solution",
+      "type": "object",
+      "properties": {
+        "solutions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserSolution"
+          },
+          "x-go-name": "Solutions"
         }
       },
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"

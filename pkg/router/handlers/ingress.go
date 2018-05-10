@@ -19,7 +19,6 @@ const (
 
 // swagger:operation GET /namespaces/{namespace}/ingresses Ingress GetIngressList
 // Get ingresses list.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-ingress-list
 //
 // ---
 // x-method-visibility: public
@@ -48,6 +47,12 @@ func GetIngressList(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResourcesList()), ctx)
+		return
+	}
+
 	ingressList, err := kube.GetIngressList(namespace)
 	if err != nil {
 		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
@@ -67,7 +72,6 @@ func GetIngressList(ctx *gin.Context) {
 
 // swagger:operation GET /namespaces/{namespace}/ingresses/{ingress} Ingress GetIngress
 // Get ingresses list.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-ingress
 //
 // ---
 // x-method-visibility: public
@@ -102,6 +106,12 @@ func GetIngress(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
+		return
+	}
+
 	ingress, err := kube.GetIngress(namespace, ingr)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
@@ -121,7 +131,6 @@ func GetIngress(ctx *gin.Context) {
 
 // swagger:operation POST /namespaces/{namespace}/ingresses Ingress CreateIngress
 // Create ingress.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-ingress
 //
 // ---
 // x-method-visibility: private
@@ -190,7 +199,6 @@ func CreateIngress(ctx *gin.Context) {
 
 // swagger:operation PUT /namespaces/{namespace}/ingresses/{ingress} Ingress UpdateIngress
 // Update ingress.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-ingress
 //
 // ---
 // x-method-visibility: private
@@ -236,7 +244,7 @@ func UpdateIngress(ctx *gin.Context) {
 		return
 	}
 
-	quota, err := kube.GetNamespaceQuota(namespace)
+	ns, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
@@ -251,7 +259,7 @@ func UpdateIngress(ctx *gin.Context) {
 	ingressReq.Name = ingr
 	ingressReq.Owner = oldIngress.GetObjectMeta().GetLabels()[ownerQuery]
 
-	newIngress, errs := ingressReq.ToKube(namespace, quota.Labels)
+	newIngress, errs := ingressReq.ToKube(namespace, ns.Labels)
 	if errs != nil {
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
@@ -274,7 +282,6 @@ func UpdateIngress(ctx *gin.Context) {
 
 // swagger:operation DELETE /namespaces/{namespace}/ingresses/{ingress} Ingress DeleteIngress
 // Delete ingress.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-ingress
 //
 // ---
 // x-method-visibility: private
@@ -307,7 +314,13 @@ func DeleteIngress(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	err := kube.DeleteIngress(namespace, ingr)
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		return
+	}
+
+	err = kube.DeleteIngress(namespace, ingr)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
 		return

@@ -1,8 +1,7 @@
 package model
 
 import (
-	"errors"
-
+	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	kube_types "github.com/containerum/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -59,17 +58,14 @@ func ParseKubeServiceList(ns interface{}, parseforuser bool) (*ServicesList, err
 		return nil, ErrUnableConvertServiceList
 	}
 
-	serviceList := make([]ServiceWithOwner, 0, nativeServices.Size())
+	serviceList := make([]ServiceWithOwner, 0)
 	for _, nativeService := range nativeServices.Items {
-		service, err := ParseKubeService(&nativeService, false)
+		service, err := ParseKubeService(&nativeService, parseforuser)
 		if err != nil {
 			return nil, err
 		}
 
-		if !service.Hidden && service.Owner != "" {
-			if parseforuser {
-				service.Owner = ""
-			}
+		if !service.Hidden || !parseforuser {
 			serviceList = append(serviceList, *service)
 		}
 	}
@@ -83,7 +79,7 @@ func ParseKubeService(srv interface{}, parseforuser bool) (*ServiceWithOwner, er
 		return nil, ErrUnableConvertService
 	}
 
-	ports := make([]kube_types.ServicePort, 0, 1)
+	ports := make([]kube_types.ServicePort, 0)
 
 	createdAt := native.GetCreationTimestamp().UTC().UTC().Format(time.RFC3339)
 	owner := native.GetObjectMeta().GetLabels()[ownerLabel]
@@ -115,7 +111,7 @@ func ParseKubeService(srv interface{}, parseforuser bool) (*ServiceWithOwner, er
 	}
 
 	if parseforuser {
-		service.Owner = ""
+		service.ParseForUser()
 	}
 
 	return &service, nil
@@ -141,10 +137,9 @@ func (service *ServiceWithOwner) ToKube(nsName string, labels map[string]string)
 	}
 
 	if labels == nil {
-		labels = make(map[string]string, 0)
+		return nil, []error{kubeErrors.ErrInternalError()}
 	}
 	labels[appLabel] = service.Deploy
-	labels[ownerLabel] = service.Owner
 	labels[hiddenLabel] = strconv.FormatBool(service.Hidden)
 
 	newService := api_core.Service{
@@ -166,7 +161,7 @@ func (service *ServiceWithOwner) ToKube(nsName string, labels map[string]string)
 	if !service.NoSelector {
 		selector := make(map[string]string, 0)
 		selector[appLabel] = service.Deploy
-		selector[ownerLabel] = service.Owner
+		selector[ownerLabel] = labels[ownerLabel]
 		newService.Spec.Selector = selector
 	}
 
@@ -201,30 +196,25 @@ func makeServicePorts(ports []kube_types.ServicePort) []api_core.ServicePort {
 
 func (service *ServiceWithOwner) Validate() []error {
 	errs := []error{}
-	if service.Owner == "" {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
-	} else if !IsValidUUID(service.Owner) {
-		errs = append(errs, errors.New(invalidOwner))
-	}
 	if service.Name == "" {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "name"))
 	} else if err := api_validation.IsDNS1035Label(service.Name); len(err) > 0 {
 		errs = append(errs, fmt.Errorf(invalidName, service.Name, strings.Join(err, ",")))
 	}
 	if service.Deploy == "" {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Deploy"))
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "deploy"))
 	}
 	if service.Ports == nil || len(service.Ports) == 0 {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Ports"))
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "ports"))
 	}
 	for _, v := range service.Ports {
 		if v.Name == "" {
-			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port name"))
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "ports.name"))
 		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
 			errs = append(errs, fmt.Errorf(invalidName, v.Name, strings.Join(err, ",")))
 		}
 		if v.Protocol == "" {
-			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port protocol"))
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "ports.protocol"))
 		} else if v.Protocol != kube_types.UDP && v.Protocol != kube_types.TCP {
 			errs = append(errs, fmt.Errorf(invalidProtocol, v.Protocol))
 		}
@@ -238,4 +228,13 @@ func (service *ServiceWithOwner) Validate() []error {
 		return errs
 	}
 	return nil
+}
+
+// ParseForUser removes information not interesting for users
+func (service *ServiceWithOwner) ParseForUser() {
+	if service.Owner == "" {
+		service.Hidden = true
+		return
+	}
+	service.Owner = ""
 }
