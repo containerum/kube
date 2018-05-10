@@ -74,7 +74,7 @@ func ParseKubeConfigMap(cmi interface{}, parseforuser bool) (*ConfigMapWithOwner
 		ConfigMap: kube_types.ConfigMap{
 			Name:      cm.GetName(),
 			CreatedAt: &createdAt,
-			Data:      newData,
+			Data:      kube_types.ConfigMapData(newData),
 		},
 		Owner: owner,
 	}

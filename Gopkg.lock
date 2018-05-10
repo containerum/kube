@@ -35,8 +35,8 @@
     ".",
     "pkg/model"
   ]
-  revision = "584feaf51fc5cf24ccf2f4872c7da1c5a81d75d8"
-  version = "v0.11.3"
+  revision = "9293939b520c2d35ba27b6d72b8cd09b3c770cdf"
+  version = "v0.13.0"
 
 [[projects]]
   name = "github.com/containerum/utils"
@@ -338,7 +338,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "4ec37c66abab2c7e02ae775328b2ff001c3f025a"
+  revision = "2d027ae1dddd4694d54f7a8b6cbe78dca8720226"
 
 [[projects]]
   branch = "master"
@@ -352,7 +352,7 @@
     "webdav",
     "webdav/internal/xml"
   ]
-  revision = "d11bb6cd8e3c4e60239c9cb20ef68586d74500d0"
+  revision = "f73e4c9ed3b7ebdd5f699a16a880c2b1994e50dd"
 
 [[projects]]
   branch = "master"
@@ -361,7 +361,7 @@
     "unix",
     "windows"
   ]
-  revision = "7db1c3b1a98089d0071c84f646ff5c96aad43682"
+  revision = "7dfd1290c7917b7ba22824b9d24954ab3002fe24"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -394,8 +394,8 @@
 [[projects]]
   name = "gopkg.in/go-playground/validator.v9"
   packages = ["."]
-  revision = "ee0bbdea519c2c66777c6bfc943838291734ba6c"
-  version = "v9.16.0"
+  revision = "ffe836d7363bc7ab3f56d2fc90ce09bfb5a0c2c5"
+  version = "v9.17.0"
 
 [[projects]]
   name = "gopkg.in/inf.v0"
@@ -543,11 +543,11 @@
   branch = "master"
   name = "k8s.io/kube-openapi"
   packages = ["pkg/common"]
-  revision = "f08db293d3ef80052d6513ece19792642a289fea"
+  revision = "61db125d227fc9d4e373819a059516f32f7f23c7"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "08e311561a5f81036c297004e9e7814d1beaf8dc7b572b01ca15c11f7ffbbb1b"
+  inputs-digest = "44065680342739967da8e18a88a434d4beea38471df86f3bbe8ae9e4cf469328"
   solver-name = "gps-cdcl"
   solver-version = 1
