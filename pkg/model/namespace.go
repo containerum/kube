@@ -118,7 +118,7 @@ func (ns *NamespaceWithOwner) ToKube() (*api_core.Namespace, []error) {
 			APIVersion: "v1",
 		},
 		ObjectMeta: api_meta.ObjectMeta{
-			Labels: map[string]string{"ownerLabel": ns.Owner},
+			Labels: map[string]string{ownerLabel: ns.Owner},
 			Name:   ns.Name,
 		},
 		Spec: api_core.NamespaceSpec{},

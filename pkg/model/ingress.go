@@ -130,7 +130,7 @@ func (ingress *IngressWithOwner) ToKube(nsName string, labels map[string]string)
 		return nil, err
 	}
 	if labels == nil {
-		return nil, []error{kubeErrors.ErrInternalError()}
+		return nil, []error{kubeErrors.ErrInternalError().AddDetails("invalid namespace labels")}
 	}
 
 	rules, secrets, tls := makeIngressRules(ingress.Rules)

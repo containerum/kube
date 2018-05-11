@@ -122,7 +122,7 @@ func (endpoint *Endpoint) ToKube(nsName string, labels map[string]string) (*api_
 	}
 
 	if labels == nil {
-		return nil, []error{kubeErrors.ErrInternalError()}
+		return nil, []error{kubeErrors.ErrInternalError().AddDetails("invalid namespace labels")}
 	}
 
 	newEndpoint := api_core.Endpoints{
