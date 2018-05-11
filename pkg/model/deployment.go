@@ -140,7 +140,7 @@ func (deploy *DeploymentWithOwner) ToKube(nsName string, labels map[string]strin
 	}
 
 	if labels == nil {
-		return nil, []error{kubeErrors.ErrInternalError()}
+		return nil, []error{kubeErrors.ErrInternalError().AddDetails("invalid namespace labels")}
 	}
 	labels[appLabel] = deploy.Name
 
