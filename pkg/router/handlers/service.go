@@ -89,7 +89,7 @@ func GetServiceList(ctx *gin.Context) {
 //    required: true
 // responses:
 //  '200':
-//    description: secrets list
+//    description: service
 //    schema:
 //      $ref: '#/definitions/ServiceWithOwner'
 //  default:
