@@ -36,7 +36,7 @@ const (
 //    description: endpoints list
 //    schema:
 //      $ref: '#/definitions/EndpointsList'
-//  configmap:
+//  default:
 //    $ref: '#/responses/error'
 func GetEndpointList(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
@@ -92,7 +92,7 @@ func GetEndpointList(ctx *gin.Context) {
 //    description: endpoint
 //    schema:
 //      $ref: '#/definitions/Endpoint'
-//  configmap:
+//  default:
 //    $ref: '#/responses/error'
 func GetEndpoint(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)

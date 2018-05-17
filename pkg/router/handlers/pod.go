@@ -66,7 +66,7 @@ var wsupgrader = websocket.Upgrader{
 //    description: pod list
 //    schema:
 //      $ref: '#/definitions/PodsList'
-//  configmap:
+//  default:
 //    $ref: '#/responses/error'
 func GetPodList(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)

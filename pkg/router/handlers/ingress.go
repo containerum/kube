@@ -36,7 +36,7 @@ const (
 //    description: ingresses list
 //    schema:
 //      $ref: '#/definitions/IngressesList'
-//  configmap:
+//  default:
 //    $ref: '#/responses/error'
 func GetIngressList(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
@@ -93,7 +93,7 @@ func GetIngressList(ctx *gin.Context) {
 //    description: ingresses
 //    schema:
 //      $ref: '#/definitions/IngressWithOwner'
-//  configmap:
+//  default:
 //    $ref: '#/responses/error'
 func GetIngress(ctx *gin.Context) {
 	namespace := ctx.MustGet(m.NamespaceKey).(string)
