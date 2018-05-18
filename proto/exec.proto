@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option go_package = "kubeProto";
+
+message ExecFromClient {
+    oneof stdin {
+        bytes data = 1;
+    }
+    oneof terminal_size {
+        uint32 width = 10;
+        uint32 height = 11;
+    }
+}
+
+message ExecToClient {
+    oneof stdout {
+        bytes stdout_data = 1;
+    }
+    oneof stderr {
+        bytes stderr_data = 10;
+    }
+}
