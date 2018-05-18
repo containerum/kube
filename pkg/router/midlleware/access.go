@@ -30,6 +30,14 @@ var (
 )
 
 var (
+	deleteLevels = []AccessLevel{
+		levelOwner,
+		levelWrite,
+		levelReadDelete,
+	}
+)
+
+var (
 	writeLevels = []AccessLevel{
 		levelOwner,
 		levelWrite,
@@ -51,6 +59,30 @@ func IsAdmin(ctx *gin.Context) {
 }
 
 func ReadAccess(ctx *gin.Context) {
+	ns := ctx.Param("namespace")
+	if GetHeader(ctx, headers.UserRoleXHeader) == RoleUser {
+		var userNsData *kubeModel.UserHeaderData
+		nsList := ctx.MustGet(UserNamespaces).(*model.UserHeaderDataMap)
+		for _, n := range *nsList {
+			if ns == n.ID {
+				userNsData = &n
+				break
+			}
+		}
+		if userNsData != nil {
+			if ok := containsAccess(userNsData.Access, readLevels...); ok {
+				return
+			}
+			gonic.Gonic(kubeErrors.ErrAccessError(), ctx)
+			return
+		}
+		gonic.Gonic(kubeErrors.ErrResourceNotExist(), ctx)
+		return
+	}
+	return
+}
+
+func DeleteAccess(ctx *gin.Context) {
 	ns := ctx.Param("namespace")
 	if GetHeader(ctx, headers.UserRoleXHeader) == RoleUser {
 		var userNsData *kubeModel.UserHeaderData
