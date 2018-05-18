@@ -1,0 +1,43 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+    app: {{ template "name" . }}
+    chart: {{ template "chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            {{- range $key, $val := .Values.env }}
+            - name: {{ $key  }}
+              value: {{ $val | quote }}
+            {{- end }}
+          volumeMounts:
+          - name: {{ .Values.volumeMounts.name }}
+            mountPath: {{ .Values.volumeMounts.mountPath }}
+          - name: {{ .Values.configMap.name }}
+            mountPath: {{ .Values.configMap.mountPath }}
+      {{- with .Values.image.secret }}
+      imagePullSecrets:
+      - name: {{ . }}
+      {{- end }}
+      volumes:
+      - name: {{ .Values.configMap.name }}
+        configMap:
+          name: {{ template "fullname" . }}

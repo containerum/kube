@@ -1,0 +1,26 @@
+replicaCount: 1
+
+image:
+  repository: containerum/kube
+  tag: v1.0.0
+  pullPolicy: Always
+  secret:
+
+service:
+  externalIP:
+  port: 1214
+  targetPort: 1212
+
+volumeMounts:
+  name: auth-volume
+  mountPath: '/storage'
+
+configMap:
+  name: kube-conf
+  kubeConf: SGVsbG8K
+  mountPath: '/cfg'
+
+env:
+  CH_KUBE_API_KUBE_CONF: "/cfg/kube.conf"
+  CH_KUBE_API_DEBUG: "true"
+  CH_KUBE_API_TEXTLOG: "true"
