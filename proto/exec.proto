@@ -2,6 +2,11 @@ syntax = "proto3";
 
 option go_package = "kubeProto";
 
+message ExecCommand {
+    string command = 1;
+    repeated string args = 2;
+}
+
 message ExecFromClient {
     oneof stdin {
         bytes data = 1;
