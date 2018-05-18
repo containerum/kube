@@ -1870,7 +1870,7 @@
         ],
         "responses": {
           "200": {
-            "description": "secrets list",
+            "description": "service",
             "schema": {
               "$ref": "#/definitions/ServiceWithOwner"
             }
