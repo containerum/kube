@@ -76,3 +76,7 @@ required = ["github.com/containerum/kube-client"]
 [[constraint]]
   name = "k8s.io/kubernetes"
   version = "1.10.2"
+
+[[constraint]]
+  name = "github.com/golang/protobuf"
+  version = "^1.1.0"
