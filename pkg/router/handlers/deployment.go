@@ -44,11 +44,10 @@ const (
 //  default:
 //    $ref: '#/responses/error'
 func GetDeploymentList(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Owner":           ctx.Query(ownerQuery),
+		"Namespace": namespace,
+		"Owner":     ctx.Query(ownerQuery),
 	}).Debug("Get deployment list Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -103,12 +102,11 @@ func GetDeploymentList(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func GetDeployment(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	deployment := ctx.Param(deploymentParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Deployment":      deployment,
+		"Namespace":  namespace,
+		"Deployment": deployment,
 	}).Debug("Get deployment Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -162,10 +160,9 @@ func GetDeployment(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func CreateDeployment(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
+		"Namespace": namespace,
 	}).Debug("Create deployment Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -233,12 +230,11 @@ func CreateDeployment(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func UpdateDeployment(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	deployment := ctx.Param(deploymentParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Deployment":      deployment,
+		"Namespace":  namespace,
+		"Deployment": deployment,
 	}).Debug("Update deployment Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -316,12 +312,11 @@ func UpdateDeployment(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func UpdateDeploymentReplicas(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	deployment := ctx.Param(deploymentParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Deployment":      deployment,
+		"Namespace":  namespace,
+		"Deployment": deployment,
 	}).Debug("Update deployment replicas Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -393,12 +388,11 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func UpdateDeploymentImage(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	deployment := ctx.Param(deploymentParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Deployment":      deployment,
+		"Namespace":  namespace,
+		"Deployment": deployment,
 	}).Debug("Update deployment container image Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -468,12 +462,11 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func DeleteDeployment(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	deployment := ctx.Param(deploymentParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Deployment":      deployment,
+		"Namespace":  namespace,
+		"Deployment": deployment,
 	}).Debug("Delete deployment Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)

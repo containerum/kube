@@ -43,7 +43,6 @@ func initMiddlewares(e gin.IRouter, kube *kubernetes.Kube, enableCORS bool) {
 	e.Use(gonic.Recovery(kubeErrors.ErrInternalError, cherrylog.NewLogrusAdapter(logrus.WithField("component", "gin"))))
 	/* Custom */
 	e.Use(m.RequiredUserHeaders())
-	e.Use(m.SetNamespace())
 	e.Use(m.RegisterKubeClient(kube))
 }
 
@@ -83,9 +82,9 @@ func initRoutes(e gin.IRouter) {
 		{
 			secret.GET("", m.ReadAccess, h.GetSecretList)
 			secret.GET("/:secret", m.ReadAccess, h.GetSecret)
-			secret.POST("", m.WriteAccess, h.CreateSecret)
-			secret.PUT("/:secret", m.WriteAccess, h.UpdateSecret)
-			secret.DELETE("/:secret", m.WriteAccess, h.DeleteSecret)
+			secret.POST("", m.ReadAccess, m.WriteAccess, h.CreateSecret)
+			secret.PUT("/:secret", m.ReadAccess, m.WriteAccess, h.UpdateSecret)
+			secret.DELETE("/:secret", m.ReadAccess, m.WriteAccess, h.DeleteSecret)
 		}
 
 		ingress := namespace.Group("/:namespace/ingresses")
@@ -97,10 +96,10 @@ func initRoutes(e gin.IRouter) {
 			ingress.DELETE("/:ingress", h.DeleteIngress)
 		}
 
-		endpoint := namespace.Group("/:namespace/endpoints")
+		endpoint := namespace.Group("/:namespace/endpoints", m.IsAdmin)
 		{
-			endpoint.GET("", m.IsAdmin, h.GetEndpointList)
-			endpoint.GET("/:endpoint", m.IsAdmin, h.GetEndpoint)
+			endpoint.GET("", h.GetEndpointList)
+			endpoint.GET("/:endpoint", h.GetEndpoint)
 			endpoint.POST("", h.CreateEndpoint)
 			endpoint.PUT("/:endpoint", h.UpdateEndpoint)
 			endpoint.DELETE("/:endpoint", h.DeleteEndpoint)

@@ -39,10 +39,9 @@ const (
 //  default:
 //    $ref: '#/responses/error'
 func GetConfigMapList(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
+		"Namespace": namespace,
 	}).Debug("Get config maps list Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -96,12 +95,11 @@ func GetConfigMapList(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func GetConfigMap(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	configMap := ctx.Param(configMapParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"ConfigMap":       configMap,
+		"Namespace": namespace,
+		"ConfigMap": configMap,
 	}).Debug("Get config map Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -155,10 +153,9 @@ func GetConfigMap(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func CreateConfigMap(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
+		"Namespace": namespace,
 	}).Debug("Create config map Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -228,12 +225,11 @@ func CreateConfigMap(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func UpdateConfigMap(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	configMap := ctx.Param(configMapParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"ConfigMap":       configMap,
+		"Namespace": namespace,
+		"ConfigMap": configMap,
 	}).Debug("Create config map Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -304,12 +300,11 @@ func UpdateConfigMap(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func DeleteConfigMap(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	configMap := ctx.Param(configMapParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"ConfigMap":       configMap,
+		"Namespace": namespace,
+		"ConfigMap": configMap,
 	}).Debug("Delete config map Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)

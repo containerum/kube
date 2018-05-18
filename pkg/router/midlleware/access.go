@@ -50,53 +50,49 @@ func IsAdmin(ctx *gin.Context) {
 	return
 }
 
-func ReadAccess(c *gin.Context) {
-	ns := c.MustGet(NamespaceKey).(string)
-	if c.MustGet(UserRole).(string) == RoleUser {
+func ReadAccess(ctx *gin.Context) {
+	ns := ctx.Param("namespace")
+	if GetHeader(ctx, headers.UserRoleXHeader) == RoleUser {
 		var userNsData *kubeModel.UserHeaderData
-		nsList := c.MustGet(UserNamespaces).(*model.UserHeaderDataMap)
+		nsList := ctx.MustGet(UserNamespaces).(*model.UserHeaderDataMap)
 		for _, n := range *nsList {
-			if ns == n.Label {
+			if ns == n.ID {
 				userNsData = &n
 				break
 			}
 		}
 		if userNsData != nil {
 			if ok := containsAccess(userNsData.Access, readLevels...); ok {
-				c.Set(NamespaceKey, userNsData.ID)
-				c.Set(NamespaceLabelKey, userNsData.Label)
 				return
 			}
-			gonic.Gonic(kubeErrors.ErrAccessError(), c)
+			gonic.Gonic(kubeErrors.ErrAccessError(), ctx)
 			return
 		}
-		gonic.Gonic(kubeErrors.ErrResourceNotExist(), c)
+		gonic.Gonic(kubeErrors.ErrResourceNotExist(), ctx)
 		return
 	}
 	return
 }
 
-func WriteAccess(c *gin.Context) {
-	ns := c.MustGet(NamespaceKey).(string)
-	if c.MustGet(UserRole).(string) == RoleUser {
+func WriteAccess(ctx *gin.Context) {
+	ns := ctx.Param("namespace")
+	if GetHeader(ctx, headers.UserRoleXHeader) == RoleUser {
 		var userNsData *kubeModel.UserHeaderData
-		nsList := c.MustGet(UserNamespaces).(*model.UserHeaderDataMap)
+		nsList := ctx.MustGet(UserNamespaces).(*model.UserHeaderDataMap)
 		for _, n := range *nsList {
-			if ns == n.Label {
+			if ns == n.ID {
 				userNsData = &n
 				break
 			}
 		}
 		if userNsData != nil {
 			if ok := containsAccess(userNsData.Access, writeLevels...); ok {
-				c.Set(NamespaceKey, userNsData.ID)
-				c.Set(NamespaceLabelKey, userNsData.Label)
 				return
 			}
-			gonic.Gonic(kubeErrors.ErrAccessError(), c)
+			gonic.Gonic(kubeErrors.ErrAccessError(), ctx)
 			return
 		}
-		gonic.Gonic(kubeErrors.ErrResourceNotExist(), c)
+		gonic.Gonic(kubeErrors.ErrResourceNotExist(), ctx)
 		return
 	}
 	return

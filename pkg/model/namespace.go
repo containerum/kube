@@ -96,12 +96,6 @@ func ParseKubeResourceQuota(quota interface{}, parseforuser bool) (*NamespaceWit
 		},
 	}
 
-	if !parseforuser {
-		ns.Label = ns.Name
-	} else {
-
-	}
-
 	return &ns, nil
 }
 
@@ -181,7 +175,6 @@ func (ns *NamespaceWithOwner) ParseForUser(headers UserHeaderDataMap) {
 			ns.Access = n.Access
 		}
 	}
-	ns.Name = ""
 	ns.Owner = ""
 }
 
