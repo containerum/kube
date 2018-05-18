@@ -39,10 +39,9 @@ const (
 //  default:
 //    $ref: '#/responses/error'
 func GetServiceList(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
+		"Namespace": namespace,
 	}).Debug("Get service list call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -89,18 +88,17 @@ func GetServiceList(ctx *gin.Context) {
 //    required: true
 // responses:
 //  '200':
-//    description: secrets list
+//    description: service
 //    schema:
 //      $ref: '#/definitions/ServiceWithOwner'
 //  default:
 //    $ref: '#/responses/error'
 func GetService(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	service := ctx.Param(serviceParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Service":         service,
+		"Namespace": namespace,
+		"Service":   service,
 	}).Debug("Get service call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -154,10 +152,9 @@ func GetService(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func CreateService(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
+		"Namespace": namespace,
 	}).Debug("Create service Call")
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
@@ -225,12 +222,11 @@ func CreateService(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func UpdateService(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	service := ctx.Param(serviceParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Service":         service,
+		"Namespace": namespace,
+		"Service":   service,
 	}).Debug("Update service Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -307,12 +303,11 @@ func UpdateService(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func DeleteService(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	service := ctx.Param(serviceParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Service":         service,
+		"Namespace": namespace,
+		"Service":   service,
 	}).Debug("Delete service call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)

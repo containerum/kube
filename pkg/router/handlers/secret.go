@@ -39,10 +39,9 @@ const (
 //  default:
 //    $ref: '#/responses/error'
 func GetSecretList(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
+		"Namespace": namespace,
 	}).Debug("Get secret list Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -96,12 +95,11 @@ func GetSecretList(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func GetSecret(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	sct := ctx.Param(secretParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Secret":          sct,
+		"Namespace": namespace,
+		"Secret":    sct,
 	}).Debug("Get secret Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -155,10 +153,9 @@ func GetSecret(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func CreateSecret(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
+		"Namespace": namespace,
 	}).Debug("Create secret Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -227,12 +224,11 @@ func CreateSecret(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func UpdateSecret(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	sct := ctx.Param(secretParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Secret":          sct,
+		"Namespace": namespace,
+		"Secret":    sct,
 	}).Debug("Create secret Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -303,12 +299,11 @@ func UpdateSecret(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func DeleteSecret(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	sct := ctx.Param(secretParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Secret":          sct,
+		"Namespace": namespace,
+		"Secret":    sct,
 	}).Debug("Delete secret Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)

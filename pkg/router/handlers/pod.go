@@ -66,15 +66,14 @@ var wsupgrader = websocket.Upgrader{
 //    description: pod list
 //    schema:
 //      $ref: '#/definitions/PodsList'
-//  configmap:
+//  default:
 //    $ref: '#/responses/error'
 func GetPodList(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	owner := ctx.Query(ownerQuery)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Owner":           owner,
+		"Namespace": namespace,
+		"Owner":     owner,
 	}).Debug("Get pod list Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -122,12 +121,11 @@ func GetPodList(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func GetPod(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	podP := ctx.Param(podParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Pod":             podP,
+		"Namespace": namespace,
+		"Pod":       podP,
 	}).Debug("Get pod list Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -173,12 +171,11 @@ func GetPod(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func DeletePod(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	podP := ctx.Param(podParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Pod":             podP,
+		"Namespace": namespace,
+		"Pod":       podP,
 	}).Debug("Delete pod Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -242,18 +239,17 @@ func DeletePod(ctx *gin.Context) {
 //    $ref: '#/responses/error'
 func GetPodLogs(ctx *gin.Context) {
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       ctx.MustGet(m.NamespaceKey).(string),
-		"Pod":             ctx.Param(podParam),
-		"Follow":          ctx.Query(followQuery),
-		"Tail":            ctx.Query(tailQuery),
-		"Container":       ctx.Query(containerQuery),
-		"Previous":        ctx.Query(previousQuery),
+		"Namespace": ctx.Param(namespaceParam),
+		"Pod":       ctx.Param(podParam),
+		"Follow":    ctx.Query(followQuery),
+		"Tail":      ctx.Query(tailQuery),
+		"Container": ctx.Query(containerQuery),
+		"Previous":  ctx.Query(previousQuery),
 	}).Debug("Get pod logs Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 	logOpt := makeLogOption(ctx)
-	ns := ctx.MustGet(m.NamespaceKey).(string)
+	ns := ctx.Param(namespaceParam)
 
 	rc, err := kube.GetPodLogs(ns, ctx.Param(podParam), &logOpt)
 	if err != nil {

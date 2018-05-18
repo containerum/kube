@@ -886,6 +886,9 @@
             "schema": {
               "$ref": "#/definitions/EndpointsList"
             }
+          },
+          "default": {
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "private"
@@ -976,6 +979,9 @@
             "schema": {
               "$ref": "#/definitions/Endpoint"
             }
+          },
+          "default": {
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "private"
@@ -1108,6 +1114,9 @@
             "schema": {
               "$ref": "#/definitions/IngressesList"
             }
+          },
+          "default": {
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -1198,6 +1207,9 @@
             "schema": {
               "$ref": "#/definitions/IngressWithOwner"
             }
+          },
+          "default": {
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -1335,6 +1347,9 @@
             "schema": {
               "$ref": "#/definitions/PodsList"
             }
+          },
+          "default": {
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -1855,7 +1870,7 @@
         ],
         "responses": {
           "200": {
-            "description": "secrets list",
+            "description": "service",
             "schema": {
               "$ref": "#/definitions/ServiceWithOwner"
             }
@@ -1967,8 +1982,13 @@
       "description": "AvailableSolution -- solution which user can run",
       "type": "object",
       "properties": {
-        "Active": {
-          "type": "boolean"
+        "active": {
+          "type": "boolean",
+          "x-go-name": "Active"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
         },
         "images": {
           "type": "array",
@@ -2033,17 +2053,20 @@
           "x-go-name": "CreatedAt"
         },
         "data": {
-          "description": "key-value data",
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          },
-          "x-go-name": "Data"
+          "$ref": "#/definitions/ConfigMapData"
         },
         "name": {
           "type": "string",
           "x-go-name": "Name"
         }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
+    },
+    "ConfigMapData": {
+      "description": "ConfigMapData -- model for config map data",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
       },
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
@@ -2062,12 +2085,7 @@
           "x-go-name": "CreatedAt"
         },
         "data": {
-          "description": "key-value data",
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          },
-          "x-go-name": "Data"
+          "$ref": "#/definitions/ConfigMapData"
         },
         "name": {
           "type": "string",

@@ -36,13 +36,12 @@ const (
 //    description: endpoints list
 //    schema:
 //      $ref: '#/definitions/EndpointsList'
-//  configmap:
+//  default:
 //    $ref: '#/responses/error'
 func GetEndpointList(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
+		"Namespace": namespace,
 	}).Debug("Get endpoints list Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -92,15 +91,14 @@ func GetEndpointList(ctx *gin.Context) {
 //    description: endpoint
 //    schema:
 //      $ref: '#/definitions/Endpoint'
-//  configmap:
+//  default:
 //    $ref: '#/responses/error'
 func GetEndpoint(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	ep := ctx.Param(endpointParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Endpoint":        ep,
+		"Namespace": namespace,
+		"Endpoint":  ep,
 	}).Debug("Get endpoint Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -154,10 +152,9 @@ func GetEndpoint(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func CreateEndpoint(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
+		"Namespace": namespace,
 	}).Debug("Create endpoint Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -224,12 +221,11 @@ func CreateEndpoint(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func UpdateEndpoint(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	ep := ctx.Param(endpointParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Endpoint":        ep,
+		"Namespace": namespace,
+		"Endpoint":  ep,
 	}).Debug("Create endpoint Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -299,12 +295,11 @@ func UpdateEndpoint(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func DeleteEndpoint(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	ep := ctx.Param(endpointParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Endpoint":        ep,
+		"Namespace": namespace,
+		"Endpoint":  ep,
 	}).Debug("Delete endpoint Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)

@@ -36,13 +36,12 @@ const (
 //    description: ingresses list
 //    schema:
 //      $ref: '#/definitions/IngressesList'
-//  configmap:
+//  default:
 //    $ref: '#/responses/error'
 func GetIngressList(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
+		"Namespace": namespace,
 	}).Debug("Get ingress list")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -93,15 +92,14 @@ func GetIngressList(ctx *gin.Context) {
 //    description: ingresses
 //    schema:
 //      $ref: '#/definitions/IngressWithOwner'
-//  configmap:
+//  default:
 //    $ref: '#/responses/error'
 func GetIngress(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	ingr := ctx.Param(ingressParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Ingress":         ingr,
+		"Namespace": namespace,
+		"Ingress":   ingr,
 	}).Debug("Get ingress Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -155,10 +153,9 @@ func GetIngress(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func CreateIngress(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
+		"Namespace": namespace,
 	}).Debug("Create ingress Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -227,12 +224,11 @@ func CreateIngress(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func UpdateIngress(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	ingr := ctx.Param(ingressParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Ingress":         ingr,
+		"Namespace": namespace,
+		"Ingress":   ingr,
 	}).Debug("Update ingress Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -304,12 +300,11 @@ func UpdateIngress(ctx *gin.Context) {
 //  default:
 //    $ref: '#/responses/error'
 func DeleteIngress(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	ingr := ctx.Param(ingressParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Ingress":         ingr,
+		"Namespace": namespace,
+		"Ingress":   ingr,
 	}).Debug("Delete ingress Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
