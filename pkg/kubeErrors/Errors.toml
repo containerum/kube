@@ -91,3 +91,9 @@ SID = "Kube-API"
     StatusHTTP = 500
     Message = "Unable to read logs from the pod"
     Kind = 14
+
+[[error]]
+    Name = "ErrExecFailure"
+    StatusHTTP = 500
+    Message = "Exec call failed"
+    Kind = 15
