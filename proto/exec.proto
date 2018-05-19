@@ -7,21 +7,21 @@ message ExecCommand {
     repeated string args = 2;
 }
 
+message TerminalSize {
+    uint32 width = 1;
+    uint32 height = 2;
+}
+
 message ExecFromClient {
-    oneof stdin {
-        bytes data = 1;
-    }
-    oneof terminal_size {
-        uint32 width = 10;
-        uint32 height = 11;
+    oneof clientMessage {
+        bytes stdin_data = 1;
+        TerminalSize terminal_size = 2;
     }
 }
 
 message ExecToClient {
-    oneof stdout {
+    oneof serverMessage {
         bytes stdout_data = 1;
-    }
-    oneof stderr {
-        bytes stderr_data = 10;
+        bytes stderr_data = 2;
     }
 }

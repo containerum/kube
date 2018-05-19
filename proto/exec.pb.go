@@ -9,6 +9,7 @@ It is generated from these files:
 
 It has these top-level messages:
 	ExecCommand
+	TerminalSize
 	ExecFromClient
 	ExecToClient
 */
@@ -53,107 +54,100 @@ func (m *ExecCommand) GetArgs() []string {
 	return nil
 }
 
+type TerminalSize struct {
+	Width  uint32 `protobuf:"varint,1,opt,name=width" json:"width,omitempty"`
+	Height uint32 `protobuf:"varint,2,opt,name=height" json:"height,omitempty"`
+}
+
+func (m *TerminalSize) Reset()                    { *m = TerminalSize{} }
+func (m *TerminalSize) String() string            { return proto.CompactTextString(m) }
+func (*TerminalSize) ProtoMessage()               {}
+func (*TerminalSize) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
+
+func (m *TerminalSize) GetWidth() uint32 {
+	if m != nil {
+		return m.Width
+	}
+	return 0
+}
+
+func (m *TerminalSize) GetHeight() uint32 {
+	if m != nil {
+		return m.Height
+	}
+	return 0
+}
+
 type ExecFromClient struct {
-	// Types that are valid to be assigned to Stdin:
-	//	*ExecFromClient_Data
-	Stdin isExecFromClient_Stdin `protobuf_oneof:"stdin"`
-	// Types that are valid to be assigned to TerminalSize:
-	//	*ExecFromClient_Width
-	//	*ExecFromClient_Height
-	TerminalSize isExecFromClient_TerminalSize `protobuf_oneof:"terminal_size"`
+	// Types that are valid to be assigned to ClientMessage:
+	//	*ExecFromClient_StdinData
+	//	*ExecFromClient_TerminalSize
+	ClientMessage isExecFromClient_ClientMessage `protobuf_oneof:"clientMessage"`
 }
 
 func (m *ExecFromClient) Reset()                    { *m = ExecFromClient{} }
 func (m *ExecFromClient) String() string            { return proto.CompactTextString(m) }
 func (*ExecFromClient) ProtoMessage()               {}
-func (*ExecFromClient) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
+func (*ExecFromClient) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
 
-type isExecFromClient_Stdin interface {
-	isExecFromClient_Stdin()
-}
-type isExecFromClient_TerminalSize interface {
-	isExecFromClient_TerminalSize()
+type isExecFromClient_ClientMessage interface {
+	isExecFromClient_ClientMessage()
 }
 
-type ExecFromClient_Data struct {
-	Data []byte `protobuf:"bytes,1,opt,name=data,proto3,oneof"`
+type ExecFromClient_StdinData struct {
+	StdinData []byte `protobuf:"bytes,1,opt,name=stdin_data,json=stdinData,proto3,oneof"`
 }
-type ExecFromClient_Width struct {
-	Width uint32 `protobuf:"varint,10,opt,name=width,oneof"`
-}
-type ExecFromClient_Height struct {
-	Height uint32 `protobuf:"varint,11,opt,name=height,oneof"`
+type ExecFromClient_TerminalSize struct {
+	TerminalSize *TerminalSize `protobuf:"bytes,2,opt,name=terminal_size,json=terminalSize,oneof"`
 }
 
-func (*ExecFromClient_Data) isExecFromClient_Stdin()          {}
-func (*ExecFromClient_Width) isExecFromClient_TerminalSize()  {}
-func (*ExecFromClient_Height) isExecFromClient_TerminalSize() {}
+func (*ExecFromClient_StdinData) isExecFromClient_ClientMessage()    {}
+func (*ExecFromClient_TerminalSize) isExecFromClient_ClientMessage() {}
 
-func (m *ExecFromClient) GetStdin() isExecFromClient_Stdin {
+func (m *ExecFromClient) GetClientMessage() isExecFromClient_ClientMessage {
 	if m != nil {
-		return m.Stdin
-	}
-	return nil
-}
-func (m *ExecFromClient) GetTerminalSize() isExecFromClient_TerminalSize {
-	if m != nil {
-		return m.TerminalSize
+		return m.ClientMessage
 	}
 	return nil
 }
 
-func (m *ExecFromClient) GetData() []byte {
-	if x, ok := m.GetStdin().(*ExecFromClient_Data); ok {
-		return x.Data
+func (m *ExecFromClient) GetStdinData() []byte {
+	if x, ok := m.GetClientMessage().(*ExecFromClient_StdinData); ok {
+		return x.StdinData
 	}
 	return nil
 }
 
-func (m *ExecFromClient) GetWidth() uint32 {
-	if x, ok := m.GetTerminalSize().(*ExecFromClient_Width); ok {
-		return x.Width
+func (m *ExecFromClient) GetTerminalSize() *TerminalSize {
+	if x, ok := m.GetClientMessage().(*ExecFromClient_TerminalSize); ok {
+		return x.TerminalSize
 	}
-	return 0
-}
-
-func (m *ExecFromClient) GetHeight() uint32 {
-	if x, ok := m.GetTerminalSize().(*ExecFromClient_Height); ok {
-		return x.Height
-	}
-	return 0
+	return nil
 }
 
 // XXX_OneofFuncs is for the internal use of the proto package.
 func (*ExecFromClient) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
 	return _ExecFromClient_OneofMarshaler, _ExecFromClient_OneofUnmarshaler, _ExecFromClient_OneofSizer, []interface{}{
-		(*ExecFromClient_Data)(nil),
-		(*ExecFromClient_Width)(nil),
-		(*ExecFromClient_Height)(nil),
+		(*ExecFromClient_StdinData)(nil),
+		(*ExecFromClient_TerminalSize)(nil),
 	}
 }
 
 func _ExecFromClient_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
 	m := msg.(*ExecFromClient)
-	// stdin
-	switch x := m.Stdin.(type) {
-	case *ExecFromClient_Data:
+	// clientMessage
+	switch x := m.ClientMessage.(type) {
+	case *ExecFromClient_StdinData:
 		b.EncodeVarint(1<<3 | proto.WireBytes)
-		b.EncodeRawBytes(x.Data)
+		b.EncodeRawBytes(x.StdinData)
+	case *ExecFromClient_TerminalSize:
+		b.EncodeVarint(2<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.TerminalSize); err != nil {
+			return err
+		}
 	case nil:
 	default:
-		return fmt.Errorf("ExecFromClient.Stdin has unexpected type %T", x)
-	}
-	// terminal_size
-	switch x := m.TerminalSize.(type) {
-	case *ExecFromClient_Width:
-		b.EncodeVarint(10<<3 | proto.WireVarint)
-		b.EncodeVarint(uint64(x.Width))
-	case *ExecFromClient_Height:
-		b.EncodeVarint(11<<3 | proto.WireVarint)
-		b.EncodeVarint(uint64(x.Height))
-	case nil:
-	default:
-		return fmt.Errorf("ExecFromClient.TerminalSize has unexpected type %T", x)
+		return fmt.Errorf("ExecFromClient.ClientMessage has unexpected type %T", x)
 	}
 	return nil
 }
@@ -161,26 +155,20 @@ func _ExecFromClient_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
 func _ExecFromClient_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
 	m := msg.(*ExecFromClient)
 	switch tag {
-	case 1: // stdin.data
+	case 1: // clientMessage.stdin_data
 		if wire != proto.WireBytes {
 			return true, proto.ErrInternalBadWireType
 		}
 		x, err := b.DecodeRawBytes(true)
-		m.Stdin = &ExecFromClient_Data{x}
+		m.ClientMessage = &ExecFromClient_StdinData{x}
 		return true, err
-	case 10: // terminal_size.width
-		if wire != proto.WireVarint {
+	case 2: // clientMessage.terminal_size
+		if wire != proto.WireBytes {
 			return true, proto.ErrInternalBadWireType
 		}
-		x, err := b.DecodeVarint()
-		m.TerminalSize = &ExecFromClient_Width{uint32(x)}
-		return true, err
-	case 11: // terminal_size.height
-		if wire != proto.WireVarint {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeVarint()
-		m.TerminalSize = &ExecFromClient_Height{uint32(x)}
+		msg := new(TerminalSize)
+		err := b.DecodeMessage(msg)
+		m.ClientMessage = &ExecFromClient_TerminalSize{msg}
 		return true, err
 	default:
 		return false, nil
@@ -189,24 +177,17 @@ func _ExecFromClient_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto
 
 func _ExecFromClient_OneofSizer(msg proto.Message) (n int) {
 	m := msg.(*ExecFromClient)
-	// stdin
-	switch x := m.Stdin.(type) {
-	case *ExecFromClient_Data:
+	// clientMessage
+	switch x := m.ClientMessage.(type) {
+	case *ExecFromClient_StdinData:
 		n += proto.SizeVarint(1<<3 | proto.WireBytes)
-		n += proto.SizeVarint(uint64(len(x.Data)))
-		n += len(x.Data)
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	// terminal_size
-	switch x := m.TerminalSize.(type) {
-	case *ExecFromClient_Width:
-		n += proto.SizeVarint(10<<3 | proto.WireVarint)
-		n += proto.SizeVarint(uint64(x.Width))
-	case *ExecFromClient_Height:
-		n += proto.SizeVarint(11<<3 | proto.WireVarint)
-		n += proto.SizeVarint(uint64(x.Height))
+		n += proto.SizeVarint(uint64(len(x.StdinData)))
+		n += len(x.StdinData)
+	case *ExecFromClient_TerminalSize:
+		s := proto.Size(x.TerminalSize)
+		n += proto.SizeVarint(2<<3 | proto.WireBytes)
+		n += proto.SizeVarint(uint64(s))
+		n += s
 	case nil:
 	default:
 		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
@@ -215,58 +196,47 @@ func _ExecFromClient_OneofSizer(msg proto.Message) (n int) {
 }
 
 type ExecToClient struct {
-	// Types that are valid to be assigned to Stdout:
+	// Types that are valid to be assigned to ServerMessage:
 	//	*ExecToClient_StdoutData
-	Stdout isExecToClient_Stdout `protobuf_oneof:"stdout"`
-	// Types that are valid to be assigned to Stderr:
 	//	*ExecToClient_StderrData
-	Stderr isExecToClient_Stderr `protobuf_oneof:"stderr"`
+	ServerMessage isExecToClient_ServerMessage `protobuf_oneof:"serverMessage"`
 }
 
 func (m *ExecToClient) Reset()                    { *m = ExecToClient{} }
 func (m *ExecToClient) String() string            { return proto.CompactTextString(m) }
 func (*ExecToClient) ProtoMessage()               {}
-func (*ExecToClient) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
+func (*ExecToClient) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
 
-type isExecToClient_Stdout interface {
-	isExecToClient_Stdout()
-}
-type isExecToClient_Stderr interface {
-	isExecToClient_Stderr()
+type isExecToClient_ServerMessage interface {
+	isExecToClient_ServerMessage()
 }
 
 type ExecToClient_StdoutData struct {
 	StdoutData []byte `protobuf:"bytes,1,opt,name=stdout_data,json=stdoutData,proto3,oneof"`
 }
 type ExecToClient_StderrData struct {
-	StderrData []byte `protobuf:"bytes,10,opt,name=stderr_data,json=stderrData,proto3,oneof"`
+	StderrData []byte `protobuf:"bytes,2,opt,name=stderr_data,json=stderrData,proto3,oneof"`
 }
 
-func (*ExecToClient_StdoutData) isExecToClient_Stdout() {}
-func (*ExecToClient_StderrData) isExecToClient_Stderr() {}
+func (*ExecToClient_StdoutData) isExecToClient_ServerMessage() {}
+func (*ExecToClient_StderrData) isExecToClient_ServerMessage() {}
 
-func (m *ExecToClient) GetStdout() isExecToClient_Stdout {
+func (m *ExecToClient) GetServerMessage() isExecToClient_ServerMessage {
 	if m != nil {
-		return m.Stdout
-	}
-	return nil
-}
-func (m *ExecToClient) GetStderr() isExecToClient_Stderr {
-	if m != nil {
-		return m.Stderr
+		return m.ServerMessage
 	}
 	return nil
 }
 
 func (m *ExecToClient) GetStdoutData() []byte {
-	if x, ok := m.GetStdout().(*ExecToClient_StdoutData); ok {
+	if x, ok := m.GetServerMessage().(*ExecToClient_StdoutData); ok {
 		return x.StdoutData
 	}
 	return nil
 }
 
 func (m *ExecToClient) GetStderrData() []byte {
-	if x, ok := m.GetStderr().(*ExecToClient_StderrData); ok {
+	if x, ok := m.GetServerMessage().(*ExecToClient_StderrData); ok {
 		return x.StderrData
 	}
 	return nil
@@ -282,23 +252,17 @@ func (*ExecToClient) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) 
 
 func _ExecToClient_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
 	m := msg.(*ExecToClient)
-	// stdout
-	switch x := m.Stdout.(type) {
+	// serverMessage
+	switch x := m.ServerMessage.(type) {
 	case *ExecToClient_StdoutData:
 		b.EncodeVarint(1<<3 | proto.WireBytes)
 		b.EncodeRawBytes(x.StdoutData)
-	case nil:
-	default:
-		return fmt.Errorf("ExecToClient.Stdout has unexpected type %T", x)
-	}
-	// stderr
-	switch x := m.Stderr.(type) {
 	case *ExecToClient_StderrData:
-		b.EncodeVarint(10<<3 | proto.WireBytes)
+		b.EncodeVarint(2<<3 | proto.WireBytes)
 		b.EncodeRawBytes(x.StderrData)
 	case nil:
 	default:
-		return fmt.Errorf("ExecToClient.Stderr has unexpected type %T", x)
+		return fmt.Errorf("ExecToClient.ServerMessage has unexpected type %T", x)
 	}
 	return nil
 }
@@ -306,19 +270,19 @@ func _ExecToClient_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
 func _ExecToClient_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
 	m := msg.(*ExecToClient)
 	switch tag {
-	case 1: // stdout.stdout_data
+	case 1: // serverMessage.stdout_data
 		if wire != proto.WireBytes {
 			return true, proto.ErrInternalBadWireType
 		}
 		x, err := b.DecodeRawBytes(true)
-		m.Stdout = &ExecToClient_StdoutData{x}
+		m.ServerMessage = &ExecToClient_StdoutData{x}
 		return true, err
-	case 10: // stderr.stderr_data
+	case 2: // serverMessage.stderr_data
 		if wire != proto.WireBytes {
 			return true, proto.ErrInternalBadWireType
 		}
 		x, err := b.DecodeRawBytes(true)
-		m.Stderr = &ExecToClient_StderrData{x}
+		m.ServerMessage = &ExecToClient_StderrData{x}
 		return true, err
 	default:
 		return false, nil
@@ -327,20 +291,14 @@ func _ExecToClient_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.B
 
 func _ExecToClient_OneofSizer(msg proto.Message) (n int) {
 	m := msg.(*ExecToClient)
-	// stdout
-	switch x := m.Stdout.(type) {
+	// serverMessage
+	switch x := m.ServerMessage.(type) {
 	case *ExecToClient_StdoutData:
 		n += proto.SizeVarint(1<<3 | proto.WireBytes)
 		n += proto.SizeVarint(uint64(len(x.StdoutData)))
 		n += len(x.StdoutData)
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	// stderr
-	switch x := m.Stderr.(type) {
 	case *ExecToClient_StderrData:
-		n += proto.SizeVarint(10<<3 | proto.WireBytes)
+		n += proto.SizeVarint(2<<3 | proto.WireBytes)
 		n += proto.SizeVarint(uint64(len(x.StderrData)))
 		n += len(x.StderrData)
 	case nil:
@@ -352,6 +310,7 @@ func _ExecToClient_OneofSizer(msg proto.Message) (n int) {
 
 func init() {
 	proto.RegisterType((*ExecCommand)(nil), "ExecCommand")
+	proto.RegisterType((*TerminalSize)(nil), "TerminalSize")
 	proto.RegisterType((*ExecFromClient)(nil), "ExecFromClient")
 	proto.RegisterType((*ExecToClient)(nil), "ExecToClient")
 }
@@ -359,20 +318,22 @@ func init() {
 func init() { proto.RegisterFile("exec.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
-	// 237 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x54, 0x90, 0xbf, 0x4f, 0xc3, 0x30,
-	0x10, 0x85, 0x31, 0xb4, 0x29, 0xb9, 0xb4, 0x20, 0x59, 0x08, 0x79, 0x0c, 0x99, 0x32, 0xb1, 0x30,
-	0xb2, 0xa5, 0x80, 0x3a, 0xa2, 0x88, 0x89, 0xa5, 0x72, 0xe3, 0x53, 0x63, 0xd1, 0xc4, 0xe8, 0x72,
-	0x15, 0x15, 0x7f, 0x3d, 0xf2, 0x0f, 0x86, 0x6e, 0xef, 0xd9, 0xdf, 0xd3, 0x27, 0x1d, 0x00, 0x9e,
-	0xb0, 0x7b, 0xfc, 0x26, 0xc7, 0xae, 0x7a, 0x86, 0xe2, 0xf5, 0x84, 0xdd, 0xda, 0x0d, 0x83, 0x1e,
-	0x8d, 0x54, 0xb0, 0xe8, 0x62, 0x54, 0xa2, 0x14, 0x75, 0xde, 0xfe, 0x57, 0x29, 0x61, 0xa6, 0x69,
-	0x3f, 0xa9, 0xcb, 0xf2, 0xaa, 0xce, 0xdb, 0x90, 0x2b, 0x82, 0x1b, 0x3f, 0x7e, 0x23, 0x37, 0xac,
-	0x0f, 0x16, 0x47, 0x96, 0x77, 0x30, 0x33, 0x9a, 0x75, 0x18, 0x2f, 0x37, 0x17, 0x6d, 0x68, 0xf2,
-	0x1e, 0xe6, 0x3f, 0xd6, 0x70, 0xaf, 0xa0, 0x14, 0xf5, 0x6a, 0x23, 0xda, 0x58, 0xa5, 0x82, 0xac,
-	0x47, 0xbb, 0xef, 0x59, 0x15, 0xe9, 0x23, 0xf5, 0x66, 0x01, 0xf3, 0x89, 0x8d, 0x1d, 0x9b, 0x5b,
-	0x58, 0x31, 0xd2, 0x60, 0x47, 0x7d, 0xd8, 0x4e, 0xf6, 0x17, 0xab, 0x1e, 0x96, 0xde, 0xf9, 0xe1,
-	0x92, 0xf1, 0x01, 0x8a, 0x89, 0x8d, 0x3b, 0xf2, 0xf6, 0x4c, 0x0c, 0xf1, 0xf1, 0xc5, 0xeb, 0x23,
-	0x82, 0x44, 0x11, 0x81, 0x80, 0x88, 0x80, 0x20, 0x91, 0x47, 0x9a, 0x6b, 0xc8, 0xe2, 0x20, 0x25,
-	0x24, 0x6a, 0x8a, 0xcf, 0xfc, 0xeb, 0xb8, 0xc3, 0x77, 0x7f, 0xa7, 0x5d, 0x16, 0xce, 0xf5, 0xf4,
-	0x17, 0x00, 0x00, 0xff, 0xff, 0x55, 0x31, 0xb5, 0x0c, 0x3c, 0x01, 0x00, 0x00,
+	// 266 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x54, 0x90, 0x41, 0x4b, 0xc3, 0x40,
+	0x10, 0x85, 0xdb, 0xa8, 0x95, 0x4c, 0x12, 0x85, 0x45, 0x24, 0x37, 0x6b, 0x4e, 0x3d, 0xf5, 0xa0,
+	0xde, 0xf4, 0xd4, 0xaa, 0xf4, 0x22, 0x48, 0xec, 0xc9, 0x4b, 0xd9, 0x26, 0x43, 0xb2, 0xd8, 0x64,
+	0x65, 0x76, 0xaa, 0xa1, 0xbf, 0x5e, 0x76, 0x37, 0x42, 0x7a, 0x9b, 0xf7, 0xf8, 0x76, 0xbe, 0x65,
+	0x00, 0xb0, 0xc3, 0x62, 0xfe, 0x4d, 0x9a, 0x75, 0xf6, 0x08, 0xd1, 0x4b, 0x87, 0xc5, 0x52, 0x37,
+	0x8d, 0x6c, 0x4b, 0x91, 0xc2, 0x79, 0xe1, 0xc7, 0x74, 0x3c, 0x1d, 0xcf, 0xc2, 0xfc, 0x3f, 0x0a,
+	0x01, 0xa7, 0x92, 0x2a, 0x93, 0x06, 0xd3, 0x93, 0x59, 0x98, 0xbb, 0x39, 0x7b, 0x82, 0x78, 0x8d,
+	0xd4, 0xa8, 0x56, 0xee, 0x3e, 0xd4, 0x01, 0xc5, 0x15, 0x9c, 0xfd, 0xaa, 0x92, 0x6b, 0xf7, 0x36,
+	0xc9, 0x7d, 0x10, 0xd7, 0x30, 0xa9, 0x51, 0x55, 0x35, 0xa7, 0x81, 0xab, 0xfb, 0x94, 0x75, 0x70,
+	0x61, 0xd5, 0xaf, 0xa4, 0x9b, 0xe5, 0x4e, 0x61, 0xcb, 0xe2, 0x06, 0xc0, 0x70, 0xa9, 0xda, 0x4d,
+	0x29, 0x59, 0xba, 0x25, 0xf1, 0x6a, 0x94, 0x87, 0xae, 0x7b, 0x96, 0x2c, 0xc5, 0x03, 0x24, 0xdc,
+	0x0b, 0x37, 0x46, 0x1d, 0xd0, 0x6d, 0x8c, 0xee, 0x92, 0xf9, 0xf0, 0x1b, 0xab, 0x51, 0x1e, 0xf3,
+	0x20, 0x2f, 0x2e, 0x21, 0x29, 0x9c, 0xe0, 0x0d, 0x8d, 0x91, 0x15, 0x66, 0x08, 0xb1, 0x35, 0xaf,
+	0x75, 0xef, 0xbd, 0x85, 0xc8, 0x70, 0xa9, 0xf7, 0x7c, 0x2c, 0x06, 0x5f, 0x3a, 0xb3, 0x47, 0x90,
+	0xc8, 0x23, 0xc1, 0x00, 0x41, 0x22, 0x8b, 0x58, 0x8d, 0x41, 0xfa, 0x41, 0xea, 0x35, 0x8b, 0xe8,
+	0x33, 0xfc, 0xda, 0x6f, 0xf1, 0xdd, 0x1e, 0x7a, 0x3b, 0x71, 0xf7, 0xbe, 0xff, 0x0b, 0x00, 0x00,
+	0xff, 0xff, 0x0d, 0xad, 0xe5, 0x2d, 0x7d, 0x01, 0x00, 0x00,
 }
