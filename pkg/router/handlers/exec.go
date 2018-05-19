@@ -23,7 +23,11 @@ type execPipes struct {
 
 func receiveExecCommand(conn *websocket.Conn) (cmdMessage kubeProto.ExecCommand, err error) {
 	for {
-		messageType, message, err := conn.ReadMessage()
+		var (
+			messageType int
+			message     []byte
+		)
+		messageType, message, err = conn.ReadMessage()
 		if err != nil {
 			return
 		}
