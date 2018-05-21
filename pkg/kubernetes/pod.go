@@ -2,11 +2,14 @@ package kubernetes
 
 import (
 	"io"
+	"net/http"
 
+	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	log "github.com/sirupsen/logrus"
+	"k8s.io/client-go/tools/remotecommand"
+	"k8s.io/kubernetes/pkg/api/legacyscheme"
 )
 
 //TODO: Imp struct to GetPodLogs func
@@ -15,6 +18,15 @@ type LogOptions struct {
 	Tail      int64
 	Previous  bool
 	Container string
+}
+
+type ExecOptions struct {
+	Container         string
+	Command           []string
+	Stdin             io.Reader
+	Stdout, Stderr    io.Writer
+	TTY               bool
+	TerminalSizeQueue remotecommand.TerminalSizeQueue
 }
 
 //GetPodList returns pods list
@@ -68,4 +80,50 @@ func (k *Kube) GetPodLogs(ns string, po string, opt *LogOptions) (io.ReadCloser,
 	})
 
 	return req.Stream()
+}
+
+func (k *Kube) Exec(ns string, po string, opt *ExecOptions) error {
+	// logic taken from "kubectl exec" command
+	pod, err := k.CoreV1().Pods(ns).Get(po, meta_v1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	if pod.Status.Phase == v1.PodSucceeded || pod.Status.Phase == v1.PodFailed {
+		return kubeErrors.ErrRequestValidationFailed().
+			AddDetailF("cannot exec into a container in a completed pod; current phase is %s", pod.Status.Phase)
+	}
+
+	containerName := opt.Container
+	if len(containerName) == 0 {
+		containerName = pod.Spec.Containers[0].Name
+	}
+
+	req := k.RESTClient().
+		Post().
+		Resource("pods").
+		Name(pod.Name).
+		Namespace(pod.Namespace).
+		SubResource("exec").
+		Param("container", containerName)
+	req.VersionedParams(&v1.PodExecOptions{
+		Container: containerName,
+		Command:   opt.Command,
+		Stdin:     opt.Stdin != nil,
+		Stdout:    opt.Stdout != nil,
+		Stderr:    opt.Stderr != nil,
+		TTY:       opt.TTY,
+	}, legacyscheme.ParameterCodec)
+
+	executor, err := remotecommand.NewSPDYExecutor(k.config, http.MethodPost, req.URL())
+	if err != nil {
+		return err
+	}
+	return executor.Stream(remotecommand.StreamOptions{
+		Stdin:             opt.Stdin,
+		Stdout:            opt.Stdout,
+		Stderr:            opt.Stderr,
+		Tty:               opt.TTY,
+		TerminalSizeQueue: opt.TerminalSizeQueue,
+	})
 }

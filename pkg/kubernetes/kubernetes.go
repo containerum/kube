@@ -4,12 +4,14 @@ import (
 	"fmt"
 
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
 //Kube is struct for kubernetes client
 type Kube struct {
 	*kubernetes.Clientset
+	config *rest.Config
 }
 
 //RegisterClient creates kubernetes client
@@ -23,6 +25,7 @@ func (k *Kube) RegisterClient(cfgpath string) error {
 		return err
 	}
 	k.Clientset = kubecli
+	k.config = config
 	return nil
 }
 

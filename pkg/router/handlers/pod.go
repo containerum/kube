@@ -1,15 +1,13 @@
 package handlers
 
 import (
-	"io"
 	"net/http"
-	"strconv"
+	"sync"
 	"time"
 
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
-	"git.containerum.net/ch/kube-api/pkg/utils/timeoutreader"
 	"git.containerum.net/ch/kube-api/pkg/utils/watchdog"
 	"git.containerum.net/ch/kube-api/pkg/utils/wsutils"
 
@@ -22,22 +20,26 @@ import (
 
 const (
 	podParam       = "pod"
-	followQuery    = "follow"
-	tailQuery      = "tail"
 	containerQuery = "container"
-	previousQuery  = "previous"
 
-	logsBufferSize = 1024
-	tailDefault    = 100
-	tailMax        = 1000
+	followQuery   = "follow"
+	tailQuery     = "tail"
+	previousQuery = "previous"
 
+	ttyQuery         = "tty"
+	interactiveQuery = "interactive"
+
+	tailDefault = 100
+	tailMax     = 1000
+
+	wsBufferSize = 1024
 	wsTimeout    = 5 * time.Second
 	wsPingPeriod = time.Second
 )
 
 var wsupgrader = websocket.Upgrader{
-	ReadBufferSize:  logsBufferSize,
-	WriteBufferSize: logsBufferSize,
+	ReadBufferSize:  wsBufferSize,
+	WriteBufferSize: wsBufferSize,
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
@@ -265,112 +267,72 @@ func GetPodLogs(ctx *gin.Context) {
 		return
 	}
 
-	if logOpt.Follow {
-		rc = timeoutreader.NewTimeoutReader(rc, 30*time.Minute, true)
-	} else {
-		rc = timeoutreader.NewTimeoutReader(rc, 10*time.Second, true)
+	logStreamSetup(conn, rc, &logOpt)
+}
+
+func Exec(ctx *gin.Context) {
+	log.WithFields(log.Fields{
+		"Namespace":   ctx.Param(namespaceParam),
+		"Pod":         ctx.Param(podParam),
+		"Container":   ctx.Query(containerQuery),
+		"Interactive": ctx.Query(interactiveQuery),
+		"TTY":         ctx.Query(ttyQuery),
+	}).Debug("Exec Call")
+
+	conn, err := wsupgrader.Upgrade(ctx.Writer, ctx.Request, ctx.Request.Header)
+	if err != nil {
+		ctx.Error(err)
+		gonic.Gonic(kubeErrors.ErrUnableGetPodLogs().AddDetailsErr(err), ctx)
+		return
 	}
 
-	// watchdog for reader, resets by websocket pong
-	closeWd := watchdog.New(wsTimeout, func() { rc.Close() })
+	conn.SetPongHandler(func(appData string) error {
+		conn.SetWriteDeadline(time.Now().Add(wsTimeout))
+		conn.SetReadDeadline(time.Now().Add(wsTimeout))
+		return nil
+	})
+	conn.SetWriteDeadline(time.Now().Add(wsTimeout))
+	conn.SetReadDeadline(time.Now().Add(wsTimeout))
 
+	cmdMessage, err := receiveExecCommand(conn)
+	if err != nil {
+		wsutils.CloseWithCherry(conn, kubeErrors.ErrRequestValidationFailed().AddDetailsErr(err))
+		return
+	}
+
+	opts, pipes, tsQueue := makeExecOptions(ctx, cmdMessage)
+
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	var closeOnce sync.Once
+	closeAll := func() {
+		closeOnce.Do(func() {
+			if pipes.StdinPipe != nil {
+				pipes.StdinPipe.Close()
+			}
+			if pipes.StderrPipe != nil {
+				pipes.StderrPipe.Close()
+			}
+			if pipes.StdoutPipe != nil {
+				pipes.StdoutPipe.Close()
+			}
+			conn.WriteMessage(websocket.CloseMessage, nil)
+		})
+	}
+	closeWd := watchdog.New(wsTimeout, func() { closeAll() })
 	conn.SetPongHandler(func(appData string) error {
 		conn.SetWriteDeadline(time.Now().Add(wsTimeout))
 		conn.SetReadDeadline(time.Now().Add(wsTimeout))
 		closeWd.Kick()
 		return nil
 	})
-	conn.SetWriteDeadline(time.Now().Add(wsTimeout))
-	conn.SetReadDeadline(time.Now().Add(wsTimeout))
 
-	var (
-		done = make(chan struct{})
-		data = make(chan []byte)
-	)
-	go readConn(conn)
-	go readLogs(rc, data, done)
-	go writeLogs(conn, data, done)
-}
-
-func readLogs(logs io.ReadCloser, ch chan<- []byte, done chan<- struct{}) {
-	buf := [logsBufferSize]byte{}
-	defer logs.Close()
-	defer func() { done <- struct{}{} }()
-
-	for {
-		readBytes, err := logs.Read(buf[:])
-		switch err {
-		case nil:
-			// pass
-		case io.EOF, timeoutreader.ErrReadTimeout:
-			return
-		default:
-			log.WithError(err).Error("Log read failed")
-			return
-		}
-
-		ch <- buf[:readBytes]
+	err = kube.Exec(ctx.Param(namespaceParam), ctx.Param(podParam), opts)
+	if err != nil {
+		wsutils.CloseWithCherry(conn, kubeErrors.ErrUnableGetPodLogs().AddDetailsErr(err))
+		return
 	}
-}
 
-func writeLogs(conn *websocket.Conn, ch <-chan []byte, done <-chan struct{}) {
-	defer func() {
-		conn.WriteMessage(websocket.CloseMessage, nil)
-		conn.Close()
-	}()
-	pingTimer := time.NewTicker(wsPingPeriod)
-
-	for {
-		var err error
-		select {
-		case <-done:
-			return
-		case <-pingTimer.C:
-			err = conn.WriteMessage(websocket.PingMessage, nil)
-		case data := <-ch:
-			err = conn.WriteMessage(websocket.TextMessage, data)
-		}
-
-		switch {
-		case err == nil,
-			wsutils.IsNetTemporary(err):
-			// pass
-		case err == timeoutreader.ErrReadTimeout,
-			err == websocket.ErrCloseSent, // connection closed by us
-			wsutils.IsNetTimeout(err),     // deadline failed
-			wsutils.IsBrokenPipe(err),     // connection closed by client
-			wsutils.IsClose(err):
-			return
-		default:
-			log.WithError(err).Errorf("Log send failed")
-			return
-		}
-	}
-}
-
-func readConn(conn *websocket.Conn) {
-	defer log.Debugf("End writing logs")
-	for {
-		_, _, err := conn.ReadMessage() // to trigger pong handlers and check connection though
-		if err != nil {
-			conn.Close()
-			return
-		}
-	}
-}
-
-func makeLogOption(c *gin.Context) kubernetes.LogOptions {
-	followStr := c.Query(followQuery)
-	previousStr := c.Query(previousQuery)
-	container := c.Query(containerQuery)
-	tail, _ := strconv.Atoi(c.Query(tailQuery))
-	if tail <= 0 || tail > tailMax {
-		tail = tailDefault
-	}
-	return kubernetes.LogOptions{
-		Tail:      int64(tail),
-		Follow:    followStr == "true",
-		Previous:  previousStr == "true",
-		Container: container,
-	}
+	go execFromClient(conn, tsQueue, pipes, closeAll)
+	go execToClient(conn, pipes, closeAll)
 }
