@@ -55,7 +55,7 @@ dev-deploy:
     name: develop
   script:
     - cd charts/kube
-    - helm upgrade --install  --namespace=${NAMESPACE} ${CI_PROJECT_NAME} --set image.tag=${CI_COMMIT_SHA:0:8} --set repository=registry.containerum.net/ch/kube-api --values values.yaml .
+    - helm upgrade --install  --namespace=${NAMESPACE} ${CI_PROJECT_NAME} --set image.tag=${CI_COMMIT_SHA:0:8} --set image.secret=gitlab-registry --set image.repository=registry.containerum.net/ch/kube-api --values values.yaml .
   only:
     - develop
 
