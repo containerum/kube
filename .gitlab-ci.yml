@@ -5,11 +5,12 @@ stages:
   - deploy
 
 variables:
-  TAG_DEV: develop
-  TAG: production
   CONTAINER_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}
-  DEVELOP_NAMESPACE: hosting
+  NAMESPACE: hosting
 
+.docker-login: &docker-login
+  before_script:
+    - docker login -u gitlab-ci-token -p ${CI_BUILD_TOKEN} ${CI_REGISTRY}
 
 test-build:
   services:
@@ -18,24 +19,25 @@ test-build:
   tags:
     - build
   script:
-    - docker build -t ${CONTAINER_IMAGE}:${TAG_DEV}-${CI_BUILD_REF} .
-    - docker rmi --force ${CONTAINER_IMAGE}:${TAG_DEV}-${CI_BUILD_REF}
+    - docker build -t ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8} .
+    - docker rmi --force ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8}
   except:
     - develop
     - master
     - staging
     - tags
 
+
 dev-release:
   image: docker:latest
   stage: release
   tags:
     - build
+  <<: *docker-login
   script:
-    - docker login -u gitlab-ci-token -p ${CI_BUILD_TOKEN} ${CI_REGISTRY}
-    - docker build -t ${CONTAINER_IMAGE}:${TAG_DEV}-${CI_BUILD_REF}  .
-    - docker push ${CONTAINER_IMAGE}:${TAG_DEV}-${CI_BUILD_REF}
-    - docker rmi --force ${CONTAINER_IMAGE}:${TAG_DEV}-${CI_BUILD_REF}
+    - docker build -t ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8} .
+    - docker push ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8}
+    - docker rmi --force ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8}
   only:
     - develop
 
@@ -52,13 +54,13 @@ dev-deploy:
   environment:
     name: develop
   script:
-    - cd deploy
-    - helm upgrade --install  --namespace=${DEVELOP_NAMESPACE} ${CI_PROJECT_NAME} --set image.tag=${TAG_DEV}-${CI_BUILD_REF} --set environment=develop --values values.yaml --values env/develop.yaml .
+    - cd charts/kube
+    - helm upgrade --install  --namespace=${NAMESPACE} ${CI_PROJECT_NAME} --set image.tag=${CI_COMMIT_SHA:0:8} --values values.yaml .
   only:
     - develop
 
 
-dev github:
+pub-github:
   image: alpine
   stage: deploy
   tags:
