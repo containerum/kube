@@ -55,7 +55,7 @@ dev-deploy:
     name: develop
   script:
     - cd charts/kube
-    - helm upgrade --install  --namespace=${NAMESPACE} ${CI_PROJECT_NAME} --set image.tag=${CI_COMMIT_SHA:0:8} --values values.yaml .
+    - helm upgrade --install  --namespace=${NAMESPACE} ${CI_PROJECT_NAME} --set image.tag=${CI_COMMIT_SHA:0:8} --set repository=registry.containerum.net/ch/kube-api --values values.yaml .
   only:
     - develop
 
@@ -93,3 +93,54 @@ pub-github:
   only:
     - publish
   when: always
+
+
+stage-release:
+  image: docker:latest
+  stage: release
+  tags:
+    - build
+  <<: *docker-login
+  script:
+    - docker build -t ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8} .
+    - docker push ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8}
+    - docker rmi --force ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8}
+  only:
+    - master
+
+prod-release:
+  image: docker:latest
+  stage: release
+  tags:
+    - build
+  <<: *docker-login
+  script:
+    - docker pull ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8}
+    - docker tag ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8} ${CONTAINER_IMAGE}:latest
+    - docker tag ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8} ${CONTAINER_IMAGE}:${CI_COMMIT_TAG}
+    - docker push ${CONTAINER_IMAGE}:latest
+    - docker push ${CONTAINER_IMAGE}:${CI_COMMIT_TAG}
+    - docker rmi --force ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8}
+  only:
+    - master
+
+
+prod-deploy:
+  image: exon/helm
+  stage: deploy
+  when: manual
+  tags:
+    - production
+  before_script:
+    - mkdir -p /etc/deploy/
+    - echo ${NEW_PRODUCTION_KUBE_CONFIG} | base64 -d > ${KUBECONFIG}
+    - helm init --client-only
+    - helm repo update
+  environment:
+    name: production
+    url: https://web.containerum.io
+  script:
+    - cd deploy
+    - helm upgrade --install --namespace=${NAMESPACE} ${CI_PROJECT_NAME} --set image.tag=${CI_COMMIT_TAG} --values values.yaml .
+  only:
+    - tags
