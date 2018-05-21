@@ -7,6 +7,8 @@ stages:
 variables:
   CONTAINER_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}
   NAMESPACE: hosting
+  SECRET: gitlab-registry
+  REPOSITORY: registry.containerum.net/ch/kube-api
 
 .docker-login: &docker-login
   before_script:
@@ -54,8 +56,6 @@ dev-deploy:
   environment:
     name: develop
   variables:
-    SECRET: gitlab-registry
-    REPOSITORY: registry.containerum.net/ch/kube-api
     IP: 192.168.88.210
   script:
     - cd charts/kube
@@ -112,6 +112,7 @@ stage-release:
   only:
     - master
 
+
 prod-release:
   image: docker:latest
   stage: release
@@ -126,8 +127,7 @@ prod-release:
     - docker push ${CONTAINER_IMAGE}:${CI_COMMIT_TAG}
     - docker rmi --force ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8}
   only:
-    - master
-
+    - tags
 
 prod-deploy:
   image: exon/helm
@@ -145,6 +145,6 @@ prod-deploy:
     url: https://web.containerum.io
   script:
     - cd deploy
-    - helm upgrade --install --namespace=${NAMESPACE} ${CI_PROJECT_NAME} --set image.tag=${CI_COMMIT_TAG} --values values.yaml .
+    - helm upgrade --install --namespace=${NAMESPACE} ${CI_PROJECT_NAME} --set image.tag={CI_COMMIT_TAG} --set image.secret=${SECRET} --set image.repository=${REPOSITORY} --set service.externalIP=${PRODUCTION_IP} --set env.CH_KUBE_API_DEBUG="false" --set env.CH_KUBE_API_TEXTLOG="false" --values values.yaml .
   only:
     - tags
