@@ -29,8 +29,6 @@ spec:
               value: {{ $val | quote }}
             {{- end }}
           volumeMounts:
-          - name: {{ .Values.volumeMounts.name }}
-            mountPath: {{ .Values.volumeMounts.mountPath }}
           - name: {{ .Values.configMap.name }}
             mountPath: {{ .Values.configMap.mountPath }}
       {{- with .Values.image.secret }}

@@ -4,13 +4,12 @@ stages:
   - release
   - deploy
 
-
-
 variables:
   TAG_DEV: develop
   TAG: production
   CONTAINER_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}
   DEVELOP_NAMESPACE: hosting
+
 
 test-build:
   services:
@@ -80,7 +79,6 @@ dev github:
     - ssh-keyscan -H github.com >> ~/.ssh/known_hosts
 
   script:
-    - git remote show
     - if [ $(git remote show | grep github) ]; then git remote rm github; fi
     - if [ $(git branch --list | grep pub) ]; then git branch -d pub; fi
     - git remote add github git@github.com:containerum/kube-api.git
@@ -88,8 +86,8 @@ dev github:
     - git fetch github
     - git checkout origin/develop
     - git checkout -b pub
-    - git push -u github pub:develop --force
+    - git push -u github pub:publish --force
     - git remote rm github
   only:
-    - develop
+    - publish
   when: always
