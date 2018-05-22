@@ -364,7 +364,7 @@ func GetSelectedConfigMaps(ctx *gin.Context) {
 				return
 			}
 
-			ret[n.Label] = *cm
+			ret[n.ID] = *cm
 		}
 	}
 

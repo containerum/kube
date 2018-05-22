@@ -366,7 +366,7 @@ func GetSelectedIngresses(ctx *gin.Context) {
 				return
 			}
 
-			ingresses[n.Label] = *ingressesList
+			ingresses[n.ID] = *ingressesList
 		}
 	}
 
