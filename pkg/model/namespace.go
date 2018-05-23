@@ -38,7 +38,6 @@ type NamespaceWithOwner struct {
 	// swagger: allOf
 	kube_types.Namespace
 	//hosting-internal name
-	Name  string `json:"name,omitempty"`
 	Owner string `json:"owner,omitempty"`
 	//access from X-User-Namespace header
 	Access string `json:"access,omitempty"`
@@ -80,8 +79,8 @@ func ParseKubeResourceQuota(quota interface{}, parseforuser bool) (*NamespaceWit
 
 	ns := NamespaceWithOwner{
 		Owner: owner,
-		Name:  obj.GetNamespace(),
 		Namespace: kube_types.Namespace{
+			Name:      obj.GetNamespace(),
 			CreatedAt: &createdAt,
 			Resources: kube_types.Resources{
 				Hard: kube_types.Resource{

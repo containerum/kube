@@ -7,7 +7,7 @@ import (
 )
 
 //GetServiceList returns services list
-func (kube *Kube) GetServiceList(nsname string) (interface{}, error) {
+func (kube *Kube) GetServiceList(nsname string) (*api_core.ServiceList, error) {
 	svcAfter, err := kube.CoreV1().Services(nsname).List(api_meta.ListOptions{})
 	if err != nil {
 		log.WithField("Namespace", nsname).Error(err)
