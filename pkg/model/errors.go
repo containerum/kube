@@ -18,6 +18,9 @@ var (
 	ErrUnableConvertServiceList = errors.New("unable to decode services list")
 	ErrUnableConvertService     = errors.New("unable to decode service")
 
+	ErrUnableConvertVolumeList = errors.New("unable to decode volumes list")
+	ErrUnableConvertVolume     = errors.New("unable to decode volume")
+
 	ErrUnableConvertNamespaceList = errors.New("unable to decode namespaces list")
 	ErrUnableConvertNamespace     = errors.New("unable to decode namespace")
 
