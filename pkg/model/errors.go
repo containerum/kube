@@ -55,6 +55,9 @@ const (
 	noResource            = "resource '%v' is not found in %v"
 	noNamespace           = "namespace is not found"
 	resourceAlreadyExists = "resource '%v' already exists in %v"
+	duplicateVolume       = "duplicate volume name '%v'"
+	duplicateConfigMap    = "duplicate config map name '%v'"
+	duplicateMountPath    = "duplicate mount path '%v'"
 )
 
 //ParseKubernetesResourceError checks error status

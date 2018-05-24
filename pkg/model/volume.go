@@ -37,7 +37,7 @@ type PersistentVolumeClaimWithOwner struct {
 	Owner string `json:"owner,omitempty"`
 }
 
-// ParsePersistentVolumeClaimList parses kubernetes v1.PersistentVolumeClaimList to more convenient PersistentVolumeClaimList struct.
+// ParseKubePersistentVolumeClaimList parses kubernetes v1.PersistentVolumeClaimList to more convenient PersistentVolumeClaimList struct.
 func ParseKubePersistentVolumeClaimList(ns interface{}, parseforuser bool) (*PersistentVolumeClaimList, error) {
 	nativePvc := ns.(*api_core.PersistentVolumeClaimList)
 	if nativePvc == nil {
@@ -121,20 +121,20 @@ func (pvc *PersistentVolumeClaimWithOwner) ToKube(nsName string, labels map[stri
 	return &newPvc, nil
 }
 
-func (service *PersistentVolumeClaimWithOwner) Validate() []error {
+func (pvc *PersistentVolumeClaimWithOwner) Validate() []error {
 	errs := []error{}
-	if service.Name == "" {
+	if pvc.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "name"))
-	} else if err := api_validation.IsDNS1035Label(service.Name); len(err) > 0 {
-		errs = append(errs, fmt.Errorf(invalidName, service.Name, strings.Join(err, ",")))
+	} else if err := api_validation.IsDNS1035Label(pvc.Name); len(err) > 0 {
+		errs = append(errs, fmt.Errorf(invalidName, pvc.Name, strings.Join(err, ",")))
 	}
-	if service.StorageClass == "" {
+	if pvc.StorageClass == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "storage_class"))
 	}
-	if service.AccessMode == "" {
+	if pvc.AccessMode == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "access_mode"))
 	}
-	if service.Size == 0 {
+	if pvc.Size == 0 {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "size"))
 	}
 	if len(errs) > 0 {

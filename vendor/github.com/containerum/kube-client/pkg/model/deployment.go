@@ -89,4 +89,5 @@ type ContainerVolume struct {
 	// required: true
 	MountPath string  `json:"mount_path"`
 	SubPath   *string `json:"sub_path,omitempty"`
+	PersistentVolumeClaimName *string `json:"pvc,omitempty"`
 }
