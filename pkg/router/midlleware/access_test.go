@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/appleboy/gofight"
+	kubeModel "github.com/containerum/kube-client/pkg/model"
 	headers "github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/gin"
 
@@ -27,7 +28,7 @@ func TestContainsAccess(t *testing.T) {
 			So(containsAccess("read"), ShouldBeFalse)
 		})
 		Convey("Check read access in list without read access", func() {
-			So(containsAccess("read", levelOwner, levelWrite), ShouldBeFalse)
+			So(containsAccess("read", kubeModel.Owner, kubeModel.Write), ShouldBeFalse)
 		})
 		Convey("Check read access in read levels array", func() {
 			So(containsAccess("read", readLevels...), ShouldBeTrue)

@@ -55,7 +55,6 @@ func RequiredUserHeaders() gin.HandlerFunc {
 				}
 				ctx.Set(UserNamespaces, userNs)
 				ctx.Set(UserVolumes, userVol)
-				ctx.Set(UserID, GetHeader(ctx, headers.UserIDXHeader))
 			}
 		}
 		ctx.Set(UserRole, GetHeader(ctx, headers.UserRoleXHeader))

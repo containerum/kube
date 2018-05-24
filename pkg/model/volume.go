@@ -72,7 +72,7 @@ func ParseKubePersistentVolumeClaim(pvci interface{}, parseforuser bool) (*Persi
 			CreatedAt:    &createdAt,
 			StorageClass: native.ObjectMeta.Annotations[api_core.BetaStorageClassAnnotation],
 			AccessMode:   kube_types.PersistentVolumeAccessMode(native.Spec.AccessModes[0]),
-			Size:         uint(size.Value() / 1024 / 1024),
+			Capacity:     uint(size.Value() / 1024 / 1024 / 1024),
 		},
 		Owner: owner,
 	}
@@ -95,7 +95,7 @@ func (pvc *PersistentVolumeClaimWithOwner) ToKube(nsName string, labels map[stri
 		return nil, []error{kubeErrors.ErrInternalError().AddDetails("invalid namespace labels")}
 	}
 
-	memsize := api_resource.NewQuantity(int64(pvc.Size)*1024*1024, api_resource.BinarySI)
+	memsize := api_resource.NewQuantity(int64(pvc.Capacity)*1024*1024*1024, api_resource.BinarySI)
 
 	newPvc := api_core.PersistentVolumeClaim{
 		TypeMeta: api_meta.TypeMeta{
@@ -134,8 +134,8 @@ func (pvc *PersistentVolumeClaimWithOwner) Validate() []error {
 	if pvc.AccessMode == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "access_mode"))
 	}
-	if pvc.Size == 0 {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "size"))
+	if pvc.Capacity == 0 {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "capacity"))
 	}
 	if len(errs) > 0 {
 		return errs
