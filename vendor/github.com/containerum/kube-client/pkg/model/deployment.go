@@ -57,7 +57,7 @@ type Container struct {
 	ConfigMaps   []ContainerVolume `json:"config_maps,omitempty"`
 }
 
-// Env -- key-value pair of enviroment variables
+// Env -- key-value pair of environment variables
 //
 // swagger:model
 type Env struct {
@@ -87,7 +87,7 @@ type ContainerVolume struct {
 	Name string  `json:"name"`
 	Mode *string `json:"mode,omitempty"`
 	// required: true
-	MountPath string  `json:"mount_path"`
-	SubPath   *string `json:"sub_path,omitempty"`
-	PersistentVolumeClaimName *string `json:"pvc,omitempty"`
+	MountPath                 string  `json:"mount_path"`
+	SubPath                   *string `json:"sub_path,omitempty"`
+	PersistentVolumeClaimName *string `json:"pvc_name,omitempty"`
 }

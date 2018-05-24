@@ -35,8 +35,8 @@
     ".",
     "pkg/model"
   ]
-  revision = "9ee25b4b565a77a94e809f4cf0560f7e0e7e8f4b"
-  version = "v0.14.4"
+  revision = "67c5abcdeaa2659fd2044af3711ccc8cad367632"
+  version = "v0.15.1"
 
 [[projects]]
   name = "github.com/containerum/utils"
@@ -285,6 +285,12 @@
   version = "v2.0.1"
 
 [[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
+
+[[projects]]
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
@@ -344,7 +350,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "1a580b3eff7814fc9b40602fd35256c63b50f491"
+  revision = "75e913eb8a8e3d31a97b216de09de106a7b07681"
 
 [[projects]]
   branch = "master"
@@ -367,7 +373,7 @@
     "unix",
     "windows"
   ]
-  revision = "88eb85aaee56831ad49eaf7aa80d73de9814cde2"
+  revision = "56ad15cc2170219c9fed5b7d059e825c97588071"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -554,6 +560,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "11eb4efcced6e6f1c91ba6177d0e15013c3eca87790217ae7916b7961de45a83"
+  inputs-digest = "abdbef25dbdfd48bf05b0bfc293fe2edbfcf544b103d2b24a75ba595052fc6ca"
   solver-name = "gps-cdcl"
   solver-version = 1

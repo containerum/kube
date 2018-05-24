@@ -2,30 +2,10 @@
 
 
 [[projects]]
-  branch = "develop"
-  name = "git.containerum.net/ch/permissions"
-  packages = [
-    "pkg/errors",
-    "pkg/model"
-  ]
-  revision = "f9f444b6bb19ed6f7fcc251243f98d52d731b00a"
-
-[[projects]]
   name = "github.com/containerum/cherry"
   packages = ["."]
   revision = "34f7a2a139b36c20a34b93738dda33476efad47d"
   version = "v1.0.1"
-
-[[projects]]
-  name = "github.com/go-pg/pg"
-  packages = [
-    "internal",
-    "internal/parser",
-    "orm",
-    "types"
-  ]
-  revision = "5b73ce88484575f3480edf393237f6bf79d5f166"
-  version = "v6.11.2"
 
 [[projects]]
   name = "github.com/go-resty/resty"
@@ -46,22 +26,10 @@
   version = "v1.2.0"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/jinzhu/inflection"
-  packages = ["."]
-  revision = "04140366298a54a039076d798123ffa108fff46c"
-
-[[projects]]
   name = "github.com/jtolds/gls"
   packages = ["."]
   revision = "77f18212c9c7edc9bd6a33d383a7b545ce62f064"
   version = "v4.2.1"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/ninedraft/boxofstuff"
-  packages = ["strset"]
-  revision = "402d25bcc03750de7fc34975a397beb9ea32d17e"
 
 [[projects]]
   name = "github.com/sirupsen/logrus"
@@ -148,6 +116,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a19de35658d9fa203cdfabf6b0556e85d6c42f9c4f0754892af1347ddf0a19db"
+  inputs-digest = "2d4e2dd79e1350269c3d38fd79826fb5d3b62561c3bb905ef4b0f3d48d0393ae"
   solver-name = "gps-cdcl"
   solver-version = 1

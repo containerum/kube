@@ -2,12 +2,21 @@
   "swagger": "2.0",
   "paths": {},
   "definitions": {
+    "AccessLevel": {
+      "type": "string",
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
     "AvailableSolution": {
       "description": "AvailableSolution -- solution which user can run",
       "type": "object",
       "properties": {
-        "Active": {
-          "type": "boolean"
+        "active": {
+          "type": "boolean",
+          "x-go-name": "Active"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
         },
         "images": {
           "type": "array",
@@ -85,7 +94,7 @@
       "description": "ConfigMapData -- model for config map data",
       "type": "object",
       "additionalProperties": {
-        "type": "object"
+        "type": "string"
       },
       "x-go-package": "github.com/containerum/kube-client/pkg/model"
     },
@@ -284,7 +293,7 @@
       "x-go-package": "github.com/containerum/kube-client/pkg/model"
     },
     "Env": {
-      "description": "Env -- key-value pair of enviroment variables",
+      "description": "Env -- key-value pair of environment variables",
       "type": "object",
       "required": [
         "value",
@@ -330,7 +339,7 @@
       "x-go-package": "github.com/containerum/kube-client/pkg/model"
     },
     "Namespace": {
-      "description": "Namespace -- namespace representation provided by resource-service\nhttps://ch.pages.containerum.net/api-docs/modules/resource-service/index.html#get-namespace",
+      "description": "Namespace -- namespace representation",
       "type": "object",
       "required": [
         "resources"
@@ -344,6 +353,10 @@
           "description": "creation date in RFC3339 format",
           "type": "string",
           "x-go-name": "CreatedAt"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
         },
         "label": {
           "description": "user-visible label for the namespace",
@@ -547,8 +560,8 @@
       },
       "x-go-package": "github.com/containerum/kube-client/pkg/model"
     },
-    "RunSolutionResponce": {
-      "description": "RunSolutionResponce -- responce to run solution request",
+    "RunSolutionResponse": {
+      "description": "RunSolutionResponse -- response to run solution request",
       "type": "object",
       "properties": {
         "created": {
@@ -776,9 +789,7 @@
       ],
       "properties": {
         "access": {
-          "description": "one of: \"owner\", \"read\", \"write\", \"read-delete\", \"none\"",
-          "type": "string",
-          "x-go-name": "Access"
+          "$ref": "#/definitions/AccessLevel"
         },
         "id": {
           "description": "hosting-internal name",
@@ -813,6 +824,10 @@
           },
           "x-go-name": "Env"
         },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
         "name": {
           "type": "string",
           "x-go-name": "Name"
@@ -843,7 +858,7 @@
       "x-go-package": "github.com/containerum/kube-client/pkg/model"
     },
     "Volume": {
-      "description": "Volume -- volume representation\nprovided by resource-service\nhttps://ch.pages.containerum.net/api-docs/modules/resource-service/index.html#get-namespace",
+      "description": "Volume -- volume representation",
       "type": "object",
       "properties": {
         "access": {
@@ -855,10 +870,19 @@
           "format": "date-time",
           "x-go-name": "AccessChangeTime"
         },
+        "capacity": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Capacity"
+        },
         "create_time": {
           "type": "string",
           "format": "date-time",
           "x-go-name": "CreateTime"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
         },
         "label": {
           "type": "string",
@@ -868,11 +892,6 @@
           "type": "integer",
           "format": "int64",
           "x-go-name": "Replicas"
-        },
-        "storage": {
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "Storage"
         }
       },
       "x-go-package": "github.com/containerum/kube-client/pkg/model"
