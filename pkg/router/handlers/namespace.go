@@ -164,7 +164,7 @@ func CreateNamespace(ctx *gin.Context) {
 		return
 	}
 
-	newQuota, errs := model.MakeResourceQuota(ns.Name, newNs.Labels, ns.Resources.Hard)
+	newQuota, errs := model.MakeResourceQuota(ns.ID, newNs.Labels, ns.Resources.Hard)
 	if errs != nil {
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
@@ -176,7 +176,7 @@ func CreateNamespace(ctx *gin.Context) {
 		return
 	}
 
-	quotaCreated, err := kube.CreateNamespaceQuota(ns.Name, newQuota)
+	quotaCreated, err := kube.CreateNamespaceQuota(ns.ID, newQuota)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
 		return
