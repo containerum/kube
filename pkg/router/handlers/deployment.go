@@ -186,11 +186,16 @@ func CreateDeployment(ctx *gin.Context) {
 		return
 	}
 
-	/*for _, v := range deploy.Spec.Template.Spec.Volumes {
-			if _, err := kube.GetPersistentVolume(namespace, v.PersistentVolumeClaim.ClaimName); err != nil {
-			//TODO: Do something like check if PersistentVolume exist and in bound state
+	for _, v := range deploy.Spec.Template.Spec.Volumes {
+		if pvc, err := kube.GetPersistentVolumeClaim(namespace, v.PersistentVolumeClaim.ClaimName); err != nil {
+			gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
+			return
+		} else {
+			if pvc.Status.Phase != "Bound" {
+				gonic.Gonic(kubeErrors.ErrVolumeNotReady().AddDetailF("Volume status: %v", pvc.Status.Phase), ctx)
+			}
 		}
-	}*/
+	}
 
 	deployAfter, err := kube.CreateDeployment(deploy)
 	if err != nil {

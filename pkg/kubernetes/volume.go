@@ -70,16 +70,3 @@ func (k *Kube) DeletePersistentVolumeClaim(ns string, pvc string) error {
 	}
 	return nil
 }
-
-//GetPersistentVolume returns pv
-func (k *Kube) GetPersistentVolume(ns string, pvName string) (*api_core.PersistentVolume, error) {
-	pvc, err := k.CoreV1().PersistentVolumes().Get(pvName, meta_v1.GetOptions{})
-	if err != nil {
-		log.WithFields(log.Fields{
-			"Namespace": ns,
-			"PV":        pvName,
-		}).Error(err)
-		return nil, err
-	}
-	return pvc, nil
-}
