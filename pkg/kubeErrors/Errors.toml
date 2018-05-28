@@ -97,3 +97,9 @@ SID = "Kube-API"
     StatusHTTP = 500
     Message = "Exec call failed"
     Kind = 15
+
+[[error]]
+    Name = "ErrVolumeNotReady"
+    StatusHTTP = 503
+    Message = "Volume is not ready"
+    Kind = 16
