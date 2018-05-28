@@ -114,6 +114,15 @@ func initRoutes(e gin.IRouter) {
 			configmap.DELETE("/:configmap", m.DeleteAccess, h.DeleteConfigMap)
 		}
 
+		volume := namespace.Group("/:namespace/volumes")
+		{
+			volume.GET("", m.ReadAccess, h.GetVolumeList)
+			volume.GET("/:volume", m.ReadAccess, h.GetVolume)
+			volume.POST("", m.WriteAccess, h.CreateVolume)
+			volume.PUT("/:volume", m.WriteAccess, h.UpdateVolume)
+			volume.DELETE("/:volume", m.DeleteAccess, h.DeleteVolume)
+		}
+
 		pod := namespace.Group("/:namespace/pods")
 		{
 			pod.GET("", m.ReadAccess, h.GetPodList)

@@ -7,8 +7,8 @@ import (
 )
 
 //GetEndpointList returns endpoints list
-func (kube *Kube) GetEndpointList(namespace string) (*api_core.EndpointsList, error) {
-	endpointsAfter, err := kube.CoreV1().Endpoints(namespace).List(api_meta.ListOptions{})
+func (k *Kube) GetEndpointList(namespace string) (*api_core.EndpointsList, error) {
+	endpointsAfter, err := k.CoreV1().Endpoints(namespace).List(api_meta.ListOptions{})
 	if err != nil {
 		log.WithFields(log.Fields{
 			"Namespace": namespace,
@@ -19,8 +19,8 @@ func (kube *Kube) GetEndpointList(namespace string) (*api_core.EndpointsList, er
 }
 
 //GetEndpoint returns endpoint
-func (kube *Kube) GetEndpoint(namespace, endpoint string) (*api_core.Endpoints, error) {
-	endpointAfter, err := kube.CoreV1().Endpoints(namespace).Get(endpoint, api_meta.GetOptions{})
+func (k *Kube) GetEndpoint(namespace, endpoint string) (*api_core.Endpoints, error) {
+	endpointAfter, err := k.CoreV1().Endpoints(namespace).Get(endpoint, api_meta.GetOptions{})
 	if err != nil {
 		log.WithFields(log.Fields{
 			"Namespace": namespace,
@@ -32,8 +32,8 @@ func (kube *Kube) GetEndpoint(namespace, endpoint string) (*api_core.Endpoints, 
 }
 
 //CreateEndpoint creates endpoint
-func (kube *Kube) CreateEndpoint(endpoint *api_core.Endpoints) (*api_core.Endpoints, error) {
-	endpointAfter, err := kube.CoreV1().Endpoints(endpoint.Namespace).Create(endpoint)
+func (k *Kube) CreateEndpoint(endpoint *api_core.Endpoints) (*api_core.Endpoints, error) {
+	endpointAfter, err := k.CoreV1().Endpoints(endpoint.Namespace).Create(endpoint)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"Namespace": endpoint.Namespace,
@@ -45,8 +45,8 @@ func (kube *Kube) CreateEndpoint(endpoint *api_core.Endpoints) (*api_core.Endpoi
 }
 
 //UpdateEndpoint updates endpoint
-func (kube *Kube) UpdateEndpoint(endpoint *api_core.Endpoints) (*api_core.Endpoints, error) {
-	endpointAfter, err := kube.CoreV1().Endpoints(endpoint.Namespace).Update(endpoint)
+func (k *Kube) UpdateEndpoint(endpoint *api_core.Endpoints) (*api_core.Endpoints, error) {
+	endpointAfter, err := k.CoreV1().Endpoints(endpoint.Namespace).Update(endpoint)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"Namespace": endpoint.Namespace,
@@ -58,8 +58,8 @@ func (kube *Kube) UpdateEndpoint(endpoint *api_core.Endpoints) (*api_core.Endpoi
 }
 
 //DeleteEndpoint deletes endpoint
-func (kube *Kube) DeleteEndpoint(namespace, endpoint string) error {
-	err := kube.CoreV1().Endpoints(namespace).Delete(endpoint, &api_meta.DeleteOptions{})
+func (k *Kube) DeleteEndpoint(namespace, endpoint string) error {
+	err := k.CoreV1().Endpoints(namespace).Delete(endpoint, &api_meta.DeleteOptions{})
 	if err != nil {
 		log.WithFields(log.Fields{
 			"Namespace": namespace,

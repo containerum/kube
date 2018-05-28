@@ -7,8 +7,8 @@ import (
 )
 
 //GetConfigMapList returns config maps list
-func (kube *Kube) GetConfigMapList(namespace string) (*api_core.ConfigMapList, error) {
-	cmAfter, err := kube.CoreV1().ConfigMaps(namespace).List(api_meta.ListOptions{})
+func (k *Kube) GetConfigMapList(namespace string) (*api_core.ConfigMapList, error) {
+	cmAfter, err := k.CoreV1().ConfigMaps(namespace).List(api_meta.ListOptions{})
 	if err != nil {
 		log.WithFields(log.Fields{
 			"Namespace": namespace,
@@ -19,8 +19,8 @@ func (kube *Kube) GetConfigMapList(namespace string) (*api_core.ConfigMapList, e
 }
 
 //GetConfigMap returns config map
-func (kube *Kube) GetConfigMap(namespace, cm string) (*api_core.ConfigMap, error) {
-	cmAfter, err := kube.CoreV1().ConfigMaps(namespace).Get(cm, api_meta.GetOptions{})
+func (k *Kube) GetConfigMap(namespace, cm string) (*api_core.ConfigMap, error) {
+	cmAfter, err := k.CoreV1().ConfigMaps(namespace).Get(cm, api_meta.GetOptions{})
 	if err != nil {
 		log.WithFields(log.Fields{
 			"Namespace": namespace,
@@ -32,8 +32,8 @@ func (kube *Kube) GetConfigMap(namespace, cm string) (*api_core.ConfigMap, error
 }
 
 //CreateConfigMap creates config map
-func (kube *Kube) CreateConfigMap(cm *api_core.ConfigMap) (*api_core.ConfigMap, error) {
-	cmAfter, err := kube.CoreV1().ConfigMaps(cm.Namespace).Create(cm)
+func (k *Kube) CreateConfigMap(cm *api_core.ConfigMap) (*api_core.ConfigMap, error) {
+	cmAfter, err := k.CoreV1().ConfigMaps(cm.Namespace).Create(cm)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"Namespace": cm.Namespace,
@@ -45,8 +45,8 @@ func (kube *Kube) CreateConfigMap(cm *api_core.ConfigMap) (*api_core.ConfigMap, 
 }
 
 //UpdateConfigMap updates config map
-func (kube *Kube) UpdateConfigMap(cm *api_core.ConfigMap) (*api_core.ConfigMap, error) {
-	cmAfter, err := kube.CoreV1().ConfigMaps(cm.Namespace).Update(cm)
+func (k *Kube) UpdateConfigMap(cm *api_core.ConfigMap) (*api_core.ConfigMap, error) {
+	cmAfter, err := k.CoreV1().ConfigMaps(cm.Namespace).Update(cm)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"Namespace": cm.Namespace,
@@ -58,8 +58,8 @@ func (kube *Kube) UpdateConfigMap(cm *api_core.ConfigMap) (*api_core.ConfigMap, 
 }
 
 //DeleteConfigMap deletes config map
-func (kube *Kube) DeleteConfigMap(namespace, cm string) error {
-	err := kube.CoreV1().ConfigMaps(namespace).Delete(cm, &api_meta.DeleteOptions{})
+func (k *Kube) DeleteConfigMap(namespace, cm string) error {
+	err := k.CoreV1().ConfigMaps(namespace).Delete(cm, &api_meta.DeleteOptions{})
 	if err != nil {
 		log.WithFields(log.Fields{
 			"Namespace": namespace,

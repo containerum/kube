@@ -186,6 +186,12 @@ func CreateDeployment(ctx *gin.Context) {
 		return
 	}
 
+	/*for _, v := range deploy.Spec.Template.Spec.Volumes {
+			if _, err := kube.GetPersistentVolume(namespace, v.PersistentVolumeClaim.ClaimName); err != nil {
+			//TODO: Do something like check if PersistentVolume exist and in bound state
+		}
+	}*/
+
 	deployAfter, err := kube.CreateDeployment(deploy)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)

@@ -1,7 +1,6 @@
 package model
 
 import (
-	"crypto/sha256"
 	"fmt"
 
 	"strconv"
@@ -11,8 +10,8 @@ import (
 
 	"time"
 
-	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	kube_types "github.com/containerum/kube-client/pkg/model"
+	"github.com/pkg/errors"
 	api_apps "k8s.io/api/apps/v1"
 	api_core "k8s.io/api/core/v1"
 	api_resource "k8s.io/apimachinery/pkg/api/resource"
@@ -24,13 +23,14 @@ const (
 	deploymentKind       = "Deployment"
 	deploymentAPIVersion = "apps/v1"
 
-	glusterFSEndpoint = "ch-glusterfs"
-
 	minDeployCPU      = 10   //m
 	minDeployMemory   = 10   //Mi
 	maxDeployCPU      = 3000 //m
 	maxDeployMemory   = 8000 //Mi
 	maxDeployReplicas = 15
+
+	volumePostfix = "-volume"
+	cmPostfix     = "-cm"
 )
 
 // DeploymentsList -- model for deployments list
@@ -134,15 +134,20 @@ func (deploy *DeploymentWithOwner) ToKube(nsName string, labels map[string]strin
 	}
 
 	repl := int32(deploy.Replicas)
-	containers, volumes, cmaps, err := makeContainers(deploy.Containers)
+	containers, err := makeContainers(deploy.Containers)
 	if err != nil {
 		return nil, err
 	}
 
 	if labels == nil {
-		return nil, []error{kubeErrors.ErrInternalError().AddDetails("invalid namespace labels")}
+		return nil, []error{errors.New("invalid namespace labels")}
 	}
 	labels[appLabel] = deploy.Name
+
+	volumes, verr := makeTemplateVolumes(deploy.Containers)
+	if verr != nil {
+		return nil, []error{verr}
+	}
 
 	newDeploy := api_apps.Deployment{
 		TypeMeta: api_meta.TypeMeta{
@@ -165,7 +170,7 @@ func (deploy *DeploymentWithOwner) ToKube(nsName string, labels map[string]strin
 					NodeSelector: map[string]string{
 						"role": "slave",
 					},
-					Volumes: makeTemplateVolumes(volumes, cmaps, labels[ownerLabel]),
+					Volumes: volumes,
 				},
 				ObjectMeta: api_meta.ObjectMeta{
 					Labels: labels,
@@ -177,11 +182,9 @@ func (deploy *DeploymentWithOwner) ToKube(nsName string, labels map[string]strin
 	return &newDeploy, nil
 }
 
-func makeContainers(containers []kube_types.Container) ([]api_core.Container, []string, map[string]int64, []error) {
+func makeContainers(containers []kube_types.Container) ([]api_core.Container, []error) {
 	var containersAfter []api_core.Container
 
-	volumes := make([]string, 0)
-	cmaps := make(map[string]int64, 0)
 	for _, c := range containers {
 		container := api_core.Container{
 			Name:    c.Name,
@@ -190,12 +193,7 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, []
 		}
 
 		if c.VolumeMounts != nil || c.ConfigMaps != nil {
-			vm, vnames, cmnames := makeContainerVolumes(c.VolumeMounts, c.ConfigMaps)
-			volumes = append(volumes, vnames...)
-			for k, v := range cmnames {
-				cmaps[k] = v
-			}
-			container.VolumeMounts = vm
+			container.VolumeMounts = makeContainerVolumes(c.VolumeMounts, c.ConfigMaps)
 		}
 
 		if c.Env != nil {
@@ -212,18 +210,16 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, []
 
 		errs := validateContainer(c, c.Limits.CPU, c.Limits.Memory)
 		if errs != nil {
-			return nil, nil, nil, errs
+			return nil, errs
 		}
 
 		containersAfter = append(containersAfter, container)
 	}
-	return containersAfter, volumes, cmaps, nil
+	return containersAfter, nil
 }
 
-func makeContainerVolumes(volumes []kube_types.ContainerVolume, configMaps []kube_types.ContainerVolume) ([]api_core.VolumeMount, []string, map[string]int64) {
-	mounts := make([]api_core.VolumeMount, 0)
-	vnames := make([]string, 0)
-	cmnames := make(map[string]int64, 0)
+func makeContainerVolumes(volumes []kube_types.ContainerVolume, configMaps []kube_types.ContainerVolume) []api_core.VolumeMount {
+	volumeMounts := make([]api_core.VolumeMount, 0)
 	if volumes != nil {
 		for _, v := range volumes {
 			var subpath string
@@ -231,8 +227,7 @@ func makeContainerVolumes(volumes []kube_types.ContainerVolume, configMaps []kub
 			if v.SubPath != nil {
 				subpath = *v.SubPath
 			}
-			vnames = append(vnames, v.Name)
-			mounts = append(mounts, api_core.VolumeMount{Name: v.Name, MountPath: v.MountPath, SubPath: subpath})
+			volumeMounts = append(volumeMounts, api_core.VolumeMount{Name: v.Name + volumePostfix, MountPath: v.MountPath, SubPath: subpath})
 		}
 	}
 	if configMaps != nil {
@@ -241,19 +236,11 @@ func makeContainerVolumes(volumes []kube_types.ContainerVolume, configMaps []kub
 			if v.SubPath != nil {
 				subpath = *v.SubPath
 			}
-
-			mode := int64(0644)
-			if v.Mode != nil {
-				if newMode, err := strconv.ParseInt(*v.Mode, 8, 32); err == nil {
-					mode = newMode
-				}
-			}
-			cmnames[v.Name] = mode
-			mounts = append(mounts, api_core.VolumeMount{Name: v.Name, MountPath: v.MountPath, SubPath: subpath})
+			volumeMounts = append(volumeMounts, api_core.VolumeMount{Name: v.Name + cmPostfix, MountPath: v.MountPath, SubPath: subpath})
 		}
 	}
 
-	return mounts, vnames, cmnames
+	return volumeMounts
 }
 
 func makeContainerEnv(env []kube_types.Env) []api_core.EnvVar {
@@ -304,6 +291,73 @@ func makeContainerResourceQuota(cpu, memory uint) *api_core.ResourceRequirements
 	}
 }
 
+func makeTemplateVolumes(containers []kube_types.Container) ([]api_core.Volume, error) {
+	templateVolumes := make([]api_core.Volume, 0)
+	existingVolume := make(map[string]bool, 0)
+	existingMountPath := make(map[string]bool, 0)
+
+	for _, c := range containers {
+		for _, v := range c.VolumeMounts {
+			newVolume := api_core.Volume{
+				Name: v.Name + volumePostfix,
+				VolumeSource: api_core.VolumeSource{
+					PersistentVolumeClaim: &api_core.PersistentVolumeClaimVolumeSource{
+						ClaimName: *v.PersistentVolumeClaimName,
+					},
+				},
+			}
+			if !existingMountPath[v.MountPath] {
+				existingMountPath[v.MountPath] = true
+			} else {
+				return nil, fmt.Errorf(duplicateMountPath, v.MountPath)
+			}
+
+			if !existingVolume[newVolume.Name] {
+				templateVolumes = append(templateVolumes, newVolume)
+				existingVolume[newVolume.Name] = true
+			} else {
+				return nil, fmt.Errorf(duplicateVolume, v.Name)
+			}
+		}
+
+		for _, v := range c.ConfigMaps {
+			defMode := int32(0644)
+			if v.Mode != nil {
+				mode, err := strconv.ParseInt(*v.Mode, 8, 32)
+				if err == nil {
+					defMode = int32(mode)
+				}
+			}
+
+			newVolume := api_core.Volume{
+				Name: v.Name + cmPostfix,
+				VolumeSource: api_core.VolumeSource{
+					ConfigMap: &api_core.ConfigMapVolumeSource{
+						LocalObjectReference: api_core.LocalObjectReference{
+							Name: v.Name,
+						},
+						DefaultMode: &defMode,
+					},
+				},
+			}
+			if !existingMountPath[v.MountPath] {
+				existingMountPath[v.MountPath] = true
+			} else {
+				return nil, fmt.Errorf(duplicateMountPath, v.MountPath)
+			}
+
+			if !existingVolume[newVolume.Name] {
+				templateVolumes = append(templateVolumes, newVolume)
+				existingVolume[newVolume.Name] = true
+			} else {
+				return nil, fmt.Errorf(duplicateConfigMap, v.Name)
+			}
+		}
+	}
+
+	return templateVolumes, nil
+}
+
 func UpdateImage(deployment interface{}, containerName, newimage string) (*api_apps.Deployment, error) {
 	deploy := deployment.(*api_apps.Deployment)
 
@@ -320,42 +374,6 @@ func UpdateImage(deployment interface{}, containerName, newimage string) (*api_a
 	}
 
 	return deploy, nil
-}
-
-func makeTemplateVolumes(volumes []string, cmaps map[string]int64, owner string) []api_core.Volume {
-	tvolumes := make([]api_core.Volume, 0)
-	if len(volumes) != 0 {
-		for _, v := range volumes {
-			newVolume := api_core.Volume{
-				Name: v,
-				VolumeSource: api_core.VolumeSource{
-					Glusterfs: &api_core.GlusterfsVolumeSource{
-						EndpointsName: glusterFSEndpoint,
-						Path:          fmt.Sprintf("cli_%x", sha256.Sum256([]byte(v+owner))),
-					},
-				},
-			}
-			tvolumes = append(tvolumes, newVolume)
-		}
-	}
-	if len(cmaps) != 0 {
-		for k, v := range cmaps {
-			mode := int32(v)
-			newVolume := api_core.Volume{
-				Name: k,
-				VolumeSource: api_core.VolumeSource{
-					ConfigMap: &api_core.ConfigMapVolumeSource{
-						LocalObjectReference: api_core.LocalObjectReference{
-							Name: k,
-						},
-						DefaultMode: &mode,
-					},
-				},
-			}
-			tvolumes = append(tvolumes, newVolume)
-		}
-	}
-	return tvolumes
 }
 
 func (deploy *DeploymentWithOwner) Validate() []error {
@@ -430,6 +448,10 @@ func validateContainer(container kube_types.Container, cpu, mem uint) []error {
 		if v.SubPath != nil && path.IsAbs(*v.SubPath) {
 			errs = append(errs, fmt.Errorf(subPathRelative, *v.SubPath))
 		}
+		if v.PersistentVolumeClaimName == nil {
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "container.volume_mounts.pvc"))
+		}
+
 	}
 
 	for _, v := range container.ConfigMaps {

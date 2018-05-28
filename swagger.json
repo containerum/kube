@@ -1975,6 +1975,240 @@
         },
         "x-method-visibility": "public"
       }
+    },
+    "/namespaces/{namespace}/volume": {
+      "post": {
+        "tags": [
+          "Volume"
+        ],
+        "summary": "Create volume.",
+        "operationId": "CreateVolume",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/PersistentVolumeClaimWithOwner"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "volume created",
+            "schema": {
+              "$ref": "#/definitions/PersistentVolumeClaimWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/namespaces/{namespace}/volume/{volume}": {
+      "delete": {
+        "tags": [
+          "Volume"
+        ],
+        "summary": "Delete volume.",
+        "operationId": "DeleteVolume",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "volume",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "volume deleted"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/namespaces/{namespace}/volumes": {
+      "get": {
+        "tags": [
+          "Volume"
+        ],
+        "summary": "Get volumes list.",
+        "operationId": "GetVolumeList",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "volumes list",
+            "schema": {
+              "$ref": "#/definitions/PersistentVolumeClaimList"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/namespaces/{namespace}/volumes/{volumes}": {
+      "put": {
+        "tags": [
+          "Volume"
+        ],
+        "summary": "Update volume.",
+        "operationId": "UpdateVolume",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "volume",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/PersistentVolumeClaimWithOwner"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "volume updated",
+            "schema": {
+              "$ref": "#/definitions/PersistentVolumeClaimWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/namespaces/{namespace}/volumes/{volume}": {
+      "get": {
+        "tags": [
+          "Volume"
+        ],
+        "summary": "Get volumes list.",
+        "operationId": "GetVolume",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserNamespaceHeader"
+          },
+          {
+            "$ref": "#/parameters/UserVolumeHeader"
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "volume",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "volume",
+            "schema": {
+              "$ref": "#/definitions/ServiceWithOwner"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
     }
   },
   "definitions": {
@@ -2591,7 +2825,6 @@
           "x-go-name": "CreatedAt"
         },
         "label": {
-          "description": "user-visible label for the namespace",
           "type": "string",
           "x-go-name": "Label"
         },
@@ -2609,6 +2842,11 @@
           "type": "integer",
           "format": "uint64",
           "x-go-name": "MaxTraffic"
+        },
+        "name": {
+          "description": "user-visible label for the namespace",
+          "type": "string",
+          "x-go-name": "Name"
         },
         "resources": {
           "$ref": "#/definitions/Resources"
@@ -2641,7 +2879,6 @@
           "x-go-name": "CreatedAt"
         },
         "label": {
-          "description": "user-visible label for the namespace",
           "type": "string",
           "x-go-name": "Label"
         },
@@ -2661,11 +2898,12 @@
           "x-go-name": "MaxTraffic"
         },
         "name": {
-          "description": "hosting-internal name",
+          "description": "user-visible label for the namespace",
           "type": "string",
           "x-go-name": "Name"
         },
         "owner": {
+          "description": "hosting-internal name",
           "type": "string",
           "x-go-name": "Owner"
         },
@@ -2720,6 +2958,97 @@
         }
       },
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
+    },
+    "PersistentVolumeAccessMode": {
+      "type": "string",
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
+    },
+    "PersistentVolumeClaim": {
+      "description": "PersistentVolumeClaim -- persistent volume claim representation",
+      "type": "object",
+      "required": [
+        "name",
+        "storage_class",
+        "access_mode",
+        "size"
+      ],
+      "properties": {
+        "access_mode": {
+          "$ref": "#/definitions/PersistentVolumeAccessMode"
+        },
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "size": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "Size"
+        },
+        "storage_class": {
+          "type": "string",
+          "x-go-name": "StorageClass"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
+    },
+    "PersistentVolumeClaimList": {
+      "description": "PersistentVolumeClaimList -- model for pvc list",
+      "type": "object",
+      "properties": {
+        "volumes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PersistentVolumeClaimWithOwner"
+          },
+          "x-go-name": "PersistentVolumeClaims"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+    },
+    "PersistentVolumeClaimWithOwner": {
+      "description": "PersistentVolumeClaimWithOwner -- model for pvc with owner",
+      "type": "object",
+      "required": [
+        "name",
+        "storage_class",
+        "access_mode",
+        "size",
+        "owner"
+      ],
+      "properties": {
+        "access_mode": {
+          "$ref": "#/definitions/PersistentVolumeAccessMode"
+        },
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
+        },
+        "size": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "Size"
+        },
+        "storage_class": {
+          "type": "string",
+          "x-go-name": "StorageClass"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
     },
     "Pod": {
       "description": "Pod -- model for pod",
@@ -3362,6 +3691,10 @@
             "type": "string"
           },
           "x-go-name": "Env"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
         },
         "name": {
           "type": "string",

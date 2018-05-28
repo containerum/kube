@@ -26,8 +26,8 @@
     "adaptors/cherrylog",
     "adaptors/gonic"
   ]
-  revision = "3076e36aee79538b125d060e5b671649cbb2db4e"
-  version = "v1.0.1-rc2"
+  revision = "34f7a2a139b36c20a34b93738dda33476efad47d"
+  version = "v1.0.1"
 
 [[projects]]
   name = "github.com/containerum/kube-client"
@@ -35,14 +35,14 @@
     ".",
     "pkg/model"
   ]
-  revision = "9293939b520c2d35ba27b6d72b8cd09b3c770cdf"
-  version = "v0.13.0"
+  revision = "67c5abcdeaa2659fd2044af3711ccc8cad367632"
+  version = "v0.15.1"
 
 [[projects]]
   name = "github.com/containerum/utils"
   packages = ["httputil"]
-  revision = "5e922affb542eaeb55ab395ff3c7161179df54b3"
-  version = "v1.0.0"
+  revision = "0d81250fc88af062d5836ecd83db9867eb6ee34c"
+  version = "v1.0.3"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -193,8 +193,8 @@
     "compiler",
     "extensions"
   ]
-  revision = "ee43cbb60db7bd22502942cccbc39059117352ab"
-  version = "v0.1.0"
+  revision = "7c663266750e7d82587642f65e60bc4083f1f84e"
+  version = "v0.2.0"
 
 [[projects]]
   branch = "master"
@@ -277,6 +277,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/ninedraft/boxofstuff"
+  packages = ["strset"]
+  revision = "402d25bcc03750de7fc34975a397beb9ea32d17e"
+
+[[projects]]
+  branch = "master"
   name = "github.com/petar/GoLLRB"
   packages = ["llrb"]
   revision = "53be0d36a84c2a886ca057d34b6aa4468df9ccb4"
@@ -286,6 +292,12 @@
   packages = ["."]
   revision = "5f041e8faa004a95c88a202771f4cc3e991971e6"
   version = "v2.0.1"
+
+[[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
 
 [[projects]]
   name = "github.com/pmezard/go-difflib"
@@ -347,7 +359,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "2d027ae1dddd4694d54f7a8b6cbe78dca8720226"
+  revision = "159ae71589f303f9fbfd7528413e0fe944b9c1cb"
 
 [[projects]]
   branch = "master"
@@ -361,7 +373,7 @@
     "webdav",
     "webdav/internal/xml"
   ]
-  revision = "f73e4c9ed3b7ebdd5f699a16a880c2b1994e50dd"
+  revision = "9ef9f5bb98a1fdc41f8cf6c250a4404b4085e389"
 
 [[projects]]
   branch = "master"
@@ -370,7 +382,7 @@
     "unix",
     "windows"
   ]
-  revision = "7dfd1290c7917b7ba22824b9d24954ab3002fe24"
+  revision = "04b83988a018ef3ebffe1485df79d6499b76a4b4"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -403,8 +415,8 @@
 [[projects]]
   name = "gopkg.in/go-playground/validator.v9"
   packages = ["."]
-  revision = "ffe836d7363bc7ab3f56d2fc90ce09bfb5a0c2c5"
-  version = "v9.17.0"
+  revision = "f28cb45dc0f0f406ba2015cdb59a5203ad220bc2"
+  version = "v9.17.1"
 
 [[projects]]
   name = "gopkg.in/inf.v0"
@@ -562,17 +574,17 @@
   branch = "master"
   name = "k8s.io/kube-openapi"
   packages = ["pkg/common"]
-  revision = "61db125d227fc9d4e373819a059516f32f7f23c7"
+  revision = "67793630244cabba12e91ce1ec8d0d0b40802b56"
 
 [[projects]]
   name = "k8s.io/kubernetes"
   packages = ["pkg/api/legacyscheme"]
-  revision = "81753b10df112992bf51bbc2c2f85208aad78335"
-  version = "v1.10.2"
+  revision = "2bba0127d85d5a46ab4b778548be28623b32d0b0"
+  version = "v1.10.3"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1f5b3e0212f40111ef8b77818571aff00153172f1de55f5b8790dd80577b79d2"
+  inputs-digest = "18d2986463e438701e430722bc7ab610871e5d81efb941ee24821e5825da14c2"
   solver-name = "gps-cdcl"
   solver-version = 1

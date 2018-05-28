@@ -38,10 +38,7 @@ type NamespaceWithOwner struct {
 	// swagger: allOf
 	kube_types.Namespace
 	//hosting-internal name
-	Name  string `json:"name,omitempty"`
 	Owner string `json:"owner,omitempty"`
-	//access from X-User-Namespace header
-	Access string `json:"access,omitempty"`
 }
 
 // ParseKubeResourceQuotaList parses kubernetes v1.ResourceQuotaList to more convenient []Namespace struct.
@@ -80,8 +77,8 @@ func ParseKubeResourceQuota(quota interface{}, parseforuser bool) (*NamespaceWit
 
 	ns := NamespaceWithOwner{
 		Owner: owner,
-		Name:  obj.GetNamespace(),
 		Namespace: kube_types.Namespace{
+			ID:        obj.GetNamespace(),
 			CreatedAt: &createdAt,
 			Resources: kube_types.Resources{
 				Hard: kube_types.Resource{
@@ -113,7 +110,7 @@ func (ns *NamespaceWithOwner) ToKube() (*api_core.Namespace, []error) {
 		},
 		ObjectMeta: api_meta.ObjectMeta{
 			Labels: map[string]string{ownerLabel: ns.Owner},
-			Name:   ns.Name,
+			Name:   ns.ID,
 		},
 		Spec: api_core.NamespaceSpec{},
 	}
@@ -170,9 +167,9 @@ func ParseNamespaceListForUser(headers UserHeaderDataMap, nsl []NamespaceWithOwn
 func (ns *NamespaceWithOwner) ParseForUser(headers UserHeaderDataMap) {
 	ns.Label = ""
 	for _, n := range headers {
-		if ns.Name == n.ID {
+		if ns.ID == n.ID {
 			ns.Label = n.Label
-			ns.Access = n.Access
+			ns.Access = string(n.Access)
 		}
 	}
 	ns.Owner = ""
@@ -181,10 +178,10 @@ func (ns *NamespaceWithOwner) ParseForUser(headers UserHeaderDataMap) {
 func (ns *NamespaceWithOwner) Validate() []error {
 	errs := []error{}
 
-	if ns.Name == "" {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "name"))
-	} else if err := api_validation.IsDNS1123Label(ns.Name); len(err) > 0 {
-		errs = append(errs, fmt.Errorf(invalidName, ns.Name, strings.Join(err, ",")))
+	if ns.ID == "" {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "id"))
+	} else if err := api_validation.IsDNS1123Label(ns.ID); len(err) > 0 {
+		errs = append(errs, fmt.Errorf(invalidName, ns.ID, strings.Join(err, ",")))
 	}
 	if ns.Owner == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "owner"))

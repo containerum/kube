@@ -4,8 +4,8 @@
 [[projects]]
   name = "github.com/containerum/cherry"
   packages = ["."]
-  revision = "3076e36aee79538b125d060e5b671649cbb2db4e"
-  version = "v1.0.1-rc2"
+  revision = "34f7a2a139b36c20a34b93738dda33476efad47d"
+  version = "v1.0.1"
 
 [[projects]]
   name = "github.com/go-resty/resty"
@@ -116,6 +116,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c0bdb570a194dd6401397769c3e8a169398292a547ef8616b3ddfd0d3f42cd44"
+  inputs-digest = "2d4e2dd79e1350269c3d38fd79826fb5d3b62561c3bb905ef4b0f3d48d0393ae"
   solver-name = "gps-cdcl"
   solver-version = 1

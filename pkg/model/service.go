@@ -159,14 +159,11 @@ func (service *ServiceWithOwner) ToKube(nsName string, labels map[string]string)
 	}
 
 	if !service.NoSelector {
-		fmt.Println("TEST1")
 		selector := make(map[string]string, 0)
 		selector[appLabel] = service.Deploy
 		selector[ownerLabel] = labels[ownerLabel]
 		newService.Spec.Selector = selector
 	}
-
-	fmt.Println("TEST2", newService.Spec.Selector)
 
 	if service.IPs != nil {
 		newService.Spec.ExternalIPs = service.IPs

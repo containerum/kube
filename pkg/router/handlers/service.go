@@ -244,8 +244,6 @@ func UpdateService(ctx *gin.Context) {
 		return
 	}
 
-	svc.Name = ctx.Param(serviceParam)
-
 	oldSvc, err := kube.GetService(namespace, service)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
