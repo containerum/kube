@@ -63,7 +63,7 @@ func ParseKubePersistentVolumeClaim(pvci interface{}, parseforuser bool) (*Persi
 	}
 
 	owner := native.GetObjectMeta().GetLabels()[ownerLabel]
-	size := native.Spec.Resources.Requests["storage"]
+	capacity := native.Spec.Resources.Requests["storage"]
 	createdAt := native.GetCreationTimestamp().UTC().UTC().Format(time.RFC3339)
 
 	pvc := PersistentVolumeClaimWithOwner{
@@ -72,7 +72,7 @@ func ParseKubePersistentVolumeClaim(pvci interface{}, parseforuser bool) (*Persi
 			CreatedAt:    &createdAt,
 			StorageClass: native.ObjectMeta.Annotations[api_core.BetaStorageClassAnnotation],
 			AccessMode:   kube_types.PersistentVolumeAccessMode(native.Spec.AccessModes[0]),
-			Capacity:     uint(size.Value() / 1024 / 1024 / 1024),
+			Capacity:     uint(capacity.Value() / 1024 / 1024 / 1024), //in Gi
 		},
 		Owner: owner,
 	}
@@ -122,7 +122,7 @@ func (pvc *PersistentVolumeClaimWithOwner) ToKube(nsName string, labels map[stri
 }
 
 func (pvc *PersistentVolumeClaimWithOwner) Validate() []error {
-	errs := []error{}
+	var errs []error
 	if pvc.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "name"))
 	} else if err := api_validation.IsDNS1035Label(pvc.Name); len(err) > 0 {

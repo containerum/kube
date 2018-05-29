@@ -152,7 +152,7 @@ func (ingress *IngressWithOwner) ToKube(nsName string, labels map[string]string)
 		},
 	}
 
-	if tls == true {
+	if tls {
 		newIngress.ObjectMeta.Annotations["kubernetes.io/tls-acme"] = "true"
 	}
 	return &newIngress, nil
@@ -195,7 +195,7 @@ func makeIngressRules(rules []kube_types.Rule) ([]api_extensions.IngressRule, []
 }
 
 func (ingress *IngressWithOwner) Validate() []error {
-	errs := []error{}
+	var errs []error
 	if ingress.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "name"))
 	} else if err := api_validation.IsDNS1123Subdomain(ingress.Name); len(err) > 0 {

@@ -125,7 +125,7 @@ func makeSecretData(data map[string]string) map[string][]byte {
 }
 
 func (secret *SecretWithOwner) Validate() []error {
-	errs := []error{}
+	var errs []error
 	if secret.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "name"))
 	} else if err := api_validation.IsDNS1123Label(secret.Name); len(err) > 0 {

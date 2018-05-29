@@ -87,8 +87,7 @@ func ParseKubeConfigMap(cmi interface{}, parseforuser bool) (*ConfigMapWithOwner
 
 // ToKube creates kubernetes v1.ConfigMap from ConfigMap struct and namespace labels
 func (cm *ConfigMapWithOwner) ToKube(nsName string, labels map[string]string) (*api_core.ConfigMap, []error) {
-	err := cm.Validate()
-	if err != nil {
+	if err := cm.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -119,7 +118,7 @@ func (cm *ConfigMapWithOwner) ToKube(nsName string, labels map[string]string) (*
 }
 
 func (cm *ConfigMapWithOwner) Validate() []error {
-	errs := []error{}
+	var errs []error
 	if cm.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "name"))
 	} else if err := api_validation.IsDNS1123Label(cm.Name); len(err) > 0 {

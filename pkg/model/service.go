@@ -47,8 +47,6 @@ type ServiceWithOwner struct {
 	Owner string `json:"owner,omitempty"`
 	//hide service from users
 	Hidden bool `json:"hidden,omitempty"`
-	//don't add selectors to service (so don't create endpoint)
-	NoSelector bool `json:"no_selector,omitempty"`
 }
 
 // ParseKubeServiceList parses kubernetes v1.ServiceList to more convenient Service struct.
@@ -158,13 +156,6 @@ func (service *ServiceWithOwner) ToKube(nsName string, labels map[string]string)
 		},
 	}
 
-	if !service.NoSelector {
-		selector := make(map[string]string, 0)
-		selector[appLabel] = service.Deploy
-		selector[ownerLabel] = labels[ownerLabel]
-		newService.Spec.Selector = selector
-	}
-
 	if service.IPs != nil {
 		newService.Spec.ExternalIPs = service.IPs
 
@@ -195,7 +186,7 @@ func makeServicePorts(ports []kube_types.ServicePort) []api_core.ServicePort {
 }
 
 func (service *ServiceWithOwner) Validate() []error {
-	errs := []error{}
+	var errs []error
 	if service.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "name"))
 	} else if err := api_validation.IsDNS1035Label(service.Name); len(err) > 0 {

@@ -195,7 +195,7 @@ func (ns *NamespaceWithOwner) Validate() []error {
 }
 
 func ValidateResourceQuota(cpu, mem uint) []error {
-	errs := []error{}
+	var errs []error
 
 	if cpu < minNamespaceCPU || cpu > maxNamespaceCPU {
 		errs = append(errs, fmt.Errorf(invalidCPUQuota, cpu, minNamespaceCPU, maxNamespaceCPU))

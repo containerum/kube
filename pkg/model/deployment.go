@@ -220,24 +220,19 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, []
 
 func makeContainerVolumes(volumes []kube_types.ContainerVolume, configMaps []kube_types.ContainerVolume) []api_core.VolumeMount {
 	volumeMounts := make([]api_core.VolumeMount, 0)
-	if volumes != nil {
-		for _, v := range volumes {
-			var subpath string
-
-			if v.SubPath != nil {
-				subpath = *v.SubPath
-			}
-			volumeMounts = append(volumeMounts, api_core.VolumeMount{Name: v.Name + volumePostfix, MountPath: v.MountPath, SubPath: subpath})
+	for _, v := range volumes {
+		var subpath string
+		if v.SubPath != nil {
+			subpath = *v.SubPath
 		}
+		volumeMounts = append(volumeMounts, api_core.VolumeMount{Name: v.Name + volumePostfix, MountPath: v.MountPath, SubPath: subpath})
 	}
-	if configMaps != nil {
-		for _, v := range configMaps {
-			var subpath string
-			if v.SubPath != nil {
-				subpath = *v.SubPath
-			}
-			volumeMounts = append(volumeMounts, api_core.VolumeMount{Name: v.Name + cmPostfix, MountPath: v.MountPath, SubPath: subpath})
+	for _, v := range configMaps {
+		var subpath string
+		if v.SubPath != nil {
+			subpath = *v.SubPath
 		}
+		volumeMounts = append(volumeMounts, api_core.VolumeMount{Name: v.Name + cmPostfix, MountPath: v.MountPath, SubPath: subpath})
 	}
 
 	return volumeMounts
@@ -323,8 +318,7 @@ func makeTemplateVolumes(containers []kube_types.Container) ([]api_core.Volume, 
 		for _, v := range c.ConfigMaps {
 			defMode := int32(0644)
 			if v.Mode != nil {
-				mode, err := strconv.ParseInt(*v.Mode, 8, 32)
-				if err == nil {
+				if mode, err := strconv.ParseInt(*v.Mode, 8, 32); err == nil {
 					defMode = int32(mode)
 				}
 			}
@@ -377,7 +371,7 @@ func UpdateImage(deployment interface{}, containerName, newimage string) (*api_a
 }
 
 func (deploy *DeploymentWithOwner) Validate() []error {
-	errs := []error{}
+	var errs []error
 	if deploy.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "name"))
 	} else if err := api_validation.IsDNS1123Label(deploy.Name); len(err) > 0 {
@@ -396,8 +390,7 @@ func (deploy *DeploymentWithOwner) Validate() []error {
 }
 
 func validateContainer(container kube_types.Container, cpu, mem uint) []error {
-	errs := []error{}
-
+	var errs []error
 	if container.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "name"))
 	} else if err := api_validation.IsDNS1123Label(container.Name); len(err) > 0 {
