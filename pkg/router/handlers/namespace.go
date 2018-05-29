@@ -110,7 +110,7 @@ func GetNamespace(ctx *gin.Context) {
 	}
 
 	role := ctx.MustGet(m.UserRole).(string)
-	ret, err := model.ParseKubeResourceQuota(quota, role == m.RoleAdmin)
+	ret, err := model.ParseKubeResourceQuota(quota)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(kubeErrors.ErrUnableGetResource(), ctx)
@@ -119,7 +119,7 @@ func GetNamespace(ctx *gin.Context) {
 
 	if role == m.RoleUser {
 		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
-		ret.ParseForUser(*nsList)
+		ret = model.ParseForUser(ret, *nsList)
 	}
 
 	ctx.JSON(http.StatusOK, ret)
@@ -151,7 +151,7 @@ func CreateNamespace(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var ns model.NamespaceWithOwner
+	var ns model.NamespaceKubeAPI
 	if err := ctx.ShouldBindWith(&ns, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
@@ -182,8 +182,7 @@ func CreateNamespace(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
-	ret, err := model.ParseKubeResourceQuota(quotaCreated, role == m.RoleAdmin)
+	ret, err := model.ParseKubeResourceQuota(quotaCreated)
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -224,7 +223,7 @@ func UpdateNamespace(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var res model.NamespaceWithOwner
+	var res model.NamespaceKubeAPI
 	if err := ctx.ShouldBindWith(&res, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
@@ -251,8 +250,7 @@ func UpdateNamespace(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
-	ret, err := model.ParseKubeResourceQuota(quotaAfter, role == m.RoleAdmin)
+	ret, err := model.ParseKubeResourceQuota(quotaAfter)
 	if err != nil {
 		ctx.Error(err)
 	}

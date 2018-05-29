@@ -13,22 +13,21 @@ import (
 	api_validation "k8s.io/apimachinery/pkg/util/validation"
 )
 
-// SecretsList -- model for secrets list
+// SecretWithParamList -- model for secrets list
 //
 // swagger:model
-type SecretsList struct {
-	Secrets []SecretWithOwner `json:"secrets"`
+type SecretWithParamList struct {
+	Secrets []SecretWithParam `json:"secrets"`
 }
 
 // SecretWithOwner -- model for secret with owner
 //
 // swagger:model
-type SecretWithOwner struct {
+type SecretWithParam struct {
 	// swagger: allOf
-	kube_types.Secret
-	// required: true
-	Owner  string `json:"owner,omitempty"`
-	Hidden bool   `json:"hidden,omitempty"`
+	*kube_types.Secret
+	//hide secret from users
+	Hidden bool `json:"hidden,omitempty"`
 }
 
 const (
@@ -37,13 +36,13 @@ const (
 )
 
 // ParseKubeSecretList parses kubernetes v1.SecretList to more convenient []Secret struct.
-func ParseKubeSecretList(secreti interface{}, parseforuser bool) (*SecretsList, error) {
+func ParseKubeSecretList(secreti interface{}, parseforuser bool) (*SecretWithParamList, error) {
 	nativeSecrets := secreti.(*api_core.SecretList)
 	if nativeSecrets == nil {
 		return nil, ErrUnableConvertSecretList
 	}
 
-	secrets := make([]SecretWithOwner, 0)
+	secrets := make([]SecretWithParam, 0)
 	for _, secret := range nativeSecrets.Items {
 		newSecret, err := ParseKubeSecret(&secret, parseforuser)
 		if err != nil {
@@ -53,11 +52,11 @@ func ParseKubeSecretList(secreti interface{}, parseforuser bool) (*SecretsList, 
 			secrets = append(secrets, *newSecret)
 		}
 	}
-	return &SecretsList{secrets}, nil
+	return &SecretWithParamList{secrets}, nil
 }
 
 // ParseKubeSecret parses kubernetes v1.Secret to more convenient Secret struct.
-func ParseKubeSecret(secreti interface{}, parseforuser bool) (*SecretWithOwner, error) {
+func ParseKubeSecret(secreti interface{}, parseforuser bool) (*SecretWithParam, error) {
 	secret := secreti.(*api_core.Secret)
 	if secret == nil {
 		return nil, ErrUnableConvertSecret
@@ -71,13 +70,13 @@ func ParseKubeSecret(secreti interface{}, parseforuser bool) (*SecretWithOwner, 
 	owner := secret.GetObjectMeta().GetLabels()[ownerLabel]
 	createdAt := secret.CreationTimestamp.UTC().Format(time.RFC3339)
 
-	newSecret := SecretWithOwner{
-		Secret: kube_types.Secret{
+	newSecret := SecretWithParam{
+		Secret: &kube_types.Secret{
 			Name:      secret.GetName(),
 			CreatedAt: &createdAt,
 			Data:      newData,
+			Owner:     owner,
 		},
-		Owner: owner,
 	}
 
 	newSecret.ParseForUser()
@@ -87,7 +86,7 @@ func ParseKubeSecret(secreti interface{}, parseforuser bool) (*SecretWithOwner, 
 }
 
 // ToKube creates kubernetes v1.Secret from Secret struct and namespace labels
-func (secret *SecretWithOwner) ToKube(nsName string, labels map[string]string) (*api_core.Secret, []error) {
+func (secret *SecretWithParam) ToKube(nsName string, labels map[string]string) (*api_core.Secret, []error) {
 	err := secret.Validate()
 	if err != nil {
 		return nil, err
@@ -124,7 +123,7 @@ func makeSecretData(data map[string]string) map[string][]byte {
 	return newData
 }
 
-func (secret *SecretWithOwner) Validate() []error {
+func (secret *SecretWithParam) Validate() []error {
 	var errs []error
 	if secret.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "name"))
@@ -147,10 +146,10 @@ func (secret *SecretWithOwner) Validate() []error {
 }
 
 // ParseForUser removes information not interesting for users
-func (secret *SecretWithOwner) ParseForUser() {
+func (secret *SecretWithParam) ParseForUser() {
 	if secret.Owner == "" {
 		secret.Hidden = true
 		return
 	}
-	secret.Owner = ""
+	secret.Mask()
 }

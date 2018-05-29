@@ -15,36 +15,16 @@ import (
 	api_validation "k8s.io/apimachinery/pkg/util/validation"
 )
 
-// SelectedConfigMapsList -- model for config maps list from all namespaces
-//
-// swagger:model
-type SelectedConfigMapsList map[string]ConfigMapsList
-
-// ConfigMapsList -- model for config maps list
-//
-// swagger:model
-type ConfigMapsList struct {
-	ConfigMaps []ConfigMapWithOwner `json:"configmaps"`
-}
-
-// ConfigMapWithOwner -- model for config map with owner
-//
-// swagger:model
-type ConfigMapWithOwner struct {
-	// swagger: allOf
-	kube_types.ConfigMap
-	// required: true
-	Owner string `json:"owner,omitempty"`
-}
+type ConfigMapKubeAPI kube_types.ConfigMap
 
 // ParseKubeConfigMapList parses kubernetes v1.ConfigMapList to more convenient []ConfigMap struct.
-func ParseKubeConfigMapList(cmi interface{}, parseforuser bool) (*ConfigMapsList, error) {
+func ParseKubeConfigMapList(cmi interface{}, parseforuser bool) (*kube_types.ConfigMapsList, error) {
 	cmList := cmi.(*api_core.ConfigMapList)
 	if cmList == nil {
 		return nil, ErrUnableConvertConfigMapList
 	}
 
-	newCms := make([]ConfigMapWithOwner, 0)
+	newCms := make([]kube_types.ConfigMap, 0)
 	for _, cm := range cmList.Items {
 		newCm, err := ParseKubeConfigMap(&cm, parseforuser)
 		if err != nil {
@@ -52,11 +32,11 @@ func ParseKubeConfigMapList(cmi interface{}, parseforuser bool) (*ConfigMapsList
 		}
 		newCms = append(newCms, *newCm)
 	}
-	return &ConfigMapsList{newCms}, nil
+	return &kube_types.ConfigMapsList{newCms}, nil
 }
 
 // ParseKubeConfigMap parses kubernetes v1.ConfigMap to more convenient ConfigMap struct.
-func ParseKubeConfigMap(cmi interface{}, parseforuser bool) (*ConfigMapWithOwner, error) {
+func ParseKubeConfigMap(cmi interface{}, parseforuser bool) (*kube_types.ConfigMap, error) {
 	cm := cmi.(*api_core.ConfigMap)
 	if cm == nil {
 		return nil, ErrUnableConvertConfigMap
@@ -70,23 +50,21 @@ func ParseKubeConfigMap(cmi interface{}, parseforuser bool) (*ConfigMapWithOwner
 	owner := cm.GetObjectMeta().GetLabels()[ownerLabel]
 	createdAt := cm.CreationTimestamp.UTC().Format(time.RFC3339)
 
-	newCm := ConfigMapWithOwner{
-		ConfigMap: kube_types.ConfigMap{
-			Name:      cm.GetName(),
-			CreatedAt: &createdAt,
-			Data:      kube_types.ConfigMapData(newData),
-		},
-		Owner: owner,
+	newCm := kube_types.ConfigMap{
+		Name:      cm.GetName(),
+		CreatedAt: &createdAt,
+		Data:      kube_types.ConfigMapData(newData),
+		Owner:     owner,
 	}
 
 	if parseforuser {
-		newCm.ParseForUser()
+		newCm.Mask()
 	}
 	return &newCm, nil
 }
 
 // ToKube creates kubernetes v1.ConfigMap from ConfigMap struct and namespace labels
-func (cm *ConfigMapWithOwner) ToKube(nsName string, labels map[string]string) (*api_core.ConfigMap, []error) {
+func (cm *ConfigMapKubeAPI) ToKube(nsName string, labels map[string]string) (*api_core.ConfigMap, []error) {
 	if err := cm.Validate(); err != nil {
 		return nil, err
 	}
@@ -117,7 +95,7 @@ func (cm *ConfigMapWithOwner) ToKube(nsName string, labels map[string]string) (*
 	return &newCm, nil
 }
 
-func (cm *ConfigMapWithOwner) Validate() []error {
+func (cm *ConfigMapKubeAPI) Validate() []error {
 	var errs []error
 	if cm.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "name"))
@@ -137,9 +115,4 @@ func (cm *ConfigMapWithOwner) Validate() []error {
 		return errs
 	}
 	return nil
-}
-
-// ParseForUser removes information not interesting for users
-func (cm *ConfigMapWithOwner) ParseForUser() {
-	cm.Owner = ""
 }

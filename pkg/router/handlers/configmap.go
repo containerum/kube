@@ -8,6 +8,7 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
 	"github.com/containerum/cherry/adaptors/gonic"
+	kube_types "github.com/containerum/kube-client/pkg/model"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
@@ -160,7 +161,7 @@ func CreateConfigMap(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var cmReq model.ConfigMapWithOwner
+	var cmReq model.ConfigMapKubeAPI
 	if err := ctx.ShouldBindWith(&cmReq, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
@@ -234,7 +235,7 @@ func UpdateConfigMap(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var cmReq model.ConfigMapWithOwner
+	var cmReq model.ConfigMapKubeAPI
 	if err := ctx.ShouldBindWith(&cmReq, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
@@ -346,7 +347,7 @@ func GetSelectedConfigMaps(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	ret := make(model.SelectedConfigMapsList, 0)
+	ret := make(kube_types.SelectedConfigMapsList, 0)
 
 	role := ctx.MustGet(m.UserRole).(string)
 	if role == m.RoleUser {

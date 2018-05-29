@@ -33,31 +33,16 @@ const (
 	cmPostfix     = "-cm"
 )
 
-// DeploymentsList -- model for deployments list
-//
-// swagger:model
-type DeploymentsList struct {
-	Deployments []DeploymentWithOwner `json:"deployments"`
-}
-
-// DeploymentWithOwner -- model for deployment with owner
-//
-// swagger:model
-type DeploymentWithOwner struct {
-	// swagger: allOf
-	kube_types.Deployment
-	// required: true
-	Owner string `json:"owner,omitempty"`
-}
+type DeploymentKubeAPI kube_types.Deployment
 
 // ParseKubeDeploymentList parses kubernetes v1.DeploymentList to more convenient []Deployment struct
-func ParseKubeDeploymentList(deploys interface{}, parseforuser bool) (*DeploymentsList, error) {
+func ParseKubeDeploymentList(deploys interface{}, parseforuser bool) (*kube_types.DeploymentsList, error) {
 	deployList := deploys.(*api_apps.DeploymentList)
 	if deployList == nil {
 		return nil, ErrUnableConvertDeploymentList
 	}
 
-	deployments := make([]DeploymentWithOwner, 0)
+	deployments := make([]kube_types.Deployment, 0)
 	for _, deployment := range deployList.Items {
 		deployment, err := ParseKubeDeployment(&deployment, parseforuser)
 		if err != nil {
@@ -66,11 +51,11 @@ func ParseKubeDeploymentList(deploys interface{}, parseforuser bool) (*Deploymen
 
 		deployments = append(deployments, *deployment)
 	}
-	return &DeploymentsList{deployments}, nil
+	return &kube_types.DeploymentsList{deployments}, nil
 }
 
 // ParseKubeDeployment parses kubernetes v1.Deployment to more convenient Deployment struct
-func ParseKubeDeployment(deployment interface{}, parseforuser bool) (*DeploymentWithOwner, error) {
+func ParseKubeDeployment(deployment interface{}, parseforuser bool) (*kube_types.Deployment, error) {
 	deploy := deployment.(*api_apps.Deployment)
 	if deploy == nil {
 		return nil, ErrUnableConvertDeployment
@@ -89,28 +74,26 @@ func ParseKubeDeployment(deployment interface{}, parseforuser bool) (*Deployment
 		}
 	}
 
-	newDeploy := DeploymentWithOwner{
-		Deployment: kube_types.Deployment{
-			Name:     deploy.GetName(),
-			Replicas: replicas,
-			Status: &kube_types.DeploymentStatus{
-				CreatedAt:           deploy.ObjectMeta.CreationTimestamp.UTC().Format(time.RFC3339),
-				UpdatedAt:           updated.UTC().Format(time.RFC3339),
-				Replicas:            int(deploy.Status.Replicas),
-				ReadyReplicas:       int(deploy.Status.ReadyReplicas),
-				AvailableReplicas:   int(deploy.Status.AvailableReplicas),
-				UpdatedReplicas:     int(deploy.Status.UpdatedReplicas),
-				UnavailableReplicas: int(deploy.Status.UnavailableReplicas),
-			},
-			Containers:  containers,
-			TotalCPU:    uint(totalcpu.ScaledValue(api_resource.Milli)),
-			TotalMemory: uint(totalmem.Value() / 1024 / 1024),
+	newDeploy := kube_types.Deployment{
+		Name:     deploy.GetName(),
+		Replicas: replicas,
+		Status: &kube_types.DeploymentStatus{
+			CreatedAt:           deploy.ObjectMeta.CreationTimestamp.UTC().Format(time.RFC3339),
+			UpdatedAt:           updated.UTC().Format(time.RFC3339),
+			Replicas:            int(deploy.Status.Replicas),
+			ReadyReplicas:       int(deploy.Status.ReadyReplicas),
+			AvailableReplicas:   int(deploy.Status.AvailableReplicas),
+			UpdatedReplicas:     int(deploy.Status.UpdatedReplicas),
+			UnavailableReplicas: int(deploy.Status.UnavailableReplicas),
 		},
-		Owner: owner,
+		Containers:  containers,
+		TotalCPU:    uint(totalcpu.ScaledValue(api_resource.Milli)),
+		TotalMemory: uint(totalmem.Value() / 1024 / 1024),
+		Owner:       owner,
 	}
 
 	if parseforuser {
-		newDeploy.ParseForUser()
+		newDeploy.Mask()
 	}
 
 	return &newDeploy, nil
@@ -127,7 +110,7 @@ func getVolumeMode(volumes []api_core.Volume) map[string]int32 {
 }
 
 //ToKube creates kubernetes v1.Deployment from Deployment struct and namespace labels
-func (deploy *DeploymentWithOwner) ToKube(nsName string, labels map[string]string) (*api_apps.Deployment, []error) {
+func (deploy *DeploymentKubeAPI) ToKube(nsName string, labels map[string]string) (*api_apps.Deployment, []error) {
 	err := deploy.Validate()
 	if err != nil {
 		return nil, err
@@ -370,7 +353,7 @@ func UpdateImage(deployment interface{}, containerName, newimage string) (*api_a
 	return deploy, nil
 }
 
-func (deploy *DeploymentWithOwner) Validate() []error {
+func (deploy *DeploymentKubeAPI) Validate() []error {
 	var errs []error
 	if deploy.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "name"))
@@ -465,9 +448,4 @@ func validateContainer(container kube_types.Container, cpu, mem uint) []error {
 		return errs
 	}
 	return nil
-}
-
-// ParseForUser removes information not interesting for users
-func (deploy *DeploymentWithOwner) ParseForUser() {
-	deploy.Owner = ""
 }
