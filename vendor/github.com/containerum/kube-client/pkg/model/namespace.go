@@ -33,20 +33,34 @@ type UpdateNamespaceName struct {
 	Label string `json:"label"`
 }
 
+// NamespacesList -- model for namespaces list
+//
+// swagger:model
+type NamespacesList struct {
+	Namespaces []Namespace `json:"namespaces"`
+}
+
 // Namespace -- namespace representation
 //
 // swagger:model
 type Namespace struct {
+	ID string `json:"id,omitempty"`
 	//creation date in RFC3339 format
-	CreatedAt *string `json:"created_at,omitempty"`
-	ID        string  `json:"id,omitempty"`
+	CreatedAt  *string `json:"created_at,omitempty"`
+	Owner      string  `json:"owner,omitempty"`
+	OwnerLogin string  `json:"owner_login,omitempty"`
 	// user-visible label for the namespace
-	Label         string   `json:"label,omitempty"`
-	Access        string   `json:"access,omitempty"`
-	MaxExtService *uint    `json:"max_ext_service,omitempty"`
-	MaxIntService *uint    `json:"max_int_service,omitempty"`
-	MaxTraffic    *uint    `json:"max_traffic,omitempty"`
-	Volumes       []Volume `json:"volumes,omitempty"`
+	Label         string      `json:"label,omitempty"`
+	Access        AccessLevel `json:"access,omitempty"`
+	MaxExtService uint        `json:"max_ext_service,omitempty"`
+	MaxIntService uint        `json:"max_int_service,omitempty"`
+	MaxTraffic    uint        `json:"max_traffic,omitempty"`
 	// required: true
-	Resources Resources `json:"resources"`
+	Resources Resources    `json:"resources,omitempty"`
+	Users     []UserAccess `json:"users,omitempty"`
+}
+
+// Mask removes information not interesting for users
+func (ns *Namespace) Mask() {
+	ns.Owner = ""
 }

@@ -109,8 +109,7 @@ func parseEndpointPort(np interface{}) Port {
 
 // ToKube creates kubernetes v1.Endpoint from Endpoint struct and namespace labels
 func (endpoint *Endpoint) ToKube(nsName string, labels map[string]string) (*api_core.Endpoints, []error) {
-	err := endpoint.Validate()
-	if err != nil {
+	if err := endpoint.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -157,7 +156,7 @@ func makeEndpointPorts(ports []Port) []api_core.EndpointPort {
 }
 
 func (endpoint *Endpoint) Validate() []error {
-	errs := []error{}
+	var errs []error
 	if endpoint.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "name"))
 	} else if err := api_validation.IsDNS1123Label(endpoint.Name); len(err) > 0 {

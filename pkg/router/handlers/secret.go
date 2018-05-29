@@ -3,6 +3,8 @@ package handlers
 import (
 	"net/http"
 
+	"fmt"
+
 	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
@@ -46,11 +48,15 @@ func GetSecretList(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
+	fmt.Println("TESt1")
+
 	_, err := kube.GetNamespace(namespace)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResourcesList()), ctx)
 		return
 	}
+
+	fmt.Println("TESt2")
 
 	secrets, err := kube.GetSecretList(namespace)
 	if err != nil {
@@ -160,7 +166,7 @@ func CreateSecret(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var secretReq model.SecretWithOwner
+	var secretReq model.SecretWithParam
 	if err := ctx.ShouldBindWith(&secretReq, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
@@ -233,7 +239,7 @@ func UpdateSecret(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var secretReq model.SecretWithOwner
+	var secretReq model.SecretWithParam
 	if err := ctx.ShouldBindWith(&secretReq, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)

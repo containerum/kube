@@ -42,19 +42,12 @@ func RequiredUserHeaders() gin.HandlerFunc {
 					return
 				}
 				userNs, errNs := checkUserNamespace(GetHeader(ctx, headers.UserNamespacesXHeader))
-				userVol, errVol := checkUserVolume(GetHeader(ctx, headers.UserVolumesXHeader))
 				if errNs != nil {
 					log.WithField("Value", GetHeader(ctx, headers.UserNamespacesXHeader)).WithError(errNs).Warn("Check User-Namespace header Error")
 					gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetails(fmt.Sprintf("%v: %v", headers.UserNamespacesXHeader, errNs)), ctx)
 					return
 				}
-				if errVol != nil {
-					log.WithField("Value", GetHeader(ctx, headers.UserVolumesXHeader)).WithError(errVol).Warn("Check User-Volume header Error")
-					gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetails(fmt.Sprintf("%v: %v", headers.UserVolumesXHeader, errVol)), ctx)
-					return
-				}
 				ctx.Set(UserNamespaces, userNs)
-				ctx.Set(UserVolumes, userVol)
 			}
 		}
 		ctx.Set(UserRole, GetHeader(ctx, headers.UserRoleXHeader))
@@ -73,10 +66,6 @@ func checkIsUserRole(userRole string) (bool, error) {
 
 func checkUserNamespace(userNamespace string) (*model.UserHeaderDataMap, error) {
 	return model.ParseUserHeaderData(userNamespace)
-}
-
-func checkUserVolume(userVolume string) (*model.UserHeaderDataMap, error) {
-	return model.ParseUserHeaderData(userVolume)
 }
 
 func requireHeaders(ctx *gin.Context, headers ...string) (notFoundHeaders []string) {

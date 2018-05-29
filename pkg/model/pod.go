@@ -11,58 +11,40 @@ import (
 	api_resource "k8s.io/apimachinery/pkg/api/resource"
 )
 
-// PodsList -- model for pods list
-//
-// swagger:model
-type PodsList struct {
-	Pods []PodWithOwner `json:"pods"`
-}
-
-// PodWithOwner -- model for pod with owner
-//
-// swagger:model
-type PodWithOwner struct {
-	// swagger: allOf
-	kube_types.Pod
-	Owner string `json:"owner,omitempty"`
-}
-
 // ParseKubePodList parses kubernetes v1.PodList to more convenient []Pod struct.
-func ParseKubePodList(pods interface{}, parseforuser bool) *PodsList {
+func ParseKubePodList(pods interface{}, parseforuser bool) *kube_types.PodsList {
 	podList := pods.(*api_core.PodList)
-	ret := make([]PodWithOwner, 0)
+	ret := make([]kube_types.Pod, 0)
 	for _, po := range podList.Items {
 		ret = append(ret, ParseKubePod(&po, parseforuser))
 	}
-	return &PodsList{ret}
+	return &kube_types.PodsList{ret}
 }
 
 // ParseKubePod parses kubernetes v1.PodList to more convenient Pod struct.
-func ParseKubePod(pod interface{}, parseforuser bool) PodWithOwner {
+func ParseKubePod(pod interface{}, parseforuser bool) kube_types.Pod {
 	obj := pod.(*api_core.Pod)
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
 	containers, cpu, mem := getContainers(obj.Spec.Containers, nil, 1)
 	deploy := obj.GetObjectMeta().GetLabels()[appLabel]
 	createdAt := obj.ObjectMeta.CreationTimestamp.UTC().Format(time.RFC3339)
 
-	newPod := PodWithOwner{
-		Pod: model.Pod{
-			CreatedAt:  &createdAt,
-			Deploy:     &deploy,
-			Name:       obj.GetName(),
-			Containers: containers,
-			Hostname:   &obj.Spec.Hostname,
-			Status: &model.PodStatus{
-				Phase: string(obj.Status.Phase),
-			},
-			TotalCPU:    uint(cpu.ScaledValue(api_resource.Milli)),
-			TotalMemory: uint(mem.Value() / 1024 / 1024),
+	newPod := kube_types.Pod{
+		CreatedAt:  &createdAt,
+		Deploy:     &deploy,
+		Name:       obj.GetName(),
+		Containers: containers,
+		Hostname:   &obj.Spec.Hostname,
+		Status: &model.PodStatus{
+			Phase: string(obj.Status.Phase),
 		},
-		Owner: owner,
+		TotalCPU:    uint(cpu.ScaledValue(api_resource.Milli)),
+		TotalMemory: uint(mem.Value() / 1024 / 1024),
+		Owner:       owner,
 	}
 
 	if parseforuser {
-		newPod.Owner = ""
+		newPod.Mask()
 	}
 
 	return newPod

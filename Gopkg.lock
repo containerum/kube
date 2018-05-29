@@ -35,8 +35,8 @@
     ".",
     "pkg/model"
   ]
-  revision = "67c5abcdeaa2659fd2044af3711ccc8cad367632"
-  version = "v0.15.1"
+  revision = "4f3f68adfcb17cc15329735e9f222c6783d29b0e"
+  version = "v0.17.3"
 
 [[projects]]
   name = "github.com/containerum/utils"
@@ -90,7 +90,7 @@
   branch = "master"
   name = "github.com/gin-gonic/contrib"
   packages = ["ginrus"]
-  revision = "33543d11593dd66df698cae8b4c776faa0827359"
+  revision = "6ea35d32286ce194572a0dc2a3398aac0091228d"
 
 [[projects]]
   name = "github.com/gin-gonic/gin"
@@ -276,10 +276,10 @@
   version = "1.0.0"
 
 [[projects]]
-  branch = "master"
   name = "github.com/ninedraft/boxofstuff"
   packages = ["strset"]
-  revision = "402d25bcc03750de7fc34975a397beb9ea32d17e"
+  revision = "a75053006032b83ac7c7c9d5ed2af949e954b372"
+  version = "v0.1.0"
 
 [[projects]]
   branch = "master"
@@ -359,7 +359,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "159ae71589f303f9fbfd7528413e0fe944b9c1cb"
+  revision = "ab813273cd59e1333f7ae7bff5d027d4aadf528c"
 
 [[projects]]
   branch = "master"
@@ -373,7 +373,7 @@
     "webdav",
     "webdav/internal/xml"
   ]
-  revision = "9ef9f5bb98a1fdc41f8cf6c250a4404b4085e389"
+  revision = "dfa909b99c79129e1100513e5cd36307665e5723"
 
 [[projects]]
   branch = "master"
@@ -382,7 +382,7 @@
     "unix",
     "windows"
   ]
-  revision = "04b83988a018ef3ebffe1485df79d6499b76a4b4"
+  revision = "c11f84a56e43e20a78cee75a7c034031ecf57d1f"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -574,7 +574,7 @@
   branch = "master"
   name = "k8s.io/kube-openapi"
   packages = ["pkg/common"]
-  revision = "67793630244cabba12e91ce1ec8d0d0b40802b56"
+  revision = "41e43949ca69d04b66104069ed3ffd619b289b3d"
 
 [[projects]]
   name = "k8s.io/kubernetes"
@@ -585,6 +585,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "18d2986463e438701e430722bc7ab610871e5d81efb941ee24821e5825da14c2"
+  inputs-digest = "cf71378065036688c9a8a8edab45f1f849589b71b839a6b1dd4c0c00f7efb1db"
   solver-name = "gps-cdcl"
   solver-version = 1

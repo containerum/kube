@@ -15,40 +15,20 @@ import (
 	api_validation "k8s.io/apimachinery/pkg/util/validation"
 )
 
-// SelectedIngressesList -- model for ingresses list from all namespaces
-//
-// swagger:model
-type SelectedIngressesList map[string]IngressesList
-
-// IngressesList -- model for ingresses list
-//
-// swagger:model
-type IngressesList struct {
-	Ingress []IngressWithOwner `json:"ingresses"`
-}
-
-// IngressWithOwner -- model for ingress with owner
-//
-// swagger:model
-type IngressWithOwner struct {
-	// swagger: allOf
-	kube_types.Ingress
-	// required: true
-	Owner string `json:"owner,omitempty"`
-}
-
 const (
 	ingressKind       = "Ingress"
 	ingressAPIVersion = "extensions/v1beta1"
 )
 
+type IngressKubeAPI kube_types.Ingress
+
 // ParseKubeIngressList parses kubernetes v1beta1.IngressList to more convenient []Ingress struct
-func ParseKubeIngressList(ingressi interface{}, parseforuser bool) (*IngressesList, error) {
+func ParseKubeIngressList(ingressi interface{}, parseforuser bool) (*kube_types.IngressesList, error) {
 	ingresses := ingressi.(*api_extensions.IngressList)
 	if ingresses == nil {
 		return nil, ErrUnableConvertIngressList
 	}
-	newIngresses := make([]IngressWithOwner, 0)
+	newIngresses := make([]kube_types.Ingress, 0)
 	for _, ingress := range ingresses.Items {
 		newIngress, err := ParseKubeIngress(&ingress, parseforuser)
 		if err != nil {
@@ -56,11 +36,11 @@ func ParseKubeIngressList(ingressi interface{}, parseforuser bool) (*IngressesLi
 		}
 		newIngresses = append(newIngresses, *newIngress)
 	}
-	return &IngressesList{newIngresses}, nil
+	return &kube_types.IngressesList{newIngresses}, nil
 }
 
 // ParseKubeIngress parses kubernetes v1beta1.Ingress to more convenient Ingress struct
-func ParseKubeIngress(ingressi interface{}, parseforuser bool) (*IngressWithOwner, error) {
+func ParseKubeIngress(ingressi interface{}, parseforuser bool) (*kube_types.Ingress, error) {
 	ingress := ingressi.(*api_extensions.Ingress)
 	if ingress == nil {
 		return nil, ErrUnableConvertIngress
@@ -72,17 +52,15 @@ func ParseKubeIngress(ingressi interface{}, parseforuser bool) (*IngressWithOwne
 
 	rules := parseRules(ingress.Spec.Rules, secrets)
 
-	newIngress := IngressWithOwner{
-		Ingress: kube_types.Ingress{
-			Name:      ingress.GetName(),
-			CreatedAt: &createdAt,
-			Rules:     rules,
-		},
-		Owner: owner,
+	newIngress := kube_types.Ingress{
+		Name:      ingress.GetName(),
+		CreatedAt: &createdAt,
+		Rules:     rules,
+		Owner:     owner,
 	}
 
 	if parseforuser {
-		newIngress.ParseForUser()
+		newIngress.Mask()
 	}
 
 	return &newIngress, nil
@@ -124,7 +102,7 @@ func parseTLS(tlss []api_extensions.IngressTLS) map[string]string {
 }
 
 // ToKube creates kubernetes v1beta1.Ingress from Ingress struct and namespace labels
-func (ingress *IngressWithOwner) ToKube(nsName string, labels map[string]string) (*api_extensions.Ingress, []error) {
+func (ingress *IngressKubeAPI) ToKube(nsName string, labels map[string]string) (*api_extensions.Ingress, []error) {
 	err := ingress.Validate()
 	if err != nil {
 		return nil, err
@@ -152,7 +130,7 @@ func (ingress *IngressWithOwner) ToKube(nsName string, labels map[string]string)
 		},
 	}
 
-	if tls == true {
+	if tls {
 		newIngress.ObjectMeta.Annotations["kubernetes.io/tls-acme"] = "true"
 	}
 	return &newIngress, nil
@@ -194,8 +172,8 @@ func makeIngressRules(rules []kube_types.Rule) ([]api_extensions.IngressRule, []
 	return newRules, secrets, tls
 }
 
-func (ingress *IngressWithOwner) Validate() []error {
-	errs := []error{}
+func (ingress *IngressKubeAPI) Validate() []error {
+	var errs []error
 	if ingress.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "name"))
 	} else if err := api_validation.IsDNS1123Subdomain(ingress.Name); len(err) > 0 {
@@ -227,9 +205,4 @@ func (ingress *IngressWithOwner) Validate() []error {
 		return errs
 	}
 	return nil
-}
-
-// ParseForUser removes information not interesting for users
-func (ingress *IngressWithOwner) ParseForUser() {
-	ingress.Owner = ""
 }

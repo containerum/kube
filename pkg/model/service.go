@@ -30,35 +30,31 @@ const (
 	serviceAPIVersion = "v1"
 )
 
-// ServicesList -- model for services list
+// ServiceWithParamList -- model for services list
 //
 // swagger:model
-type ServicesList struct {
-	Services []ServiceWithOwner `json:"services"`
+type ServiceWithParamList struct {
+	Services []ServiceWithParam `json:"services"`
 }
 
 // ServiceWithOwner -- model for service with owner
 //
 // swagger:model
-type ServiceWithOwner struct {
+type ServiceWithParam struct {
 	// swagger: allOf
-	kube_types.Service
-	// required: true
-	Owner string `json:"owner,omitempty"`
+	*kube_types.Service
 	//hide service from users
 	Hidden bool `json:"hidden,omitempty"`
-	//don't add selectors to service (so don't create endpoint)
-	NoSelector bool `json:"no_selector,omitempty"`
 }
 
 // ParseKubeServiceList parses kubernetes v1.ServiceList to more convenient Service struct.
-func ParseKubeServiceList(ns interface{}, parseforuser bool) (*ServicesList, error) {
+func ParseKubeServiceList(ns interface{}, parseforuser bool) (*ServiceWithParamList, error) {
 	nativeServices := ns.(*api_core.ServiceList)
 	if nativeServices == nil {
 		return nil, ErrUnableConvertServiceList
 	}
 
-	serviceList := make([]ServiceWithOwner, 0)
+	serviceList := make([]ServiceWithParam, 0)
 	for _, nativeService := range nativeServices.Items {
 		service, err := ParseKubeService(&nativeService, parseforuser)
 		if err != nil {
@@ -69,11 +65,11 @@ func ParseKubeServiceList(ns interface{}, parseforuser bool) (*ServicesList, err
 			serviceList = append(serviceList, *service)
 		}
 	}
-	return &ServicesList{serviceList}, nil
+	return &ServiceWithParamList{serviceList}, nil
 }
 
 // ParseKubeService parses kubernetes v1.Service to more convenient Service struct.
-func ParseKubeService(srv interface{}, parseforuser bool) (*ServiceWithOwner, error) {
+func ParseKubeService(srv interface{}, parseforuser bool) (*ServiceWithParam, error) {
 	native := srv.(*api_core.Service)
 	if native == nil {
 		return nil, ErrUnableConvertService
@@ -86,15 +82,15 @@ func ParseKubeService(srv interface{}, parseforuser bool) (*ServiceWithOwner, er
 	deploy := native.GetObjectMeta().GetLabels()[appLabel]
 	domain := native.GetObjectMeta().GetLabels()[domainLabel]
 
-	service := ServiceWithOwner{
-		Service: kube_types.Service{
+	service := ServiceWithParam{
+		Service: &kube_types.Service{
 			Name:      native.Name,
 			CreatedAt: &createdAt,
 			Ports:     ports,
 			Deploy:    deploy,
 			Domain:    domain,
+			Owner:     owner,
 		},
-		Owner: owner,
 	}
 	if len(native.Spec.ExternalIPs) > 0 {
 		service.IPs = native.Spec.ExternalIPs
@@ -130,7 +126,7 @@ func parseServicePort(np interface{}) kube_types.ServicePort {
 }
 
 // ToKube creates kubernetes v1.Service from Service struct and namespace labels
-func (service *ServiceWithOwner) ToKube(nsName string, labels map[string]string) (*api_core.Service, []error) {
+func (service *ServiceWithParam) ToKube(nsName string, labels map[string]string) (*api_core.Service, []error) {
 	err := service.Validate()
 	if err != nil {
 		return nil, err
@@ -156,13 +152,6 @@ func (service *ServiceWithOwner) ToKube(nsName string, labels map[string]string)
 			Type:  "ClusterIP",
 			Ports: makeServicePorts(service.Ports),
 		},
-	}
-
-	if !service.NoSelector {
-		selector := make(map[string]string, 0)
-		selector[appLabel] = service.Deploy
-		selector[ownerLabel] = labels[ownerLabel]
-		newService.Spec.Selector = selector
 	}
 
 	if service.IPs != nil {
@@ -194,8 +183,8 @@ func makeServicePorts(ports []kube_types.ServicePort) []api_core.ServicePort {
 	return serviceports
 }
 
-func (service *ServiceWithOwner) Validate() []error {
-	errs := []error{}
+func (service *ServiceWithParam) Validate() []error {
+	var errs []error
 	if service.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "name"))
 	} else if err := api_validation.IsDNS1035Label(service.Name); len(err) > 0 {
@@ -231,10 +220,10 @@ func (service *ServiceWithOwner) Validate() []error {
 }
 
 // ParseForUser removes information not interesting for users
-func (service *ServiceWithOwner) ParseForUser() {
+func (service *ServiceWithParam) ParseForUser() {
 	if service.Owner == "" {
 		service.Hidden = true
 		return
 	}
-	service.Owner = ""
+	service.Mask()
 }

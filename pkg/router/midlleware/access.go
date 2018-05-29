@@ -73,7 +73,7 @@ func CheckAccess(ctx *gin.Context, level []kubeModel.AccessLevel) {
 			gonic.Gonic(kubeErrors.ErrAccessError(), ctx)
 			return
 		}
-		gonic.Gonic(kubeErrors.ErrResourceNotExist(), ctx)
+		gonic.Gonic(kubeErrors.ErrResourceNotExist().AddDetails("namespace is not found"), ctx)
 		return
 	}
 	return

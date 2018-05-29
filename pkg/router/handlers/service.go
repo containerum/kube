@@ -158,7 +158,7 @@ func CreateService(ctx *gin.Context) {
 	}).Debug("Create service Call")
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var svc model.ServiceWithOwner
+	var svc model.ServiceWithParam
 	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(kubeErrors.ErrUnableCreateResource(), ctx)
@@ -231,7 +231,7 @@ func UpdateService(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var svc model.ServiceWithOwner
+	var svc model.ServiceWithParam
 	if err := ctx.ShouldBindWith(&svc, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(kubeErrors.ErrUnableUpdateResource(), ctx)

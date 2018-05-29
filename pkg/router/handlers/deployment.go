@@ -167,7 +167,7 @@ func CreateDeployment(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var deployReq model.DeploymentWithOwner
+	var deployReq model.DeploymentKubeAPI
 	if err := ctx.ShouldBindWith(&deployReq, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
@@ -250,7 +250,7 @@ func UpdateDeployment(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var deployReq model.DeploymentWithOwner
+	var deployReq model.DeploymentKubeAPI
 	if err := ctx.ShouldBindWith(&deployReq, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)

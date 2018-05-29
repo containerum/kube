@@ -8,6 +8,7 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
 	"github.com/containerum/cherry/adaptors/gonic"
+	kube_types "github.com/containerum/kube-client/pkg/model"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
@@ -160,7 +161,7 @@ func CreateIngress(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var ingressReq model.IngressWithOwner
+	var ingressReq model.IngressKubeAPI
 	if err := ctx.ShouldBindWith(&ingressReq, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
@@ -233,7 +234,7 @@ func UpdateIngress(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var ingressReq model.IngressWithOwner
+	var ingressReq model.IngressKubeAPI
 	if err := ctx.ShouldBindWith(&ingressReq, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
@@ -346,7 +347,7 @@ func GetSelectedIngresses(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	ingresses := make(model.SelectedIngressesList, 0)
+	ingresses := make(kube_types.SelectedIngressesList, 0)
 
 	role := ctx.MustGet(m.UserRole).(string)
 	if role == m.RoleUser {

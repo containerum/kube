@@ -158,7 +158,7 @@ func CreateVolume(ctx *gin.Context) {
 	}).Debug("Create volume Call")
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var pvc model.PersistentVolumeClaimWithOwner
+	var pvc model.VolumeKubeAPI
 	if err := ctx.ShouldBindWith(&pvc, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(kubeErrors.ErrUnableCreateResource(), ctx)
@@ -231,7 +231,7 @@ func UpdateVolume(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var pvc model.PersistentVolumeClaimWithOwner
+	var pvc model.VolumeKubeAPI
 	if err := ctx.ShouldBindWith(&pvc, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(kubeErrors.ErrUnableUpdateResource(), ctx)
