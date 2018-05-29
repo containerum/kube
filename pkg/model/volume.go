@@ -52,7 +52,7 @@ func ParseKubePersistentVolumeClaim(pvci interface{}, parseforuser bool) (*kube_
 	createdAt := native.GetCreationTimestamp().UTC().UTC().Format(time.RFC3339)
 
 	pvc := kube_types.Volume{
-		ID:          native.Name,
+		Name:        native.Name,
 		CreatedAt:   &createdAt,
 		StorageName: native.ObjectMeta.Annotations[api_core.BetaStorageClassAnnotation],
 		AccessMode:  kube_types.PersistentVolumeAccessMode(native.Spec.AccessModes[0]),
@@ -87,7 +87,7 @@ func (pvc *VolumeKubeAPI) ToKube(nsName string, labels map[string]string) (*api_
 		},
 		ObjectMeta: api_meta.ObjectMeta{
 			Labels:      labels,
-			Name:        pvc.ID,
+			Name:        pvc.Name,
 			Annotations: map[string]string{api_core.BetaStorageClassAnnotation: pvc.StorageName},
 			Namespace:   nsName,
 		},
@@ -106,10 +106,10 @@ func (pvc *VolumeKubeAPI) ToKube(nsName string, labels map[string]string) (*api_
 
 func (pvc *VolumeKubeAPI) Validate() []error {
 	var errs []error
-	if pvc.ID == "" {
+	if pvc.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "id"))
-	} else if err := api_validation.IsDNS1123Label(pvc.ID); len(err) > 0 {
-		errs = append(errs, fmt.Errorf(invalidName, pvc.ID, strings.Join(err, ",")))
+	} else if err := api_validation.IsDNS1123Label(pvc.Name); len(err) > 0 {
+		errs = append(errs, fmt.Errorf(invalidName, pvc.Name, strings.Join(err, ",")))
 	}
 	if pvc.StorageName == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "storage_name"))

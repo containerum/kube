@@ -250,7 +250,7 @@ func UpdateVolume(ctx *gin.Context) {
 		return
 	}
 
-	pvc.ID = ctx.Param(volumeParam)
+	pvc.Name = ctx.Param(volumeParam)
 	pvc.Owner = oldPvc.GetObjectMeta().GetLabels()[ownerQuery]
 
 	newPvc, errs := pvc.ToKube(namespace, ns.Labels)
