@@ -24,7 +24,7 @@ func ParseKubePodList(pods interface{}, parseforuser bool) *kube_types.PodsList 
 // ParseKubePod parses kubernetes v1.PodList to more convenient Pod struct.
 func ParseKubePod(pod interface{}, parseforuser bool) kube_types.Pod {
 	obj := pod.(*api_core.Pod)
-	//	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
+	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
 	containers, cpu, mem := getContainers(obj.Spec.Containers, nil, 1)
 	deploy := obj.GetObjectMeta().GetLabels()[appLabel]
 	createdAt := obj.ObjectMeta.CreationTimestamp.UTC().Format(time.RFC3339)
@@ -40,11 +40,11 @@ func ParseKubePod(pod interface{}, parseforuser bool) kube_types.Pod {
 		},
 		TotalCPU:    uint(cpu.ScaledValue(api_resource.Milli)),
 		TotalMemory: uint(mem.Value() / 1024 / 1024),
-		//		Owner:       owner,
+		Owner:       owner,
 	}
 
 	if parseforuser {
-		//		newPod.Owner = ""
+		newPod.Mask()
 	}
 
 	return newPod

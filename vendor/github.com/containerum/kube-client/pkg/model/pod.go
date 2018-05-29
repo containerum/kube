@@ -45,3 +45,8 @@ type UpdateImage struct {
 	// required: true
 	Image string `json:"image"`
 }
+
+// Mask removes information not interesting for users
+func (pod *Pod) Mask() {
+	pod.Owner = ""
+}
