@@ -7,9 +7,9 @@ image:
   secret:
 
 service:
-  externalIP:
   port: 1214
   targetPort: 1212
+  externalIP:
 
 volumeMounts:
   name: auth-volume
