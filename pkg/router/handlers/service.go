@@ -26,7 +26,6 @@ const (
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -77,7 +76,6 @@ func GetServiceList(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -135,7 +133,6 @@ func GetService(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -201,7 +198,6 @@ func CreateService(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -286,7 +282,6 @@ func UpdateService(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string

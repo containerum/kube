@@ -27,9 +27,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           }
         ],
         "responses": {
@@ -62,9 +59,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           }
         ],
         "responses": {
@@ -97,9 +91,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           },
           {
             "type": "string",
@@ -135,9 +126,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           },
           {
             "name": "body",
@@ -179,9 +167,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -216,9 +201,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           },
           {
             "type": "string",
@@ -264,9 +246,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -300,9 +279,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           },
           {
             "type": "string",
@@ -339,9 +315,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           },
           {
             "type": "string",
@@ -389,9 +362,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -432,9 +402,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           },
           {
             "type": "string",
@@ -486,9 +453,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -530,9 +494,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -572,9 +533,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           },
           {
             "type": "string",
@@ -622,9 +580,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -665,9 +620,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           },
           {
             "type": "string",
@@ -719,9 +671,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -761,9 +710,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           },
           {
             "type": "string",
@@ -817,9 +763,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -871,9 +814,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -908,9 +848,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           },
           {
             "type": "string",
@@ -958,9 +895,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -1001,9 +935,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           },
           {
             "type": "string",
@@ -1055,9 +986,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -1099,9 +1027,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -1136,9 +1061,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           },
           {
             "type": "string",
@@ -1186,9 +1108,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -1229,9 +1148,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           },
           {
             "type": "string",
@@ -1283,9 +1199,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -1325,9 +1238,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           },
           {
             "type": "string",
@@ -1373,9 +1283,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -1418,9 +1325,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -1460,9 +1364,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           },
           {
             "$ref": "#/parameters/UpgradeHeader"
@@ -1538,9 +1439,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -1575,9 +1473,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           },
           {
             "type": "string",
@@ -1625,9 +1520,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -1668,9 +1560,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           },
           {
             "type": "string",
@@ -1722,9 +1611,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -1766,9 +1652,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -1803,9 +1686,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           },
           {
             "type": "string",
@@ -1853,9 +1733,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -1896,9 +1773,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           },
           {
             "type": "string",
@@ -1950,9 +1824,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -1992,9 +1863,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           },
           {
             "type": "string",
@@ -2042,9 +1910,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -2086,9 +1951,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -2125,9 +1987,6 @@
           },
           {
             "$ref": "#/parameters/UserNamespaceHeader"
-          },
-          {
-            "$ref": "#/parameters/UserVolumeHeader"
           },
           {
             "type": "string",
@@ -2181,9 +2040,6 @@
             "$ref": "#/parameters/UserNamespaceHeader"
           },
           {
-            "$ref": "#/parameters/UserVolumeHeader"
-          },
-          {
             "type": "string",
             "name": "namespace",
             "in": "path",
@@ -2212,6 +2068,10 @@
     }
   },
   "definitions": {
+    "AccessLevel": {
+      "type": "string",
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
+    },
     "AvailableSolution": {
       "description": "AvailableSolution -- solution which user can run",
       "type": "object",
@@ -2292,6 +2152,10 @@
         "name": {
           "type": "string",
           "x-go-name": "Name"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
         }
       },
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
@@ -2304,34 +2168,6 @@
       },
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
-    "ConfigMapWithOwner": {
-      "description": "ConfigMapWithOwner -- model for config map with owner",
-      "type": "object",
-      "required": [
-        "name",
-        "data",
-        "owner"
-      ],
-      "properties": {
-        "created_at": {
-          "description": "creation date in RFC3339 format",
-          "type": "string",
-          "x-go-name": "CreatedAt"
-        },
-        "data": {
-          "$ref": "#/definitions/ConfigMapData"
-        },
-        "name": {
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "owner": {
-          "type": "string",
-          "x-go-name": "Owner"
-        }
-      },
-      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
-    },
     "ConfigMapsList": {
       "description": "ConfigMapsList -- model for config maps list",
       "type": "object",
@@ -2339,12 +2175,12 @@
         "configmaps": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/ConfigMapWithOwner"
+            "$ref": "#/definitions/ConfigMap"
           },
           "x-go-name": "ConfigMaps"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Container": {
       "description": "Container -- model for container in deployment",
@@ -2448,6 +2284,10 @@
           "type": "string",
           "x-go-name": "Name"
         },
+        "pvc_name": {
+          "type": "string",
+          "x-go-name": "PersistentVolumeClaimName"
+        },
         "sub_path": {
           "type": "string",
           "x-go-name": "SubPath"
@@ -2474,6 +2314,10 @@
         "name": {
           "type": "string",
           "x-go-name": "Name"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
         },
         "replicas": {
           "type": "integer",
@@ -2540,54 +2384,6 @@
       },
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
-    "DeploymentWithOwner": {
-      "description": "DeploymentWithOwner -- model for deployment with owner",
-      "type": "object",
-      "required": [
-        "containers",
-        "name",
-        "replicas",
-        "owner"
-      ],
-      "properties": {
-        "containers": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Container"
-          },
-          "x-go-name": "Containers"
-        },
-        "name": {
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "owner": {
-          "type": "string",
-          "x-go-name": "Owner"
-        },
-        "replicas": {
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "Replicas"
-        },
-        "status": {
-          "$ref": "#/definitions/DeploymentStatus"
-        },
-        "total_cpu": {
-          "description": "total CPU usage by all containers in this deployment",
-          "type": "integer",
-          "format": "uint64",
-          "x-go-name": "TotalCPU"
-        },
-        "total_memory": {
-          "description": "total RAM usage by all containers in this deployment",
-          "type": "integer",
-          "format": "uint64",
-          "x-go-name": "TotalMemory"
-        }
-      },
-      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
-    },
     "DeploymentsList": {
       "description": "DeploymentsList -- model for deployments list",
       "type": "object",
@@ -2595,12 +2391,12 @@
         "deployments": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/DeploymentWithOwner"
+            "$ref": "#/definitions/Deployment"
           },
           "x-go-name": "Deployments"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Endpoint": {
       "description": "Endpoint -- model for endpoint",
@@ -2656,7 +2452,7 @@
       "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
     },
     "Env": {
-      "description": "Env -- key-value pair of enviroment variables",
+      "description": "Env -- key-value pair of environment variables",
       "type": "object",
       "required": [
         "value",
@@ -2752,34 +2548,6 @@
           "type": "string",
           "x-go-name": "Name"
         },
-        "rules": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Rule"
-          },
-          "x-go-name": "Rules"
-        }
-      },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
-    },
-    "IngressWithOwner": {
-      "description": "IngressWithOwner -- model for ingress with owner",
-      "type": "object",
-      "required": [
-        "name",
-        "rules",
-        "owner"
-      ],
-      "properties": {
-        "created_at": {
-          "description": "creation date in RFC3339 format",
-          "type": "string",
-          "x-go-name": "CreatedAt"
-        },
-        "name": {
-          "type": "string",
-          "x-go-name": "Name"
-        },
         "owner": {
           "type": "string",
           "x-go-name": "Owner"
@@ -2792,7 +2560,7 @@
           "x-go-name": "Rules"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "IngressesList": {
       "description": "IngressesList -- model for ingresses list",
@@ -2801,84 +2569,34 @@
         "ingresses": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/IngressWithOwner"
+            "$ref": "#/definitions/Ingress"
           },
           "x-go-name": "Ingress"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
-    },
-    "Namespace": {
-      "description": "Namespace -- namespace representation provided by resource-service\nhttps://ch.pages.containerum.net/api-docs/modules/resource-service/index.html#get-namespace",
-      "type": "object",
-      "required": [
-        "resources"
-      ],
-      "properties": {
-        "access": {
-          "type": "string",
-          "x-go-name": "Access"
-        },
-        "created_at": {
-          "description": "creation date in RFC3339 format",
-          "type": "string",
-          "x-go-name": "CreatedAt"
-        },
-        "label": {
-          "type": "string",
-          "x-go-name": "Label"
-        },
-        "max_ext_service": {
-          "type": "integer",
-          "format": "uint64",
-          "x-go-name": "MaxExtService"
-        },
-        "max_int_service": {
-          "type": "integer",
-          "format": "uint64",
-          "x-go-name": "MaxIntService"
-        },
-        "max_traffic": {
-          "type": "integer",
-          "format": "uint64",
-          "x-go-name": "MaxTraffic"
-        },
-        "name": {
-          "description": "user-visible label for the namespace",
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "resources": {
-          "$ref": "#/definitions/Resources"
-        },
-        "volumes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Volume"
-          },
-          "x-go-name": "Volumes"
-        }
-      },
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
-    "NamespaceWithOwner": {
-      "description": "NamespaceWithOwner -- model for namespace with owner",
+    "Namespace": {
+      "description": "Namespace -- namespace representation",
       "type": "object",
       "required": [
         "resources"
       ],
       "properties": {
         "access": {
-          "description": "access from X-User-Namespace header",
-          "type": "string",
-          "x-go-name": "Access"
+          "$ref": "#/definitions/AccessLevel"
         },
         "created_at": {
           "description": "creation date in RFC3339 format",
           "type": "string",
           "x-go-name": "CreatedAt"
         },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
         "label": {
+          "description": "user-visible label for the namespace",
           "type": "string",
           "x-go-name": "Label"
         },
@@ -2897,28 +2615,26 @@
           "format": "uint64",
           "x-go-name": "MaxTraffic"
         },
-        "name": {
-          "description": "user-visible label for the namespace",
-          "type": "string",
-          "x-go-name": "Name"
-        },
         "owner": {
-          "description": "hosting-internal name",
           "type": "string",
           "x-go-name": "Owner"
         },
+        "owner_login": {
+          "type": "string",
+          "x-go-name": "OwnerLogin"
+        },
         "resources": {
           "$ref": "#/definitions/Resources"
         },
-        "volumes": {
+        "users": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/Volume"
+            "$ref": "#/definitions/UserAccess"
           },
-          "x-go-name": "Volumes"
+          "x-go-name": "Users"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "NamespacesList": {
       "description": "NamespacesList -- model for namespaces list",
@@ -2927,12 +2643,12 @@
         "namespaces": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/NamespaceWithOwner"
+            "$ref": "#/definitions/Namespace"
           },
           "x-go-name": "Namespaces"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Path": {
       "description": "Path -- ingress path",
@@ -2962,93 +2678,6 @@
     "PersistentVolumeAccessMode": {
       "type": "string",
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
-    },
-    "PersistentVolumeClaim": {
-      "description": "PersistentVolumeClaim -- persistent volume claim representation",
-      "type": "object",
-      "required": [
-        "name",
-        "storage_class",
-        "access_mode",
-        "size"
-      ],
-      "properties": {
-        "access_mode": {
-          "$ref": "#/definitions/PersistentVolumeAccessMode"
-        },
-        "created_at": {
-          "description": "creation date in RFC3339 format",
-          "type": "string",
-          "x-go-name": "CreatedAt"
-        },
-        "name": {
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "size": {
-          "type": "integer",
-          "format": "uint64",
-          "x-go-name": "Size"
-        },
-        "storage_class": {
-          "type": "string",
-          "x-go-name": "StorageClass"
-        }
-      },
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
-    },
-    "PersistentVolumeClaimList": {
-      "description": "PersistentVolumeClaimList -- model for pvc list",
-      "type": "object",
-      "properties": {
-        "volumes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/PersistentVolumeClaimWithOwner"
-          },
-          "x-go-name": "PersistentVolumeClaims"
-        }
-      },
-      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
-    },
-    "PersistentVolumeClaimWithOwner": {
-      "description": "PersistentVolumeClaimWithOwner -- model for pvc with owner",
-      "type": "object",
-      "required": [
-        "name",
-        "storage_class",
-        "access_mode",
-        "size",
-        "owner"
-      ],
-      "properties": {
-        "access_mode": {
-          "$ref": "#/definitions/PersistentVolumeAccessMode"
-        },
-        "created_at": {
-          "description": "creation date in RFC3339 format",
-          "type": "string",
-          "x-go-name": "CreatedAt"
-        },
-        "name": {
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "owner": {
-          "type": "string",
-          "x-go-name": "Owner"
-        },
-        "size": {
-          "type": "integer",
-          "format": "uint64",
-          "x-go-name": "Size"
-        },
-        "storage_class": {
-          "type": "string",
-          "x-go-name": "StorageClass"
-        }
-      },
-      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
     },
     "Pod": {
       "description": "Pod -- model for pod",
@@ -3084,6 +2713,10 @@
         "name": {
           "type": "string",
           "x-go-name": "Name"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
         },
         "status": {
           "$ref": "#/definitions/PodStatus"
@@ -3124,63 +2757,6 @@
       },
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
-    "PodWithOwner": {
-      "description": "PodWithOwner -- model for pod with owner",
-      "type": "object",
-      "properties": {
-        "containers": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Container"
-          },
-          "x-go-name": "Containers"
-        },
-        "created_at": {
-          "description": "creation date in RFC3339 format",
-          "type": "string",
-          "x-go-name": "CreatedAt"
-        },
-        "deploy": {
-          "type": "string",
-          "x-go-name": "Deploy"
-        },
-        "hostname": {
-          "type": "string",
-          "x-go-name": "Hostname"
-        },
-        "image_pull_secret": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          },
-          "x-go-name": "ImagePullSecret"
-        },
-        "name": {
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "owner": {
-          "type": "string",
-          "x-go-name": "Owner"
-        },
-        "status": {
-          "$ref": "#/definitions/PodStatus"
-        },
-        "total_cpu": {
-          "description": "total CPU usage by all containers in this pod",
-          "type": "integer",
-          "format": "uint64",
-          "x-go-name": "TotalCPU"
-        },
-        "total_memory": {
-          "description": "total RAM usage by all containers in this pod",
-          "type": "integer",
-          "format": "uint64",
-          "x-go-name": "TotalMemory"
-        }
-      },
-      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
-    },
     "PodsList": {
       "description": "PodsList -- model for pods list",
       "type": "object",
@@ -3188,12 +2764,12 @@
         "pods": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/PodWithOwner"
+            "$ref": "#/definitions/Pod"
           },
           "x-go-name": "Pods"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Port": {
       "description": "Port -- model for endpoint port",
@@ -3249,7 +2825,7 @@
     },
     "Resources": {
       "type": "object",
-      "title": "Resources -- represents namespace limits and user resources,",
+      "title": "Resources -- represents namespace limits and user resources.",
       "required": [
         "hard"
       ],
@@ -3289,8 +2865,8 @@
       },
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
-    "RunSolutionResponce": {
-      "description": "RunSolutionResponce -- responce to run solution request",
+    "RunSolutionResponse": {
+      "description": "RunSolutionResponse -- response to run solution request",
       "type": "object",
       "properties": {
         "created": {
@@ -3336,17 +2912,20 @@
         "name": {
           "type": "string",
           "x-go-name": "Name"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
         }
       },
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
-    "SecretWithOwner": {
+    "SecretWithParam": {
       "description": "SecretWithOwner -- model for secret with owner",
       "type": "object",
       "required": [
         "name",
-        "data",
-        "owner"
+        "data"
       ],
       "properties": {
         "created_at": {
@@ -3362,6 +2941,7 @@
           "x-go-name": "Data"
         },
         "hidden": {
+          "description": "hide secret from users",
           "type": "boolean",
           "x-go-name": "Hidden"
         },
@@ -3376,6 +2956,20 @@
       },
       "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
     },
+    "SecretWithParamList": {
+      "description": "SecretWithParamList -- model for secrets list",
+      "type": "object",
+      "properties": {
+        "secrets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SecretWithParam"
+          },
+          "x-go-name": "Secrets"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+    },
     "SecretsList": {
       "description": "SecretsList -- model for secrets list",
       "type": "object",
@@ -3383,12 +2977,12 @@
         "secrets": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/SecretWithOwner"
+            "$ref": "#/definitions/Secret"
           },
           "x-go-name": "Secrets"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "SelectedConfigMapsList": {
       "description": "SelectedConfigMapsList -- model for config maps list from all namespaces",
@@ -3396,7 +2990,7 @@
       "additionalProperties": {
         "$ref": "#/definitions/ConfigMapsList"
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "SelectedIngressesList": {
       "description": "SelectedIngressesList -- model for ingresses list from all namespaces",
@@ -3404,7 +2998,7 @@
       "additionalProperties": {
         "$ref": "#/definitions/IngressesList"
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Service": {
       "description": "represents service",
@@ -3437,6 +3031,10 @@
         "name": {
           "type": "string",
           "x-go-name": "Name"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
         },
         "ports": {
           "type": "array",
@@ -3482,13 +3080,12 @@
       "type": "string",
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
-    "ServiceWithOwner": {
+    "ServiceWithParam": {
       "description": "ServiceWithOwner -- model for service with owner",
       "type": "object",
       "required": [
         "name",
-        "ports",
-        "owner"
+        "ports"
       ],
       "properties": {
         "created_at": {
@@ -3520,11 +3117,6 @@
           "type": "string",
           "x-go-name": "Name"
         },
-        "no_selector": {
-          "description": "don't add selectors to service (so don't create endpoint)",
-          "type": "boolean",
-          "x-go-name": "NoSelector"
-        },
         "owner": {
           "type": "string",
           "x-go-name": "Owner"
@@ -3539,6 +3131,20 @@
       },
       "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
     },
+    "ServiceWithParamList": {
+      "description": "ServiceWithParamList -- model for services list",
+      "type": "object",
+      "properties": {
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ServiceWithParam"
+          },
+          "x-go-name": "Services"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+    },
     "ServicesList": {
       "description": "ServicesList -- model for services list",
       "type": "object",
@@ -3546,12 +3152,12 @@
         "services": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/ServiceWithOwner"
+            "$ref": "#/definitions/Service"
           },
           "x-go-name": "Services"
         }
       },
-      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "SolutionEnv": {
       "description": "SolutionEnv -- solution environment variables",
@@ -3645,6 +3251,19 @@
       },
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
+    "UserAccess": {
+      "type": "object",
+      "properties": {
+        "access_level": {
+          "$ref": "#/definitions/AccessLevel"
+        },
+        "username": {
+          "type": "string",
+          "x-go-name": "Username"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
+    },
     "UserHeaderData": {
       "description": "represents header data for X-User-Namespace and X-User-Volume headers (encoded in base64)",
       "type": "object",
@@ -3655,9 +3274,7 @@
       ],
       "properties": {
         "access": {
-          "description": "one of: \"owner\", \"read\", \"write\", \"read-delete\", \"none\"",
-          "type": "string",
-          "x-go-name": "Access"
+          "$ref": "#/definitions/AccessLevel"
         },
         "id": {
           "description": "hosting-internal name",
@@ -3726,36 +3343,60 @@
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Volume": {
-      "description": "Volume -- volume representation\nprovided by resource-service\nhttps://ch.pages.containerum.net/api-docs/modules/resource-service/index.html#get-namespace",
+      "description": "Volume -- volume representation",
       "type": "object",
       "properties": {
         "access": {
-          "type": "string",
-          "x-go-name": "Access"
+          "$ref": "#/definitions/AccessLevel"
         },
-        "access_change_time": {
-          "type": "string",
-          "format": "date-time",
-          "x-go-name": "AccessChangeTime"
+        "access_mode": {
+          "$ref": "#/definitions/PersistentVolumeAccessMode"
         },
-        "create_time": {
-          "type": "string",
-          "format": "date-time",
-          "x-go-name": "CreateTime"
-        },
-        "label": {
-          "type": "string",
-          "x-go-name": "Label"
-        },
-        "replicas": {
+        "capacity": {
           "type": "integer",
-          "format": "int64",
-          "x-go-name": "Replicas"
+          "format": "uint64",
+          "x-go-name": "Capacity"
         },
-        "storage": {
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "Storage"
+        "created_at": {
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
+        },
+        "owner_login": {
+          "type": "string",
+          "x-go-name": "OwnerLogin"
+        },
+        "storage_name": {
+          "type": "string",
+          "x-go-name": "StorageName"
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserAccess"
+          },
+          "x-go-name": "Users"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
+    },
+    "VolumesList": {
+      "description": "VolumesList -- model for volumes list",
+      "type": "object",
+      "properties": {
+        "volumes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Volume"
+          },
+          "x-go-name": "Volumes"
         }
       },
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
@@ -3798,9 +3439,6 @@
     },
     "UserRoleHeader": {
       "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserRoleHeader"
-    },
-    "UserVolumeHeader": {
-      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserVolumesHeader"
     }
   },
   "responses": {
