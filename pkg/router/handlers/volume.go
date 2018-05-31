@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
+	api_core "k8s.io/api/core/v1"
 )
 
 const (
@@ -248,6 +249,7 @@ func UpdateVolume(ctx *gin.Context) {
 
 	pvc.Name = ctx.Param(volumeParam)
 	pvc.Owner = oldPvc.GetObjectMeta().GetLabels()[ownerQuery]
+	pvc.StorageName = oldPvc.ObjectMeta.Annotations[api_core.BetaStorageClassAnnotation]
 
 	newPvc, errs := pvc.ToKube(namespace, ns.Labels)
 	if errs != nil {
