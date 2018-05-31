@@ -96,7 +96,7 @@ func GetDeploymentList(ctx *gin.Context) {
 //  '200':
 //    description: deployment
 //    schema:
-//      $ref: '#/definitions/DeploymentWithOwner'
+//      $ref: '#/definitions/Deployment'
 //  default:
 //    $ref: '#/responses/error'
 func GetDeployment(ctx *gin.Context) {
@@ -148,12 +148,12 @@ func GetDeployment(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/DeploymentWithOwner'
+//      $ref: '#/definitions/Deployment'
 // responses:
 //  '201':
 //    description: deployment created
 //    schema:
-//      $ref: '#/definitions/DeploymentWithOwner'
+//      $ref: '#/definitions/Deployment'
 //  default:
 //    $ref: '#/responses/error'
 func CreateDeployment(ctx *gin.Context) {
@@ -228,12 +228,12 @@ func CreateDeployment(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/DeploymentWithOwner'
+//      $ref: '#/definitions/Deployment'
 // responses:
 //  '202':
 //    description: deployment updated
 //    schema:
-//      $ref: '#/definitions/DeploymentWithOwner'
+//      $ref: '#/definitions/Deployment'
 //  default:
 //    $ref: '#/responses/error'
 func UpdateDeployment(ctx *gin.Context) {
@@ -314,7 +314,7 @@ func UpdateDeployment(ctx *gin.Context) {
 //  '202':
 //    description: deployment updated
 //    schema:
-//      $ref: '#/definitions/DeploymentWithOwner'
+//      $ref: '#/definitions/Deployment'
 //  default:
 //    $ref: '#/responses/error'
 func UpdateDeploymentReplicas(ctx *gin.Context) {
@@ -389,7 +389,7 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 //  '202':
 //    description: deployment updated
 //    schema:
-//      $ref: '#/definitions/DeploymentWithOwner'
+//      $ref: '#/definitions/Deployment'
 //  default:
 //    $ref: '#/responses/error'
 func UpdateDeploymentImage(ctx *gin.Context) {

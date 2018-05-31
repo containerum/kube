@@ -3,8 +3,6 @@ package handlers
 import (
 	"net/http"
 
-	"fmt"
-
 	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
@@ -47,15 +45,11 @@ func GetSecretList(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	fmt.Println("TESt1")
-
 	_, err := kube.GetNamespace(namespace)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResourcesList()), ctx)
 		return
 	}
-
-	fmt.Println("TESt2")
 
 	secrets, err := kube.GetSecretList(namespace)
 	if err != nil {
@@ -95,7 +89,7 @@ func GetSecretList(ctx *gin.Context) {
 //  '200':
 //    description: secret
 //    schema:
-//      $ref: '#/definitions/SecretWithOwner'
+//      $ref: '#/definitions/SecretWithParam'
 //  default:
 //    $ref: '#/responses/error'
 func GetSecret(ctx *gin.Context) {
@@ -147,12 +141,12 @@ func GetSecret(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/SecretWithOwner'
+//      $ref: '#/definitions/SecretWithParam'
 // responses:
 //  '201':
 //    description: secret created
 //    schema:
-//      $ref: '#/definitions/SecretWithOwner'
+//      $ref: '#/definitions/SecretWithParam'
 //  default:
 //    $ref: '#/responses/error'
 func CreateSecret(ctx *gin.Context) {
@@ -217,12 +211,12 @@ func CreateSecret(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/SecretWithOwner'
+//      $ref: '#/definitions/SecretWithParam'
 // responses:
 //  '202':
 //    description: secret updated
 //    schema:
-//      $ref: '#/definitions/SecretWithOwner'
+//      $ref: '#/definitions/SecretWithParam'
 //  default:
 //    $ref: '#/responses/error'
 func UpdateSecret(ctx *gin.Context) {

@@ -131,7 +131,7 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/NamespaceWithOwner"
+              "$ref": "#/definitions/Namespace"
             }
           }
         ],
@@ -139,7 +139,7 @@
           "201": {
             "description": "namespace created",
             "schema": {
-              "$ref": "#/definitions/NamespaceWithOwner"
+              "$ref": "#/definitions/Namespace"
             }
           },
           "default": {
@@ -177,7 +177,7 @@
           "200": {
             "description": "namespace",
             "schema": {
-              "$ref": "#/definitions/NamespaceWithOwner"
+              "$ref": "#/definitions/Namespace"
             }
           },
           "default": {
@@ -212,7 +212,7 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/NamespaceWithOwner"
+              "$ref": "#/definitions/Namespace"
             }
           }
         ],
@@ -220,7 +220,7 @@
           "201": {
             "description": "namespace updated",
             "schema": {
-              "$ref": "#/definitions/NamespaceWithOwner"
+              "$ref": "#/definitions/Namespace"
             }
           },
           "default": {
@@ -326,7 +326,7 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/ConfigMapWithOwner"
+              "$ref": "#/definitions/ConfigMap"
             }
           }
         ],
@@ -334,7 +334,7 @@
           "201": {
             "description": "config map created",
             "schema": {
-              "$ref": "#/definitions/ConfigMapWithOwner"
+              "$ref": "#/definitions/ConfigMap"
             }
           },
           "default": {
@@ -378,7 +378,7 @@
           "200": {
             "description": "config map",
             "schema": {
-              "$ref": "#/definitions/ConfigMapWithOwner"
+              "$ref": "#/definitions/ConfigMap"
             }
           },
           "default": {
@@ -419,7 +419,7 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/ConfigMapWithOwner"
+              "$ref": "#/definitions/ConfigMap"
             }
           }
         ],
@@ -427,7 +427,7 @@
           "202": {
             "description": "config map updated",
             "schema": {
-              "$ref": "#/definitions/ConfigMapWithOwner"
+              "$ref": "#/definitions/ConfigMap"
             }
           },
           "default": {
@@ -544,7 +544,7 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/DeploymentWithOwner"
+              "$ref": "#/definitions/Deployment"
             }
           }
         ],
@@ -552,7 +552,7 @@
           "201": {
             "description": "deployment created",
             "schema": {
-              "$ref": "#/definitions/DeploymentWithOwner"
+              "$ref": "#/definitions/Deployment"
             }
           },
           "default": {
@@ -596,7 +596,7 @@
           "200": {
             "description": "deployment",
             "schema": {
-              "$ref": "#/definitions/DeploymentWithOwner"
+              "$ref": "#/definitions/Deployment"
             }
           },
           "default": {
@@ -637,7 +637,7 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/DeploymentWithOwner"
+              "$ref": "#/definitions/Deployment"
             }
           }
         ],
@@ -645,7 +645,7 @@
           "202": {
             "description": "deployment updated",
             "schema": {
-              "$ref": "#/definitions/DeploymentWithOwner"
+              "$ref": "#/definitions/Deployment"
             }
           },
           "default": {
@@ -735,7 +735,7 @@
           "202": {
             "description": "deployment updated",
             "schema": {
-              "$ref": "#/definitions/DeploymentWithOwner"
+              "$ref": "#/definitions/Deployment"
             }
           },
           "default": {
@@ -786,7 +786,7 @@
           "202": {
             "description": "deployment updated",
             "schema": {
-              "$ref": "#/definitions/DeploymentWithOwner"
+              "$ref": "#/definitions/Deployment"
             }
           },
           "default": {
@@ -1072,7 +1072,7 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/IngressWithOwner"
+              "$ref": "#/definitions/Ingress"
             }
           }
         ],
@@ -1080,7 +1080,7 @@
           "201": {
             "description": "ingress created",
             "schema": {
-              "$ref": "#/definitions/IngressWithOwner"
+              "$ref": "#/definitions/Ingress"
             }
           },
           "default": {
@@ -1124,7 +1124,7 @@
           "200": {
             "description": "ingresses",
             "schema": {
-              "$ref": "#/definitions/IngressWithOwner"
+              "$ref": "#/definitions/Ingress"
             }
           },
           "default": {
@@ -1165,7 +1165,7 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/IngressWithOwner"
+              "$ref": "#/definitions/Ingress"
             }
           }
         ],
@@ -1173,7 +1173,7 @@
           "201": {
             "description": "ingress updated",
             "schema": {
-              "$ref": "#/definitions/IngressWithOwner"
+              "$ref": "#/definitions/Ingress"
             }
           },
           "default": {
@@ -1299,7 +1299,7 @@
           "200": {
             "description": "pod",
             "schema": {
-              "$ref": "#/definitions/PodWithOwner"
+              "$ref": "#/definitions/Pod"
             }
           },
           "default": {
@@ -1484,7 +1484,7 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/SecretWithOwner"
+              "$ref": "#/definitions/SecretWithParam"
             }
           }
         ],
@@ -1492,7 +1492,7 @@
           "201": {
             "description": "secret created",
             "schema": {
-              "$ref": "#/definitions/SecretWithOwner"
+              "$ref": "#/definitions/SecretWithParam"
             }
           },
           "default": {
@@ -1536,7 +1536,7 @@
           "200": {
             "description": "secret",
             "schema": {
-              "$ref": "#/definitions/SecretWithOwner"
+              "$ref": "#/definitions/SecretWithParam"
             }
           },
           "default": {
@@ -1577,7 +1577,7 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/SecretWithOwner"
+              "$ref": "#/definitions/SecretWithParam"
             }
           }
         ],
@@ -1585,7 +1585,7 @@
           "202": {
             "description": "secret updated",
             "schema": {
-              "$ref": "#/definitions/SecretWithOwner"
+              "$ref": "#/definitions/SecretWithParam"
             }
           },
           "default": {
@@ -1697,7 +1697,7 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/ServiceWithOwner"
+              "$ref": "#/definitions/ServiceWithParam"
             }
           }
         ],
@@ -1705,7 +1705,7 @@
           "201": {
             "description": "service created",
             "schema": {
-              "$ref": "#/definitions/ServiceWithOwner"
+              "$ref": "#/definitions/ServiceWithParam"
             }
           },
           "default": {
@@ -1749,7 +1749,7 @@
           "200": {
             "description": "service",
             "schema": {
-              "$ref": "#/definitions/ServiceWithOwner"
+              "$ref": "#/definitions/ServiceWithParam"
             }
           },
           "default": {
@@ -1790,7 +1790,7 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/ServiceWithOwner"
+              "$ref": "#/definitions/ServiceWithParam"
             }
           }
         ],
@@ -1798,7 +1798,7 @@
           "202": {
             "description": "service updated",
             "schema": {
-              "$ref": "#/definitions/ServiceWithOwner"
+              "$ref": "#/definitions/ServiceWithParam"
             }
           },
           "default": {
@@ -2056,7 +2056,7 @@
           "200": {
             "description": "volume",
             "schema": {
-              "$ref": "#/definitions/ServiceWithOwner"
+              "$ref": "#/definitions/ServiceWithParam"
             }
           },
           "default": {
@@ -2921,7 +2921,7 @@
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "SecretWithParam": {
-      "description": "SecretWithOwner -- model for secret with owner",
+      "description": "SecretWithParam -- model for secret with owner",
       "type": "object",
       "required": [
         "name",
@@ -3081,7 +3081,7 @@
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "ServiceWithParam": {
-      "description": "ServiceWithOwner -- model for service with owner",
+      "description": "ServiceWithParam -- model for service with owner",
       "type": "object",
       "required": [
         "name",

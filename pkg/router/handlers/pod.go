@@ -117,7 +117,7 @@ func GetPodList(ctx *gin.Context) {
 //  '200':
 //    description: pod
 //    schema:
-//      $ref: '#/definitions/PodWithOwner'
+//      $ref: '#/definitions/Pod'
 //  default:
 //    $ref: '#/responses/error'
 func GetPod(ctx *gin.Context) {

@@ -66,7 +66,6 @@ func ParseKubernetesResourceError(in interface{}, defaultErr *cherry.Err) *cherr
 	if isStatusErrorCode {
 		switch sE.ErrStatus.Reason {
 		case api_meta.StatusReasonNotFound:
-			fmt.Println("TEST1", sE.Status().Details.Kind)
 			if sE.Status().Details.Kind == "resourcequotas" {
 				return kubeErrors.ErrResourceNotExist().AddDetails(noNamespace)
 			}

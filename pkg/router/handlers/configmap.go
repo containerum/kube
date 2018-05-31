@@ -90,7 +90,7 @@ func GetConfigMapList(ctx *gin.Context) {
 //  '200':
 //    description: config map
 //    schema:
-//      $ref: '#/definitions/ConfigMapWithOwner'
+//      $ref: '#/definitions/ConfigMap'
 //  default:
 //    $ref: '#/responses/error'
 func GetConfigMap(ctx *gin.Context) {
@@ -142,12 +142,12 @@ func GetConfigMap(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/ConfigMapWithOwner'
+//      $ref: '#/definitions/ConfigMap'
 // responses:
 //  '201':
 //    description: config map created
 //    schema:
-//      $ref: '#/definitions/ConfigMapWithOwner'
+//      $ref: '#/definitions/ConfigMap'
 //  default:
 //    $ref: '#/responses/error'
 func CreateConfigMap(ctx *gin.Context) {
@@ -213,12 +213,12 @@ func CreateConfigMap(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/ConfigMapWithOwner'
+//      $ref: '#/definitions/ConfigMap'
 // responses:
 //  '202':
 //    description: config map updated
 //    schema:
-//      $ref: '#/definitions/ConfigMapWithOwner'
+//      $ref: '#/definitions/ConfigMap'
 //  default:
 //    $ref: '#/responses/error'
 func UpdateConfigMap(ctx *gin.Context) {

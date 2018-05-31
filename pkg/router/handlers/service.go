@@ -88,7 +88,7 @@ func GetServiceList(ctx *gin.Context) {
 //  '200':
 //    description: service
 //    schema:
-//      $ref: '#/definitions/ServiceWithOwner'
+//      $ref: '#/definitions/ServiceWithParam'
 //  default:
 //    $ref: '#/responses/error'
 func GetService(ctx *gin.Context) {
@@ -140,12 +140,12 @@ func GetService(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/ServiceWithOwner'
+//      $ref: '#/definitions/ServiceWithParam'
 // responses:
 //  '201':
 //    description: service created
 //    schema:
-//      $ref: '#/definitions/ServiceWithOwner'
+//      $ref: '#/definitions/ServiceWithParam'
 //  default:
 //    $ref: '#/responses/error'
 func CreateService(ctx *gin.Context) {
@@ -209,12 +209,12 @@ func CreateService(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/ServiceWithOwner'
+//      $ref: '#/definitions/ServiceWithParam'
 // responses:
 //  '202':
 //    description: service updated
 //    schema:
-//      $ref: '#/definitions/ServiceWithOwner'
+//      $ref: '#/definitions/ServiceWithParam'
 //  default:
 //    $ref: '#/responses/error'
 func UpdateService(ctx *gin.Context) {

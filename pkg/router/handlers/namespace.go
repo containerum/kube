@@ -90,7 +90,7 @@ func GetNamespaceList(ctx *gin.Context) {
 //  '200':
 //    description: namespace
 //    schema:
-//      $ref: '#/definitions/NamespaceWithOwner'
+//      $ref: '#/definitions/Namespace'
 //  default:
 //    $ref: '#/responses/error'
 func GetNamespace(ctx *gin.Context) {
@@ -135,12 +135,12 @@ func GetNamespace(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/NamespaceWithOwner'
+//      $ref: '#/definitions/Namespace'
 // responses:
 //  '201':
 //    description: namespace created
 //    schema:
-//      $ref: '#/definitions/NamespaceWithOwner'
+//      $ref: '#/definitions/Namespace'
 //  default:
 //    $ref: '#/responses/error'
 func CreateNamespace(ctx *gin.Context) {
@@ -203,12 +203,12 @@ func CreateNamespace(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/NamespaceWithOwner'
+//      $ref: '#/definitions/Namespace'
 // responses:
 //  '201':
 //    description: namespace updated
 //    schema:
-//      $ref: '#/definitions/NamespaceWithOwner'
+//      $ref: '#/definitions/Namespace'
 //  default:
 //    $ref: '#/responses/error'
 func UpdateNamespace(ctx *gin.Context) {

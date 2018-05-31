@@ -20,7 +20,7 @@ type SecretWithParamList struct {
 	Secrets []SecretWithParam `json:"secrets"`
 }
 
-// SecretWithOwner -- model for secret with owner
+// SecretWithParam -- model for secret with owner
 //
 // swagger:model
 type SecretWithParam struct {

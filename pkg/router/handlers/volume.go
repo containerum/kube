@@ -35,7 +35,7 @@ const (
 //  '200':
 //    description: volumes list
 //    schema:
-//      $ref: '#/definitions/PersistentVolumeClaimList'
+//      $ref: '#/definitions/VolumesList'
 //  default:
 //    $ref: '#/responses/error'
 func GetVolumeList(ctx *gin.Context) {
@@ -89,7 +89,7 @@ func GetVolumeList(ctx *gin.Context) {
 //  '200':
 //    description: volume
 //    schema:
-//      $ref: '#/definitions/ServiceWithOwner'
+//      $ref: '#/definitions/Volume'
 //  default:
 //    $ref: '#/responses/error'
 func GetVolume(ctx *gin.Context) {
@@ -141,12 +141,12 @@ func GetVolume(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/PersistentVolumeClaimWithOwner'
+//      $ref: '#/definitions/Volume'
 // responses:
 //  '201':
 //    description: volume created
 //    schema:
-//      $ref: '#/definitions/PersistentVolumeClaimWithOwner'
+//      $ref: '#/definitions/Volume'
 //  default:
 //    $ref: '#/responses/error'
 func CreateVolume(ctx *gin.Context) {
@@ -210,12 +210,12 @@ func CreateVolume(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/PersistentVolumeClaimWithOwner'
+//      $ref: '#/definitions/Volume'
 // responses:
 //  '202':
 //    description: volume updated
 //    schema:
-//      $ref: '#/definitions/PersistentVolumeClaimWithOwner'
+//      $ref: '#/definitions/Volume'
 //  default:
 //    $ref: '#/responses/error'
 func UpdateVolume(ctx *gin.Context) {
