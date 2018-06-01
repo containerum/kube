@@ -37,7 +37,7 @@ type ServiceWithParamList struct {
 	Services []ServiceWithParam `json:"services"`
 }
 
-// ServiceWithOwner -- model for service with owner
+// ServiceWithParam -- model for service with owner
 //
 // swagger:model
 type ServiceWithParam struct {

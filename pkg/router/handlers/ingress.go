@@ -27,7 +27,6 @@ const (
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -79,7 +78,6 @@ func GetIngressList(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -92,7 +90,7 @@ func GetIngressList(ctx *gin.Context) {
 //  '200':
 //    description: ingresses
 //    schema:
-//      $ref: '#/definitions/IngressWithOwner'
+//      $ref: '#/definitions/Ingress'
 //  default:
 //    $ref: '#/responses/error'
 func GetIngress(ctx *gin.Context) {
@@ -137,7 +135,6 @@ func GetIngress(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -145,12 +142,12 @@ func GetIngress(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/IngressWithOwner'
+//      $ref: '#/definitions/Ingress'
 // responses:
 //  '201':
 //    description: ingress created
 //    schema:
-//      $ref: '#/definitions/IngressWithOwner'
+//      $ref: '#/definitions/Ingress'
 //  default:
 //    $ref: '#/responses/error'
 func CreateIngress(ctx *gin.Context) {
@@ -204,7 +201,6 @@ func CreateIngress(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -216,12 +212,12 @@ func CreateIngress(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/IngressWithOwner'
+//      $ref: '#/definitions/Ingress'
 // responses:
 //  '201':
 //    description: ingress updated
 //    schema:
-//      $ref: '#/definitions/IngressWithOwner'
+//      $ref: '#/definitions/Ingress'
 //  default:
 //    $ref: '#/responses/error'
 func UpdateIngress(ctx *gin.Context) {
@@ -286,7 +282,6 @@ func UpdateIngress(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -334,7 +329,6 @@ func DeleteIngress(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 // responses:
 //  '200':
 //    description: ingresses list from all users namespaces

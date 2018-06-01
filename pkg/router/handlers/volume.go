@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
+	api_core "k8s.io/api/core/v1"
 )
 
 const (
@@ -26,7 +27,6 @@ const (
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -35,7 +35,7 @@ const (
 //  '200':
 //    description: volumes list
 //    schema:
-//      $ref: '#/definitions/PersistentVolumeClaimList'
+//      $ref: '#/definitions/VolumesList'
 //  default:
 //    $ref: '#/responses/error'
 func GetVolumeList(ctx *gin.Context) {
@@ -77,7 +77,6 @@ func GetVolumeList(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -90,7 +89,7 @@ func GetVolumeList(ctx *gin.Context) {
 //  '200':
 //    description: volume
 //    schema:
-//      $ref: '#/definitions/ServiceWithOwner'
+//      $ref: '#/definitions/Volume'
 //  default:
 //    $ref: '#/responses/error'
 func GetVolume(ctx *gin.Context) {
@@ -135,7 +134,6 @@ func GetVolume(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -143,12 +141,12 @@ func GetVolume(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/PersistentVolumeClaimWithOwner'
+//      $ref: '#/definitions/Volume'
 // responses:
 //  '201':
 //    description: volume created
 //    schema:
-//      $ref: '#/definitions/PersistentVolumeClaimWithOwner'
+//      $ref: '#/definitions/Volume'
 //  default:
 //    $ref: '#/responses/error'
 func CreateVolume(ctx *gin.Context) {
@@ -201,7 +199,6 @@ func CreateVolume(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -213,12 +210,12 @@ func CreateVolume(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/PersistentVolumeClaimWithOwner'
+//      $ref: '#/definitions/Volume'
 // responses:
 //  '202':
 //    description: volume updated
 //    schema:
-//      $ref: '#/definitions/PersistentVolumeClaimWithOwner'
+//      $ref: '#/definitions/Volume'
 //  default:
 //    $ref: '#/responses/error'
 func UpdateVolume(ctx *gin.Context) {
@@ -252,6 +249,7 @@ func UpdateVolume(ctx *gin.Context) {
 
 	pvc.Name = ctx.Param(volumeParam)
 	pvc.Owner = oldPvc.GetObjectMeta().GetLabels()[ownerQuery]
+	pvc.StorageName = oldPvc.ObjectMeta.Annotations[api_core.BetaStorageClassAnnotation]
 
 	newPvc, errs := pvc.ToKube(namespace, ns.Labels)
 	if errs != nil {
@@ -283,7 +281,6 @@ func UpdateVolume(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
