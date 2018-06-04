@@ -11,6 +11,9 @@ service:
   targetPort: 1212
   externalIP:
 
+rbac:
+  enable: true
+
 volumeMounts:
   name: auth-volume
   mountPath: '/storage'
