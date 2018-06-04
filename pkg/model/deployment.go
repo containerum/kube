@@ -147,6 +147,9 @@ func (deploy *DeploymentKubeAPI) ToKube(nsName string, labels map[string]string)
 				MatchLabels: labels,
 			},
 			Replicas: &repl,
+			Strategy: api_apps.DeploymentStrategy{
+				Type: api_apps.RecreateDeploymentStrategyType,
+			},
 			Template: api_core.PodTemplateSpec{
 				Spec: api_core.PodSpec{
 					Containers: containers,
@@ -360,7 +363,7 @@ func (deploy *DeploymentKubeAPI) Validate() []error {
 	} else if err := api_validation.IsDNS1123Label(deploy.Name); len(err) > 0 {
 		errs = append(errs, fmt.Errorf(invalidName, deploy.Name, strings.Join(err, ",")))
 	}
-	if len(api_validation.IsInRange(deploy.Replicas, 1, maxDeployReplicas)) > 0 {
+	if len(api_validation.IsInRange(deploy.Replicas, 0, maxDeployReplicas)) > 0 {
 		errs = append(errs, fmt.Errorf(invalidReplicas, deploy.Replicas, maxDeployReplicas))
 	}
 	if deploy.Containers == nil || len(deploy.Containers) == 0 {
