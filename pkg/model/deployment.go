@@ -147,6 +147,9 @@ func (deploy *DeploymentKubeAPI) ToKube(nsName string, labels map[string]string)
 				MatchLabels: labels,
 			},
 			Replicas: &repl,
+			Strategy: api_apps.DeploymentStrategy{
+				Type: api_apps.RecreateDeploymentStrategyType,
+			},
 			Template: api_core.PodTemplateSpec{
 				Spec: api_core.PodSpec{
 					Containers: containers,
