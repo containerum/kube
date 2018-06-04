@@ -14,15 +14,6 @@ service:
 rbac:
   serviceAccountName: null
 
-volumeMounts:
-  name: auth-volume
-  mountPath: '/storage'
-
-configMap:
-  name: kube-conf
-  kubeConf: SGVsbG8K
-  mountPath: '/cfg'
-
 env:
   CH_KUBE_API_DEBUG: "true"
   CH_KUBE_API_TEXTLOG: "true"
