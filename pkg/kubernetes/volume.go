@@ -60,7 +60,7 @@ func (k *Kube) UpdatePersistentVolumeClaim(pvc *api_core.PersistentVolumeClaim) 
 
 //DeletePersistentVolumeClaim deletes pvc
 func (k *Kube) DeletePersistentVolumeClaim(ns string, pvc string) error {
-	err := k.CoreV1().Pods(ns).Delete(pvc, &meta_v1.DeleteOptions{})
+	err := k.CoreV1().PersistentVolumeClaims(ns).Delete(pvc, &meta_v1.DeleteOptions{})
 	if err != nil {
 		log.WithFields(log.Fields{
 			"Namespace": ns,
