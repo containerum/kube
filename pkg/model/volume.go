@@ -69,6 +69,8 @@ func ParseKubePersistentVolumeClaim(pvci interface{}, parseforuser bool) (*kube_
 
 // ToKube creates kubernetes v1.Service from Service struct and namespace labels
 func (pvc *VolumeKubeAPI) ToKube(nsName string, labels map[string]string) (*api_core.PersistentVolumeClaim, []error) {
+	//TODO Maybe we should use different access modes
+	pvc.AccessMode = kube_types.ReadWriteMany
 	err := pvc.Validate()
 	if err != nil {
 		return nil, err
