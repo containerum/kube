@@ -61,6 +61,7 @@ func ParseKubeDeployment(deployment interface{}, parseforuser bool) (*kube_types
 		return nil, ErrUnableConvertDeployment
 	}
 
+	solution := deploy.GetObjectMeta().GetLabels()[solutionLabel]
 	owner := deploy.GetObjectMeta().GetLabels()[ownerLabel]
 	replicas := 0
 	if r := deploy.Spec.Replicas; r != nil {
@@ -86,6 +87,7 @@ func ParseKubeDeployment(deployment interface{}, parseforuser bool) (*kube_types
 			UpdatedReplicas:     int(deploy.Status.UpdatedReplicas),
 			UnavailableReplicas: int(deploy.Status.UnavailableReplicas),
 		},
+		SolutionID:  solution,
 		Containers:  containers,
 		TotalCPU:    uint(totalcpu.ScaledValue(api_resource.Milli)),
 		TotalMemory: uint(totalmem.Value() / 1024 / 1024),
@@ -126,6 +128,10 @@ func (deploy *DeploymentKubeAPI) ToKube(nsName string, labels map[string]string)
 		return nil, []error{errors.New("invalid namespace labels")}
 	}
 	labels[appLabel] = deploy.Name
+
+	if deploy.SolutionID != "" {
+		labels[solutionLabel] = deploy.SolutionID
+	}
 
 	volumes, verr := makeTemplateVolumes(deploy.Containers)
 	if verr != nil {

@@ -89,6 +89,14 @@ func (s Set) Add(x Set) Set {
 	return s
 }
 
+func (s Set) Sub(x Set) Set {
+	s = s.Copy()
+	for elem := range x {
+		delete(s, elem)
+	}
+	return s
+}
+
 func (s Set) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s.Slice())
 }

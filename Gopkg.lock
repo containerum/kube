@@ -20,6 +20,12 @@
   version = "v2.0.0"
 
 [[projects]]
+  name = "github.com/blang/semver"
+  packages = ["."]
+  revision = "2ee87856327ba09384cabd113bc6b5d174e9ec0f"
+  version = "v3.5.1"
+
+[[projects]]
   name = "github.com/containerum/cherry"
   packages = [
     ".",
@@ -35,8 +41,8 @@
     ".",
     "pkg/model"
   ]
-  revision = "4f3f68adfcb17cc15329735e9f222c6783d29b0e"
-  version = "v0.17.3"
+  revision = "a0d48690bb16b4aca3eb444bc4dad8ea4a86f031"
+  version = "v0.19.8"
 
 [[projects]]
   name = "github.com/containerum/utils"
@@ -49,6 +55,15 @@
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
   version = "v1.1.0"
+
+[[projects]]
+  name = "github.com/docker/distribution"
+  packages = [
+    "digest",
+    "reference"
+  ]
+  revision = "48294d928ced5dd9b378f7fd7c6f5da3ff3f2c89"
+  version = "v2.6.2"
 
 [[projects]]
   branch = "master"
@@ -65,8 +80,8 @@
     ".",
     "log"
   ]
-  revision = "2810ccc68e0ca445fa81ebfa03fbf70aca5c41ae"
-  version = "v2.7.0"
+  revision = "3658237ded108b4134956c1b3050349d93e7b895"
+  version = "v2.7.1"
 
 [[projects]]
   name = "github.com/ghodss/yaml"
@@ -255,7 +270,7 @@
     "jlexer",
     "jwriter"
   ]
-  revision = "8b799c424f57fa123fc63a99d6383bc6e4c02578"
+  revision = "9825584555aa620c53c265d4a09ace0df1346fd9"
 
 [[projects]]
   name = "github.com/mattn/go-isatty"
@@ -278,8 +293,8 @@
 [[projects]]
   name = "github.com/ninedraft/boxofstuff"
   packages = ["strset"]
-  revision = "a75053006032b83ac7c7c9d5ed2af949e954b372"
-  version = "v0.1.0"
+  revision = "a57c6ea397e253eec08da7ff4305febfd0db5f7e"
+  version = "v0.1.1"
 
 [[projects]]
   branch = "master"
@@ -359,7 +374,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "ab813273cd59e1333f7ae7bff5d027d4aadf528c"
+  revision = "df8d4716b3472e4a531c33cedbe537dae921a1a9"
 
 [[projects]]
   branch = "master"
@@ -373,7 +388,7 @@
     "webdav",
     "webdav/internal/xml"
   ]
-  revision = "dfa909b99c79129e1100513e5cd36307665e5723"
+  revision = "1e491301e022f8f977054da4c2d852decd59571f"
 
 [[projects]]
   branch = "master"
@@ -574,7 +589,7 @@
   branch = "master"
   name = "k8s.io/kube-openapi"
   packages = ["pkg/common"]
-  revision = "41e43949ca69d04b66104069ed3ffd619b289b3d"
+  revision = "8a9b82f00b3a86eac24681da3f9fe6c34c01cea2"
 
 [[projects]]
   name = "k8s.io/kubernetes"
@@ -585,6 +600,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "cf71378065036688c9a8a8edab45f1f849589b71b839a6b1dd4c0c00f7efb1db"
+  inputs-digest = "72551d2708f3fb59c0dfd5e74f872063724196e6eb70ba0e9c81ddac054f154c"
   solver-name = "gps-cdcl"
   solver-version = 1
