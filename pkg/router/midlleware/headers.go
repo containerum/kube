@@ -36,7 +36,7 @@ func RequiredUserHeaders() gin.HandlerFunc {
 		} else {
 			//User-Role: user, check User-Namespace, X-User-Volume
 			if isUser {
-				notFoundHeaders := requireHeaders(ctx, headers.UserRoleXHeader, headers.UserNamespacesXHeader, headers.UserVolumesXHeader, headers.UserIDXHeader)
+				notFoundHeaders := requireHeaders(ctx, headers.UserRoleXHeader, headers.UserNamespacesXHeader, headers.UserIDXHeader)
 				if len(notFoundHeaders) > 0 {
 					gonic.Gonic(kubeErrors.ErrRequiredHeadersNotProvided().AddDetails(notFoundHeaders...), ctx)
 					return
