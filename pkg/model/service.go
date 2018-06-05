@@ -81,15 +81,17 @@ func ParseKubeService(srv interface{}, parseforuser bool) (*ServiceWithParam, er
 	owner := native.GetObjectMeta().GetLabels()[ownerLabel]
 	deploy := native.GetObjectMeta().GetLabels()[appLabel]
 	domain := native.GetObjectMeta().GetLabels()[domainLabel]
+	solution := native.GetObjectMeta().GetLabels()[solutionLabel]
 
 	service := ServiceWithParam{
 		Service: &kube_types.Service{
-			Name:      native.Name,
-			CreatedAt: &createdAt,
-			Ports:     ports,
-			Deploy:    deploy,
-			Domain:    domain,
-			Owner:     owner,
+			Name:       native.Name,
+			CreatedAt:  &createdAt,
+			Ports:      ports,
+			Deploy:     deploy,
+			Domain:     domain,
+			Owner:      owner,
+			SolutionID: solution,
 		},
 	}
 	if len(native.Spec.ExternalIPs) > 0 {
@@ -137,6 +139,10 @@ func (service *ServiceWithParam) ToKube(nsName string, labels map[string]string)
 	}
 	labels[appLabel] = service.Deploy
 	labels[hiddenLabel] = strconv.FormatBool(service.Hidden)
+
+	if service.SolutionID != "" {
+		labels[solutionLabel] = service.SolutionID
+	}
 
 	newService := api_core.Service{
 		TypeMeta: api_meta.TypeMeta{
