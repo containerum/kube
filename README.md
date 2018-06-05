@@ -1,4 +1,4 @@
-# Kube API
+# Kube
 
 [![Build Status](https://travis-ci.org/containerum/kube-api.svg?branch=develop)](https://travis-ci.org/containerum/kube-api)
 
