@@ -7,7 +7,6 @@ import (
 
 const (
 	UserNamespaces = "user-namespaces"
-	UserVolumes    = "user-volumes"
 	UserRole       = "user-role"
 	UserID         = "user-id"
 
