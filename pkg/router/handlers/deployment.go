@@ -76,6 +76,30 @@ func GetDeploymentList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
+// swagger:operation GET /namespaces/{namespace}/solutions/{solution}/deployments Deployment GetDeploymentSolutionList
+// Get solution deployments list.
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: solution
+//    in: path
+//    type: string
+//    required: false
+// responses:
+//  '200':
+//    description: deployments list
+//    schema:
+//      $ref: '#/definitions/DeploymentsList'
+//  default:
+//    $ref: '#/responses/error'
 func GetDeploymentSolutionList(ctx *gin.Context) {
 	namespace := ctx.Param(namespaceParam)
 	solution := ctx.Param(solutionParam)
@@ -525,6 +549,28 @@ func DeleteDeployment(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
+// swagger:operation DELETE /namespaces/{namespace}/solutiosn/{solution}deployments Deployment DeleteDeploymentsSolution
+// Delete solution deployments.
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: solution
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '202':
+//    description: deployments deleted
+//  default:
+//    $ref: '#/responses/error'
 func DeleteDeploymentsSolution(ctx *gin.Context) {
 	namespace := ctx.Param(namespaceParam)
 	solution := ctx.Param(solutionParam)

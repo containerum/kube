@@ -67,6 +67,30 @@ func GetServiceList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
+// swagger:operation GET /namespaces/{namespace}/solutions/{solution}/services Service GetServiceSolutionList
+// Get solution services list.
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: solution
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '200':
+//    description: services list
+//    schema:
+//      $ref: '#/definitions/ServicesList'
+//  default:
+//    $ref: '#/responses/error'
 func GetServiceSolutionList(ctx *gin.Context) {
 	namespace := ctx.Param(namespaceParam)
 	solution := ctx.Param(solutionParam)
@@ -351,6 +375,28 @@ func DeleteService(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
+// swagger:operation DELETE /namespaces/{namespace}/solutions/{solution}/services Service DeleteServicesSolution
+// Delete solution services.
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: solution
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '202':
+//    description: services deleted
+//  default:
+//    $ref: '#/responses/error'
 func DeleteServicesSolution(ctx *gin.Context) {
 	namespace := ctx.Param(namespaceParam)
 	solution := ctx.Param(solutionParam)
