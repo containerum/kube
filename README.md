@@ -17,7 +17,7 @@ Kube is a set of API for communication between Containerum and K8s.
   helm install containerum/kube
 ```
 ## Contributions
-Please submit all contributions concerning user-manager component to this repository.
+Please submit all contributions concerning Kube component to this repository.
 
 ## License
 Kube API project is licensed under the terms of the Apache License Version 2.0. Please see LICENSE in this repository for more details.
