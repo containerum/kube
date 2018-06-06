@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/containerum/kube-api.svg?branch=develop)](https://travis-ci.org/containerum/kube-api)
 
-Kube is a set of API for communication between Containerum and K8s.
+Kube is a set of API for communication between [Containerum](https://github.com/containerum/containerum) and K8s.
 
 ## Prerequisites
 * Kubernetes
