@@ -44,10 +44,6 @@ func GetNamespaceList(ctx *gin.Context) {
 	owner := ctx.Query(ownerQuery)
 
 	role := ctx.MustGet(m.UserRole).(string)
-	//TODO: Show only namespaces with owner = X-User-Id
-	/*if role == m.RoleUser {
-		owner = ctx.MustGet(m.UserID).(string)
-	}*/
 
 	log.WithField("Owner", owner).Debug("Get namespace list Call")
 

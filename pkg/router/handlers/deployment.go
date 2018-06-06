@@ -16,6 +16,7 @@ import (
 
 const (
 	deploymentParam = "deployment"
+	solutionParam   = "solution"
 )
 
 // swagger:operation GET /namespaces/{namespace}/deployments Deployment GetDeploymentList
@@ -58,6 +59,40 @@ func GetDeploymentList(ctx *gin.Context) {
 	}
 
 	deploy, err := kube.GetDeploymentList(namespace, ctx.Query(ownerQuery))
+	if err != nil {
+		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+		return
+	}
+
+	role := ctx.MustGet(m.UserRole).(string)
+
+	ret, err := model.ParseKubeDeploymentList(deploy, role == m.RoleUser)
+	if err != nil {
+		ctx.Error(err)
+		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, ret)
+}
+
+func GetDeploymentSolutionList(ctx *gin.Context) {
+	namespace := ctx.Param(namespaceParam)
+	solution := ctx.Param(solutionParam)
+	log.WithFields(log.Fields{
+		"Namespace": namespace,
+		"Solution":  solution,
+	}).Debug("Get deployment list Call")
+
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResourcesList()), ctx)
+		return
+	}
+
+	deploy, err := kube.GetDeploymentSolutionList(namespace, solution)
 	if err != nil {
 		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
 		return
@@ -482,6 +517,31 @@ func DeleteDeployment(ctx *gin.Context) {
 	}
 
 	err = kube.DeleteDeployment(namespace, deployment)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		return
+	}
+
+	ctx.Status(http.StatusAccepted)
+}
+
+func DeleteDeploymentsSolution(ctx *gin.Context) {
+	namespace := ctx.Param(namespaceParam)
+	solution := ctx.Param(solutionParam)
+	log.WithFields(log.Fields{
+		"Namespace": namespace,
+		"Solution":  solution,
+	}).Debug("Delete solution deployments Call")
+
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		return
+	}
+
+	err = kube.DeleteDeploymentSolution(namespace, solution)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
 		return

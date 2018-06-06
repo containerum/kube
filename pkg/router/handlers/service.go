@@ -67,6 +67,38 @@ func GetServiceList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
+func GetServiceSolutionList(ctx *gin.Context) {
+	namespace := ctx.Param(namespaceParam)
+	solution := ctx.Param(solutionParam)
+	log.WithFields(log.Fields{
+		"Namespace": namespace,
+		"Solution":  solution,
+	}).Debug("Get service list call")
+
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResourcesList()), ctx)
+		return
+	}
+
+	svcList, err := kube.GetServiceSolutionList(namespace, solution)
+	if err != nil {
+		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+		return
+	}
+
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseKubeServiceList(svcList, role == m.RoleUser)
+	if err != nil {
+		ctx.Error(err)
+		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+		return
+	}
+	ctx.JSON(http.StatusOK, ret)
+}
+
 // swagger:operation GET /namespaces/{namespace}/services/{service} Service GetService
 // Get services list.
 //
@@ -312,6 +344,30 @@ func DeleteService(ctx *gin.Context) {
 	}
 
 	err = kube.DeleteService(namespace, service)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		return
+	}
+	ctx.Status(http.StatusAccepted)
+}
+
+func DeleteServicesSolution(ctx *gin.Context) {
+	namespace := ctx.Param(namespaceParam)
+	solution := ctx.Param(solutionParam)
+	log.WithFields(log.Fields{
+		"Namespace": namespace,
+		"Solution":  solution,
+	}).Debug("Delete solution services call")
+
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		return
+	}
+
+	err = kube.DeleteService(namespace, solution)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
 		return

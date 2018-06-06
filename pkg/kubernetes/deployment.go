@@ -21,6 +21,20 @@ func (k *Kube) GetDeploymentList(ns string, owner string) (*api_apps.DeploymentL
 	return deployments, nil
 }
 
+func (k *Kube) GetDeploymentSolutionList(ns string, solutionID string) (*api_apps.DeploymentList, error) {
+	deployments, err := k.AppsV1().Deployments(ns).List(api_meta.ListOptions{
+		LabelSelector: "solution=" + solutionID,
+	})
+	if err != nil {
+		log.WithFields(log.Fields{
+			"Namespace": ns,
+			"Solution":  solutionID,
+		}).Error(err)
+		return nil, err
+	}
+	return deployments, nil
+}
+
 //GetDeployment returns deployment
 func (k *Kube) GetDeployment(ns string, deploy string) (*api_apps.Deployment, error) {
 	deployment, err := k.AppsV1().Deployments(ns).Get(deploy, api_meta.GetOptions{})
@@ -54,6 +68,21 @@ func (k *Kube) DeleteDeployment(ns string, deployName string) error {
 		log.WithFields(log.Fields{
 			"Namespace":  ns,
 			"Deployment": deployName,
+		}).Error(err)
+		return err
+	}
+	return nil
+}
+
+//DeleteDeployment deletes deployments
+func (k *Kube) DeleteDeploymentSolution(ns string, solutionID string) error {
+	err := k.AppsV1().Deployments(ns).DeleteCollection(&api_meta.DeleteOptions{}, api_meta.ListOptions{
+		LabelSelector: "solution=" + solutionID,
+	})
+	if err != nil {
+		log.WithFields(log.Fields{
+			"Namespace": ns,
+			"Solution":  solutionID,
 		}).Error(err)
 		return err
 	}
