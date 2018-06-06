@@ -67,7 +67,7 @@ func ParseKubeDeployment(deployment interface{}, parseforuser bool) (*kube_types
 	if r := deploy.Spec.Replicas; r != nil {
 		replicas = int(*r)
 	}
-	containers, totalcpu, totalmem := getContainers(deploy.Spec.Template.Spec.Containers, getVolumeMode(deploy.Spec.Template.Spec.Volumes), replicas)
+	containers, totalcpu, totalmem := getContainers(deploy.Spec.Template.Spec.Containers, getVolumeMode(deploy.Spec.Template.Spec.Volumes), getVolumeStorageName(deploy.Spec.Template.Spec.Volumes), replicas)
 	updated := deploy.ObjectMeta.CreationTimestamp
 	for _, c := range deploy.Status.Conditions {
 		if c.LastUpdateTime.After(updated.Time) {
@@ -106,6 +106,16 @@ func getVolumeMode(volumes []api_core.Volume) map[string]int32 {
 	for _, v := range volumes {
 		if v.ConfigMap != nil {
 			volumemap[v.Name] = *v.ConfigMap.DefaultMode
+		}
+	}
+	return volumemap
+}
+
+func getVolumeStorageName(volumes []api_core.Volume) map[string]string {
+	volumemap := make(map[string]string, 0)
+	for _, v := range volumes {
+		if v.PersistentVolumeClaim != nil {
+			volumemap[v.Name] = v.PersistentVolumeClaim.ClaimName
 		}
 	}
 	return volumemap
@@ -217,7 +227,7 @@ func makeContainerVolumes(volumes []kube_types.ContainerVolume, configMaps []kub
 		if v.SubPath != nil {
 			subpath = *v.SubPath
 		}
-		volumeMounts = append(volumeMounts, api_core.VolumeMount{Name: v.Name + volumePostfix, MountPath: v.MountPath, SubPath: subpath})
+		volumeMounts = append(volumeMounts, api_core.VolumeMount{Name: *v.PersistentVolumeClaimName + volumePostfix, MountPath: v.MountPath, SubPath: subpath})
 	}
 	for _, v := range configMaps {
 		var subpath string
@@ -303,7 +313,7 @@ func makeTemplateVolumes(containers []kube_types.Container) ([]api_core.Volume, 
 				templateVolumes = append(templateVolumes, newVolume)
 				existingVolume[newVolume.Name] = true
 			} else {
-				return nil, fmt.Errorf(duplicateVolume, *v.PersistentVolumeClaimName)
+				continue
 			}
 		}
 
@@ -336,7 +346,7 @@ func makeTemplateVolumes(containers []kube_types.Container) ([]api_core.Volume, 
 				templateVolumes = append(templateVolumes, newVolume)
 				existingVolume[newVolume.Name] = true
 			} else {
-				return nil, fmt.Errorf(duplicateConfigMap, v.Name)
+				continue
 			}
 		}
 	}
@@ -429,7 +439,7 @@ func validateContainer(container kube_types.Container, cpu, mem uint) []error {
 			errs = append(errs, fmt.Errorf(subPathRelative, *v.SubPath))
 		}
 		if v.PersistentVolumeClaimName == nil {
-			errs = append(errs, fmt.Errorf(fieldShouldExist, "container.volume_mounts.pvc"))
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "container.volume_mounts.pvc_name"))
 		}
 
 	}

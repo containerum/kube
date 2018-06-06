@@ -25,7 +25,7 @@ func ParseKubePodList(pods interface{}, parseforuser bool) *kube_types.PodsList 
 func ParseKubePod(pod interface{}, parseforuser bool) kube_types.Pod {
 	obj := pod.(*api_core.Pod)
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
-	containers, cpu, mem := getContainers(obj.Spec.Containers, nil, 1)
+	containers, cpu, mem := getContainers(obj.Spec.Containers, nil, nil, 1)
 	deploy := obj.GetObjectMeta().GetLabels()[appLabel]
 	createdAt := obj.ObjectMeta.CreationTimestamp.UTC().Format(time.RFC3339)
 
@@ -50,11 +50,11 @@ func ParseKubePod(pod interface{}, parseforuser bool) kube_types.Pod {
 	return newPod
 }
 
-func getContainers(cListi interface{}, mode map[string]int32, replicas int) (containers []model.Container, totalcpu api_resource.Quantity, totalmem api_resource.Quantity) {
+func getContainers(cListi interface{}, mode map[string]int32, storageName map[string]string, replicas int) (containers []model.Container, totalcpu api_resource.Quantity, totalmem api_resource.Quantity) {
 	cList := cListi.([]api_core.Container)
 	for _, c := range cList {
 		env := getEnv(c.Env)
-		volumes, configMaps := getVolumes(c.VolumeMounts, mode)
+		volumes, configMaps := getVolumes(c.VolumeMounts, mode, storageName)
 
 		cpu := c.Resources.Limits["cpu"]
 		mem := c.Resources.Limits["memory"]
@@ -80,7 +80,7 @@ func getContainers(cListi interface{}, mode map[string]int32, replicas int) (con
 	return containers, totalcpu, totalmem
 }
 
-func getVolumes(vListi interface{}, mode map[string]int32) ([]model.ContainerVolume, []model.ContainerVolume) {
+func getVolumes(vListi interface{}, mode map[string]int32, storageName map[string]string) ([]model.ContainerVolume, []model.ContainerVolume) {
 	vList := vListi.([]api_core.VolumeMount)
 	volumes := make([]model.ContainerVolume, 0)
 	configMaps := make([]model.ContainerVolume, 0)
@@ -102,6 +102,10 @@ func getVolumes(vListi interface{}, mode map[string]int32) ([]model.ContainerVol
 			newvol.Mode = &formated
 			configMaps = append(configMaps, newvol)
 		} else {
+			storage, ok := storageName[v.Name]
+			if ok {
+				newvol.PersistentVolumeClaimName = &storage
+			}
 			volumes = append(volumes, newvol)
 		}
 	}
