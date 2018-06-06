@@ -1,0 +1,77 @@
+{{ if not .Values.rbac.serviceAccountName }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{.Release.Name}}
+  labels:
+    app: {{ template "name" . }}
+    chart: {{ template "chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{.Release.Name}}
+  labels:
+    app: {{ template "name" . }}
+    chart: {{ template "chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+rules:
+  -
+    apiGroups:
+      - ""
+      - apps
+      - autoscaling
+      - batch
+      - extensions
+      - policy
+      - rbac.authorization.k8s.io
+    resources:
+      - componentstatuses
+      - configmaps
+      - daemonsets
+      - deployments
+      - events
+      - endpoints
+      - horizontalpodautoscalers
+      - ingress
+      - jobs
+      - limitranges
+      - namespaces
+      - nodes
+      - pods
+      - persistentvolumes
+      - persistentvolumeclaims
+      - resourcequotas
+      - replicasets
+      - replicationcontrollers
+      - serviceaccounts
+      - services
+    verbs: ["*"]
+  - nonResourceURLs: ["*"]
+    verbs: ["*"]
+
+---
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{.Release.Name}}
+  labels:
+    app: {{ template "name" . }}
+    chart: {{ template "chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+subjects:
+- kind: ServiceAccount
+  name: {{.Release.Name}}
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{.Release.Name}}
+{{ end }}

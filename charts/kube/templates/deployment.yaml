@@ -19,6 +19,11 @@ spec:
         app: {{ template "name" . }}
         release: {{ .Release.Name }}
     spec:
+      {{ if .Values.rbac.serviceAccountName }}
+      serviceAccountName: {{ .Values.rbac.serviceAccountName }}
+      {{ else }}
+      serviceAccountName: {{ .Release.Name }}
+      {{ end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -28,14 +33,7 @@ spec:
             - name: {{ $key  }}
               value: {{ $val | quote }}
             {{- end }}
-          volumeMounts:
-          - name: {{ .Values.configMap.name }}
-            mountPath: {{ .Values.configMap.mountPath }}
       {{- with .Values.image.secret }}
       imagePullSecrets:
       - name: {{ . }}
       {{- end }}
-      volumes:
-      - name: {{ .Values.configMap.name }}
-        configMap:
-          name: {{ template "fullname" . }}
