@@ -84,18 +84,3 @@ func (k *Kube) DeleteService(namespace, serviceName string) error {
 	}
 	return nil
 }
-
-//DeleteServiceSolution deletes services
-func (k *Kube) DeleteServiceSolution(ns string, solutionID string) error {
-	err := k.CoreV1().Services(ns).DeleteCollection(&api_meta.DeleteOptions{}, api_meta.ListOptions{
-		LabelSelector: "solution=" + solutionID,
-	})
-	if err != nil {
-		log.WithFields(log.Fields{
-			"Namespace": ns,
-			"Solution":  solutionID,
-		}).Error(err)
-		return err
-	}
-	return nil
-}
