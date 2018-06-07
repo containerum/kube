@@ -413,7 +413,7 @@ func DeleteServicesSolution(ctx *gin.Context) {
 		return
 	}
 
-	err = kube.DeleteService(namespace, solution)
+	err = kube.DeleteServiceSolution(namespace, solution)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
 		return
