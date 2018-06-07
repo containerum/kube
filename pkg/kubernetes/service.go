@@ -8,12 +8,26 @@ import (
 
 //GetServiceList returns services list
 func (k *Kube) GetServiceList(nsname string) (*api_core.ServiceList, error) {
-	svcAfter, err := k.CoreV1().Services(nsname).List(api_meta.ListOptions{})
+	services, err := k.CoreV1().Services(nsname).List(api_meta.ListOptions{})
 	if err != nil {
 		log.WithField("Namespace", nsname).Error(err)
 		return nil, err
 	}
-	return svcAfter, nil
+	return services, nil
+}
+
+func (k *Kube) GetServiceSolutionList(ns string, solutionID string) (*api_core.ServiceList, error) {
+	services, err := k.CoreV1().Services(ns).List(api_meta.ListOptions{
+		LabelSelector: "solution=" + solutionID,
+	})
+	if err != nil {
+		log.WithFields(log.Fields{
+			"Namespace": ns,
+			"Solution":  solutionID,
+		}).Error(err)
+		return nil, err
+	}
+	return services, nil
 }
 
 //GetService returns service

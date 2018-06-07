@@ -58,6 +58,15 @@ func initRoutes(e gin.IRouter) {
 		namespace.PUT("/:namespace", h.UpdateNamespace)
 		namespace.DELETE("/:namespace", h.DeleteNamespace)
 
+		solutions := namespace.Group("/:namespace/solutions")
+		{
+			solutions.GET("/:solution/deployments", m.ReadAccess, h.GetDeploymentSolutionList)
+			solutions.GET("/:solution/services", m.ReadAccess, h.GetServiceSolutionList)
+
+			solutions.DELETE("/:solution/deployments", m.WriteAccess, h.DeleteDeploymentsSolution)
+			solutions.DELETE("/:solution/services", m.WriteAccess, h.DeleteServicesSolution)
+		}
+
 		service := namespace.Group("/:namespace/services")
 		{
 			service.GET("", m.ReadAccess, h.GetServiceList)

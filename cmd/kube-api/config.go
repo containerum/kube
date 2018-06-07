@@ -21,7 +21,6 @@ var flags = []cli.Flag{
 	cli.StringFlag{
 		EnvVar: "CH_KUBE_API_KUBE_CONF",
 		Name:   "kubeconf",
-		Value:  "config",
 		Usage:  "config file for kubernetes apiserver client",
 	},
 	cli.BoolFlag{
