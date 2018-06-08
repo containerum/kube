@@ -318,13 +318,17 @@ func UpdateDeployment(ctx *gin.Context) {
 		return
 	}
 
-	_, err = kube.GetDeployment(namespace, deployment)
+	oldDeploy, err := kube.GetDeployment(namespace, deployment)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	deployReq.Name = deployment
+	deployReq.Owner = oldDeploy.GetObjectMeta().GetLabels()[ownerQuery]
+	if oldDeploy.GetObjectMeta().GetLabels()["solution"] != "" {
+		deployReq.SolutionID = oldDeploy.GetObjectMeta().GetLabels()["solution"]
+	}
 
 	deploy, errs := deployReq.ToKube(namespace, ns.Labels)
 	if errs != nil {

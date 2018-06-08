@@ -242,13 +242,14 @@ func UpdateSecret(ctx *gin.Context) {
 		return
 	}
 
-	_, err = kube.GetIngress(namespace, sct)
+	oldSecret, err := kube.GetIngress(namespace, sct)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	secretReq.Name = sct
+	secretReq.Owner = oldSecret.GetObjectMeta().GetLabels()[ownerQuery]
 
 	newSecret, errs := secretReq.ToKube(namespace, ns.Labels)
 	if errs != nil {
