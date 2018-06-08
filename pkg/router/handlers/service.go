@@ -304,6 +304,9 @@ func UpdateService(ctx *gin.Context) {
 
 	svc.Name = ctx.Param(serviceParam)
 	svc.Owner = oldSvc.GetObjectMeta().GetLabels()[ownerQuery]
+	if oldSvc.GetObjectMeta().GetLabels()["solution"] != "" {
+		svc.SolutionID = oldSvc.GetObjectMeta().GetLabels()["solution"]
+	}
 
 	newSvc, errs := svc.ToKube(namespace, ns.Labels)
 	if errs != nil {

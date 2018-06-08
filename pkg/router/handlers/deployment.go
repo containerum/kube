@@ -326,6 +326,9 @@ func UpdateDeployment(ctx *gin.Context) {
 
 	deployReq.Name = deployment
 	deployReq.Owner = oldDeploy.GetObjectMeta().GetLabels()[ownerQuery]
+	if oldDeploy.GetObjectMeta().GetLabels()["solution"] != "" {
+		deployReq.SolutionID = oldDeploy.GetObjectMeta().GetLabels()["solution"]
+	}
 
 	deploy, errs := deployReq.ToKube(namespace, ns.Labels)
 	if errs != nil {
