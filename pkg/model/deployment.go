@@ -188,6 +188,11 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, []
 	var containersAfter []api_core.Container
 
 	for _, c := range containers {
+		errs := validateContainer(c, c.Limits.CPU, c.Limits.Memory)
+		if errs != nil {
+			return nil, errs
+		}
+
 		container := api_core.Container{
 			Name:    c.Name,
 			Image:   c.Image,
@@ -210,11 +215,6 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, []
 
 		container.Resources = *rq
 
-		errs := validateContainer(c, c.Limits.CPU, c.Limits.Memory)
-		if errs != nil {
-			return nil, errs
-		}
-
 		containersAfter = append(containersAfter, container)
 	}
 	return containersAfter, nil
@@ -227,7 +227,9 @@ func makeContainerVolumes(volumes []kube_types.ContainerVolume, configMaps []kub
 		if v.SubPath != nil {
 			subpath = *v.SubPath
 		}
-		volumeMounts = append(volumeMounts, api_core.VolumeMount{Name: *v.PersistentVolumeClaimName + volumePostfix, MountPath: v.MountPath, SubPath: subpath})
+		if v.PersistentVolumeClaimName != nil {
+			volumeMounts = append(volumeMounts, api_core.VolumeMount{Name: *v.PersistentVolumeClaimName + volumePostfix, MountPath: v.MountPath, SubPath: subpath})
+		}
 	}
 	for _, v := range configMaps {
 		var subpath string
@@ -441,7 +443,6 @@ func validateContainer(container kube_types.Container, cpu, mem uint) []error {
 		if v.PersistentVolumeClaimName == nil {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "container.volume_mounts.pvc_name"))
 		}
-
 	}
 
 	for _, v := range container.ConfigMaps {
