@@ -244,13 +244,14 @@ func UpdateConfigMap(ctx *gin.Context) {
 		return
 	}
 
-	_, err = kube.GetConfigMap(namespace, ctx.Param(deploymentParam))
+	oldCm, err := kube.GetConfigMap(namespace, ctx.Param(deploymentParam))
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	cmReq.Name = configMap
+	cmReq.Owner = oldCm.GetObjectMeta().GetLabels()[ownerQuery]
 
 	newCm, errs := cmReq.ToKube(namespace, ns.Labels)
 	if errs != nil {
