@@ -336,6 +336,10 @@ func UpdateDeployment(ctx *gin.Context) {
 		return
 	}
 
+	//Ensure that immutable selectors wouldn't change
+	deploy.Labels = oldDeploy.Labels
+	deploy.Spec.Selector = oldDeploy.Spec.Selector
+
 	deployAfter, err := kube.UpdateDeployment(deploy)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
