@@ -144,6 +144,8 @@ func (service *ServiceWithParam) ToKube(nsName string, labels map[string]string)
 		labels[solutionLabel] = service.SolutionID
 	}
 
+	selector := map[string]string{appLabel: service.Deploy}
+
 	newService := api_core.Service{
 		TypeMeta: api_meta.TypeMeta{
 			Kind:       serviceKind,
@@ -157,7 +159,7 @@ func (service *ServiceWithParam) ToKube(nsName string, labels map[string]string)
 		Spec: api_core.ServiceSpec{
 			Type:     "ClusterIP",
 			Ports:    makeServicePorts(service.Ports),
-			Selector: labels,
+			Selector: selector,
 		},
 	}
 
