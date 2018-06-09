@@ -316,6 +316,8 @@ func UpdateService(ctx *gin.Context) {
 
 	newSvc.ResourceVersion = oldSvc.ResourceVersion
 	newSvc.Spec.ClusterIP = oldSvc.Spec.ClusterIP
+	newSvc.Labels = oldSvc.Labels
+	newSvc.Spec.Selector = oldSvc.Spec.Selector
 
 	updatedService, err := kube.UpdateService(newSvc)
 	if err != nil {

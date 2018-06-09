@@ -155,8 +155,9 @@ func (service *ServiceWithParam) ToKube(nsName string, labels map[string]string)
 			Namespace: nsName,
 		},
 		Spec: api_core.ServiceSpec{
-			Type:  "ClusterIP",
-			Ports: makeServicePorts(service.Ports),
+			Type:     "ClusterIP",
+			Ports:    makeServicePorts(service.Ports),
+			Selector: labels,
 		},
 	}
 
