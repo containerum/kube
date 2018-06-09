@@ -1,8 +1,8 @@
-# Kube
+# Kube-api
 
 [![Build Status](https://travis-ci.org/containerum/kube-api.svg?branch=develop)](https://travis-ci.org/containerum/kube-api)
 
-Kube is a set of API for communication between [Containerum](https://github.com/containerum/containerum) components and K8s.
+Kube-api is a set of API for communication between [Containerum](https://github.com/containerum/containerum) components and Kubernetes.
 
 ## Prerequisites
 * Kubernetes
@@ -17,7 +17,7 @@ Kube is a set of API for communication between [Containerum](https://github.com/
   helm install containerum/kube
 ```
 ## Contributions
-Please submit all contributions concerning Kube component to this repository.
+Please submit all contributions concerning Kube-api component to this repository.
 
 ## License
-Kube API project is licensed under the terms of the Apache License Version 2.0. Please see LICENSE in this repository for more details.
+Kube-api project is licensed under the terms of the Apache License Version 2.0. Please see LICENSE in this repository for more details.
