@@ -339,6 +339,7 @@ func UpdateDeployment(ctx *gin.Context) {
 	//Ensure that immutable selectors wouldn't change
 	deploy.Labels = oldDeploy.Labels
 	deploy.Spec.Selector = oldDeploy.Spec.Selector
+	deploy.Spec.Template.Labels = oldDeploy.Spec.Template.Labels
 
 	deployAfter, err := kube.UpdateDeployment(deploy)
 	if err != nil {
