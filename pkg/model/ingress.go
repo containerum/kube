@@ -45,18 +45,12 @@ func ParseKubeIngress(ingressi interface{}, parseforuser bool) (*kube_types.Ingr
 	if ingress == nil {
 		return nil, ErrUnableConvertIngress
 	}
-	createdAt := ingress.CreationTimestamp.UTC().Format(time.RFC3339)
-	owner := ingress.GetObjectMeta().GetLabels()[ownerLabel]
-
-	secrets := parseTLS(ingress.Spec.TLS)
-
-	rules := parseRules(ingress.Spec.Rules, secrets)
 
 	newIngress := kube_types.Ingress{
 		Name:      ingress.GetName(),
-		CreatedAt: &createdAt,
-		Rules:     rules,
-		Owner:     owner,
+		CreatedAt: ingress.CreationTimestamp.UTC().Format(time.RFC3339),
+		Rules:     parseRules(ingress.Spec.Rules, parseTLS(ingress.Spec.TLS)),
+		Owner:     ingress.GetObjectMeta().GetLabels()[ownerLabel],
 	}
 
 	if parseforuser {

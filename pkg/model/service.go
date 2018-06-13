@@ -77,21 +77,15 @@ func ParseKubeService(srv interface{}, parseforuser bool) (*ServiceWithParam, er
 
 	ports := make([]kube_types.ServicePort, 0)
 
-	createdAt := native.GetCreationTimestamp().UTC().UTC().Format(time.RFC3339)
-	owner := native.GetObjectMeta().GetLabels()[ownerLabel]
-	deploy := native.GetObjectMeta().GetLabels()[appLabel]
-	domain := native.GetObjectMeta().GetLabels()[domainLabel]
-	solution := native.GetObjectMeta().GetLabels()[solutionLabel]
-
 	service := ServiceWithParam{
 		Service: &kube_types.Service{
 			Name:       native.Name,
-			CreatedAt:  &createdAt,
+			CreatedAt:  native.GetCreationTimestamp().UTC().UTC().Format(time.RFC3339),
 			Ports:      ports,
-			Deploy:     deploy,
-			Domain:     domain,
-			Owner:      owner,
-			SolutionID: solution,
+			Deploy:     native.GetObjectMeta().GetLabels()[appLabel],
+			Domain:     native.GetObjectMeta().GetLabels()[domainLabel],
+			Owner:      native.GetObjectMeta().GetLabels()[ownerLabel],
+			SolutionID: native.GetObjectMeta().GetLabels()[solutionLabel],
 		},
 	}
 	if len(native.Spec.ExternalIPs) > 0 {

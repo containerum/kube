@@ -41,8 +41,8 @@
     ".",
     "pkg/model"
   ]
-  revision = "a0d48690bb16b4aca3eb444bc4dad8ea4a86f031"
-  version = "v0.19.8"
+  revision = "6ac0bac02f950cac50c7afd9d1d8a753f246fac8"
+  version = "v0.21.0"
 
 [[projects]]
   name = "github.com/containerum/utils"
@@ -241,8 +241,8 @@
 [[projects]]
   name = "github.com/imdario/mergo"
   packages = ["."]
-  revision = "9d5f1277e9a8ed20c3684bda8fde67c05628518c"
-  version = "v0.3.4"
+  revision = "9316a62528ac99aaecb4e47eadd6dc8aa6533d58"
+  version = "v0.3.5"
 
 [[projects]]
   name = "github.com/json-iterator/go"
@@ -270,7 +270,7 @@
     "jlexer",
     "jwriter"
   ]
-  revision = "9825584555aa620c53c265d4a09ace0df1346fd9"
+  revision = "3fdea8d05856a0c8df22ed4bc71b3219245e4485"
 
 [[projects]]
   name = "github.com/mattn/go-isatty"
@@ -355,8 +355,8 @@
 [[projects]]
   name = "github.com/stretchr/testify"
   packages = ["assert"]
-  revision = "12b6f73e6084dad08a7c6e575284b177ecafbc71"
-  version = "v1.2.1"
+  revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
+  version = "v1.2.2"
 
 [[projects]]
   name = "github.com/ugorji/go"
@@ -374,7 +374,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "df8d4716b3472e4a531c33cedbe537dae921a1a9"
+  revision = "8ac0e0d97ce45cd83d1d7243c060cb8461dda5e9"
 
 [[projects]]
   branch = "master"
@@ -388,7 +388,7 @@
     "webdav",
     "webdav/internal/xml"
   ]
-  revision = "1e491301e022f8f977054da4c2d852decd59571f"
+  revision = "db08ff08e8622530d9ed3a0e8ac279f6d4c02196"
 
 [[projects]]
   branch = "master"
@@ -397,7 +397,7 @@
     "unix",
     "windows"
   ]
-  revision = "c11f84a56e43e20a78cee75a7c034031ecf57d1f"
+  revision = "f4b713d59635e9af9041b0e1b1fd102d95812dbe"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -589,17 +589,17 @@
   branch = "master"
   name = "k8s.io/kube-openapi"
   packages = ["pkg/common"]
-  revision = "8a9b82f00b3a86eac24681da3f9fe6c34c01cea2"
+  revision = "bf40560368791a7dddfeea9b3cfcf89b34139f44"
 
 [[projects]]
   name = "k8s.io/kubernetes"
   packages = ["pkg/api/legacyscheme"]
-  revision = "2bba0127d85d5a46ab4b778548be28623b32d0b0"
-  version = "v1.10.3"
+  revision = "5ca598b4ba5abb89bb773071ce452e33fb66339d"
+  version = "v1.10.4"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "72551d2708f3fb59c0dfd5e74f872063724196e6eb70ba0e9c81ddac054f154c"
+  inputs-digest = "c54dde487517c91e2fbc756dce4a73655ed46562641fd156b2cec736b49f5699"
   solver-name = "gps-cdcl"
   solver-version = 1

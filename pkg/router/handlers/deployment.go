@@ -249,6 +249,7 @@ func CreateDeployment(ctx *gin.Context) {
 			} else {
 				if pvc.Status.Phase != "Bound" {
 					gonic.Gonic(kubeErrors.ErrVolumeNotReady().AddDetailF("Volume status: %v", pvc.Status.Phase), ctx)
+					return
 				}
 			}
 		}
