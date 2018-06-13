@@ -9,7 +9,9 @@ import (
 
 //GetPersistentVolumeClaimsList returns pvc list
 func (k *Kube) GetPersistentVolumeClaimsList(ns string) (interface{}, error) {
-	pods, err := k.CoreV1().PersistentVolumeClaims(ns).List(meta_v1.ListOptions{})
+	pods, err := k.CoreV1().PersistentVolumeClaims(ns).List(meta_v1.ListOptions{
+		IncludeUninitialized: true,
+	})
 	if err != nil {
 		log.WithFields(log.Fields{
 			"Namespace": ns,
