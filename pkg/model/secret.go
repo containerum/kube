@@ -67,15 +67,12 @@ func ParseKubeSecret(secreti interface{}, parseforuser bool) (*SecretWithParam, 
 		newData[k] = string(v)
 	}
 
-	owner := secret.GetObjectMeta().GetLabels()[ownerLabel]
-	createdAt := secret.CreationTimestamp.UTC().Format(time.RFC3339)
-
 	newSecret := SecretWithParam{
 		Secret: &kube_types.Secret{
 			Name:      secret.GetName(),
-			CreatedAt: &createdAt,
+			CreatedAt: secret.CreationTimestamp.UTC().Format(time.RFC3339),
 			Data:      newData,
-			Owner:     owner,
+			Owner:     secret.GetObjectMeta().GetLabels()[ownerLabel],
 		},
 	}
 

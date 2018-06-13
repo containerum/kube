@@ -47,17 +47,15 @@ func ParseKubePersistentVolumeClaim(pvci interface{}, parseforuser bool) (*kube_
 		return nil, ErrUnableConvertVolume
 	}
 
-	owner := native.GetObjectMeta().GetLabels()[ownerLabel]
 	capacity := native.Spec.Resources.Requests["storage"]
-	createdAt := native.GetCreationTimestamp().UTC().UTC().Format(time.RFC3339)
 
 	pvc := kube_types.Volume{
 		Name:        native.Name,
-		CreatedAt:   &createdAt,
+		CreatedAt:   native.GetCreationTimestamp().UTC().UTC().Format(time.RFC3339),
 		StorageName: native.ObjectMeta.Annotations[api_core.BetaStorageClassAnnotation],
 		AccessMode:  kube_types.PersistentVolumeAccessMode(native.Spec.AccessModes[0]),
 		Capacity:    uint(capacity.Value() / 1024 / 1024 / 1024), //in Gi
-		Owner:       owner,
+		Owner:       native.GetObjectMeta().GetLabels()[ownerLabel],
 	}
 
 	if parseforuser {

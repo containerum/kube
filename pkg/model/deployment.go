@@ -68,25 +68,18 @@ func ParseKubeDeployment(deployment interface{}, parseforuser bool) (*kube_types
 		replicas = int(*r)
 	}
 	containers, totalcpu, totalmem := getContainers(deploy.Spec.Template.Spec.Containers, getVolumeMode(deploy.Spec.Template.Spec.Volumes), getVolumeStorageName(deploy.Spec.Template.Spec.Volumes), replicas)
-	updated := deploy.ObjectMeta.CreationTimestamp
-	for _, c := range deploy.Status.Conditions {
-		if c.LastUpdateTime.After(updated.Time) {
-			updated = c.LastUpdateTime
-		}
-	}
 
 	newDeploy := kube_types.Deployment{
 		Name:     deploy.GetName(),
 		Replicas: replicas,
 		Status: &kube_types.DeploymentStatus{
-			CreatedAt:           deploy.ObjectMeta.CreationTimestamp.UTC().Format(time.RFC3339),
-			UpdatedAt:           updated.UTC().Format(time.RFC3339),
 			Replicas:            int(deploy.Status.Replicas),
 			ReadyReplicas:       int(deploy.Status.ReadyReplicas),
 			AvailableReplicas:   int(deploy.Status.AvailableReplicas),
 			UpdatedReplicas:     int(deploy.Status.UpdatedReplicas),
 			UnavailableReplicas: int(deploy.Status.UnavailableReplicas),
 		},
+		CreatedAt:   deploy.ObjectMeta.CreationTimestamp.UTC().Format(time.RFC3339),
 		SolutionID:  solution,
 		Containers:  containers,
 		TotalCPU:    uint(totalcpu.ScaledValue(api_resource.Milli)),
