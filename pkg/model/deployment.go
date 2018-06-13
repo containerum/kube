@@ -92,6 +92,7 @@ func ParseKubeDeployment(deployment interface{}, parseforuser bool) (*kube_types
 		TotalCPU:    uint(totalcpu.ScaledValue(api_resource.Milli)),
 		TotalMemory: uint(totalmem.Value() / 1024 / 1024),
 		Owner:       owner,
+		Active:      true,
 	}
 
 	if parseforuser {
