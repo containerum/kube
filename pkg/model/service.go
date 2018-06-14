@@ -80,7 +80,7 @@ func ParseKubeService(srv interface{}, parseforuser bool) (*ServiceWithParam, er
 	service := ServiceWithParam{
 		Service: &kube_types.Service{
 			Name:       native.Name,
-			CreatedAt:  native.GetCreationTimestamp().UTC().UTC().Format(time.RFC3339),
+			CreatedAt:  native.GetCreationTimestamp().UTC().Format(time.RFC3339),
 			Ports:      ports,
 			Deploy:     native.GetObjectMeta().GetLabels()[appLabel],
 			Domain:     native.GetObjectMeta().GetLabels()[domainLabel],
@@ -138,8 +138,6 @@ func (service *ServiceWithParam) ToKube(nsName string, labels map[string]string)
 		labels[solutionLabel] = service.SolutionID
 	}
 
-	selector := map[string]string{appLabel: service.Deploy}
-
 	newService := api_core.Service{
 		TypeMeta: api_meta.TypeMeta{
 			Kind:       serviceKind,
@@ -153,7 +151,7 @@ func (service *ServiceWithParam) ToKube(nsName string, labels map[string]string)
 		Spec: api_core.ServiceSpec{
 			Type:     "ClusterIP",
 			Ports:    makeServicePorts(service.Ports),
-			Selector: selector,
+			Selector: map[string]string{appLabel: service.Deploy},
 		},
 	}
 
