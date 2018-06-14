@@ -32,6 +32,10 @@ const (
 
 	volumePostfix = "-volume"
 	cmPostfix     = "-cm"
+
+	appLabel      = "app"
+	versionLabel  = "version"
+	solutionLabel = "solution"
 )
 
 type DeploymentKubeAPI kube_types.Deployment
@@ -68,7 +72,7 @@ func ParseKubeDeployment(deployment interface{}, parseforuser bool) (*kube_types
 	}
 	containers, totalcpu, totalmem := getContainers(deploy.Spec.Template.Spec.Containers, getVolumeMode(deploy.Spec.Template.Spec.Volumes), getVolumeStorageName(deploy.Spec.Template.Spec.Volumes), replicas)
 
-	version, _ := semver.ParseTolerant(deploy.GetObjectMeta().GetLabels()["version"])
+	version, _ := semver.ParseTolerant(deploy.GetObjectMeta().GetLabels()[versionLabel])
 
 	newDeploy := kube_types.Deployment{
 		Name:     deploy.GetName(),
@@ -141,7 +145,7 @@ func (deploy *DeploymentKubeAPI) ToKube(nsName string, labels map[string]string)
 	}
 
 	if deploy.Version.String() != "" {
-		labels["version"] = deploy.Version.String()
+		labels[versionLabel] = deploy.Version.String()
 	}
 
 	volumes, verr := makeTemplateVolumes(deploy.Containers)
