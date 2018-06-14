@@ -10,6 +10,7 @@ import (
 
 	"time"
 
+	"github.com/blang/semver"
 	kube_types "github.com/containerum/kube-client/pkg/model"
 	"github.com/pkg/errors"
 	api_apps "k8s.io/api/apps/v1"
@@ -61,13 +62,13 @@ func ParseKubeDeployment(deployment interface{}, parseforuser bool) (*kube_types
 		return nil, ErrUnableConvertDeployment
 	}
 
-	solution := deploy.GetObjectMeta().GetLabels()[solutionLabel]
-	owner := deploy.GetObjectMeta().GetLabels()[ownerLabel]
 	replicas := 0
 	if r := deploy.Spec.Replicas; r != nil {
 		replicas = int(*r)
 	}
 	containers, totalcpu, totalmem := getContainers(deploy.Spec.Template.Spec.Containers, getVolumeMode(deploy.Spec.Template.Spec.Volumes), getVolumeStorageName(deploy.Spec.Template.Spec.Volumes), replicas)
+
+	version, _ := semver.ParseTolerant(deploy.GetObjectMeta().GetLabels()["version"])
 
 	newDeploy := kube_types.Deployment{
 		Name:     deploy.GetName(),
@@ -80,11 +81,12 @@ func ParseKubeDeployment(deployment interface{}, parseforuser bool) (*kube_types
 			UnavailableReplicas: int(deploy.Status.UnavailableReplicas),
 		},
 		CreatedAt:   deploy.ObjectMeta.CreationTimestamp.UTC().Format(time.RFC3339),
-		SolutionID:  solution,
+		SolutionID:  deploy.GetObjectMeta().GetLabels()[solutionLabel],
 		Containers:  containers,
 		TotalCPU:    uint(totalcpu.ScaledValue(api_resource.Milli)),
 		TotalMemory: uint(totalmem.Value() / 1024 / 1024),
-		Owner:       owner,
+		Owner:       deploy.GetObjectMeta().GetLabels()[ownerLabel],
+		Version:     version,
 		Active:      true,
 	}
 
@@ -131,10 +133,15 @@ func (deploy *DeploymentKubeAPI) ToKube(nsName string, labels map[string]string)
 	if labels == nil {
 		return nil, []error{errors.New("invalid namespace labels")}
 	}
+
 	labels[appLabel] = deploy.Name
 
 	if deploy.SolutionID != "" {
 		labels[solutionLabel] = deploy.SolutionID
+	}
+
+	if deploy.Version.String() != "" {
+		labels["version"] = deploy.Version.String()
 	}
 
 	volumes, verr := makeTemplateVolumes(deploy.Containers)
