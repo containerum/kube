@@ -21,8 +21,8 @@ var (
 	ErrUnableConvertVolumeList = errors.New("unable to decode volumes list")
 	ErrUnableConvertVolume     = errors.New("unable to decode volume")
 
-	ErrUnableConvertNamespaceList = errors.New("unable to decode namespaces list")
-	ErrUnableConvertNamespace     = errors.New("unable to decode namespace")
+	ErrUnableConvertNamespaceList = errors.New("unable to decode projects list")
+	ErrUnableConvertNamespace     = errors.New("unable to decode project")
 
 	ErrUnableConvertSecretList = errors.New("unable to decode secrets list")
 	ErrUnableConvertSecret     = errors.New("unable to decode secret")
@@ -53,7 +53,7 @@ const (
 	invalidMemoryQuota    = "invalid memory quota: %v. It must be between %v(Mi) and %v(Mi)"
 	subPathRelative       = "invalid Sub Path: %v. It must be relative path"
 	noResource            = "resource '%v' is not found in %v"
-	noNamespace           = "namespace is not found"
+	noNamespace           = "project is not found"
 	resourceAlreadyExists = "resource '%v' already exists in %v"
 	duplicateMountPath    = "duplicate mount path '%v'"
 )

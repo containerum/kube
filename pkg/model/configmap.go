@@ -69,7 +69,7 @@ func (cm *ConfigMapKubeAPI) ToKube(nsName string, labels map[string]string) (*ap
 	}
 
 	if labels == nil {
-		return nil, []error{kubeErrors.ErrInternalError().AddDetails("invalid namespace labels")}
+		return nil, []error{kubeErrors.ErrInternalError().AddDetails("invalid project labels")}
 	}
 
 	for k, v := range cm.Data {

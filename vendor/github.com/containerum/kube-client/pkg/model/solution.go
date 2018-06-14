@@ -46,7 +46,7 @@ type AvailableSolution struct {
 	Limits *SolutionLimits `json:"limits"`
 	Images []string        `json:"images"`
 	URL    string          `json:"url"`
-	Active bool            `json:"active,omitempty"`
+	Active bool            `json:"active"`
 }
 
 func (solution AvailableSolution) Copy() AvailableSolution {
