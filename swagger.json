@@ -2316,6 +2316,11 @@
         "data": {
           "$ref": "#/definitions/ConfigMapData"
         },
+        "deleted_at": {
+          "description": "delete date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "DeletedAt"
+        },
         "name": {
           "type": "string",
           "x-go-name": "Name"
@@ -2497,6 +2502,16 @@
           },
           "x-go-name": "Containers"
         },
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "deleted_at": {
+          "description": "delete date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "DeletedAt"
+        },
         "name": {
           "type": "string",
           "x-go-name": "Name"
@@ -2545,11 +2560,6 @@
           "format": "int64",
           "x-go-name": "AvailableReplicas"
         },
-        "created_at": {
-          "description": "creation date in RFC3339 format",
-          "type": "string",
-          "x-go-name": "CreatedAt"
-        },
         "ready_replicas": {
           "type": "integer",
           "format": "int64",
@@ -2564,11 +2574,6 @@
           "type": "integer",
           "format": "int64",
           "x-go-name": "UnavailableReplicas"
-        },
-        "updated_at": {
-          "description": "update date in RFC3339 format",
-          "type": "string",
-          "x-go-name": "UpdatedAt"
         },
         "updated_replicas": {
           "type": "integer",
@@ -2760,6 +2765,11 @@
           "description": "creation date in RFC3339 format",
           "type": "string",
           "x-go-name": "CreatedAt"
+        },
+        "deleted_at": {
+          "description": "delete date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "DeletedAt"
         },
         "name": {
           "type": "string",
@@ -3158,6 +3168,11 @@
           },
           "x-go-name": "Data"
         },
+        "deleted_at": {
+          "description": "delete date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "DeletedAt"
+        },
         "name": {
           "type": "string",
           "x-go-name": "Name"
@@ -3188,6 +3203,11 @@
             "type": "string"
           },
           "x-go-name": "Data"
+        },
+        "deleted_at": {
+          "description": "delete date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "DeletedAt"
         },
         "hidden": {
           "description": "hide secret from users",
@@ -3261,6 +3281,11 @@
           "description": "creation date in RFC3339 format",
           "type": "string",
           "x-go-name": "CreatedAt"
+        },
+        "deleted_at": {
+          "description": "delete date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "DeletedAt"
         },
         "deploy": {
           "type": "string",
@@ -3346,6 +3371,11 @@
           "description": "creation date in RFC3339 format",
           "type": "string",
           "x-go-name": "CreatedAt"
+        },
+        "deleted_at": {
+          "description": "delete date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "DeletedAt"
         },
         "deploy": {
           "type": "string",
@@ -3577,6 +3607,10 @@
         "access": {
           "$ref": "#/definitions/UserGroupAccess"
         },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
         "username": {
           "type": "string",
           "x-go-name": "Username"
@@ -3737,8 +3771,13 @@
           "x-go-name": "Capacity"
         },
         "created_at": {
+          "description": "creation date in RFC3339 format",
           "type": "string",
           "x-go-name": "CreatedAt"
+        },
+        "deleted_at": {
+          "type": "string",
+          "x-go-name": "DeletedAt"
         },
         "name": {
           "type": "string",
@@ -3751,6 +3790,11 @@
         "owner_login": {
           "type": "string",
           "x-go-name": "OwnerLogin"
+        },
+        "status": {
+          "description": "delete date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "Status"
         },
         "storage_name": {
           "type": "string",
