@@ -144,8 +144,14 @@ func (deploy *DeploymentKubeAPI) ToKube(nsName string, labels map[string]string)
 		labels[solutionLabel] = deploy.SolutionID
 	}
 
+	deploylabels := map[string]string{}
+
+	for k, v := range labels {
+		deploylabels[k] = v
+	}
+
 	if deploy.Version.String() != "" {
-		labels[versionLabel] = deploy.Version.String()
+		deploylabels[versionLabel] = deploy.Version.String()
 	}
 
 	volumes, verr := makeTemplateVolumes(deploy.Containers)
@@ -159,7 +165,7 @@ func (deploy *DeploymentKubeAPI) ToKube(nsName string, labels map[string]string)
 			APIVersion: deploymentAPIVersion,
 		},
 		ObjectMeta: api_meta.ObjectMeta{
-			Labels:    labels,
+			Labels:    deploylabels,
 			Name:      deploy.Name,
 			Namespace: nsName,
 		},
