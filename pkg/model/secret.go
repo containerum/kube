@@ -90,7 +90,7 @@ func (secret *SecretWithParam) ToKube(nsName string, labels map[string]string) (
 	}
 
 	if labels == nil {
-		return nil, []error{kubeErrors.ErrInternalError().AddDetails("invalid namespace labels")}
+		return nil, []error{kubeErrors.ErrInternalError().AddDetails("invalid project labels")}
 	}
 
 	newSecret := api_core.Secret{

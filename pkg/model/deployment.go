@@ -10,9 +10,9 @@ import (
 
 	"time"
 
+	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	"github.com/blang/semver"
 	kube_types "github.com/containerum/kube-client/pkg/model"
-	"github.com/pkg/errors"
 	api_apps "k8s.io/api/apps/v1"
 	api_core "k8s.io/api/core/v1"
 	api_resource "k8s.io/apimachinery/pkg/api/resource"
@@ -135,7 +135,7 @@ func (deploy *DeploymentKubeAPI) ToKube(nsName string, labels map[string]string)
 	}
 
 	if labels == nil {
-		return nil, []error{errors.New("invalid namespace labels")}
+		return nil, []error{kubeErrors.ErrInternalError().AddDetails("invalid project labels")}
 	}
 
 	labels[appLabel] = deploy.Name
