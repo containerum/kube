@@ -80,7 +80,7 @@ func ParseKubeService(srv interface{}, parseforuser bool) (*ServiceWithParam, er
 	service := ServiceWithParam{
 		Service: &kube_types.Service{
 			Name:       native.Name,
-			CreatedAt:  native.GetCreationTimestamp().UTC().UTC().Format(time.RFC3339),
+			CreatedAt:  native.GetCreationTimestamp().UTC().Format(time.RFC3339),
 			Ports:      ports,
 			Deploy:     native.GetObjectMeta().GetLabels()[appLabel],
 			Domain:     native.GetObjectMeta().GetLabels()[domainLabel],
