@@ -41,8 +41,8 @@
     ".",
     "pkg/model"
   ]
-  revision = "64b358cf38b55d4a526a520a454aa69033e870d2"
-  version = "v0.21.2"
+  revision = "5d432d681aeb15d2c39e37778a37d85f584a526a"
+  version = "v0.23.0"
 
 [[projects]]
   name = "github.com/containerum/utils"
@@ -368,7 +368,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "37a17fe027db43f76fd88b056ddf588563fc8722"
+  revision = "a8fb68e7206f8c78be19b432c58eb52a6aa34462"
 
 [[projects]]
   branch = "master"
@@ -391,7 +391,7 @@
     "unix",
     "windows"
   ]
-  revision = "8883426083c04a2627e6e59d84d5f6fb63d16c91"
+  revision = "8014b7b116a67fea23fbb82cd834c9ad656ea44b"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -594,6 +594,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1c05333a67549e2d5c14fe58fb82c98918ce65a828e00bfc1cefb6dcd4d355fe"
+  inputs-digest = "c2a6b7e171c268d181f67003b99ca59af3b221ef8d5ebc270c5c6bb2dc177183"
   solver-name = "gps-cdcl"
   solver-version = 1
