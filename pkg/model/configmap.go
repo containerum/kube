@@ -74,7 +74,9 @@ func (cm *ConfigMapKubeAPI) ToKube(nsName string, labels map[string]string) (*ap
 
 	for k, v := range cm.Data {
 		dec, err := base64.StdEncoding.DecodeString(v)
-		if err == nil {
+		if err != nil {
+			return nil, []error{kubeErrors.ErrRequestValidationFailed().AddDetailsErr(err)}
+		} else {
 			cm.Data[k] = string(dec)
 		}
 	}
