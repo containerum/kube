@@ -29,12 +29,12 @@ func RequiredUserHeaders() gin.HandlerFunc {
 			gonic.Gonic(kubeErrors.ErrRequiredHeadersNotProvided().AddDetails(notFoundHeaders...), ctx)
 			return
 		}
-		/* Check User-Role and User-Namespace, X-User-Volume */
+		// Check User-Role and User-Namespace
 		if isUser, err := checkIsUserRole(GetHeader(ctx, headers.UserRoleXHeader)); err != nil {
 			log.WithField("Value", GetHeader(ctx, headers.UserRoleXHeader)).WithError(err).Warn("Check User-Role Error")
 			gonic.Gonic(kubeErrors.ErrInvalidRole(), ctx)
 		} else {
-			//User-Role: user, check User-Namespace, X-User-Volume
+			// User-Role: user, check User-Namespace
 			if isUser {
 				notFoundHeaders := requireHeaders(ctx, headers.UserRoleXHeader, headers.UserNamespacesXHeader, headers.UserIDXHeader)
 				if len(notFoundHeaders) > 0 {
