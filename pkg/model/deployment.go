@@ -238,9 +238,7 @@ func makeContainerVolumes(volumes []kube_types.ContainerVolume, configMaps []kub
 		if v.SubPath != nil {
 			subpath = *v.SubPath
 		}
-		if v.PersistentVolumeClaimName != nil {
-			volumeMounts = append(volumeMounts, api_core.VolumeMount{Name: *v.PersistentVolumeClaimName + volumePostfix, MountPath: v.MountPath, SubPath: subpath})
-		}
+		volumeMounts = append(volumeMounts, api_core.VolumeMount{Name: v.Name + volumePostfix, MountPath: v.MountPath, SubPath: subpath})
 	}
 	for _, v := range configMaps {
 		var subpath string
@@ -309,10 +307,10 @@ func makeTemplateVolumes(containers []kube_types.Container) ([]api_core.Volume, 
 	for _, c := range containers {
 		for _, v := range c.VolumeMounts {
 			newVolume := api_core.Volume{
-				Name: *v.PersistentVolumeClaimName + volumePostfix,
+				Name: v.Name + volumePostfix,
 				VolumeSource: api_core.VolumeSource{
 					PersistentVolumeClaim: &api_core.PersistentVolumeClaimVolumeSource{
-						ClaimName: *v.PersistentVolumeClaimName,
+						ClaimName: v.Name,
 					},
 				},
 			}
@@ -445,14 +443,16 @@ func validateContainer(container kube_types.Container, cpu, mem uint) []error {
 	}
 
 	for _, v := range container.VolumeMounts {
+		if v.Name == "" {
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "container.config_maps.name"))
+		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
+			errs = append(errs, fmt.Errorf(invalidName, v.Name, strings.Join(err, ",")))
+		}
 		if v.MountPath == "" {
 			errs = append(errs, fmt.Errorf(fieldShouldExist, "container.volume_mounts.mount_path"))
 		}
 		if v.SubPath != nil && path.IsAbs(*v.SubPath) {
 			errs = append(errs, fmt.Errorf(subPathRelative, *v.SubPath))
-		}
-		if v.PersistentVolumeClaimName == nil {
-			errs = append(errs, fmt.Errorf(fieldShouldExist, "container.volume_mounts.pvc_name"))
 		}
 	}
 

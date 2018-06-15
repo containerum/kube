@@ -134,6 +134,7 @@ type UserSolution struct {
 	ID     string            `json:"id,omitempty"`
 	Branch string            `json:"branch"`
 	Env    map[string]string `json:"env"`
+	URL    string            `json:"url"`
 	// required: true
 	Template string `json:"template"`
 	// required: true

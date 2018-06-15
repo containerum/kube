@@ -34,7 +34,6 @@ func ParseKubePod(pod interface{}, parseforuser bool) kube_types.Pod {
 		Deploy:     &deploy,
 		Name:       obj.GetName(),
 		Containers: containers,
-		Hostname:   &obj.Spec.Hostname,
 		Status: &model.PodStatus{
 			Phase: string(obj.Status.Phase),
 		},
@@ -104,7 +103,7 @@ func getVolumes(vListi interface{}, mode map[string]int32, storageName map[strin
 		} else {
 			storage, ok := storageName[v.Name]
 			if ok {
-				newvol.PersistentVolumeClaimName = &storage
+				newvol.Name = storage
 			}
 			volumes = append(volumes, newvol)
 		}
