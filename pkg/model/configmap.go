@@ -8,7 +8,8 @@ import (
 
 	"encoding/base64"
 
-	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"errors"
+
 	kube_types "github.com/containerum/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -69,13 +70,13 @@ func (cm *ConfigMapKubeAPI) ToKube(nsName string, labels map[string]string) (*ap
 	}
 
 	if labels == nil {
-		return nil, []error{kubeErrors.ErrInternalError().AddDetails("invalid project labels")}
+		return nil, []error{errors.New("invalid project labels")}
 	}
 
 	for k, v := range cm.Data {
 		dec, err := base64.StdEncoding.DecodeString(v)
 		if err != nil {
-			return nil, []error{kubeErrors.ErrRequestValidationFailed().AddDetailsErr(err)}
+			return nil, []error{fmt.Errorf("unable to decode base64 string '%v': %v", v, err)}
 		} else {
 			cm.Data[k] = string(dec)
 		}
