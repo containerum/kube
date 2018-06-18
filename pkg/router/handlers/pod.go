@@ -110,7 +110,7 @@ func GetPodList(ctx *gin.Context) {
 //    type: string
 //    required: true
 //  - name: pod
-//    in: query
+//    in: path
 //    type: string
 //    required: true
 // responses:
@@ -207,7 +207,7 @@ func DeletePod(ctx *gin.Context) {
 //  - $ref: '#/parameters/SecWebSocketKeyHeader'
 //  - $ref: '#/parameters/SecWebsocketVersionHeader'
 //  - name: namespace
-//    in: header
+//    in: path
 //    type: string
 //    required: true
 //  - name: pod
@@ -216,11 +216,11 @@ func DeletePod(ctx *gin.Context) {
 //    required: true
 //  - name: follow
 //    in: query
-//    type: bool
+//    type: string
 //    required: false
 //  - name: tail
 //    in: query
-//    type: integer
+//    type: string
 //    required: false
 //  - name: container
 //    in: query
@@ -228,7 +228,7 @@ func DeletePod(ctx *gin.Context) {
 //    required: false
 //  - name: previous
 //    in: query
-//    type: bool
+//    type: string
 //    required: false
 // responses:
 //  '101':

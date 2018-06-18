@@ -190,7 +190,7 @@ func CreateVolume(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
-// swagger:operation PUT /namespaces/{namespace}/volumes/{volumes} Volume UpdateVolume
+// swagger:operation PUT /namespaces/{namespace}/volumes/{volume} Volume UpdateVolume
 // Update volume.
 //
 // ---

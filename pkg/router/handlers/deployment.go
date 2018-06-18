@@ -92,7 +92,7 @@ func GetDeploymentList(ctx *gin.Context) {
 //  - name: solution
 //    in: path
 //    type: string
-//    required: false
+//    required: true
 // responses:
 //  '200':
 //    description: deployments list
