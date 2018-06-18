@@ -83,6 +83,11 @@
         "data": {
           "$ref": "#/definitions/ConfigMapData"
         },
+        "deleted_at": {
+          "description": "delete date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "DeletedAt"
+        },
         "name": {
           "type": "string",
           "x-go-name": "Name"
@@ -202,7 +207,6 @@
       "description": "ContainerVolume -- volume (or config map) mounted in container",
       "type": "object",
       "required": [
-        "name",
         "mount_path"
       ],
       "properties": {
@@ -217,10 +221,6 @@
         "name": {
           "type": "string",
           "x-go-name": "Name"
-        },
-        "pvc_name": {
-          "type": "string",
-          "x-go-name": "PersistentVolumeClaimName"
         },
         "sub_path": {
           "type": "string",
@@ -253,12 +253,26 @@
         "replicas"
       ],
       "properties": {
+        "active": {
+          "type": "boolean",
+          "x-go-name": "Active"
+        },
         "containers": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/Container"
           },
           "x-go-name": "Containers"
+        },
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "deleted_at": {
+          "description": "delete date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "DeletedAt"
         },
         "name": {
           "type": "string",
@@ -272,6 +286,11 @@
           "type": "integer",
           "format": "int64",
           "x-go-name": "Replicas"
+        },
+        "solution_id": {
+          "description": "Solution ID (only if deployment is part of solution)",
+          "type": "string",
+          "x-go-name": "SolutionID"
         },
         "status": {
           "$ref": "#/definitions/DeploymentStatus"
@@ -287,6 +306,9 @@
           "type": "integer",
           "format": "uint64",
           "x-go-name": "TotalMemory"
+        },
+        "version": {
+          "$ref": "#/definitions/Version"
         }
       },
       "x-go-package": "github.com/containerum/kube-client/pkg/model"
@@ -299,11 +321,6 @@
           "type": "integer",
           "format": "int64",
           "x-go-name": "AvailableReplicas"
-        },
-        "created_at": {
-          "description": "creation date in RFC3339 format",
-          "type": "string",
-          "x-go-name": "CreatedAt"
         },
         "ready_replicas": {
           "type": "integer",
@@ -319,11 +336,6 @@
           "type": "integer",
           "format": "int64",
           "x-go-name": "UnavailableReplicas"
-        },
-        "updated_at": {
-          "description": "update date in RFC3339 format",
-          "type": "string",
-          "x-go-name": "UpdatedAt"
         },
         "updated_replicas": {
           "type": "integer",
@@ -377,6 +389,18 @@
       },
       "x-go-package": "github.com/containerum/kube-client/pkg/model"
     },
+    "Image": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Tag": {
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
     "Ingress": {
       "description": "Ingress -- model for ingress",
       "type": "object",
@@ -389,6 +413,11 @@
           "description": "creation date in RFC3339 format",
           "type": "string",
           "x-go-name": "CreatedAt"
+        },
+        "deleted_at": {
+          "description": "delete date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "DeletedAt"
         },
         "name": {
           "type": "string",
@@ -500,6 +529,23 @@
       },
       "x-go-package": "github.com/containerum/kube-client/pkg/model"
     },
+    "PRVersion": {
+      "description": "PRVersion represents a PreRelease Version",
+      "type": "object",
+      "properties": {
+        "IsNum": {
+          "type": "boolean"
+        },
+        "VersionNum": {
+          "type": "integer",
+          "format": "uint64"
+        },
+        "VersionStr": {
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/vendor/github.com/blang/semver"
+    },
     "Path": {
       "description": "Path -- ingress path",
       "type": "object",
@@ -548,10 +594,6 @@
         "deploy": {
           "type": "string",
           "x-go-name": "Deploy"
-        },
-        "hostname": {
-          "type": "string",
-          "x-go-name": "Hostname"
         },
         "image_pull_secret": {
           "type": "object",
@@ -660,6 +702,20 @@
       },
       "x-go-package": "github.com/containerum/kube-client/pkg/model"
     },
+    "ResourceUpdateUserAccess": {
+      "description": "ResourceUpdateUserAccess -- contains user access data",
+      "type": "object",
+      "properties": {
+        "access": {
+          "$ref": "#/definitions/AccessLevel"
+        },
+        "username": {
+          "type": "string",
+          "x-go-name": "Username"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
     "Resources": {
       "type": "object",
       "title": "Resources -- represents namespace limits and user resources.",
@@ -746,6 +802,11 @@
           },
           "x-go-name": "Data"
         },
+        "deleted_at": {
+          "description": "delete date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "DeletedAt"
+        },
         "name": {
           "type": "string",
           "x-go-name": "Name"
@@ -800,6 +861,11 @@
           "type": "string",
           "x-go-name": "CreatedAt"
         },
+        "deleted_at": {
+          "description": "delete date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "DeletedAt"
+        },
         "deploy": {
           "type": "string",
           "x-go-name": "Deploy"
@@ -829,6 +895,11 @@
             "$ref": "#/definitions/ServicePort"
           },
           "x-go-name": "Ports"
+        },
+        "solution_id": {
+          "description": "Solution ID (only if service is part of solution)",
+          "type": "string",
+          "x-go-name": "SolutionID"
         }
       },
       "x-go-package": "github.com/containerum/kube-client/pkg/model"
@@ -1040,6 +1111,10 @@
         "access": {
           "$ref": "#/definitions/UserGroupAccess"
         },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
         "username": {
           "type": "string",
           "x-go-name": "Username"
@@ -1135,6 +1210,10 @@
         "template": {
           "type": "string",
           "x-go-name": "Template"
+        },
+        "url": {
+          "type": "string",
+          "x-go-name": "URL"
         }
       },
       "x-go-package": "github.com/containerum/kube-client/pkg/model"
@@ -1153,6 +1232,37 @@
       },
       "x-go-package": "github.com/containerum/kube-client/pkg/model"
     },
+    "Version": {
+      "description": "Version represents a semver compatible version",
+      "type": "object",
+      "properties": {
+        "Build": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Major": {
+          "type": "integer",
+          "format": "uint64"
+        },
+        "Minor": {
+          "type": "integer",
+          "format": "uint64"
+        },
+        "Patch": {
+          "type": "integer",
+          "format": "uint64"
+        },
+        "Pre": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PRVersion"
+          }
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/vendor/github.com/blang/semver"
+    },
     "Volume": {
       "description": "Volume -- volume representation",
       "type": "object",
@@ -1169,8 +1279,13 @@
           "x-go-name": "Capacity"
         },
         "created_at": {
+          "description": "creation date in RFC3339 format",
           "type": "string",
           "x-go-name": "CreatedAt"
+        },
+        "deleted_at": {
+          "type": "string",
+          "x-go-name": "DeletedAt"
         },
         "name": {
           "type": "string",
@@ -1183,6 +1298,11 @@
         "owner_login": {
           "type": "string",
           "x-go-name": "OwnerLogin"
+        },
+        "status": {
+          "description": "delete date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "Status"
         },
         "storage_name": {
           "type": "string",

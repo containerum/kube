@@ -67,7 +67,7 @@ func GetEndpointList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation GET /namespaces/{namespace}/endpoints/{endpoint} Endpoint GetEndpointList
+// swagger:operation GET /namespaces/{namespace}/endpoints/{endpoint} Endpoint GetEndpoint
 // Get endpoint.
 //
 // ---
