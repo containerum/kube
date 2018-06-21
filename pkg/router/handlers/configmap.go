@@ -347,22 +347,21 @@ func GetSelectedConfigMaps(ctx *gin.Context) {
 
 	role := httputil.MustGetUserID(ctx.Request.Context())
 	if role == m.RoleUser {
-		//TODO
-		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
-		for _, n := range *nsList {
-			cmList, err := kube.GetConfigMapList(n.ID)
-			if err != nil {
-				gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
-				return
+		accesses := ctx.MustGet(httputil.AllAccessContext).([]httputil.ProjectAccess)
+		for _, p := range accesses {
+			for _, n := range p.NamespacesAccesses {
+				cmList, err := kube.GetConfigMapList(n.NamespaceID)
+				if err != nil {
+					gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+					return
+				}
+				cm, err := model.ParseKubeConfigMapList(cmList, role == m.RoleUser)
+				if err != nil {
+					gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+					return
+				}
+				ret[n.NamespaceID] = *cm
 			}
-
-			cm, err := model.ParseKubeConfigMapList(cmList, role == m.RoleUser)
-			if err != nil {
-				gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
-				return
-			}
-
-			ret[n.ID] = *cm
 		}
 	}
 

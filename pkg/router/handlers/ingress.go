@@ -346,24 +346,21 @@ func GetSelectedIngresses(ctx *gin.Context) {
 
 	role := httputil.MustGetUserID(ctx.Request.Context())
 	if role == m.RoleUser {
-		//TODO
-		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
-		for _, n := range *nsList {
-
-			ingressList, err := kube.GetIngressList(n.ID)
-			if err != nil {
-				gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
-				return
+		accesses := ctx.MustGet(httputil.AllAccessContext).([]httputil.ProjectAccess)
+		for _, p := range accesses {
+			for _, n := range p.NamespacesAccesses {
+				ingressList, err := kube.GetIngressList(n.NamespaceID)
+				if err != nil {
+					gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+					return
+				}
+				ingress, err := model.ParseKubeIngressList(ingressList, role == m.RoleUser)
+				if err != nil {
+					gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+					return
+				}
+				ingresses[n.NamespaceID] = *ingress
 			}
-
-			ingressesList, err := model.ParseKubeIngressList(ingressList, role == m.RoleUser)
-			if err != nil {
-				ctx.Error(err)
-				gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
-				return
-			}
-
-			ingresses[n.ID] = *ingressesList
 		}
 	}
 

@@ -64,9 +64,8 @@ func GetNamespaceList(ctx *gin.Context) {
 	}
 
 	if role == m.RoleUser {
-		//TODO
-		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
-		ret = model.ParseNamespaceListForUser(*nsList, ret.Namespaces)
+		accesses := ctx.MustGet(httputil.AllAccessContext).([]httputil.ProjectAccess)
+		ret = model.ParseNamespaceListForUser(accesses, ctx.Param("project"), ret.Namespaces)
 	}
 	ctx.JSON(http.StatusOK, ret)
 }
@@ -105,7 +104,8 @@ func GetNamespace(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx)
+	role := httputil.MustGetUserID(ctx.Request.Context())
+
 	ret, err := model.ParseKubeResourceQuota(quota)
 	if err != nil {
 		ctx.Error(err)
@@ -114,10 +114,8 @@ func GetNamespace(ctx *gin.Context) {
 	}
 
 	if role == m.RoleUser {
-		//TODO
-		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
-		parsed := model.ParseForUser(ret, *nsList)
-		ret = &parsed
+		access := ctx.MustGet(httputil.AccessContext).(httputil.NamespaceAccess)
+		ret = model.ParseForUser(access, ret)
 	}
 
 	ctx.JSON(http.StatusOK, ret)

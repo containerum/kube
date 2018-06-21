@@ -41,8 +41,8 @@
 [[projects]]
   name = "github.com/containerum/utils"
   packages = ["httputil"]
-  revision = "abd0274615f70b9bf50ee91489c2912cbb5ecf55"
-  version = "v1.0.5"
+  revision = "f396ca4039012a63f7025cba99a5d514d2824421"
+  version = "v1.0.6"
 
 [[projects]]
   name = "github.com/docker/distribution"
@@ -539,6 +539,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4867ebe6b8741200333ba2e0204f26b9bf9946183ca07f5ff8bb976f80c66640"
+  inputs-digest = "5e25be5ea9554f90e9a5542494df799989decf1a19073eaa10e3ba28fe8f10b7"
   solver-name = "gps-cdcl"
   solver-version = 1

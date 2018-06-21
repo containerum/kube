@@ -49,12 +49,12 @@ func initMiddlewares(e gin.IRouter, kube *kubernetes.Kube, enableCORS bool) {
 }
 
 func initRoutes(e gin.IRouter, access httputil.AccessChecker) {
-	e.GET("/ingresses", h.GetSelectedIngresses)
-	e.GET("/configmaps", h.GetSelectedConfigMaps)
+	e.GET("/ingresses", access.SaveAllAccesses(), h.GetSelectedIngresses)
+	e.GET("/configmaps", access.SaveAllAccesses(), h.GetSelectedConfigMaps)
 
 	namespace := e.Group("/projects/:project/namespaces")
 	{
-		namespace.GET("", h.GetNamespaceList)
+		namespace.GET("", access.SaveAllAccesses(), h.GetNamespaceList)
 		namespace.GET("/:namespace", access.CheckAccess(model.AccessGuest), h.GetNamespace)
 		namespace.POST("", h.CreateNamespace)
 		namespace.PUT("/:namespace", h.UpdateNamespace)
