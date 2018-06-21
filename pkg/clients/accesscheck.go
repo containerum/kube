@@ -41,6 +41,7 @@ func NewPermissionsAccessHTTPClient(host string) httputil.AccessChecker {
 func (client permissionsClient) GetAllAccesses(ctx context.Context) ([]httputil.ProjectAccess, error) {
 	accesses := make([]httputil.ProjectAccess, 0)
 	resp, err := client.client.R().
+		SetContext(ctx).
 		SetResult(&accesses).
 		SetHeaders(httputil.RequestHeadersMap(ctx)).
 		Get("/accesses")
@@ -56,6 +57,7 @@ func (client permissionsClient) GetAllAccesses(ctx context.Context) ([]httputil.
 func (client permissionsClient) GetNamespaceAccess(ctx context.Context, projectID, namespaceID string) (httputil.NamespaceAccess, error) {
 	var access httputil.NamespaceAccess
 	resp, err := client.client.R().
+		SetContext(ctx).
 		SetResult(&access).
 		SetHeaders(httputil.RequestHeadersMap(ctx)).
 		SetPathParams(map[string]string{

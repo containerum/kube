@@ -347,6 +347,7 @@ func GetSelectedConfigMaps(ctx *gin.Context) {
 
 	role := httputil.MustGetUserID(ctx.Request.Context())
 	if role == m.RoleUser {
+		//TODO
 		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
 		for _, n := range *nsList {
 			cmList, err := kube.GetConfigMapList(n.ID)

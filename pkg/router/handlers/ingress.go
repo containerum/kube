@@ -346,6 +346,7 @@ func GetSelectedIngresses(ctx *gin.Context) {
 
 	role := httputil.MustGetUserID(ctx.Request.Context())
 	if role == m.RoleUser {
+		//TODO
 		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
 		for _, n := range *nsList {
 

@@ -64,6 +64,7 @@ func GetNamespaceList(ctx *gin.Context) {
 	}
 
 	if role == m.RoleUser {
+		//TODO
 		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
 		ret = model.ParseNamespaceListForUser(*nsList, ret.Namespaces)
 	}
@@ -113,6 +114,7 @@ func GetNamespace(ctx *gin.Context) {
 	}
 
 	if role == m.RoleUser {
+		//TODO
 		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
 		parsed := model.ParseForUser(ret, *nsList)
 		ret = &parsed
