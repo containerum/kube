@@ -1,15 +1,16 @@
 package model
 
-type UserGroupAccess string
+type UserGroupAccess uint
 
 const (
-	OwnerAccess  UserGroupAccess = "owner"
-	AdminAccess  UserGroupAccess = "admin"
-	MasterAccess UserGroupAccess = "master"
-	MemberAccess UserGroupAccess = "member"
-	GuestAccess  UserGroupAccess = "guest"
-	NoAccess     UserGroupAccess = "none"
+	AccessNone UserGroupAccess = iota
+	AccessGuest
+	AccessMember
+	AccessMaster
+	AccessAdmin
 )
+
+//go:generate enumer -type UserGroupAccess -trimprefix Access -transform=snake -json -sql -text -yaml
 
 // UserGroups -- list of user groups
 //

@@ -138,7 +138,7 @@ func ParseNamespaceListForUser(headers UserHeaderDataMap, nsl []kube_types.Names
 	nso := make([]kube_types.Namespace, 0)
 	ret := kube_types.NamespacesList{nso}
 	for _, ns := range nsl {
-		ns = *ParseForUser(&ns, headers)
+		ns = ParseForUser(&ns, headers)
 		if ns.Label != "" {
 			ret.Namespaces = append(ret.Namespaces, kube_types.Namespace(ns))
 		}
@@ -146,14 +146,14 @@ func ParseNamespaceListForUser(headers UserHeaderDataMap, nsl []kube_types.Names
 	return &ret
 }
 
-func ParseForUser(ns *kube_types.Namespace, headers UserHeaderDataMap) *kube_types.Namespace {
+func ParseForUser(ns *kube_types.Namespace, headers UserHeaderDataMap) kube_types.Namespace {
 	for _, n := range headers {
 		if ns.ID == n.ID {
 			ns.Label = n.Label
 			ns.Access = n.Access
 		}
 	}
-	return ns
+	return *ns
 }
 
 func (ns *NamespaceKubeAPI) Validate() []error {

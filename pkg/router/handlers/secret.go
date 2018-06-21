@@ -8,6 +8,7 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
 	"github.com/containerum/cherry/adaptors/gonic"
+	"github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
@@ -57,7 +58,7 @@ func GetSecretList(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	ret, err := model.ParseKubeSecretList(secrets, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -114,7 +115,7 @@ func GetSecret(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	ret, err := model.ParseKubeSecret(secret, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -182,7 +183,7 @@ func CreateSecret(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	ret, err := model.ParseKubeSecret(secretAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -263,7 +264,7 @@ func UpdateSecret(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	ret, err := model.ParseKubeSecret(secretAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)

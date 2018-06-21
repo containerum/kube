@@ -8,6 +8,7 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
 	"github.com/containerum/cherry/adaptors/gonic"
+	"github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
@@ -57,7 +58,7 @@ func GetServiceList(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	ret, err := model.ParseKubeServiceList(svcList, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -113,7 +114,7 @@ func GetServiceSolutionList(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	ret, err := model.ParseKubeServiceList(svcList, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -169,7 +170,7 @@ func GetService(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	ret, err := model.ParseKubeService(svc, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -236,7 +237,7 @@ func CreateService(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	ret, err := model.ParseKubeService(svcAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -325,7 +326,7 @@ func UpdateService(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	ret, err := model.ParseKubeService(updatedService, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)

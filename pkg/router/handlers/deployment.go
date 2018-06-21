@@ -9,6 +9,7 @@ import (
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
 	"github.com/containerum/cherry/adaptors/gonic"
 	kube_types "github.com/containerum/kube-client/pkg/model"
+	"github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
@@ -64,7 +65,7 @@ func GetDeploymentList(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 
 	ret, err := model.ParseKubeDeploymentList(deploy, role == m.RoleUser)
 	if err != nil {
@@ -122,7 +123,7 @@ func GetDeploymentSolutionList(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 
 	ret, err := model.ParseKubeDeploymentList(deploy, role == m.RoleUser)
 	if err != nil {
@@ -180,7 +181,7 @@ func GetDeployment(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	ret, err := model.ParseKubeDeployment(deploy, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -260,7 +261,7 @@ func CreateDeployment(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	ret, err := model.ParseKubeDeployment(deployAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -347,7 +348,7 @@ func UpdateDeployment(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 
 	ret, err := model.ParseKubeDeployment(deployAfter, role == m.RoleUser)
 	if err != nil {
@@ -423,7 +424,7 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	ret, err := model.ParseKubeDeployment(deployAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -502,7 +503,7 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	ret, err := model.ParseKubeDeployment(deployAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)

@@ -8,6 +8,7 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
 	"github.com/containerum/cherry/adaptors/gonic"
+	"github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
@@ -58,7 +59,7 @@ func GetVolumeList(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	ret, err := model.ParseKubePersistentVolumeClaimList(svcList, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -114,7 +115,7 @@ func GetVolume(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	ret, err := model.ParseKubePersistentVolumeClaim(svc, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -181,7 +182,7 @@ func CreateVolume(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	ret, err := model.ParseKubePersistentVolumeClaim(pvcAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -263,7 +264,7 @@ func UpdateVolume(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	ret, err := model.ParseKubePersistentVolumeClaim(updatedPvc, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)

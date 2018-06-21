@@ -12,6 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/containerum/cherry/adaptors/gonic"
+	"github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/gin/binding"
 )
 
@@ -35,7 +36,7 @@ const (
 //    required: false
 // responses:
 //  '200':
-//    description: ingresses list
+//    description: namespaces list
 //    schema:
 //      $ref: '#/definitions/NamespacesList'
 //  default:
@@ -43,7 +44,7 @@ const (
 func GetNamespaceList(ctx *gin.Context) {
 	owner := ctx.Query(ownerQuery)
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 
 	log.WithField("Owner", owner).Debug("Get namespace list Call")
 
@@ -103,7 +104,7 @@ func GetNamespace(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx)
 	ret, err := model.ParseKubeResourceQuota(quota)
 	if err != nil {
 		ctx.Error(err)
@@ -113,7 +114,8 @@ func GetNamespace(ctx *gin.Context) {
 
 	if role == m.RoleUser {
 		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
-		ret = model.ParseForUser(ret, *nsList)
+		parsed := model.ParseForUser(ret, *nsList)
+		ret = &parsed
 	}
 
 	ctx.JSON(http.StatusOK, ret)

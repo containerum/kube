@@ -9,6 +9,7 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"git.containerum.net/ch/kube-api/pkg/clients"
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/router"
 	"github.com/sirupsen/logrus"
@@ -25,8 +26,9 @@ func initServer(c *cli.Context) error {
 	setupLogs(c)
 
 	kube := kubernetes.Kube{}
+	access := clients.NewPermissionsAccessHTTPClient(c.String("permissions_addr"))
 	go exitOnErr(kube.RegisterClient(c.String("kubeconf")))
-	app := router.CreateRouter(&kube, c.Bool("cors"))
+	app := router.CreateRouter(&kube, access, c.Bool("cors"))
 
 	srv := &http.Server{
 		Addr:    ":" + c.String("port"),

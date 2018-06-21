@@ -33,6 +33,12 @@ var flags = []cli.Flag{
 		Name:   "cors",
 		Usage:  "enable CORS",
 	},
+	cli.StringFlag{
+		EnvVar: "CH_KUBE_PERMISSIONS_ADDR",
+		Name:   "permissions_addr",
+		Value:  "http://permissions:4242",
+		Usage:  "permissions service URL",
+	},
 }
 
 func setupLogs(c *cli.Context) {

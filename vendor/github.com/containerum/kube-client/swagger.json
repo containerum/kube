@@ -2,10 +2,6 @@
   "swagger": "2.0",
   "paths": {},
   "definitions": {
-    "AccessLevel": {
-      "type": "string",
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
-    },
     "AvailableSolution": {
       "description": "AvailableSolution -- solution which user can run",
       "type": "object",
@@ -459,7 +455,7 @@
       ],
       "properties": {
         "access": {
-          "$ref": "#/definitions/AccessLevel"
+          "$ref": "#/definitions/UserGroupAccess"
         },
         "created_at": {
           "description": "creation date in RFC3339 format",
@@ -707,7 +703,7 @@
       "type": "object",
       "properties": {
         "access": {
-          "$ref": "#/definitions/AccessLevel"
+          "$ref": "#/definitions/UserGroupAccess"
         },
         "username": {
           "type": "string",
@@ -1048,7 +1044,7 @@
       "type": "object",
       "properties": {
         "access_level": {
-          "$ref": "#/definitions/AccessLevel"
+          "$ref": "#/definitions/UserGroupAccess"
         },
         "username": {
           "type": "string",
@@ -1160,7 +1156,7 @@
       ],
       "properties": {
         "access": {
-          "$ref": "#/definitions/AccessLevel"
+          "$ref": "#/definitions/UserGroupAccess"
         },
         "id": {
           "description": "hosting-internal name",
@@ -1268,7 +1264,7 @@
       "type": "object",
       "properties": {
         "access": {
-          "$ref": "#/definitions/AccessLevel"
+          "$ref": "#/definitions/UserGroupAccess"
         },
         "access_mode": {
           "$ref": "#/definitions/PersistentVolumeAccessMode"

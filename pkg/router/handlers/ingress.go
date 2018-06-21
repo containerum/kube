@@ -9,6 +9,7 @@ import (
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
 	"github.com/containerum/cherry/adaptors/gonic"
 	kube_types "github.com/containerum/kube-client/pkg/model"
+	"github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
@@ -58,7 +59,7 @@ func GetIngressList(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	ret, err := model.ParseKubeIngressList(ingressList, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -115,7 +116,7 @@ func GetIngress(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	ret, err := model.ParseKubeIngress(ingress, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -183,7 +184,7 @@ func CreateIngress(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	ret, err := model.ParseKubeIngress(ingressAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -264,7 +265,7 @@ func UpdateIngress(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	ret, err := model.ParseKubeIngress(ingressAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -343,7 +344,7 @@ func GetSelectedIngresses(ctx *gin.Context) {
 
 	ingresses := make(kube_types.SelectedIngressesList, 0)
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	if role == m.RoleUser {
 		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
 		for _, n := range *nsList {

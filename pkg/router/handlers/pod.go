@@ -13,6 +13,7 @@ import (
 
 	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	"github.com/containerum/cherry/adaptors/gonic"
+	"github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
@@ -91,7 +92,7 @@ func GetPodList(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	podList := model.ParseKubePodList(pods, role == m.RoleUser)
 	ctx.JSON(http.StatusOK, podList)
 }
@@ -142,7 +143,7 @@ func GetPod(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserID(ctx.Request.Context())
 	po := model.ParseKubePod(pod, role == m.RoleUser)
 	ctx.JSON(http.StatusOK, po)
 }
