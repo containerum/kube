@@ -19,7 +19,7 @@ const (
 	volumeParam = "volume"
 )
 
-// swagger:operation GET /namespaces/{namespace}/volumes Volume GetVolumeList
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/volumes Volume GetVolumeList
 // Get volumes list.
 //
 // ---
@@ -28,6 +28,10 @@ const (
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -69,7 +73,7 @@ func GetVolumeList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation GET /namespaces/{namespace}/volumes/{volume} Volume GetVolume
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/volumes/{volume} Volume GetVolume
 // Get volumes list.
 //
 // ---
@@ -78,6 +82,10 @@ func GetVolumeList(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -126,7 +134,7 @@ func GetVolume(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation POST /namespaces/{namespace}/volume Volume CreateVolume
+// swagger:operation POST /projects/{project}/namespaces/{namespace}/volume Volume CreateVolume
 // Create volume.
 //
 // ---
@@ -135,6 +143,10 @@ func GetVolume(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -191,7 +203,7 @@ func CreateVolume(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
-// swagger:operation PUT /namespaces/{namespace}/volumes/{volume} Volume UpdateVolume
+// swagger:operation PUT /projects/{project}/namespaces/{namespace}/volumes/{volume} Volume UpdateVolume
 // Update volume.
 //
 // ---
@@ -200,6 +212,10 @@ func CreateVolume(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -273,7 +289,7 @@ func UpdateVolume(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, ret)
 }
 
-// swagger:operation DELETE /namespaces/{namespace}/volume/{volume} Volume DeleteVolume
+// swagger:operation DELETE /projects/{project}/namespaces/{namespace}/volume/{volume} Volume DeleteVolume
 // Delete volume.
 //
 // ---
@@ -282,6 +298,10 @@ func UpdateVolume(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string

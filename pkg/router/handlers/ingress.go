@@ -19,7 +19,7 @@ const (
 	ingressParam = "ingress"
 )
 
-// swagger:operation GET /namespaces/{namespace}/ingresses Ingress GetIngressList
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/ingresses Ingress GetIngressList
 // Get ingresses list.
 //
 // ---
@@ -28,6 +28,10 @@ const (
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -70,7 +74,7 @@ func GetIngressList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation GET /namespaces/{namespace}/ingresses/{ingress} Ingress GetIngress
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/ingresses/{ingress} Ingress GetIngress
 // Get ingresses list.
 //
 // ---
@@ -79,6 +83,10 @@ func GetIngressList(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -127,7 +135,7 @@ func GetIngress(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation POST /namespaces/{namespace}/ingresses Ingress CreateIngress
+// swagger:operation POST /projects/{project}/namespaces/{namespace}/ingresses Ingress CreateIngress
 // Create ingress.
 //
 // ---
@@ -136,6 +144,10 @@ func GetIngress(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -193,7 +205,7 @@ func CreateIngress(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
-// swagger:operation PUT /namespaces/{namespace}/ingresses/{ingress} Ingress UpdateIngress
+// swagger:operation PUT /projects/{project}/namespaces/{namespace}/ingresses/{ingress} Ingress UpdateIngress
 // Update ingress.
 //
 // ---
@@ -202,6 +214,10 @@ func CreateIngress(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -274,7 +290,7 @@ func UpdateIngress(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, ret)
 }
 
-// swagger:operation DELETE /namespaces/{namespace}/ingresses/{ingress} Ingress DeleteIngress
+// swagger:operation DELETE /projects/{project}/namespaces/{namespace}/ingresses/{ingress} Ingress DeleteIngress
 // Delete ingress.
 //
 // ---
@@ -283,6 +299,10 @@ func UpdateIngress(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string

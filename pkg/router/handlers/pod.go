@@ -46,7 +46,7 @@ var wsupgrader = websocket.Upgrader{
 	},
 }
 
-// swagger:operation GET /namespaces/{namespace}/pods Pod GetPodList
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/pods Pod GetPodList
 // Get pods list.
 //
 // ---
@@ -55,6 +55,10 @@ var wsupgrader = websocket.Upgrader{
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -97,7 +101,7 @@ func GetPodList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, podList)
 }
 
-// swagger:operation GET /namespaces/{namespace}/pods/{pod} Pod GetPod
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/pods/{pod} Pod GetPod
 // Get pod.
 //
 // ---
@@ -106,6 +110,10 @@ func GetPodList(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -148,7 +156,7 @@ func GetPod(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, po)
 }
 
-// swagger:operation DELETE /namespaces/{namespace}/pods/{pod} Pod DeletePod
+// swagger:operation DELETE /projects/{project}/namespaces/{namespace}/pods/{pod} Pod DeletePod
 // Delete pod.
 //
 // ---
@@ -157,6 +165,10 @@ func GetPod(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -194,7 +206,7 @@ func DeletePod(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
-// swagger:operation GET /namespaces/{namespace}/pods/{pod}/log Pod GetPodLogs
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/pods/{pod}/log Pod GetPodLogs
 // Get pod logs.
 //
 // ---
@@ -207,6 +219,10 @@ func DeletePod(ctx *gin.Context) {
 //  - $ref: '#/parameters/ConnectionHeader'
 //  - $ref: '#/parameters/SecWebSocketKeyHeader'
 //  - $ref: '#/parameters/SecWebsocketVersionHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string

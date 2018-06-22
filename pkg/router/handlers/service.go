@@ -18,7 +18,7 @@ const (
 	serviceParam = "service"
 )
 
-// swagger:operation GET /namespaces/{namespace}/services Service GetServiceList
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/services Service GetServiceList
 // Get services list.
 //
 // ---
@@ -27,6 +27,10 @@ const (
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -68,7 +72,7 @@ func GetServiceList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation GET /namespaces/{namespace}/solutions/{solution}/services Service GetServiceSolutionList
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/solutions/{solution}/services Service GetServiceSolutionList
 // Get solution services list.
 //
 // ---
@@ -77,6 +81,10 @@ func GetServiceList(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -124,7 +132,7 @@ func GetServiceSolutionList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation GET /namespaces/{namespace}/services/{service} Service GetService
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/services/{service} Service GetService
 // Get services list.
 //
 // ---
@@ -133,6 +141,10 @@ func GetServiceSolutionList(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -181,7 +193,7 @@ func GetService(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation POST /namespaces/{namespace}/services Service CreateService
+// swagger:operation POST /projects/{project}/namespaces/{namespace}/services Service CreateService
 // Create service.
 //
 // ---
@@ -190,6 +202,10 @@ func GetService(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -246,7 +262,7 @@ func CreateService(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
-// swagger:operation PUT /namespaces/{namespace}/services/{service} Service UpdateService
+// swagger:operation PUT /projects/{project}/namespaces/{namespace}/services/{service} Service UpdateService
 // Update service.
 //
 // ---
@@ -255,6 +271,10 @@ func CreateService(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -335,7 +355,7 @@ func UpdateService(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, ret)
 }
 
-// swagger:operation DELETE /namespaces/{namespace}/services/{service} Service DeleteService
+// swagger:operation DELETE /projects/{project}/namespaces/{namespace}/services/{service} Service DeleteService
 // Delete service.
 //
 // ---
@@ -344,6 +364,10 @@ func UpdateService(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -381,7 +405,7 @@ func DeleteService(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
-// swagger:operation DELETE /namespaces/{namespace}/solutions/{solution}/services Service DeleteServicesSolution
+// swagger:operation DELETE /projects/{project}/namespaces/{namespace}/solutions/{solution}/services Service DeleteServicesSolution
 // Delete solution services.
 //
 // ---
@@ -390,6 +414,10 @@ func DeleteService(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string

@@ -70,7 +70,7 @@ func GetNamespaceList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation GET /namespaces/{namespace} Namespace GetNamespace
+// swagger:operation GET /projects/{project}/namespaces/{namespace} Namespace GetNamespace
 // Get namespace.
 //
 // ---
@@ -79,6 +79,10 @@ func GetNamespaceList(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -185,7 +189,7 @@ func CreateNamespace(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
-// swagger:operation PUT /namespaces/{namespace} Namespace UpdateNamespace
+// swagger:operation PUT /projects/{project}/namespaces/{namespace} Namespace UpdateNamespace
 // Update namespace.
 //
 // ---
@@ -194,6 +198,10 @@ func CreateNamespace(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -253,7 +261,7 @@ func UpdateNamespace(ctx *gin.Context) {
 
 }
 
-// swagger:operation DELETE /namespaces/{namespace} Namespace DeleteNamespace
+// swagger:operation DELETE /projects/{project}/namespaces/{namespace} Namespace DeleteNamespace
 // Delete namespace.
 //
 // ---
@@ -262,6 +270,10 @@ func UpdateNamespace(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string

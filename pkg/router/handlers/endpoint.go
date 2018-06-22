@@ -17,7 +17,7 @@ const (
 	endpointParam = "endpoint"
 )
 
-// swagger:operation GET /namespaces/{namespace}/endpoints Endpoint GetEndpointList
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/endpoints Endpoint GetEndpointList
 // Get endpoints list.
 //
 // ---
@@ -26,6 +26,10 @@ const (
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -67,7 +71,7 @@ func GetEndpointList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation GET /namespaces/{namespace}/endpoints/{endpoint} Endpoint GetEndpoint
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/endpoints/{endpoint} Endpoint GetEndpoint
 // Get endpoint.
 //
 // ---
@@ -76,6 +80,10 @@ func GetEndpointList(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -124,7 +132,7 @@ func GetEndpoint(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation POST /namespaces/{namespace}/endpoints Endpoint CreateEndpoint
+// swagger:operation POST /projects/{project}/namespaces/{namespace}/endpoints Endpoint CreateEndpoint
 // Create endpoint.
 //
 // ---
@@ -133,6 +141,10 @@ func GetEndpoint(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -188,7 +200,7 @@ func CreateEndpoint(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
-// swagger:operation PUT /namespaces/{namespace}/endpoints/{endpoint} Endpoint UpdateEndpoint
+// swagger:operation PUT /projects/{project}/namespaces/{namespace}/endpoints/{endpoint} Endpoint UpdateEndpoint
 // Update endpoint.
 //
 // ---
@@ -197,6 +209,10 @@ func CreateEndpoint(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -267,7 +283,7 @@ func UpdateEndpoint(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, ret)
 }
 
-// swagger:operation DELETE /namespaces/{namespace}/endpoints/{endpoint} Endpoint DeleteEndpoint
+// swagger:operation DELETE /projects/{project}/namespaces/{namespace}/endpoints/{endpoint} Endpoint DeleteEndpoint
 // Delete endpoint.
 //
 // ---
@@ -276,6 +292,10 @@ func UpdateEndpoint(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string

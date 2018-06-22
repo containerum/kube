@@ -19,7 +19,7 @@ const (
 	configMapParam = "configmap"
 )
 
-// swagger:operation GET /namespaces/{namespace}/configmaps ConfigMap GetConfigMapList
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/configmaps ConfigMap GetConfigMapList
 // Get config maps list.
 //
 // ---
@@ -28,6 +28,10 @@ const (
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -70,7 +74,7 @@ func GetConfigMapList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation GET /namespaces/{namespace}/configmaps/{configmap} ConfigMap GetConfigMap
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/configmaps/{configmap} ConfigMap GetConfigMap
 // Get config map.
 //
 // ---
@@ -79,6 +83,10 @@ func GetConfigMapList(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -127,7 +135,7 @@ func GetConfigMap(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation POST /namespaces/{namespace}/configmaps ConfigMap CreateConfigMap
+// swagger:operation POST /projects/{project}/namespaces/{namespace}/configmaps ConfigMap CreateConfigMap
 // Create config map.
 //
 // ---
@@ -136,6 +144,10 @@ func GetConfigMap(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -194,7 +206,7 @@ func CreateConfigMap(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
-// swagger:operation PUT /namespaces/{namespace}/configmaps/{configmap} ConfigMap UpdateConfigMap
+// swagger:operation PUT /projects/{project}/namespaces/{namespace}/configmaps/{configmap} ConfigMap UpdateConfigMap
 // Update config map.
 //
 // ---
@@ -203,6 +215,10 @@ func CreateConfigMap(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -275,7 +291,7 @@ func UpdateConfigMap(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, ret)
 }
 
-// swagger:operation DELETE /namespaces/{namespace}/configmaps/{configmap} ConfigMap DeleteConfigMap
+// swagger:operation DELETE /projects/{project}/namespaces/{namespace}/configmaps/{configmap} ConfigMap DeleteConfigMap
 // Delete config map.
 //
 // ---
@@ -284,6 +300,10 @@ func UpdateConfigMap(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string

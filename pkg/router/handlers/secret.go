@@ -18,7 +18,7 @@ const (
 	secretParam = "secret"
 )
 
-// swagger:operation GET /namespaces/{namespace}/secrets Secret GetSecretList
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/secrets Secret GetSecretList
 // Get secrets list.
 //
 // ---
@@ -27,6 +27,10 @@ const (
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -69,7 +73,7 @@ func GetSecretList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation GET /namespaces/{namespace}/secrets/{secret} Secret GetSecret
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/secrets/{secret} Secret GetSecret
 // Get secret.
 //
 // ---
@@ -78,6 +82,10 @@ func GetSecretList(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -126,7 +134,7 @@ func GetSecret(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation POST /namespaces/{namespace}/secrets Secret CreateSecret
+// swagger:operation POST /projects/{project}/namespaces/{namespace}/secrets Secret CreateSecret
 // Create secret.
 //
 // ---
@@ -135,6 +143,10 @@ func GetSecret(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -192,7 +204,7 @@ func CreateSecret(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
-// swagger:operation PUT /namespaces/{namespace}/secrets/{secret} Secret UpdateSecret
+// swagger:operation PUT /projects/{project}/namespaces/{namespace}/secrets/{secret} Secret UpdateSecret
 // Update secret.
 //
 // ---
@@ -201,6 +213,10 @@ func CreateSecret(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -273,7 +289,7 @@ func UpdateSecret(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, ret)
 }
 
-// swagger:operation DELETE /namespaces/{namespace}/secrets/{secret} Secret DeleteSecret
+// swagger:operation DELETE /projects/{project}/namespaces/{namespace}/secrets/{secret} Secret DeleteSecret
 // Delete secret.
 //
 // ---
@@ -282,6 +298,10 @@ func UpdateSecret(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
