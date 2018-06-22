@@ -3,7 +3,7 @@ package model
 // SelectedIngressesList -- model for ingresses list from all namespaces
 //
 // swagger:model
-type SelectedIngressesList map[string]IngressesList
+type SelectedIngressesList map[string]map[string]IngressesList
 
 // IngressesList -- model for ingresses list
 //

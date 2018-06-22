@@ -362,6 +362,7 @@ func GetSelectedIngresses(ctx *gin.Context) {
 	if role == m.RoleUser {
 		accesses := ctx.Request.Context().Value(httputil.AllAccessContext).([]httputil.ProjectAccess)
 		for _, p := range accesses {
+			ingressesns := make(map[string]kube_types.IngressesList, 0)
 			for _, n := range p.NamespacesAccesses {
 				ingressList, err := kube.GetIngressList(n.NamespaceID)
 				if err != nil {
@@ -373,7 +374,12 @@ func GetSelectedIngresses(ctx *gin.Context) {
 					gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
 					return
 				}
-				ingresses[n.NamespaceID] = *ingress
+				if len(ingress.Ingress) > 0 {
+					ingressesns[n.NamespaceID] = *ingress
+				}
+			}
+			if len(ingressesns) > 0 {
+				ingresses[p.ProjectID] = ingressesns
 			}
 		}
 	}

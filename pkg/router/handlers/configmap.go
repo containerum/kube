@@ -363,6 +363,7 @@ func GetSelectedConfigMaps(ctx *gin.Context) {
 	if role == m.RoleUser {
 		accesses := ctx.Request.Context().Value(httputil.AllAccessContext).([]httputil.ProjectAccess)
 		for _, p := range accesses {
+			cmns := make(map[string]kube_types.ConfigMapsList, 0)
 			for _, n := range p.NamespacesAccesses {
 				cmList, err := kube.GetConfigMapList(n.NamespaceID)
 				if err != nil {
@@ -374,7 +375,12 @@ func GetSelectedConfigMaps(ctx *gin.Context) {
 					gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
 					return
 				}
-				ret[n.NamespaceID] = *cm
+				if len(cm.ConfigMaps) > 0 {
+					cmns[n.NamespaceID] = *cm
+				}
+			}
+			if len(cmns) > 0 {
+				ret[p.ProjectID] = cmns
 			}
 		}
 	}

@@ -35,8 +35,8 @@
     ".",
     "pkg/model"
   ]
-  revision = "f2a038b8d89980f642671645b07eda421bd03e12"
-  version = "v0.25.0"
+  revision = "0fda941d870a440d28dc33201c5bea1207b70067"
+  version = "v0.26.0"
 
 [[projects]]
   name = "github.com/containerum/utils"
@@ -539,6 +539,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "40108a841fc07e030a95bf94bf028fa3bf115d96df028a18a623af261bf352d6"
+  inputs-digest = "654aea4dbf0f8e8b7d8397df26b4faac303bfcae0e04d70659219c8aba3b0360"
   solver-name = "gps-cdcl"
   solver-version = 1
