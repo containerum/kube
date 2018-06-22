@@ -62,7 +62,7 @@ func GetServiceList(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeServiceList(svcList, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -122,7 +122,7 @@ func GetServiceSolutionList(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeServiceList(svcList, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -182,7 +182,7 @@ func GetService(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeService(svc, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -253,7 +253,7 @@ func CreateService(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeService(svcAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -346,7 +346,7 @@ func UpdateService(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeService(updatedService, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)

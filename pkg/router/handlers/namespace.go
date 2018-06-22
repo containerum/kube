@@ -44,7 +44,7 @@ const (
 func GetNamespaceList(ctx *gin.Context) {
 	owner := ctx.Query(ownerQuery)
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 
 	log.WithField("Owner", owner).Debug("Get namespace list Call")
 
@@ -64,7 +64,7 @@ func GetNamespaceList(ctx *gin.Context) {
 	}
 
 	if role == m.RoleUser {
-		accesses := ctx.MustGet(httputil.AllAccessContext).([]httputil.ProjectAccess)
+		accesses := ctx.Request.Context().Value(httputil.AllAccessContext).([]httputil.ProjectAccess)
 		ret = model.ParseNamespaceListForUser(accesses, ctx.Param("project"), ret.Namespaces)
 	}
 	ctx.JSON(http.StatusOK, ret)
@@ -108,7 +108,7 @@ func GetNamespace(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 
 	ret, err := model.ParseKubeResourceQuota(quota)
 	if err != nil {
@@ -118,7 +118,7 @@ func GetNamespace(ctx *gin.Context) {
 	}
 
 	if role == m.RoleUser {
-		access := ctx.MustGet(httputil.AccessContext).(httputil.NamespaceAccess)
+		access := ctx.Request.Context().Value(httputil.AccessContext).(httputil.NamespaceAccess)
 		ret = model.ParseForUser(access, ret)
 	}
 

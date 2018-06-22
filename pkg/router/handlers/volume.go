@@ -63,7 +63,7 @@ func GetVolumeList(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubePersistentVolumeClaimList(svcList, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -123,7 +123,7 @@ func GetVolume(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubePersistentVolumeClaim(svc, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -194,7 +194,7 @@ func CreateVolume(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubePersistentVolumeClaim(pvcAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -280,7 +280,7 @@ func UpdateVolume(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubePersistentVolumeClaim(updatedPvc, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)

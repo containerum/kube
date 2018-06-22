@@ -15,14 +15,14 @@ import (
 
 // EndpointsList -- model for endpoints list
 //
-// swagger:model
+// swagger:ignore
 type EndpointsList struct {
 	Endpoints []Endpoint `json:"endpoints"`
 }
 
 // Endpoint -- model for endpoint
 //
-// swagger:model
+// swagger:ignore
 type Endpoint struct {
 	// required: true
 	Name  string `json:"name"`
@@ -37,7 +37,7 @@ type Endpoint struct {
 
 // Port -- model for endpoint port
 //
-// swagger:model
+// swagger:ignore
 type Port struct {
 	// required: true
 	Name string `json:"name"`

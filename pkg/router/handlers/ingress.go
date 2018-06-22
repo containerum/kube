@@ -63,7 +63,7 @@ func GetIngressList(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeIngressList(ingressList, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -124,7 +124,7 @@ func GetIngress(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeIngress(ingress, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -196,7 +196,7 @@ func CreateIngress(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeIngress(ingressAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -281,7 +281,7 @@ func UpdateIngress(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeIngress(ingressAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -364,9 +364,9 @@ func GetSelectedIngresses(ctx *gin.Context) {
 
 	ingresses := make(kube_types.SelectedIngressesList, 0)
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	if role == m.RoleUser {
-		accesses := ctx.MustGet(httputil.AllAccessContext).([]httputil.ProjectAccess)
+		accesses := ctx.Request.Context().Value(httputil.AllAccessContext).([]httputil.ProjectAccess)
 		for _, p := range accesses {
 			for _, n := range p.NamespacesAccesses {
 				ingressList, err := kube.GetIngressList(n.NamespaceID)

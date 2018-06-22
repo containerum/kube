@@ -62,7 +62,7 @@ func GetSecretList(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeSecretList(secrets, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -123,7 +123,7 @@ func GetSecret(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeSecret(secret, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -195,7 +195,7 @@ func CreateSecret(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeSecret(secretAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -280,7 +280,7 @@ func UpdateSecret(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeSecret(secretAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)

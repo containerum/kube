@@ -96,7 +96,7 @@ func GetPodList(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	podList := model.ParseKubePodList(pods, role == m.RoleUser)
 	ctx.JSON(http.StatusOK, podList)
 }
@@ -151,7 +151,7 @@ func GetPod(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	po := model.ParseKubePod(pod, role == m.RoleUser)
 	ctx.JSON(http.StatusOK, po)
 }

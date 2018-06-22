@@ -69,7 +69,7 @@ func GetDeploymentList(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 
 	ret, err := model.ParseKubeDeploymentList(deploy, role == m.RoleUser)
 	if err != nil {
@@ -131,7 +131,7 @@ func GetDeploymentSolutionList(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 
 	ret, err := model.ParseKubeDeploymentList(deploy, role == m.RoleUser)
 	if err != nil {
@@ -193,7 +193,7 @@ func GetDeployment(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeDeployment(deploy, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -277,7 +277,7 @@ func CreateDeployment(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeDeployment(deployAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -368,7 +368,7 @@ func UpdateDeployment(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 
 	ret, err := model.ParseKubeDeployment(deployAfter, role == m.RoleUser)
 	if err != nil {
@@ -448,7 +448,7 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeDeployment(deployAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -531,7 +531,7 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeDeployment(deployAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)

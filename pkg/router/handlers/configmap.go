@@ -63,7 +63,7 @@ func GetConfigMapList(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeConfigMapList(cmList, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -124,7 +124,7 @@ func GetConfigMap(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeConfigMap(cm, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -197,7 +197,7 @@ func CreateConfigMap(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeConfigMap(cmAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -282,7 +282,7 @@ func UpdateConfigMap(ctx *gin.Context) {
 		return
 	}
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeConfigMap(cmAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -365,9 +365,9 @@ func GetSelectedConfigMaps(ctx *gin.Context) {
 
 	ret := make(kube_types.SelectedConfigMapsList, 0)
 
-	role := httputil.MustGetUserID(ctx.Request.Context())
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	if role == m.RoleUser {
-		accesses := ctx.MustGet(httputil.AllAccessContext).([]httputil.ProjectAccess)
+		accesses := ctx.Request.Context().Value(httputil.AllAccessContext).([]httputil.ProjectAccess)
 		for _, p := range accesses {
 			for _, n := range p.NamespacesAccesses {
 				cmList, err := kube.GetConfigMapList(n.NamespaceID)
