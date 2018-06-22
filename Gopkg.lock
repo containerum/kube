@@ -312,7 +312,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "7f39a6fea4fe9364fb61e1def6a268a51b4f3a06"
+  revision = "a49355c7e3f8fe157a85be2f77e6e269a0f89602"
 
 [[projects]]
   branch = "master"
@@ -327,7 +327,7 @@
     "webdav",
     "webdav/internal/xml"
   ]
-  revision = "db08ff08e8622530d9ed3a0e8ac279f6d4c02196"
+  revision = "afe8f62b1d6bbd81f31868121a50b06d8188e1f9"
 
 [[projects]]
   branch = "master"
@@ -336,7 +336,7 @@
     "unix",
     "windows"
   ]
-  revision = "ad87a3a340fa7f3bed189293fbfa7a9b7e021ae1"
+  revision = "63fc586f45fe72d95d5240a5d5eb95e6503907d3"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -533,12 +533,12 @@
 [[projects]]
   name = "k8s.io/kubernetes"
   packages = ["pkg/api/legacyscheme"]
-  revision = "5ca598b4ba5abb89bb773071ce452e33fb66339d"
-  version = "v1.10.4"
+  revision = "32ac1c9073b132b8ba18aa830f46b77dcceb0723"
+  version = "v1.10.5"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5e25be5ea9554f90e9a5542494df799989decf1a19073eaa10e3ba28fe8f10b7"
+  inputs-digest = "40108a841fc07e030a95bf94bf028fa3bf115d96df028a18a623af261bf352d6"
   solver-name = "gps-cdcl"
   solver-version = 1

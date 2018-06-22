@@ -2,7 +2,7 @@ package httputil
 
 import (
 	"context"
-"fmt"
+
 	"github.com/containerum/cherry"
 	"github.com/containerum/cherry/adaptors/gonic"
 	kubeModel "github.com/containerum/kube-client/pkg/model"
@@ -71,8 +71,6 @@ func (a *AccessChecker) SaveAllAccesses() gin.HandlerFunc {
 			gonic.Gonic(a.AccessError(), ctx)
 			return
 		}
-
-		fmt.Println("TETETETTETETTETET", namespaceAccess)
 
 		rctx := context.WithValue(ctx.Request.Context(), AllAccessContext, namespaceAccess)
 		ctx.Request = ctx.Request.WithContext(rctx)
