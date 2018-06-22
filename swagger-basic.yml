@@ -4,8 +4,6 @@ parameters:
     $ref: "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserIDHeader"
   UserRoleHeader:
     $ref: "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserRoleHeader"
-  UserNamespaceHeader:
-    $ref: "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserNamespacesHeader"
   UpgradeHeader:
     name: Upgrade
     in: header
