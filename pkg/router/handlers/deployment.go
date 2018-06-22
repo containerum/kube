@@ -9,6 +9,7 @@ import (
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
 	"github.com/containerum/cherry/adaptors/gonic"
 	kube_types "github.com/containerum/kube-client/pkg/model"
+	"github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
@@ -19,7 +20,7 @@ const (
 	solutionParam   = "solution"
 )
 
-// swagger:operation GET /namespaces/{namespace}/deployments Deployment GetDeploymentList
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/deployments Deployment GetDeploymentList
 // Get deployments list.
 //
 // ---
@@ -27,7 +28,10 @@ const (
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -64,7 +68,7 @@ func GetDeploymentList(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 
 	ret, err := model.ParseKubeDeploymentList(deploy, role == m.RoleUser)
 	if err != nil {
@@ -76,7 +80,7 @@ func GetDeploymentList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation GET /namespaces/{namespace}/solutions/{solution}/deployments Deployment GetDeploymentSolutionList
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/solutions/{solution}/deployments Deployment GetDeploymentSolutionList
 // Get solution deployments list.
 //
 // ---
@@ -84,7 +88,10 @@ func GetDeploymentList(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -122,7 +129,7 @@ func GetDeploymentSolutionList(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 
 	ret, err := model.ParseKubeDeploymentList(deploy, role == m.RoleUser)
 	if err != nil {
@@ -134,7 +141,7 @@ func GetDeploymentSolutionList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation GET /namespaces/{namespace}/deployments/{deployment} Deployment GetDeployment
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/deployments/{deployment} Deployment GetDeployment
 // Get deployment.
 //
 // ---
@@ -142,7 +149,10 @@ func GetDeploymentSolutionList(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -180,7 +190,7 @@ func GetDeployment(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeDeployment(deploy, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -191,7 +201,7 @@ func GetDeployment(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation POST /namespaces/{namespace}/deployments Deployment CreateDeployment
+// swagger:operation POST /projects/{project}/namespaces/{namespace}/deployments Deployment CreateDeployment
 // Create deployment.
 //
 // ---
@@ -199,7 +209,10 @@ func GetDeployment(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -260,7 +273,7 @@ func CreateDeployment(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeDeployment(deployAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -268,7 +281,7 @@ func CreateDeployment(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
-// swagger:operation PUT /namespaces/{namespace}/deployments/{deployment} Deployment UpdateDeployment
+// swagger:operation PUT /projects/{project}/namespaces/{namespace}/deployments/{deployment} Deployment UpdateDeployment
 // Update deployment.
 //
 // ---
@@ -276,7 +289,10 @@ func CreateDeployment(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -347,7 +363,7 @@ func UpdateDeployment(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 
 	ret, err := model.ParseKubeDeployment(deployAfter, role == m.RoleUser)
 	if err != nil {
@@ -357,7 +373,7 @@ func UpdateDeployment(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, ret)
 }
 
-// swagger:operation PUT /namespaces/{namespace}/deployments/{deployment}/replicas Deployment UpdateDeploymentReplicas
+// swagger:operation PUT /projects/{project}/namespaces/{namespace}/deployments/{deployment}/replicas Deployment UpdateDeploymentReplicas
 // Update deployments replicas count.
 //
 // ---
@@ -365,7 +381,10 @@ func UpdateDeployment(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -423,7 +442,7 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeDeployment(deployAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -432,7 +451,7 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, ret)
 }
 
-// swagger:operation PUT /namespaces/{namespace}/deployments/{deployment}/image Deployment UpdateDeploymentImage
+// swagger:operation PUT /projects/{project}/namespaces/{namespace}/deployments/{deployment}/image Deployment UpdateDeploymentImage
 // Update image in deployments container.
 //
 // ---
@@ -440,7 +459,10 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -502,7 +524,7 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeDeployment(deployAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -511,7 +533,7 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, ret)
 }
 
-// swagger:operation DELETE /namespaces/{namespace}/deployments/{deployment} Deployment DeleteDeployment
+// swagger:operation DELETE /projects/{project}/namespaces/{namespace}/deployments/{deployment} Deployment DeleteDeployment
 // Delete deployment.
 //
 // ---
@@ -519,7 +541,10 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -558,7 +583,7 @@ func DeleteDeployment(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
-// swagger:operation DELETE /namespaces/{namespace}/solutiosn/{solution}deployments Deployment DeleteDeploymentsSolution
+// swagger:operation DELETE /projects/{project}/namespaces/{namespace}/solutiosn/{solution}deployments Deployment DeleteDeploymentsSolution
 // Delete solution deployments.
 //
 // ---
@@ -566,7 +591,10 @@ func DeleteDeployment(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string

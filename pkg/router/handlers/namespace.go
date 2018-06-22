@@ -12,6 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/containerum/cherry/adaptors/gonic"
+	"github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/gin/binding"
 )
 
@@ -28,14 +29,13 @@ const (
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
 //  - name: owner
 //    in: query
 //    type: string
 //    required: false
 // responses:
 //  '200':
-//    description: ingresses list
+//    description: namespaces list
 //    schema:
 //      $ref: '#/definitions/NamespacesList'
 //  default:
@@ -43,7 +43,7 @@ const (
 func GetNamespaceList(ctx *gin.Context) {
 	owner := ctx.Query(ownerQuery)
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 
 	log.WithField("Owner", owner).Debug("Get namespace list Call")
 
@@ -63,13 +63,13 @@ func GetNamespaceList(ctx *gin.Context) {
 	}
 
 	if role == m.RoleUser {
-		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
-		ret = model.ParseNamespaceListForUser(*nsList, ret.Namespaces)
+		accesses := ctx.Request.Context().Value(httputil.AllAccessContext).([]httputil.ProjectAccess)
+		ret = model.ParseNamespaceListForUser(accesses, ctx.Param("project"), ret.Namespaces)
 	}
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation GET /namespaces/{namespace} Namespace GetNamespace
+// swagger:operation GET /projects/{project}/namespaces/{namespace} Namespace GetNamespace
 // Get namespace.
 //
 // ---
@@ -77,7 +77,10 @@ func GetNamespaceList(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -103,7 +106,8 @@ func GetNamespace(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserRole(ctx.Request.Context())
+
 	ret, err := model.ParseKubeResourceQuota(quota)
 	if err != nil {
 		ctx.Error(err)
@@ -112,8 +116,8 @@ func GetNamespace(ctx *gin.Context) {
 	}
 
 	if role == m.RoleUser {
-		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
-		ret = model.ParseForUser(ret, *nsList)
+		access := ctx.Request.Context().Value(httputil.AccessContext).(httputil.NamespaceAccess)
+		ret = model.ParseForUser(access, ret)
 	}
 
 	ctx.JSON(http.StatusOK, ret)
@@ -127,7 +131,6 @@ func GetNamespace(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
 //  - name: body
 //    in: body
 //    schema:
@@ -183,7 +186,7 @@ func CreateNamespace(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
-// swagger:operation PUT /namespaces/{namespace} Namespace UpdateNamespace
+// swagger:operation PUT /projects/{project}/namespaces/{namespace} Namespace UpdateNamespace
 // Update namespace.
 //
 // ---
@@ -191,7 +194,10 @@ func CreateNamespace(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -251,7 +257,7 @@ func UpdateNamespace(ctx *gin.Context) {
 
 }
 
-// swagger:operation DELETE /namespaces/{namespace} Namespace DeleteNamespace
+// swagger:operation DELETE /projects/{project}/namespaces/{namespace} Namespace DeleteNamespace
 // Delete namespace.
 //
 // ---
@@ -259,7 +265,10 @@ func UpdateNamespace(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string

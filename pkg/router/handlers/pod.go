@@ -13,6 +13,7 @@ import (
 
 	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	"github.com/containerum/cherry/adaptors/gonic"
+	"github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
@@ -45,7 +46,7 @@ var wsupgrader = websocket.Upgrader{
 	},
 }
 
-// swagger:operation GET /namespaces/{namespace}/pods Pod GetPodList
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/pods Pod GetPodList
 // Get pods list.
 //
 // ---
@@ -53,7 +54,10 @@ var wsupgrader = websocket.Upgrader{
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -91,12 +95,12 @@ func GetPodList(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	podList := model.ParseKubePodList(pods, role == m.RoleUser)
 	ctx.JSON(http.StatusOK, podList)
 }
 
-// swagger:operation GET /namespaces/{namespace}/pods/{pod} Pod GetPod
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/pods/{pod} Pod GetPod
 // Get pod.
 //
 // ---
@@ -104,7 +108,10 @@ func GetPodList(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -142,12 +149,12 @@ func GetPod(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	po := model.ParseKubePod(pod, role == m.RoleUser)
 	ctx.JSON(http.StatusOK, po)
 }
 
-// swagger:operation DELETE /namespaces/{namespace}/pods/{pod} Pod DeletePod
+// swagger:operation DELETE /projects/{project}/namespaces/{namespace}/pods/{pod} Pod DeletePod
 // Delete pod.
 //
 // ---
@@ -155,7 +162,10 @@ func GetPod(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -193,7 +203,7 @@ func DeletePod(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
-// swagger:operation GET /namespaces/{namespace}/pods/{pod}/log Pod GetPodLogs
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/pods/{pod}/log Pod GetPodLogs
 // Get pod logs.
 //
 // ---
@@ -201,11 +211,14 @@ func DeletePod(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
 //  - $ref: '#/parameters/UpgradeHeader'
 //  - $ref: '#/parameters/ConnectionHeader'
 //  - $ref: '#/parameters/SecWebSocketKeyHeader'
 //  - $ref: '#/parameters/SecWebsocketVersionHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string

@@ -9,6 +9,7 @@ import (
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
 	"github.com/containerum/cherry/adaptors/gonic"
 	kube_types "github.com/containerum/kube-client/pkg/model"
+	"github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
@@ -18,7 +19,7 @@ const (
 	configMapParam = "configmap"
 )
 
-// swagger:operation GET /namespaces/{namespace}/configmaps ConfigMap GetConfigMapList
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/configmaps ConfigMap GetConfigMapList
 // Get config maps list.
 //
 // ---
@@ -26,7 +27,10 @@ const (
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -58,7 +62,7 @@ func GetConfigMapList(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeConfigMapList(cmList, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -69,7 +73,7 @@ func GetConfigMapList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation GET /namespaces/{namespace}/configmaps/{configmap} ConfigMap GetConfigMap
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/configmaps/{configmap} ConfigMap GetConfigMap
 // Get config map.
 //
 // ---
@@ -77,7 +81,10 @@ func GetConfigMapList(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -115,7 +122,7 @@ func GetConfigMap(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeConfigMap(cm, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -126,7 +133,7 @@ func GetConfigMap(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation POST /namespaces/{namespace}/configmaps ConfigMap CreateConfigMap
+// swagger:operation POST /projects/{project}/namespaces/{namespace}/configmaps ConfigMap CreateConfigMap
 // Create config map.
 //
 // ---
@@ -134,7 +141,10 @@ func GetConfigMap(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -184,7 +194,7 @@ func CreateConfigMap(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeConfigMap(cmAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -193,7 +203,7 @@ func CreateConfigMap(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
-// swagger:operation PUT /namespaces/{namespace}/configmaps/{configmap} ConfigMap UpdateConfigMap
+// swagger:operation PUT /projects/{project}/namespaces/{namespace}/configmaps/{configmap} ConfigMap UpdateConfigMap
 // Update config map.
 //
 // ---
@@ -201,7 +211,10 @@ func CreateConfigMap(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -265,7 +278,7 @@ func UpdateConfigMap(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubeConfigMap(cmAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -274,7 +287,7 @@ func UpdateConfigMap(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, ret)
 }
 
-// swagger:operation DELETE /namespaces/{namespace}/configmaps/{configmap} ConfigMap DeleteConfigMap
+// swagger:operation DELETE /projects/{project}/namespaces/{namespace}/configmaps/{configmap} ConfigMap DeleteConfigMap
 // Delete config map.
 //
 // ---
@@ -282,7 +295,10 @@ func UpdateConfigMap(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -329,7 +345,6 @@ func DeleteConfigMap(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
 // responses:
 //  '200':
 //    description: config maps list from all users namespaces
@@ -344,23 +359,23 @@ func GetSelectedConfigMaps(ctx *gin.Context) {
 
 	ret := make(kube_types.SelectedConfigMapsList, 0)
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	if role == m.RoleUser {
-		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
-		for _, n := range *nsList {
-			cmList, err := kube.GetConfigMapList(n.ID)
-			if err != nil {
-				gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
-				return
+		accesses := ctx.Request.Context().Value(httputil.AllAccessContext).([]httputil.ProjectAccess)
+		for _, p := range accesses {
+			for _, n := range p.NamespacesAccesses {
+				cmList, err := kube.GetConfigMapList(n.NamespaceID)
+				if err != nil {
+					gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+					return
+				}
+				cm, err := model.ParseKubeConfigMapList(cmList, role == m.RoleUser)
+				if err != nil {
+					gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+					return
+				}
+				ret[n.NamespaceID] = *cm
 			}
-
-			cm, err := model.ParseKubeConfigMapList(cmList, role == m.RoleUser)
-			if err != nil {
-				gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
-				return
-			}
-
-			ret[n.ID] = *cm
 		}
 	}
 

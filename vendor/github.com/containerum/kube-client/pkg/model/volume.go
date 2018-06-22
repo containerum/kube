@@ -12,7 +12,7 @@ type Volume struct {
 	DeletedAt   string                     `json:"deleted_at,omitempty"`
 	Owner       string                     `json:"owner,omitempty"`
 	OwnerLogin  string                     `json:"owner_login,omitempty"`
-	Access      AccessLevel                `json:"access,omitempty"`
+	Access      UserGroupAccess            `json:"access,omitempty"`
 	TariffID    string                     `json:"tariff_id,omitempty"`
 	Capacity    uint                       `json:"capacity,omitempty"`
 	StorageName string                     `json:"storage_name,omitempty"` //AKA StorageClass

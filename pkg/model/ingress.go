@@ -10,6 +10,7 @@ import (
 
 	"time"
 
+	"golang.org/x/net/idna"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	api_validation "k8s.io/apimachinery/pkg/util/validation"
@@ -65,7 +66,7 @@ func parseRules(rules []api_extensions.IngressRule, secrets map[string]string) [
 
 	for _, v := range rules {
 		newRule := kube_types.Rule{}
-		newRule.Host = v.Host
+		newRule.Host, _ = idna.ToUnicode(v.Host)
 
 		secret, ok := secrets[newRule.Host]
 		if ok {

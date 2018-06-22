@@ -218,7 +218,7 @@
         "x-method-visibility": "private"
       }
     },
-    "/namespaces/{namespace}": {
+    "/projects/{project}/namespaces/{namespace}": {
       "get": {
         "tags": [
           "Namespace"
@@ -383,7 +383,7 @@
         "x-method-visibility": "private"
       }
     },
-    "/namespaces/{namespace}/configmaps": {
+    "/projects/{project}/namespaces/{namespace}/configmaps": {
       "get": {
         "tags": [
           "ConfigMap"
@@ -498,7 +498,7 @@
         "x-method-visibility": "public"
       }
     },
-    "/namespaces/{namespace}/configmaps/{configmap}": {
+    "/projects/{project}/namespaces/{namespace}/configmaps/{configmap}": {
       "get": {
         "tags": [
           "ConfigMap"
@@ -681,7 +681,7 @@
         "x-method-visibility": "public"
       }
     },
-    "/namespaces/{namespace}/deployments": {
+    "/projects/{project}/namespaces/{namespace}/deployments": {
       "get": {
         "tags": [
           "Deployment"
@@ -801,7 +801,7 @@
         "x-method-visibility": "private"
       }
     },
-    "/namespaces/{namespace}/deployments/{deployment}": {
+    "/projects/{project}/namespaces/{namespace}/deployments/{deployment}": {
       "get": {
         "tags": [
           "Deployment"
@@ -984,7 +984,7 @@
         "x-method-visibility": "private"
       }
     },
-    "/namespaces/{namespace}/deployments/{deployment}/image": {
+    "/projects/{project}/namespaces/{namespace}/deployments/{deployment}/image": {
       "put": {
         "tags": [
           "Deployment"
@@ -1052,7 +1052,7 @@
         "x-method-visibility": "private"
       }
     },
-    "/namespaces/{namespace}/deployments/{deployment}/replicas": {
+    "/projects/{project}/namespaces/{namespace}/deployments/{deployment}/replicas": {
       "put": {
         "tags": [
           "Deployment"
@@ -1120,7 +1120,7 @@
         "x-method-visibility": "private"
       }
     },
-    "/namespaces/{namespace}/endpoints": {
+    "/projects/{project}/namespaces/{namespace}/endpoints": {
       "get": {
         "tags": [
           "Endpoint"
@@ -1235,7 +1235,7 @@
         "x-method-visibility": "private"
       }
     },
-    "/namespaces/{namespace}/endpoints/{endpoint}": {
+    "/projects/{project}/namespaces/{namespace}/endpoints/{endpoint}": {
       "get": {
         "tags": [
           "Endpoint"
@@ -1418,7 +1418,7 @@
         "x-method-visibility": "private"
       }
     },
-    "/namespaces/{namespace}/ingresses": {
+    "/projects/{project}/namespaces/{namespace}/ingresses": {
       "get": {
         "tags": [
           "Ingress"
@@ -1533,7 +1533,7 @@
         "x-method-visibility": "private"
       }
     },
-    "/namespaces/{namespace}/ingresses/{ingress}": {
+    "/projects/{project}/namespaces/{namespace}/ingresses/{ingress}": {
       "get": {
         "tags": [
           "Ingress"
@@ -1716,7 +1716,7 @@
         "x-method-visibility": "private"
       }
     },
-    "/namespaces/{namespace}/pods": {
+    "/projects/{project}/namespaces/{namespace}/pods": {
       "get": {
         "tags": [
           "Pod"
@@ -1776,7 +1776,7 @@
         "x-method-visibility": "public"
       }
     },
-    "/namespaces/{namespace}/pods/{pod}": {
+    "/projects/{project}/namespaces/{namespace}/pods/{pod}": {
       "get": {
         "tags": [
           "Pod"
@@ -1893,7 +1893,7 @@
         "x-method-visibility": "public"
       }
     },
-    "/namespaces/{namespace}/pods/{pod}/log": {
+    "/projects/{project}/namespaces/{namespace}/pods/{pod}/log": {
       "get": {
         "tags": [
           "Pod"
@@ -1999,7 +1999,7 @@
         "x-method-visibility": "public"
       }
     },
-    "/namespaces/{namespace}/secrets": {
+    "/projects/{project}/namespaces/{namespace}/secrets": {
       "get": {
         "tags": [
           "Secret"
@@ -2114,7 +2114,7 @@
         "x-method-visibility": "private"
       }
     },
-    "/namespaces/{namespace}/secrets/{secret}": {
+    "/projects/{project}/namespaces/{namespace}/secrets/{secret}": {
       "get": {
         "tags": [
           "Secret"
@@ -2297,7 +2297,7 @@
         "x-method-visibility": "public"
       }
     },
-    "/namespaces/{namespace}/services": {
+    "/projects/{project}/namespaces/{namespace}/services": {
       "get": {
         "tags": [
           "Service"
@@ -2412,7 +2412,7 @@
         "x-method-visibility": "private"
       }
     },
-    "/namespaces/{namespace}/services/{service}": {
+    "/projects/{project}/namespaces/{namespace}/services/{service}": {
       "get": {
         "tags": [
           "Service"
@@ -2595,7 +2595,7 @@
         "x-method-visibility": "public"
       }
     },
-    "/namespaces/{namespace}/solutions/{solution}/deployments": {
+    "/projects/{project}/namespaces/{namespace}/solutions/{solution}/deployments": {
       "get": {
         "tags": [
           "Deployment"
@@ -2656,7 +2656,7 @@
         "x-method-visibility": "public"
       }
     },
-    "/namespaces/{namespace}/solutions/{solution}/services": {
+    "/projects/{project}/namespaces/{namespace}/solutions/{solution}/services": {
       "get": {
         "tags": [
           "Service"
@@ -2773,7 +2773,7 @@
         "x-method-visibility": "public"
       }
     },
-    "/namespaces/{namespace}/solutiosn/{solution}deployments": {
+    "/projects/{project}/namespaces/{namespace}/solutiosn/{solution}deployments": {
       "delete": {
         "tags": [
           "Deployment"
@@ -2831,7 +2831,7 @@
         "x-method-visibility": "private"
       }
     },
-    "/namespaces/{namespace}/volume": {
+    "/projects/{project}/namespaces/{namespace}/volume": {
       "post": {
         "tags": [
           "Volume"
@@ -2893,7 +2893,7 @@
         "x-method-visibility": "private"
       }
     },
-    "/namespaces/{namespace}/volume/{volume}": {
+    "/projects/{project}/namespaces/{namespace}/volume/{volume}": {
       "delete": {
         "tags": [
           "Volume"
@@ -2951,7 +2951,7 @@
         "x-method-visibility": "public"
       }
     },
-    "/namespaces/{namespace}/volumes": {
+    "/projects/{project}/namespaces/{namespace}/volumes": {
       "get": {
         "tags": [
           "Volume"
@@ -3006,7 +3006,7 @@
         "x-method-visibility": "public"
       }
     },
-    "/namespaces/{namespace}/volumes/{volume}": {
+    "/projects/{project}/namespaces/{namespace}/volumes/{volume}": {
       "get": {
         "tags": [
           "Volume"

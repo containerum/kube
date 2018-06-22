@@ -8,6 +8,7 @@ import (
 	"time"
 
 	kube_types "github.com/containerum/kube-client/pkg/model"
+	"github.com/containerum/utils/httputil"
 	api_core "k8s.io/api/core/v1"
 	api_resource "k8s.io/apimachinery/pkg/api/resource"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -134,11 +135,21 @@ func MakeResourceQuota(ns string, labels map[string]string, resources kube_types
 	return &newRq, nil
 }
 
-func ParseNamespaceListForUser(headers UserHeaderDataMap, nsl []kube_types.Namespace) *kube_types.NamespacesList {
+func ParseNamespaceListForUser(projectAccesses []httputil.ProjectAccess, projectID string, nsList []kube_types.Namespace) *kube_types.NamespacesList {
 	nso := make([]kube_types.Namespace, 0)
 	ret := kube_types.NamespacesList{nso}
-	for _, ns := range nsl {
-		ns = *ParseForUser(&ns, headers)
+	for _, ns := range nsList {
+		for _, p := range projectAccesses {
+			if p.ProjectID == projectID {
+				for _, nsAccess := range p.NamespacesAccesses {
+					if nsAccess.NamespaceID == ns.ID {
+						ns = *ParseForUser(nsAccess, &ns)
+						break
+					}
+				}
+				break
+			}
+		}
 		if ns.Label != "" {
 			ret.Namespaces = append(ret.Namespaces, kube_types.Namespace(ns))
 		}
@@ -146,13 +157,9 @@ func ParseNamespaceListForUser(headers UserHeaderDataMap, nsl []kube_types.Names
 	return &ret
 }
 
-func ParseForUser(ns *kube_types.Namespace, headers UserHeaderDataMap) *kube_types.Namespace {
-	for _, n := range headers {
-		if ns.ID == n.ID {
-			ns.Label = n.Label
-			ns.Access = n.Access
-		}
-	}
+func ParseForUser(nsAccess httputil.NamespaceAccess, ns *kube_types.Namespace) *kube_types.Namespace {
+	ns.Label = nsAccess.NamespaceLabel
+	ns.Access = nsAccess.Access
 	return ns
 }
 

@@ -6,10 +6,6 @@ import (
 )
 
 const (
-	UserNamespaces = "user-namespaces"
-	UserRole       = "user-role"
-	UserID         = "user-id"
-
 	KubeClient = "kubernetes-client"
 )
 

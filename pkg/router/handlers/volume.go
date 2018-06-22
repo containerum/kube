@@ -8,6 +8,7 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
 	"github.com/containerum/cherry/adaptors/gonic"
+	"github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
@@ -18,7 +19,7 @@ const (
 	volumeParam = "volume"
 )
 
-// swagger:operation GET /namespaces/{namespace}/volumes Volume GetVolumeList
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/volumes Volume GetVolumeList
 // Get volumes list.
 //
 // ---
@@ -26,7 +27,10 @@ const (
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -58,7 +62,7 @@ func GetVolumeList(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubePersistentVolumeClaimList(svcList, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -68,7 +72,7 @@ func GetVolumeList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation GET /namespaces/{namespace}/volumes/{volume} Volume GetVolume
+// swagger:operation GET /projects/{project}/namespaces/{namespace}/volumes/{volume} Volume GetVolume
 // Get volumes list.
 //
 // ---
@@ -76,7 +80,10 @@ func GetVolumeList(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -114,7 +121,7 @@ func GetVolume(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubePersistentVolumeClaim(svc, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -125,7 +132,7 @@ func GetVolume(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation POST /namespaces/{namespace}/volume Volume CreateVolume
+// swagger:operation POST /projects/{project}/namespaces/{namespace}/volume Volume CreateVolume
 // Create volume.
 //
 // ---
@@ -133,7 +140,10 @@ func GetVolume(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -181,7 +191,7 @@ func CreateVolume(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubePersistentVolumeClaim(pvcAfter, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -190,7 +200,7 @@ func CreateVolume(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
-// swagger:operation PUT /namespaces/{namespace}/volumes/{volume} Volume UpdateVolume
+// swagger:operation PUT /projects/{project}/namespaces/{namespace}/volumes/{volume} Volume UpdateVolume
 // Update volume.
 //
 // ---
@@ -198,7 +208,10 @@ func CreateVolume(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -263,7 +276,7 @@ func UpdateVolume(ctx *gin.Context) {
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 	ret, err := model.ParseKubePersistentVolumeClaim(updatedPvc, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
@@ -272,7 +285,7 @@ func UpdateVolume(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, ret)
 }
 
-// swagger:operation DELETE /namespaces/{namespace}/volume/{volume} Volume DeleteVolume
+// swagger:operation DELETE /projects/{project}/namespaces/{namespace}/volume/{volume} Volume DeleteVolume
 // Delete volume.
 //
 // ---
@@ -280,7 +293,10 @@ func UpdateVolume(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
