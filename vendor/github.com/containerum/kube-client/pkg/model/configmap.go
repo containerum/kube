@@ -25,7 +25,7 @@ type ConfigMap struct {
 // SelectedConfigMapsList -- model for config maps list from all namespaces
 //
 // swagger:model
-type SelectedConfigMapsList map[string]ConfigMapsList
+type SelectedConfigMapsList map[string]map[string]ConfigMapsList
 
 // ConfigMapsList -- model for config maps list
 //
