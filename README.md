@@ -1,75 +1,23 @@
-# Kube-API
+# Kube-api
 
-[![Build Status](https://travis-ci.org/containerum/kube-api.svg?branch=master)](https://travis-ci.org/containerum/kube-api)
+[![Build Status](https://travis-ci.org/containerum/kube-api.svg?branch=develop)](https://travis-ci.org/containerum/kube-api)
 
-Namespace
-======
+Kube-api is a set of API for communication between [Containerum](https://github.com/containerum/containerum) components and Kubernetes.
 
-#### GET Namespace list
-*URL:* **/namespaces**  
-*Method:* **GET**  
-*Query:*
+## Prerequisites
+* Kubernetes
+
+## Installation
+
+### Using Helm
+
 ```
-  owner - filter by owner id
+  helm repo add containerum https://charts.containerum.io
+  helm repo update
+  helm install containerum/kube
 ```
+## Contributions
+Please submit all contributions concerning Kube-api component to this repository.
 
-
-#### GET Namespace
-*URL:* **/namespaces/:namespace/**  
-*Method:* **GET**
-
-
-
-Deployment
-======
-
-#### GET Deploy list
-*URL:* **/namespaces/:namespace/deployments**  
-*Method:* **GET**
-*Query:*
-```
-  owner - filter by owner id
-```
-
-#### GET Deploy
-*URL:* **/namespaces/:namespace/deployments/:deployment"**  
-*Method:* **GET**
-
-
-
-Pods
-=====
-
-#### GET Pod list
-*URL:* **/namespaces/:namespace/pods**  
-*Method:* **GET**
-*Query:*
-```
-  owner - filter by owner id
-```
-
-#### GET Pod
-*URL:* **/namespaces/:namespace/pods/:pod**  
-*Method:* **GET**
-
-
-Logs
-----
-
-#### GET Pod list
-*URL:* **/namespaces/:namespace/pods/:pod/logs**  
-*Method:* **GET**
-*Query:*
-```
-  follow - bool (default: false)
-  tail - int (min: 1, max: 1000)
-  container - container name
-  previous - bool (default: false)
-```
-*Extra-Headers*
-```
-  Sec-Websocket-Version: 13
-  Connection: upgrade
-  Upgrade: websocket
-  Sec-Websocket-Key: 0
-```
+## License
+Kube-api project is licensed under the terms of the Apache License Version 2.0. Please see LICENSE in this repository for more details.
