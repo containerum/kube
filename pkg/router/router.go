@@ -59,6 +59,7 @@ func initRoutes(e gin.IRouter, access httputil.AccessChecker) {
 		namespace.POST("", h.CreateNamespace)
 		namespace.PUT("/:namespace", h.UpdateNamespace)
 		namespace.DELETE("/:namespace", h.DeleteNamespace)
+		namespace.DELETE("", h.DeleteUserNamespaces)
 
 		solutions := namespace.Group("/:namespace/solutions")
 		{
