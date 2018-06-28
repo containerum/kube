@@ -36,12 +36,6 @@
             "name": "X-User-Role",
             "in": "header",
             "required": true
-          },
-          {
-            "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
-            "required": true
           }
         ],
         "responses": {
@@ -54,7 +48,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -85,12 +79,6 @@
             "name": "X-User-Role",
             "in": "header",
             "required": true
-          },
-          {
-            "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
-            "required": true
           }
         ],
         "responses": {
@@ -103,7 +91,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -137,19 +125,13 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
-            "required": true
-          },
-          {
-            "type": "string",
             "name": "owner",
             "in": "query"
           }
         ],
         "responses": {
           "200": {
-            "description": "ingresses list",
+            "description": "namespaces list",
             "schema": {
               "$ref": "#/definitions/NamespacesList"
             }
@@ -157,7 +139,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -188,12 +170,6 @@
             "required": true
           },
           {
-            "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
-            "required": true
-          },
-          {
             "name": "body",
             "in": "body",
             "schema": {
@@ -211,7 +187,53 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
+            }
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/projects/{project}/namespaces": {
+      "delete": {
+        "tags": [
+          "Namespace"
+        ],
+        "summary": "Delete user namespaces.",
+        "operationId": "DeleteUserNamespaces",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "name": "X-User-ID",
+            "in": "header",
+            "required": true
+          },
+          {
+            "enum": [
+              "user",
+              "admin"
+            ],
+            "type": "string",
+            "name": "X-User-Role",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "project",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "namespaces deleted"
+          },
+          "default": {
+            "description": "cherry error",
+            "schema": {
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -245,8 +267,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -266,7 +288,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -298,8 +320,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -326,7 +348,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -358,8 +380,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -376,7 +398,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -410,8 +432,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -431,7 +453,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -463,8 +485,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -491,7 +513,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -525,8 +547,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -552,7 +574,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -584,8 +606,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -618,7 +640,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -650,8 +672,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -674,7 +696,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -708,8 +730,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -734,7 +756,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -766,8 +788,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -794,7 +816,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -828,8 +850,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -855,7 +877,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -887,8 +909,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -921,7 +943,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -953,8 +975,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -977,7 +999,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -1011,8 +1033,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -1045,7 +1067,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -1079,8 +1101,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -1113,305 +1135,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
-            }
-          }
-        },
-        "x-method-visibility": "private"
-      }
-    },
-    "/projects/{project}/namespaces/{namespace}/endpoints": {
-      "get": {
-        "tags": [
-          "Endpoint"
-        ],
-        "summary": "Get endpoints list.",
-        "operationId": "GetEndpointList",
-        "parameters": [
-          {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
-          },
-          {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
-          },
-          {
-            "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
-            "required": true
-          },
-          {
-            "type": "string",
-            "name": "namespace",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "endpoints list",
-            "schema": {
-              "$ref": "#/definitions/EndpointsList"
-            }
-          },
-          "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/errOAIGen"
-            }
-          }
-        },
-        "x-method-visibility": "private"
-      },
-      "post": {
-        "tags": [
-          "Endpoint"
-        ],
-        "summary": "Create endpoint.",
-        "operationId": "CreateEndpoint",
-        "parameters": [
-          {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
-          },
-          {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
-          },
-          {
-            "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
-            "required": true
-          },
-          {
-            "type": "string",
-            "name": "namespace",
-            "in": "path",
-            "required": true
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/Endpoint"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "endpoint created",
-            "schema": {
-              "$ref": "#/definitions/Endpoint"
-            }
-          },
-          "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/errOAIGen"
-            }
-          }
-        },
-        "x-method-visibility": "private"
-      }
-    },
-    "/projects/{project}/namespaces/{namespace}/endpoints/{endpoint}": {
-      "get": {
-        "tags": [
-          "Endpoint"
-        ],
-        "summary": "Get endpoint.",
-        "operationId": "GetEndpoint",
-        "parameters": [
-          {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
-          },
-          {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
-          },
-          {
-            "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
-            "required": true
-          },
-          {
-            "type": "string",
-            "name": "namespace",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
-            "name": "endpoint",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "endpoint",
-            "schema": {
-              "$ref": "#/definitions/Endpoint"
-            }
-          },
-          "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/errOAIGen"
-            }
-          }
-        },
-        "x-method-visibility": "private"
-      },
-      "put": {
-        "tags": [
-          "Endpoint"
-        ],
-        "summary": "Update endpoint.",
-        "operationId": "UpdateEndpoint",
-        "parameters": [
-          {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
-          },
-          {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
-          },
-          {
-            "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
-            "required": true
-          },
-          {
-            "type": "string",
-            "name": "namespace",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
-            "name": "endpoint",
-            "in": "path",
-            "required": true
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/Endpoint"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "endpoint updated",
-            "schema": {
-              "$ref": "#/definitions/Endpoint"
-            }
-          },
-          "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/errOAIGen"
-            }
-          }
-        },
-        "x-method-visibility": "private"
-      },
-      "delete": {
-        "tags": [
-          "Endpoint"
-        ],
-        "summary": "Delete endpoint.",
-        "operationId": "DeleteEndpoint",
-        "parameters": [
-          {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
-          },
-          {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
-          },
-          {
-            "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
-            "required": true
-          },
-          {
-            "type": "string",
-            "name": "namespace",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
-            "name": "endpoint",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "202": {
-            "description": "endpoint deleted"
-          },
-          "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -1445,8 +1169,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -1466,7 +1190,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -1498,8 +1222,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -1526,7 +1250,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -1560,8 +1284,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -1587,7 +1311,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -1619,8 +1343,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -1653,7 +1377,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -1685,8 +1409,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -1709,7 +1433,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -1743,8 +1467,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -1769,7 +1493,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -1803,8 +1527,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -1830,7 +1554,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -1862,8 +1586,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -1886,7 +1610,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -1920,12 +1644,6 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
-            "required": true
-          },
-          {
-            "type": "string",
             "format": "string",
             "name": "Upgrade",
             "in": "header",
@@ -1950,6 +1668,12 @@
             "format": "int",
             "name": "Sec-Websocket-Version",
             "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -1992,7 +1716,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -2026,8 +1750,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -2047,7 +1771,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -2079,8 +1803,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -2107,7 +1831,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -2141,8 +1865,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -2168,7 +1892,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -2200,8 +1924,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -2234,7 +1958,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -2266,8 +1990,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -2290,7 +2014,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -2324,8 +2048,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -2345,7 +2069,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -2377,8 +2101,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -2405,7 +2129,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -2439,8 +2163,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -2466,7 +2190,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -2498,8 +2222,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -2532,7 +2256,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -2564,8 +2288,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -2588,7 +2312,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -2622,8 +2346,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -2649,7 +2373,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -2683,8 +2407,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -2710,7 +2434,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -2742,8 +2466,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -2766,7 +2490,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -2800,8 +2524,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -2824,7 +2548,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -2858,8 +2582,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -2886,7 +2610,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -2920,8 +2644,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -2944,7 +2668,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -2978,8 +2702,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -2999,7 +2723,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -3033,8 +2757,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -3060,7 +2784,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -3092,8 +2816,8 @@
           },
           {
             "type": "string",
-            "name": "X-User-Namespace",
-            "in": "header",
+            "name": "project",
+            "in": "path",
             "required": true
           },
           {
@@ -3126,7 +2850,7 @@
           "default": {
             "description": "cherry error",
             "schema": {
-              "$ref": "#/definitions/errOAIGen"
+              "$ref": "#/definitions/err"
             }
           }
         },
@@ -3135,10 +2859,6 @@
     }
   },
   "definitions": {
-    "AccessLevel": {
-      "type": "string",
-      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
-    },
     "AvailableSolution": {
       "description": "AvailableSolution -- solution which user can run",
       "type": "object",
@@ -3503,59 +3223,6 @@
       },
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
-    "Endpoint": {
-      "description": "Endpoint -- model for endpoint",
-      "type": "object",
-      "required": [
-        "name",
-        "addresses",
-        "ports"
-      ],
-      "properties": {
-        "addresses": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "x-go-name": "Addresses"
-        },
-        "created_at": {
-          "description": "creation date in RFC3339 format",
-          "type": "string",
-          "x-go-name": "CreatedAt"
-        },
-        "name": {
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "owner": {
-          "type": "string",
-          "x-go-name": "Owner"
-        },
-        "ports": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Port"
-          },
-          "x-go-name": "Ports"
-        }
-      },
-      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
-    },
-    "EndpointsList": {
-      "description": "EndpointsList -- model for endpoints list",
-      "type": "object",
-      "properties": {
-        "endpoints": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Endpoint"
-          },
-          "x-go-name": "Endpoints"
-        }
-      },
-      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
-    },
     "Env": {
       "description": "Env -- key-value pair of environment variables",
       "type": "object",
@@ -3706,7 +3373,7 @@
       ],
       "properties": {
         "access": {
-          "$ref": "#/definitions/AccessLevel"
+          "$ref": "#/definitions/UserGroupAccess"
         },
         "created_at": {
           "description": "creation date in RFC3339 format",
@@ -3910,30 +3577,6 @@
       },
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
-    "Port": {
-      "description": "Port -- model for endpoint port",
-      "type": "object",
-      "required": [
-        "name",
-        "port",
-        "protocol"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "port": {
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "Port"
-        },
-        "protocol": {
-          "$ref": "#/definitions/Protocol"
-        }
-      },
-      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
-    },
     "Protocol": {
       "description": "represents port protocol type (TCP or UDP)",
       "type": "string",
@@ -3978,7 +3621,7 @@
       "type": "object",
       "properties": {
         "access": {
-          "$ref": "#/definitions/AccessLevel"
+          "$ref": "#/definitions/UserGroupAccess"
         },
         "username": {
           "type": "string",
@@ -4162,7 +3805,7 @@
       "description": "SelectedConfigMapsList -- model for config maps list from all namespaces",
       "type": "object",
       "additionalProperties": {
-        "$ref": "#/definitions/ConfigMapsList"
+        "$ref": "#/definitions/selectedConfigMapsListAdditionalProperties"
       },
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
@@ -4170,7 +3813,7 @@
       "description": "SelectedIngressesList -- model for ingresses list from all namespaces",
       "type": "object",
       "additionalProperties": {
-        "$ref": "#/definitions/IngressesList"
+        "$ref": "#/definitions/selectedIngressesListAdditionalProperties"
       },
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
@@ -4449,7 +4092,7 @@
       "type": "object",
       "properties": {
         "access_level": {
-          "$ref": "#/definitions/AccessLevel"
+          "$ref": "#/definitions/UserGroupAccess"
         },
         "username": {
           "type": "string",
@@ -4502,7 +4145,8 @@
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "UserGroupAccess": {
-      "type": "string",
+      "type": "integer",
+      "format": "uint64",
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "UserGroupMember": {
@@ -4561,7 +4205,7 @@
       ],
       "properties": {
         "access": {
-          "$ref": "#/definitions/AccessLevel"
+          "$ref": "#/definitions/UserGroupAccess"
         },
         "id": {
           "description": "hosting-internal name",
@@ -4669,7 +4313,7 @@
       "type": "object",
       "properties": {
         "access": {
-          "$ref": "#/definitions/AccessLevel"
+          "$ref": "#/definitions/UserGroupAccess"
         },
         "access_mode": {
           "$ref": "#/definitions/PersistentVolumeAccessMode"
@@ -4737,7 +4381,7 @@
       },
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
-    "errOAIGen": {
+    "err": {
       "description": "Err -- standard serializable API error\nMessage -- constant error message:\n+ \"invalid username\"\n+ \"quota exceeded\"\n+ \"validation error\"\n...etc...\nID -- unique error identification code\nDetails -- optional context error messages kinda\n+ \"field 'Replicas' must be non-zero value\"\n+ \"not enough tights to feed gopher\"\n+ \"resource 'God' does't exist\"\nFields -- optional set of key-value pairs",
       "type": "object",
       "properties": {
@@ -4757,7 +4401,7 @@
           "x-go-package": "github.com/containerum/cherry"
         },
         "id": {
-          "$ref": "#/definitions/errOaiGenId"
+          "$ref": "#/definitions/errId"
         },
         "message": {
           "type": "string",
@@ -4771,7 +4415,7 @@
       },
       "x-go-package": "github.com/containerum/cherry"
     },
-    "errOaiGenId": {
+    "errId": {
       "description": "ErrID -- represents unique error ID",
       "type": "object",
       "properties": {
@@ -4789,6 +4433,20 @@
       },
       "x-go-gen-location": "models",
       "x-go-package": "github.com/containerum/cherry"
+    },
+    "selectedConfigMapsListAdditionalProperties": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/ConfigMapsList"
+      },
+      "x-go-gen-location": "models"
+    },
+    "selectedIngressesListAdditionalProperties": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/IngressesList"
+      },
+      "x-go-gen-location": "models"
     }
   },
   "parameters": {
@@ -4827,12 +4485,6 @@
       "in": "header",
       "required": true
     },
-    "UserNamespaceHeader": {
-      "type": "string",
-      "name": "X-User-Namespace",
-      "in": "header",
-      "required": true
-    },
     "UserRoleHeader": {
       "enum": [
         "user",
@@ -4848,7 +4500,7 @@
     "error": {
       "description": "cherry error",
       "schema": {
-        "$ref": "#/definitions/errOAIGen"
+        "$ref": "#/definitions/err"
       }
     }
   }

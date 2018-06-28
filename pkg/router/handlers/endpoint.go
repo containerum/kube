@@ -17,7 +17,7 @@ const (
 	endpointParam = "endpoint"
 )
 
-// swagger:operation GET /projects/{project}/namespaces/{namespace}/endpoints Endpoint GetEndpointList
+// swagger:ignore GET /projects/{project}/namespaces/{namespace}/endpoints Endpoint GetEndpointList
 // Get endpoints list.
 //
 // ---
@@ -70,7 +70,7 @@ func GetEndpointList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation GET /projects/{project}/namespaces/{namespace}/endpoints/{endpoint} Endpoint GetEndpoint
+// swagger:ignore GET /projects/{project}/namespaces/{namespace}/endpoints/{endpoint} Endpoint GetEndpoint
 // Get endpoint.
 //
 // ---
@@ -130,7 +130,7 @@ func GetEndpoint(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation POST /projects/{project}/namespaces/{namespace}/endpoints Endpoint CreateEndpoint
+// swagger:ignore POST /projects/{project}/namespaces/{namespace}/endpoints Endpoint CreateEndpoint
 // Create endpoint.
 //
 // ---
@@ -197,7 +197,7 @@ func CreateEndpoint(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
-// swagger:operation PUT /projects/{project}/namespaces/{namespace}/endpoints/{endpoint} Endpoint UpdateEndpoint
+// swagger:ignore PUT /projects/{project}/namespaces/{namespace}/endpoints/{endpoint} Endpoint UpdateEndpoint
 // Update endpoint.
 //
 // ---
@@ -279,7 +279,7 @@ func UpdateEndpoint(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, ret)
 }
 
-// swagger:operation DELETE /projects/{project}/namespaces/{namespace}/endpoints/{endpoint} Endpoint DeleteEndpoint
+// swagger:ignore DELETE /projects/{project}/namespaces/{namespace}/endpoints/{endpoint} Endpoint DeleteEndpoint
 // Delete endpoint.
 //
 // ---
