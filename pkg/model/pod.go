@@ -5,6 +5,8 @@ import (
 
 	"time"
 
+	"strings"
+
 	"github.com/containerum/kube-client/pkg/model"
 	kube_types "github.com/containerum/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
@@ -99,6 +101,7 @@ func getVolumes(vListi interface{}, mode map[string]int32, storageName map[strin
 		if ok {
 			formated := strconv.FormatInt(int64(mode), 8)
 			newvol.Mode = &formated
+			newvol.Name = strings.TrimRight(newvol.Name, "-cm")
 			configMaps = append(configMaps, newvol)
 		} else {
 			storage, ok := storageName[v.Name]
