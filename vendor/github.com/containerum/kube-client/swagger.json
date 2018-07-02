@@ -309,6 +309,17 @@
       },
       "x-go-package": "github.com/containerum/kube-client/pkg/model"
     },
+    "DeploymentDiff": {
+      "description": "DeploymentDiff -- model for deployments diff",
+      "type": "object",
+      "properties": {
+        "diff": {
+          "type": "string",
+          "x-go-name": "Diff"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
     "DeploymentStatus": {
       "description": "DeploymentStatus -- kubernetes status of deployment",
       "type": "object",
@@ -832,7 +843,7 @@
       "description": "SelectedConfigMapsList -- model for config maps list from all namespaces",
       "type": "object",
       "additionalProperties": {
-        "$ref": "#/definitions/ConfigMapsList"
+        "$ref": "#/definitions/selectedConfigMapsListAdditionalProperties"
       },
       "x-go-package": "github.com/containerum/kube-client/pkg/model"
     },
@@ -840,7 +851,7 @@
       "description": "SelectedIngressesList -- model for ingresses list from all namespaces",
       "type": "object",
       "additionalProperties": {
-        "$ref": "#/definitions/IngressesList"
+        "$ref": "#/definitions/selectedIngressesListAdditionalProperties"
       },
       "x-go-package": "github.com/containerum/kube-client/pkg/model"
     },
@@ -1097,7 +1108,8 @@
       "x-go-package": "github.com/containerum/kube-client/pkg/model"
     },
     "UserGroupAccess": {
-      "type": "string",
+      "type": "integer",
+      "format": "uint64",
       "x-go-package": "github.com/containerum/kube-client/pkg/model"
     },
     "UserGroupMember": {
@@ -1331,6 +1343,20 @@
         }
       },
       "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "selectedConfigMapsListAdditionalProperties": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/ConfigMapsList"
+      },
+      "x-go-gen-location": "models"
+    },
+    "selectedIngressesListAdditionalProperties": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/IngressesList"
+      },
+      "x-go-gen-location": "models"
     }
   }
 }
