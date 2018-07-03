@@ -240,7 +240,7 @@ func UpdateConfigMap(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace": namespace,
 		"ConfigMap": configMap,
-	}).Debug("Create config map Call")
+	}).Debug("Update config map Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
@@ -257,7 +257,7 @@ func UpdateConfigMap(ctx *gin.Context) {
 		return
 	}
 
-	oldCm, err := kube.GetConfigMap(namespace, ctx.Param(deploymentParam))
+	oldCm, err := kube.GetConfigMap(namespace, ctx.Param(configMapParam))
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
