@@ -556,6 +556,8 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 // responses:
 //  '202':
 //    description: deployment deleted
+//    schema:
+//      $ref: '#/definitions/DeploymentDiff'
 //  default:
 //    $ref: '#/responses/error'
 func DeleteDeployment(ctx *gin.Context) {
@@ -606,6 +608,8 @@ func DeleteDeployment(ctx *gin.Context) {
 // responses:
 //  '202':
 //    description: deployments deleted
+//    schema:
+//      $ref: '#/definitions/DeploymentDiff'
 //  default:
 //    $ref: '#/responses/error'
 func DeleteDeploymentsSolution(ctx *gin.Context) {

@@ -21,21 +21,10 @@
         "operationId": "GetSelectedConfigMaps",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           }
         ],
         "responses": {
@@ -46,10 +35,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -64,21 +50,10 @@
         "operationId": "GetSelectedIngresses",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           }
         ],
         "responses": {
@@ -89,10 +64,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "private"
@@ -107,21 +79,10 @@
         "operationId": "GetNamespaceList",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -137,10 +98,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -153,21 +111,10 @@
         "operationId": "CreateNamespace",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "name": "body",
@@ -185,10 +132,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "private"
@@ -203,21 +147,10 @@
         "operationId": "DeleteUserNamespaces",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -231,10 +164,7 @@
             "description": "namespaces deleted"
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "private"
@@ -249,21 +179,10 @@
         "operationId": "GetNamespace",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -286,10 +205,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -302,21 +218,10 @@
         "operationId": "UpdateNamespace",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -346,10 +251,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "private"
@@ -362,21 +264,10 @@
         "operationId": "DeleteNamespace",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -396,10 +287,7 @@
             "description": "namespace deleted"
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "private"
@@ -414,21 +302,10 @@
         "operationId": "GetConfigMapList",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -451,10 +328,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -467,21 +341,10 @@
         "operationId": "CreateConfigMap",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -511,10 +374,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -529,21 +389,10 @@
         "operationId": "GetConfigMap",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -572,10 +421,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -588,21 +434,10 @@
         "operationId": "UpdateConfigMap",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -638,10 +473,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -654,21 +486,10 @@
         "operationId": "DeleteConfigMap",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -694,10 +515,7 @@
             "description": "config map deleted"
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -712,21 +530,10 @@
         "operationId": "GetDeploymentList",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -754,10 +561,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -770,21 +574,10 @@
         "operationId": "CreateDeployment",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -814,10 +607,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "private"
@@ -832,21 +622,10 @@
         "operationId": "GetDeployment",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -875,10 +654,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -891,21 +667,10 @@
         "operationId": "UpdateDeployment",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -941,10 +706,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "private"
@@ -957,21 +719,10 @@
         "operationId": "DeleteDeployment",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -994,13 +745,13 @@
         ],
         "responses": {
           "202": {
-            "description": "deployment deleted"
+            "description": "deployment deleted",
+            "schema": {
+              "$ref": "#/definitions/DeploymentDiff"
+            }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "private"
@@ -1015,21 +766,10 @@
         "operationId": "UpdateDeploymentImage",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -1065,10 +805,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "private"
@@ -1083,21 +820,10 @@
         "operationId": "UpdateDeploymentReplicas",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -1133,10 +859,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "private"
@@ -1151,21 +874,10 @@
         "operationId": "GetIngressList",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -1188,10 +900,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -1204,21 +913,10 @@
         "operationId": "CreateIngress",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -1248,10 +946,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "private"
@@ -1266,21 +961,10 @@
         "operationId": "GetIngress",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -1309,10 +993,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -1325,21 +1006,10 @@
         "operationId": "UpdateIngress",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -1375,10 +1045,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "private"
@@ -1391,21 +1058,10 @@
         "operationId": "DeleteIngress",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -1431,10 +1087,7 @@
             "description": "ingress deleted"
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "private"
@@ -1449,21 +1102,10 @@
         "operationId": "GetPodList",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -1491,10 +1133,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -1509,21 +1148,10 @@
         "operationId": "GetPod",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -1552,10 +1180,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -1568,21 +1193,10 @@
         "operationId": "DeletePod",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -1608,10 +1222,7 @@
             "description": "pod deleted"
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -1626,49 +1237,22 @@
         "operationId": "GetPodLogs",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
-            "type": "string",
-            "format": "string",
-            "name": "Upgrade",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UpgradeHeader"
           },
           {
-            "type": "string",
-            "format": "string",
-            "name": "Connection",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/ConnectionHeader"
           },
           {
-            "type": "string",
-            "format": "string",
-            "name": "Sec-WebSocket-Key",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/SecWebSocketKeyHeader"
           },
           {
-            "type": "integer",
-            "format": "int",
-            "name": "Sec-Websocket-Version",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/SecWebsocketVersionHeader"
           },
           {
             "type": "string",
@@ -1714,10 +1298,7 @@
             "description": "pod logs"
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -1732,21 +1313,10 @@
         "operationId": "GetSecretList",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -1769,10 +1339,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -1785,21 +1352,10 @@
         "operationId": "CreateSecret",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -1829,10 +1385,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "private"
@@ -1847,21 +1400,10 @@
         "operationId": "GetSecret",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -1890,10 +1432,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -1906,21 +1445,10 @@
         "operationId": "UpdateSecret",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -1956,10 +1484,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "private"
@@ -1972,21 +1497,10 @@
         "operationId": "DeleteSecret",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -2012,10 +1526,7 @@
             "description": "secret deleted"
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -2030,21 +1541,10 @@
         "operationId": "GetServiceList",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -2067,10 +1567,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -2083,21 +1580,10 @@
         "operationId": "CreateService",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -2127,10 +1613,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "private"
@@ -2145,21 +1628,10 @@
         "operationId": "GetService",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -2188,10 +1660,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -2204,21 +1673,10 @@
         "operationId": "UpdateService",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -2254,10 +1712,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "private"
@@ -2270,21 +1725,10 @@
         "operationId": "DeleteService",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -2310,10 +1754,7 @@
             "description": "service deleted"
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -2328,21 +1769,10 @@
         "operationId": "GetDeploymentSolutionList",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -2371,10 +1801,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -2389,21 +1816,10 @@
         "operationId": "GetServiceSolutionList",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -2432,10 +1848,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -2448,21 +1861,10 @@
         "operationId": "DeleteServicesSolution",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -2488,10 +1890,7 @@
             "description": "services deleted"
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -2506,21 +1905,10 @@
         "operationId": "DeleteDeploymentsSolution",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -2543,13 +1931,13 @@
         ],
         "responses": {
           "202": {
-            "description": "deployments deleted"
+            "description": "deployments deleted",
+            "schema": {
+              "$ref": "#/definitions/DeploymentDiff"
+            }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "private"
@@ -2564,21 +1952,10 @@
         "operationId": "CreateVolume",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -2608,10 +1985,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "private"
@@ -2626,21 +2000,10 @@
         "operationId": "DeleteVolume",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -2666,10 +2029,7 @@
             "description": "volume deleted"
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -2684,21 +2044,10 @@
         "operationId": "GetVolumeList",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -2721,10 +2070,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -2739,21 +2085,10 @@
         "operationId": "GetVolume",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -2782,10 +2117,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "public"
@@ -2798,21 +2130,10 @@
         "operationId": "UpdateVolume",
         "parameters": [
           {
-            "type": "string",
-            "format": "uuid",
-            "name": "X-User-ID",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserIDHeader"
           },
           {
-            "enum": [
-              "user",
-              "admin"
-            ],
-            "type": "string",
-            "name": "X-User-Role",
-            "in": "header",
-            "required": true
+            "$ref": "#/parameters/UserRoleHeader"
           },
           {
             "type": "string",
@@ -2848,10 +2169,7 @@
             }
           },
           "default": {
-            "description": "cherry error",
-            "schema": {
-              "$ref": "#/definitions/err"
-            }
+            "$ref": "#/responses/error"
           }
         },
         "x-method-visibility": "private"
@@ -3162,6 +2480,17 @@
         },
         "version": {
           "$ref": "#/definitions/Version"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
+    },
+    "DeploymentDiff": {
+      "description": "DeploymentDiff -- model for deployments diff",
+      "type": "object",
+      "properties": {
+        "diff": {
+          "type": "string",
+          "x-go-name": "Diff"
         }
       },
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
@@ -3805,7 +3134,10 @@
       "description": "SelectedConfigMapsList -- model for config maps list from all namespaces",
       "type": "object",
       "additionalProperties": {
-        "$ref": "#/definitions/selectedConfigMapsListAdditionalProperties"
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/definitions/ConfigMapsList"
+        }
       },
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
@@ -3813,7 +3145,10 @@
       "description": "SelectedIngressesList -- model for ingresses list from all namespaces",
       "type": "object",
       "additionalProperties": {
-        "$ref": "#/definitions/selectedIngressesListAdditionalProperties"
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/definitions/IngressesList"
+        }
       },
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
     },
@@ -4433,20 +3768,6 @@
       },
       "x-go-gen-location": "models",
       "x-go-package": "github.com/containerum/cherry"
-    },
-    "selectedConfigMapsListAdditionalProperties": {
-      "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/ConfigMapsList"
-      },
-      "x-go-gen-location": "models"
-    },
-    "selectedIngressesListAdditionalProperties": {
-      "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/IngressesList"
-      },
-      "x-go-gen-location": "models"
     }
   },
   "parameters": {
