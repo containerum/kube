@@ -139,10 +139,6 @@ func GetConfigMap(ctx *gin.Context) {
 //    in: path
 //    type: string
 //    required: true
-//  - name: base64
-//    in: query
-//    type: string
-//    required: false
 //  - name: body
 //    in: body
 //    schema:
@@ -175,8 +171,7 @@ func CreateConfigMap(ctx *gin.Context) {
 		return
 	}
 
-	_, isBase64 := ctx.GetQuery("base64")
-	cm, errs := cmReq.ToKube(namespace, ns.Labels, isBase64)
+	cm, errs := cmReq.ToKube(namespace, ns.Labels)
 	if errs != nil {
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
@@ -215,10 +210,6 @@ func CreateConfigMap(ctx *gin.Context) {
 //    in: path
 //    type: string
 //    required: true
-//  - name: base64
-//    in: query
-//    type: string
-//    required: false
 //  - name: body
 //    in: body
 //    schema:
@@ -262,8 +253,7 @@ func UpdateConfigMap(ctx *gin.Context) {
 	cmReq.Name = configMap
 	cmReq.Owner = oldCm.GetObjectMeta().GetLabels()[ownerQuery]
 
-	_, isBase64 := ctx.GetQuery("base64")
-	newCm, errs := cmReq.ToKube(namespace, ns.Labels, isBase64)
+	newCm, errs := cmReq.ToKube(namespace, ns.Labels)
 	if errs != nil {
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
