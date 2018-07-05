@@ -45,7 +45,7 @@ func ParseKubeConfigMap(cmi interface{}, parseforuser bool) (*kube_types.ConfigM
 
 	newData := make(map[string]string)
 	for k, v := range cm.Data {
-		newData[k] = base64.StdEncoding.EncodeToString([]byte(v))
+		newData[k] = string(v)
 	}
 
 	owner := cm.GetObjectMeta().GetLabels()[ownerLabel]
@@ -64,7 +64,7 @@ func ParseKubeConfigMap(cmi interface{}, parseforuser bool) (*kube_types.ConfigM
 }
 
 // ToKube creates kubernetes v1.ConfigMap from ConfigMap struct and namespace labels
-func (cm *ConfigMapKubeAPI) ToKube(nsName string, labels map[string]string) (*api_core.ConfigMap, []error) {
+func (cm *ConfigMapKubeAPI) ToKube(nsName string, labels map[string]string, inBase64 bool) (*api_core.ConfigMap, []error) {
 	if err := cm.Validate(); err != nil {
 		return nil, err
 	}
@@ -74,11 +74,15 @@ func (cm *ConfigMapKubeAPI) ToKube(nsName string, labels map[string]string) (*ap
 	}
 
 	for k, v := range cm.Data {
-		dec, err := base64.StdEncoding.DecodeString(v)
-		if err != nil {
-			return nil, []error{fmt.Errorf("unable to decode base64 string '%v': %v", v, err)}
+		if inBase64 {
+			dec, err := base64.StdEncoding.DecodeString(v)
+			if err != nil {
+				return nil, []error{fmt.Errorf("unable to decode base64 string '%v': %v", v, err)}
+			} else {
+				cm.Data[k] = string(dec)
+			}
 		} else {
-			cm.Data[k] = string(dec)
+			cm.Data[k] = v
 		}
 	}
 
