@@ -45,7 +45,7 @@ func ParseKubeConfigMap(cmi interface{}, parseforuser bool) (*kube_types.ConfigM
 
 	newData := make(map[string]string)
 	for k, v := range cm.Data {
-		newData[k] = base64.StdEncoding.EncodeToString([]byte(v))
+		newData[k] = string(v)
 	}
 
 	owner := cm.GetObjectMeta().GetLabels()[ownerLabel]
