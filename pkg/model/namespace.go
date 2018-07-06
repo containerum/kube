@@ -7,7 +7,8 @@ import (
 
 	"time"
 
-	kube_types "git.containerum.net/ch/kube-client/pkg/model"
+	kube_types "github.com/containerum/kube-client/pkg/model"
+	"github.com/containerum/utils/httputil"
 	api_core "k8s.io/api/core/v1"
 	api_resource "k8s.io/apimachinery/pkg/api/resource"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -16,7 +17,6 @@ import (
 
 const (
 	ownerLabel = "owner"
-	appLabel   = "app"
 
 	minNamespaceCPU    = 300   //m
 	minNamespaceMemory = 512   //Mi
@@ -24,48 +24,30 @@ const (
 	maxNamespaceMemory = 28672 //Mi
 )
 
-// NamespacesList -- model for namespaces list
-//
-// swagger:model
-type NamespacesList struct {
-	Namespaces []NamespaceWithOwner `json:"namespaces"`
-}
-
-// NamespaceWithOwner -- model for namespace with owner
-//
-// swagger:model
-type NamespaceWithOwner struct {
-	// swagger: allOf
-	kube_types.Namespace
-	//hosting-internal name
-	Name  string `json:"name,omitempty"`
-	Owner string `json:"owner,omitempty"`
-	//access from X-User-Namespace header
-	Access string `json:"access,omitempty"`
-}
+type NamespaceKubeAPI kube_types.Namespace
 
 // ParseKubeResourceQuotaList parses kubernetes v1.ResourceQuotaList to more convenient []Namespace struct.
 // (resource quouta contains all fields that parent namespace contains)
-func ParseKubeResourceQuotaList(quotas interface{}, parseforadmin bool) (*NamespacesList, error) {
+func ParseKubeResourceQuotaList(quotas interface{}, parseforuser bool) (*kube_types.NamespacesList, error) {
 	objects := quotas.(*api_core.ResourceQuotaList)
 	if objects == nil {
 		return nil, ErrUnableConvertNamespaceList
 	}
 
-	namespaces := make([]NamespaceWithOwner, 0)
+	namespaces := make([]kube_types.Namespace, 0, objects.Size())
 	for _, quota := range objects.Items {
-		ns, err := ParseKubeResourceQuota(&quota, parseforadmin)
+		ns, err := ParseKubeResourceQuota(&quota)
 		if err != nil {
 			return nil, err
 		}
 		namespaces = append(namespaces, *ns)
 	}
-	return &NamespacesList{namespaces}, nil
+	return &kube_types.NamespacesList{namespaces}, nil
 }
 
 // ParseKubeResourceQuota parses kubernetes v1.ResourceQuota to more convenient Namespace struct.
 // (resource quouta contains all fields that parent namespace contains)
-func ParseKubeResourceQuota(quota interface{}, parseforadmin bool) (*NamespaceWithOwner, error) {
+func ParseKubeResourceQuota(quota interface{}) (*kube_types.Namespace, error) {
 	obj := quota.(*api_core.ResourceQuota)
 	if obj == nil {
 		return nil, ErrUnableConvertNamespace
@@ -78,33 +60,27 @@ func ParseKubeResourceQuota(quota interface{}, parseforadmin bool) (*NamespaceWi
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
 	createdAt := obj.ObjectMeta.CreationTimestamp.UTC().Format(time.RFC3339)
 
-	ns := NamespaceWithOwner{
-		Owner: owner,
-		Name:  obj.GetNamespace(),
-		Namespace: kube_types.Namespace{
-			CreatedAt: &createdAt,
-			Resources: kube_types.Resources{
-				Hard: kube_types.Resource{
-					CPU:    uint(cpuLimit.ScaledValue(api_resource.Milli)),
-					Memory: uint(memoryLimit.Value() / 1024 / 1024),
-				},
-				Used: &kube_types.Resource{
-					CPU:    uint(cpuUsed.ScaledValue(api_resource.Milli)),
-					Memory: uint(memoryUsed.Value() / 1024 / 1024),
-				},
+	ns := kube_types.Namespace{
+		Owner:     owner,
+		ID:        obj.GetNamespace(),
+		CreatedAt: &createdAt,
+		Resources: kube_types.Resources{
+			Hard: kube_types.Resource{
+				CPU:    uint(cpuLimit.ScaledValue(api_resource.Milli)),
+				Memory: uint(memoryLimit.Value() / 1024 / 1024),
+			},
+			Used: &kube_types.Resource{
+				CPU:    uint(cpuUsed.ScaledValue(api_resource.Milli)),
+				Memory: uint(memoryUsed.Value() / 1024 / 1024),
 			},
 		},
-	}
-
-	if parseforadmin {
-		ns.Label = ns.Name
 	}
 
 	return &ns, nil
 }
 
 // ToKube creates kubernetes v1.Namespace from Namespace struct
-func (ns *NamespaceWithOwner) ToKube() (*api_core.Namespace, []error) {
+func (ns *NamespaceKubeAPI) ToKube() (*api_core.Namespace, []error) {
 	err := ns.Validate()
 	if err != nil {
 		return nil, err
@@ -116,15 +92,11 @@ func (ns *NamespaceWithOwner) ToKube() (*api_core.Namespace, []error) {
 			APIVersion: "v1",
 		},
 		ObjectMeta: api_meta.ObjectMeta{
-			Labels: map[string]string{},
-			Name:   ns.Name,
+			Labels: map[string]string{ownerLabel: ns.Owner},
+			Name:   ns.ID,
 		},
 		Spec: api_core.NamespaceSpec{},
 	}
-	if ns.Owner != "" {
-		newNs.ObjectMeta.Labels[ownerLabel] = ns.Owner
-	}
-
 	return &newNs, nil
 }
 
@@ -137,6 +109,7 @@ func MakeResourceQuota(ns string, labels map[string]string, resources kube_types
 
 	cpuLim := api_resource.NewScaledQuantity(int64(resources.CPU), api_resource.Milli)
 	memLim := api_resource.NewQuantity(int64(resources.Memory)*1024*1024, api_resource.BinarySI)
+	//Requests is equal to Limits
 	cpuReq := cpuLim
 	memReq := memLim
 
@@ -162,40 +135,44 @@ func MakeResourceQuota(ns string, labels map[string]string, resources kube_types
 	return &newRq, nil
 }
 
-func ParseNamespaceListForUser(headers UserHeaderDataMap, nsl []NamespaceWithOwner) *NamespacesList {
-	nso := make([]NamespaceWithOwner, 0)
-	ret := NamespacesList{nso}
-	for _, ns := range nsl {
-		ns.ParseForUser(headers)
+func ParseNamespaceListForUser(projectAccesses []httputil.ProjectAccess, projectID string, nsList []kube_types.Namespace) *kube_types.NamespacesList {
+	nso := make([]kube_types.Namespace, 0)
+	ret := kube_types.NamespacesList{nso}
+	for _, ns := range nsList {
+		for _, p := range projectAccesses {
+			if p.ProjectID == projectID {
+				for _, nsAccess := range p.NamespacesAccesses {
+					if nsAccess.NamespaceID == ns.ID {
+						ns = *ParseForUser(nsAccess, &ns)
+						break
+					}
+				}
+				break
+			}
+		}
 		if ns.Label != "" {
-			ret.Namespaces = append(ret.Namespaces, ns)
+			ret.Namespaces = append(ret.Namespaces, kube_types.Namespace(ns))
 		}
 	}
 	return &ret
 }
 
-func (ns *NamespaceWithOwner) ParseForUser(headers UserHeaderDataMap) *NamespaceWithOwner {
-	for _, n := range headers {
-		if ns.Name == n.ID {
-			ns.Label = n.Label
-			ns.Access = n.Access
-		}
-	}
-	ns.Name = ""
-	ns.Owner = ""
+func ParseForUser(nsAccess httputil.NamespaceAccess, ns *kube_types.Namespace) *kube_types.Namespace {
+	ns.Label = nsAccess.NamespaceLabel
+	ns.Access = nsAccess.Access
 	return ns
 }
 
-func (ns *NamespaceWithOwner) Validate() []error {
-	errs := []error{}
+func (ns *NamespaceKubeAPI) Validate() []error {
+	var errs []error
 
-	if ns.Name == "" {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
-	} else if err := api_validation.IsDNS1123Label(ns.Name); len(err) > 0 {
-		errs = append(errs, fmt.Errorf(invalidName, ns.Name, strings.Join(err, ",")))
+	if ns.ID == "" {
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "id"))
+	} else if err := api_validation.IsDNS1123Label(ns.ID); len(err) > 0 {
+		errs = append(errs, fmt.Errorf(invalidName, ns.ID, strings.Join(err, ",")))
 	}
 	if ns.Owner == "" {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "owner"))
 	} else if !IsValidUUID(ns.Owner) {
 		errs = append(errs, errors.New(invalidOwner))
 	}
@@ -206,7 +183,7 @@ func (ns *NamespaceWithOwner) Validate() []error {
 }
 
 func ValidateResourceQuota(cpu, mem uint) []error {
-	errs := []error{}
+	var errs []error
 
 	if cpu < minNamespaceCPU || cpu > maxNamespaceCPU {
 		errs = append(errs, fmt.Errorf(invalidCPUQuota, cpu, minNamespaceCPU, maxNamespaceCPU))

@@ -88,8 +88,6 @@ custom:
   # type: array of strings
   - files:
     - "../swagger.json"
-    - "../vendor/git.containerum.net/ch/kube-client/swagger.json"
-
     # base is the path that will be removed from all files' path
     # type: string
     base: "../"

@@ -1,13 +1,13 @@
 package model
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"time"
 
-	kube_types "git.containerum.net/ch/kube-client/pkg/model"
+	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	kube_types "github.com/containerum/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	api_validation "k8s.io/apimachinery/pkg/util/validation"
@@ -15,18 +15,18 @@ import (
 
 // EndpointsList -- model for endpoints list
 //
-// swagger:model
+// swagger:ignore
 type EndpointsList struct {
 	Endpoints []Endpoint `json:"endpoints"`
 }
 
 // Endpoint -- model for endpoint
 //
-// swagger:model
+// swagger:ignore
 type Endpoint struct {
 	// required: true
-	Name  string  `json:"name"`
-	Owner *string `json:"owner,omitempty"`
+	Name  string `json:"name"`
+	Owner string `json:"owner,omitempty"`
 	//creation date in RFC3339 format
 	CreatedAt *string `json:"created_at,omitempty"`
 	// required: true
@@ -37,7 +37,7 @@ type Endpoint struct {
 
 // Port -- model for endpoint port
 //
-// swagger:model
+// swagger:ignore
 type Port struct {
 	// required: true
 	Name string `json:"name"`
@@ -75,11 +75,10 @@ func ParseKubeEndpoint(endpointi interface{}) (*Endpoint, error) {
 	addresses := make([]string, 0)
 
 	createdAt := endpoint.GetCreationTimestamp().UTC().Format(time.RFC3339)
-	owner := endpoint.GetObjectMeta().GetLabels()[ownerLabel]
 
 	newEndpoint := Endpoint{
 		Name:      endpoint.Name,
-		Owner:     &owner,
+		Owner:     endpoint.GetObjectMeta().GetLabels()[ownerLabel],
 		CreatedAt: &createdAt,
 		Ports:     ports,
 		Addresses: addresses,
@@ -110,8 +109,7 @@ func parseEndpointPort(np interface{}) Port {
 
 // ToKube creates kubernetes v1.Endpoint from Endpoint struct and namespace labels
 func (endpoint *Endpoint) ToKube(nsName string, labels map[string]string) (*api_core.Endpoints, []error) {
-	err := endpoint.Validate()
-	if err != nil {
+	if err := endpoint.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -123,10 +121,8 @@ func (endpoint *Endpoint) ToKube(nsName string, labels map[string]string) (*api_
 	}
 
 	if labels == nil {
-		labels = make(map[string]string, 0)
+		return nil, []error{kubeErrors.ErrInternalError().AddDetails("invalid project labels")}
 	}
-
-	labels[ownerLabel] = *endpoint.Owner
 
 	newEndpoint := api_core.Endpoints{
 		TypeMeta: api_meta.TypeMeta{
@@ -160,19 +156,14 @@ func makeEndpointPorts(ports []Port) []api_core.EndpointPort {
 }
 
 func (endpoint *Endpoint) Validate() []error {
-	errs := []error{}
-	if endpoint.Owner == nil {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Owner"))
-	} else if !IsValidUUID(*endpoint.Owner) {
-		errs = append(errs, errors.New(invalidOwner))
-	}
+	var errs []error
 	if endpoint.Name == "" {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Name"))
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "name"))
 	} else if err := api_validation.IsDNS1123Label(endpoint.Name); len(err) > 0 {
 		errs = append(errs, fmt.Errorf(invalidName, endpoint.Name, strings.Join(err, ",")))
 	}
 	if endpoint.Addresses == nil || len(endpoint.Addresses) == 0 {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Addresses"))
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "addresses"))
 	}
 	for _, v := range endpoint.Addresses {
 		if len(api_validation.IsValidIP(v)) > 0 {
@@ -180,16 +171,16 @@ func (endpoint *Endpoint) Validate() []error {
 		}
 	}
 	if endpoint.Ports == nil || len(endpoint.Ports) == 0 {
-		errs = append(errs, fmt.Errorf(fieldShouldExist, "Ports"))
+		errs = append(errs, fmt.Errorf(fieldShouldExist, "ports"))
 	}
 	for _, v := range endpoint.Ports {
 		if v.Name == "" {
-			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port name"))
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "ports.name"))
 		} else if err := api_validation.IsDNS1123Label(v.Name); len(err) > 0 {
 			errs = append(errs, fmt.Errorf(invalidName, v.Name, strings.Join(err, ",")))
 		}
 		if v.Protocol == "" {
-			errs = append(errs, fmt.Errorf(fieldShouldExist, "Port protocol"))
+			errs = append(errs, fmt.Errorf(fieldShouldExist, "ports.protocol"))
 		} else if v.Protocol != "TCP" && v.Protocol != "UDP" {
 			errs = append(errs, fmt.Errorf(invalidProtocol, v.Protocol))
 		}

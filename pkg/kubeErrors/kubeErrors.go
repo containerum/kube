@@ -3,7 +3,7 @@ package kubeErrors
 
 import (
 	bytes "bytes"
-	cherry "git.containerum.net/ch/cherry"
+	cherry "github.com/containerum/cherry"
 	template "text/template"
 )
 
@@ -12,7 +12,7 @@ const ()
 // ErrAdminRequired error
 // User is not admin and has no permissions
 func ErrAdminRequired(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Admin access required", StatusHTTP: 403, ID: cherry.ErrID{SID: "2", Kind: 0x1}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Admin access required", StatusHTTP: 403, ID: cherry.ErrID{SID: "Kube-API", Kind: 0x1}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -26,7 +26,7 @@ func ErrAdminRequired(params ...func(*cherry.Err)) *cherry.Err {
 // ErrRequiredHeadersNotProvided error
 // Required headers not provided
 func ErrRequiredHeadersNotProvided(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Required headers not provided", StatusHTTP: 400, ID: cherry.ErrID{SID: "2", Kind: 0x2}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Required headers not provided", StatusHTTP: 400, ID: cherry.ErrID{SID: "Kube-API", Kind: 0x2}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -40,7 +40,7 @@ func ErrRequiredHeadersNotProvided(params ...func(*cherry.Err)) *cherry.Err {
 // ErrRequestValidationFailed error
 // Validation error when parsing request
 func ErrRequestValidationFailed(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Request validation failed", StatusHTTP: 400, ID: cherry.ErrID{SID: "2", Kind: 0x3}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Request validation failed", StatusHTTP: 400, ID: cherry.ErrID{SID: "Kube-API", Kind: 0x3}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -52,7 +52,7 @@ func ErrRequestValidationFailed(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableGetResourcesList(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable to get resources list", StatusHTTP: 500, ID: cherry.ErrID{SID: "2", Kind: 0x4}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Unable to get resources list", StatusHTTP: 500, ID: cherry.ErrID{SID: "Kube-API", Kind: 0x4}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -64,7 +64,7 @@ func ErrUnableGetResourcesList(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableGetResource(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable to get resource", StatusHTTP: 500, ID: cherry.ErrID{SID: "2", Kind: 0x5}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Unable to get resource", StatusHTTP: 500, ID: cherry.ErrID{SID: "Kube-API", Kind: 0x5}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -76,7 +76,7 @@ func ErrUnableGetResource(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableCreateResource(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable to create resource", StatusHTTP: 500, ID: cherry.ErrID{SID: "2", Kind: 0x6}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Unable to create resource", StatusHTTP: 500, ID: cherry.ErrID{SID: "Kube-API", Kind: 0x6}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -88,7 +88,7 @@ func ErrUnableCreateResource(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableUpdateResource(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable to update resource", StatusHTTP: 500, ID: cherry.ErrID{SID: "2", Kind: 0x7}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Unable to update resource", StatusHTTP: 500, ID: cherry.ErrID{SID: "Kube-API", Kind: 0x7}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -100,7 +100,7 @@ func ErrUnableUpdateResource(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableDeleteResource(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable to delete resource", StatusHTTP: 500, ID: cherry.ErrID{SID: "2", Kind: 0x8}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Unable to delete resource", StatusHTTP: 500, ID: cherry.ErrID{SID: "Kube-API", Kind: 0x8}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -112,7 +112,7 @@ func ErrUnableDeleteResource(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrResourceAlreadyExists(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Resource with this name already exists", StatusHTTP: 409, ID: cherry.ErrID{SID: "2", Kind: 0x9}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Resource with this name already exists", StatusHTTP: 409, ID: cherry.ErrID{SID: "Kube-API", Kind: 0x9}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -124,7 +124,7 @@ func ErrResourceAlreadyExists(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrResourceNotExist(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Resource with this name doesn't exist", StatusHTTP: 404, ID: cherry.ErrID{SID: "2", Kind: 0xa}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Resource with this name doesn't exist", StatusHTTP: 404, ID: cherry.ErrID{SID: "Kube-API", Kind: 0xa}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -136,7 +136,7 @@ func ErrResourceNotExist(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrInvalidRole(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Invalid user role", StatusHTTP: 403, ID: cherry.ErrID{SID: "2", Kind: 0xb}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Invalid user role", StatusHTTP: 403, ID: cherry.ErrID{SID: "Kube-API", Kind: 0xb}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -148,7 +148,7 @@ func ErrInvalidRole(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrAccessError(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Access denied", StatusHTTP: 403, ID: cherry.ErrID{SID: "2", Kind: 0xc}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Access denied", StatusHTTP: 403, ID: cherry.ErrID{SID: "Kube-API", Kind: 0xc}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -160,7 +160,7 @@ func ErrAccessError(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrInternalError(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Internal error", StatusHTTP: 500, ID: cherry.ErrID{SID: "2", Kind: 0xd}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Internal error", StatusHTTP: 500, ID: cherry.ErrID{SID: "Kube-API", Kind: 0xd}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -172,7 +172,31 @@ func ErrInternalError(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableGetPodLogs(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable to read logs from the pod", StatusHTTP: 500, ID: cherry.ErrID{SID: "2", Kind: 0xe}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Unable to read logs from the pod", StatusHTTP: 500, ID: cherry.ErrID{SID: "Kube-API", Kind: 0xe}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	for _, param := range params {
+		param(err)
+	}
+	for i, detail := range err.Details {
+		det := renderTemplate(detail)
+		err.Details[i] = det
+	}
+	return err
+}
+
+func ErrExecFailure(params ...func(*cherry.Err)) *cherry.Err {
+	err := &cherry.Err{Message: "Exec call failed", StatusHTTP: 500, ID: cherry.ErrID{SID: "Kube-API", Kind: 0xf}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	for _, param := range params {
+		param(err)
+	}
+	for i, detail := range err.Details {
+		det := renderTemplate(detail)
+		err.Details[i] = det
+	}
+	return err
+}
+
+func ErrVolumeNotReady(params ...func(*cherry.Err)) *cherry.Err {
+	err := &cherry.Err{Message: "Volume is not ready", StatusHTTP: 503, ID: cherry.ErrID{SID: "Kube-API", Kind: 0x10}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}

@@ -1,7 +1,7 @@
 # File for noice errors generation
 
 Name = "kubeErrors"
-SID = "2"
+SID = "Kube-API"
 
 # errors
 [[error]]
@@ -91,3 +91,15 @@ SID = "2"
     StatusHTTP = 500
     Message = "Unable to read logs from the pod"
     Kind = 14
+
+[[error]]
+    Name = "ErrExecFailure"
+    StatusHTTP = 500
+    Message = "Exec call failed"
+    Kind = 15
+
+[[error]]
+    Name = "ErrVolumeNotReady"
+    StatusHTTP = 503
+    Message = "Volume is not ready"
+    Kind = 16

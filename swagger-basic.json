@@ -1,0 +1,114 @@
+{
+  "swagger": "2.0",
+  "paths": null,
+  "definitions": {
+    "err": {
+      "description": "Err -- standard serializable API error\nMessage -- constant error message:\n+ \"invalid username\"\n+ \"quota exceeded\"\n+ \"validation error\"\n...etc...\nID -- unique error identification code\nDetails -- optional context error messages kinda\n+ \"field 'Replicas' must be non-zero value\"\n+ \"not enough tights to feed gopher\"\n+ \"resource 'God' does't exist\"\nFields -- optional set of key-value pairs",
+      "type": "object",
+      "properties": {
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Details"
+        },
+        "fields": {
+          "description": "Fields -- represents additional key-value fields of error",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-package": "github.com/containerum/cherry"
+        },
+        "id": {
+          "$ref": "#/definitions/errId"
+        },
+        "message": {
+          "type": "string",
+          "x-go-name": "Message"
+        },
+        "status_http": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "StatusHTTP"
+        }
+      },
+      "x-go-package": "github.com/containerum/cherry"
+    },
+    "errId": {
+      "description": "ErrID -- represents unique error ID",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "description": "ErrKind -- represents kind of error",
+          "type": "integer",
+          "format": "uint64",
+          "x-go-package": "github.com/containerum/cherry"
+        },
+        "sid": {
+          "description": "ErrSID -- represents service ID of error",
+          "type": "string",
+          "x-go-package": "github.com/containerum/cherry"
+        }
+      },
+      "x-go-gen-location": "models",
+      "x-go-package": "github.com/containerum/cherry"
+    }
+  },
+  "parameters": {
+    "ConnectionHeader": {
+      "type": "string",
+      "format": "string",
+      "name": "Connection",
+      "in": "header",
+      "required": true
+    },
+    "SecWebSocketKeyHeader": {
+      "type": "string",
+      "format": "string",
+      "name": "Sec-WebSocket-Key",
+      "in": "header",
+      "required": true
+    },
+    "SecWebsocketVersionHeader": {
+      "type": "integer",
+      "format": "int",
+      "name": "Sec-Websocket-Version",
+      "in": "header",
+      "required": true
+    },
+    "UpgradeHeader": {
+      "type": "string",
+      "format": "string",
+      "name": "Upgrade",
+      "in": "header",
+      "required": true
+    },
+    "UserIDHeader": {
+      "type": "string",
+      "format": "uuid",
+      "name": "X-User-ID",
+      "in": "header",
+      "required": true
+    },
+    "UserRoleHeader": {
+      "enum": [
+        "user",
+        "admin"
+      ],
+      "type": "string",
+      "name": "X-User-Role",
+      "in": "header",
+      "required": true
+    }
+  },
+  "responses": {
+    "error": {
+      "description": "cherry error",
+      "schema": {
+        "$ref": "#/definitions/err"
+      }
+    }
+  }
+}

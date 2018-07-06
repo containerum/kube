@@ -3,7 +3,7 @@ package model
 import (
 	"encoding/base64"
 
-	"git.containerum.net/ch/kube-client/pkg/model"
+	"github.com/containerum/kube-client/pkg/model"
 	"github.com/json-iterator/go"
 	log "github.com/sirupsen/logrus"
 )

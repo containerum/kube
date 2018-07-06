@@ -1,16 +1,18 @@
 stages:
   - test
   - build
-  - dev-release
-  - dev-deploy
-
-
+  - release
+  - deploy
 
 variables:
-  TAG_DEV: develop
-  TAG: production
   CONTAINER_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}
-  DEVELOP_NAMESPACE: hosting
+  NAMESPACE: hosting
+  SECRET: gitlab-registry
+  REPOSITORY: registry.containerum.net/ch/kube-api
+
+.docker-login: &docker-login
+  before_script:
+    - docker login -u gitlab-ci-token -p ${CI_BUILD_TOKEN} ${CI_REGISTRY}
 
 test-build:
   services:
@@ -19,30 +21,31 @@ test-build:
   tags:
     - build
   script:
-    - docker build -t ${CONTAINER_IMAGE}:${TAG_DEV}-${CI_BUILD_REF} .
-    - docker rmi --force ${CONTAINER_IMAGE}:${TAG_DEV}-${CI_BUILD_REF}
+    - docker build -t ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8} .
+    - docker rmi --force ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8}
   except:
     - develop
     - master
     - staging
     - tags
 
+
 dev-release:
   image: docker:latest
-  stage: dev-release
+  stage: release
   tags:
     - build
+  <<: *docker-login
   script:
-    - docker login -u gitlab-ci-token -p ${CI_BUILD_TOKEN} ${CI_REGISTRY}
-    - docker build -t ${CONTAINER_IMAGE}:${TAG_DEV}-${CI_BUILD_REF}  .
-    - docker push ${CONTAINER_IMAGE}:${TAG_DEV}-${CI_BUILD_REF}
-    - docker rmi --force ${CONTAINER_IMAGE}:${TAG_DEV}-${CI_BUILD_REF}
+    - docker build -t ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8} .
+    - docker push ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8}
+    - docker rmi --force ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8}
   only:
     - develop
 
 dev-deploy:
   image: exon/helm
-  stage: dev-deploy
+  stage: deploy
   tags:
     - develop
   before_script:
@@ -53,15 +56,15 @@ dev-deploy:
   environment:
     name: develop
   script:
-    - cd deploy
-    - helm upgrade --install  --namespace=${DEVELOP_NAMESPACE} ${CI_PROJECT_NAME} --set image.tag=${TAG_DEV}-${CI_BUILD_REF} --set environment=develop --values values.yaml --values env/develop.yaml .
+    - cd charts/kube
+    - helm upgrade --install  --namespace=${NAMESPACE} ${CI_PROJECT_NAME} --set image.tag=${CI_COMMIT_SHA:0:8} --set image.secret=${SECRET} --set image.repository=${REPOSITORY} --set service.externalIP=192.168.88.210 --values values.yaml .
   only:
     - develop
 
 
-dev github:
+pub-github:
   image: alpine
-  stage: build
+  stage: deploy
   tags:
     - build
   before_script:
@@ -78,12 +81,11 @@ dev github:
     - eval `ssh-agent -s`
     - ssh-add ~/.ssh/id_rsa
     - ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-
   script:
     - git remote show
     - if [ $(git remote show | grep github) ]; then git remote rm github; fi
     - if [ $(git branch --list | grep pub) ]; then git branch -d pub; fi
-    - git remote add github git@github.com:containerum/kube-api.git
+    - git remote add github ${GITHUB_REMOTE}
     - git pull origin develop
     - git fetch github
     - git checkout origin/develop
@@ -92,4 +94,54 @@ dev github:
     - git remote rm github
   only:
     - develop
-  when: always
+
+
+stage-release:
+  image: docker:latest
+  stage: release
+  tags:
+    - build
+  <<: *docker-login
+  script:
+    - docker build -t ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8} .
+    - docker push ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8}
+    - docker rmi --force ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8}
+  only:
+    - master
+
+
+prod-release:
+  image: docker:latest
+  stage: release
+  tags:
+    - build
+  <<: *docker-login
+  script:
+    - docker pull ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8}
+    - docker tag ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8} ${CONTAINER_IMAGE}:latest
+    - docker tag ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8} ${CONTAINER_IMAGE}:${CI_COMMIT_TAG}
+    - docker push ${CONTAINER_IMAGE}:latest
+    - docker push ${CONTAINER_IMAGE}:${CI_COMMIT_TAG}
+    - docker rmi --force ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8}
+  only:
+    - tags
+
+prod-deploy:
+  image: exon/helm
+  stage: deploy
+  tags:
+    - production
+  before_script:
+    - mkdir -p /etc/deploy/
+    - echo ${PRODUCTION_KUBE_CONFIG_2} | base64 -d > ${KUBECONFIG}
+    - helm init --client-only
+    - helm repo update
+  environment:
+    name: production
+    url: https://web.containerum.io
+  script:
+    - cd charts/kube
+    - helm upgrade --install --namespace=${NAMESPACE} ${CI_PROJECT_NAME} --set image.tag=${CI_COMMIT_TAG} --set image.secret=${SECRET} --set image.repository=${REPOSITORY} --set service.externalIP=${PRODUCTION_IP} --set env.CH_KUBE_API_DEBUG="false" --set env.CH_KUBE_API_TEXTLOG="false" --values values.yaml .
+  only:
+    - tags
+  when: manual

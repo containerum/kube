@@ -7,7 +7,11 @@ import (
 	"github.com/urfave/cli"
 )
 
-//go:generate swagger generate spec -m -i ../../swagger-basic.yml -o ../../swagger.json
+//go:generate protoc --go_out=../../proto -I../../proto exec.proto
+//go:generate swagger flatten ../../swagger-basic.yml -o ../../swagger-basic.json
+//go:generate swagger generate spec -m -i ../../swagger-basic.json -o ../../swagger.json
+//go:generate swagger flatten ../../swagger.json -o ../../swagger.json
+//go:generate swagger validate ../../swagger.json
 
 func main() {
 	app := cli.NewApp()
@@ -17,7 +21,7 @@ func main() {
 
 	fmt.Printf("Starting %v %v\n", app.Name, app.Version)
 
-	app.Action = server
+	app.Action = initServer
 
 	if err := app.Run(os.Args); err != nil {
 		fmt.Fprintln(os.Stderr, err)

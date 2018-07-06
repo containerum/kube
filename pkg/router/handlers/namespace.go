@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	cherry "git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
@@ -11,7 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 
-	"git.containerum.net/ch/cherry/adaptors/gonic"
+	"github.com/containerum/cherry/adaptors/gonic"
+	"github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/gin/binding"
 )
 
@@ -22,34 +23,27 @@ const (
 
 // swagger:operation GET /namespaces Namespace GetNamespaceList
 // Get namespaces list.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-namespace-list
 //
 // ---
 // x-method-visibility: public
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: owner
 //    in: query
 //    type: string
 //    required: false
 // responses:
 //  '200':
-//    description: ingresses list
+//    description: namespaces list
 //    schema:
 //      $ref: '#/definitions/NamespacesList'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func GetNamespaceList(ctx *gin.Context) {
 	owner := ctx.Query(ownerQuery)
 
-	role := ctx.MustGet(m.UserRole).(string)
-	//TODO: Show only namespaces with owner = X-User-Id
-	/*if role == m.RoleUser {
-		owner = ctx.MustGet(m.UserID).(string)
-	}*/
+	role := httputil.MustGetUserRole(ctx.Request.Context())
 
 	log.WithField("Owner", owner).Debug("Get namespace list Call")
 
@@ -57,35 +51,36 @@ func GetNamespaceList(ctx *gin.Context) {
 
 	quotas, err := kube.GetNamespaceQuotaList(owner)
 	if err != nil {
-		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
 	ret, err := model.ParseKubeResourceQuotaList(quotas, role == m.RoleAdmin)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
 	if role == m.RoleUser {
-		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
-		ret = model.ParseNamespaceListForUser(*nsList, ret.Namespaces)
+		accesses := ctx.Request.Context().Value(httputil.AllAccessContext).([]httputil.ProjectAccess)
+		ret = model.ParseNamespaceListForUser(accesses, ctx.Param("project"), ret.Namespaces)
 	}
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation GET /namespaces/{namespace} Namespace GetNamespace
+// swagger:operation GET /projects/{project}/namespaces/{namespace} Namespace GetNamespace
 // Get namespace.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-namespace
 //
 // ---
 // x-method-visibility: public
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -94,35 +89,35 @@ func GetNamespaceList(ctx *gin.Context) {
 //  '200':
 //    description: namespace
 //    schema:
-//      $ref: '#/definitions/NamespaceWithOwner'
+//      $ref: '#/definitions/Namespace'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func GetNamespace(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
+		"Namespace": namespace,
 	}).Debug("Get namespace Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
 	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
-	ret, err := model.ParseKubeResourceQuota(quota, role == m.RoleAdmin)
+	role := httputil.MustGetUserRole(ctx.Request.Context())
+
+	ret, err := model.ParseKubeResourceQuota(quota)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
+		gonic.Gonic(kubeErrors.ErrUnableGetResource(), ctx)
 		return
 	}
 
 	if role == m.RoleUser {
-		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
-		ret.ParseForUser(*nsList)
+		access := ctx.Request.Context().Value(httputil.AccessContext).(httputil.NamespaceAccess)
+		ret = model.ParseForUser(access, ret)
 	}
 
 	ctx.JSON(http.StatusOK, ret)
@@ -130,64 +125,60 @@ func GetNamespace(ctx *gin.Context) {
 
 // swagger:operation POST /namespaces Namespace CreateNamespace
 // Create namespace.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-namespace
 //
 // ---
 // x-method-visibility: private
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/NamespaceWithOwner'
+//      $ref: '#/definitions/Namespace'
 // responses:
 //  '201':
 //    description: namespace created
 //    schema:
-//      $ref: '#/definitions/NamespaceWithOwner'
+//      $ref: '#/definitions/Namespace'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func CreateNamespace(ctx *gin.Context) {
 	log.Debug("Create namespace Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var ns model.NamespaceWithOwner
+	var ns model.NamespaceKubeAPI
 	if err := ctx.ShouldBindWith(&ns, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	newNs, errs := ns.ToKube()
 	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
-	newQuota, errs := model.MakeResourceQuota(ns.Name, newNs.Labels, ns.Resources.Hard)
+	newQuota, errs := model.MakeResourceQuota(ns.ID, newNs.Labels, ns.Resources.Hard)
 	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	_, err := kube.CreateNamespace(newNs)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
-	quotaCreated, err := kube.CreateNamespaceQuota(ns.Name, newQuota)
+	quotaCreated, err := kube.CreateNamespaceQuota(ns.ID, newQuota)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
-	ret, err := model.ParseKubeResourceQuota(quotaCreated, role == m.RoleAdmin)
+	ret, err := model.ParseKubeResourceQuota(quotaCreated)
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -195,17 +186,18 @@ func CreateNamespace(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, ret)
 }
 
-// swagger:operation PUT /namespaces/{namespace} Namespace UpdateNamespace
+// swagger:operation PUT /projects/{project}/namespaces/{namespace} Namespace UpdateNamespace
 // Update namespace.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-namespace
 //
 // ---
 // x-method-visibility: private
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -213,52 +205,50 @@ func CreateNamespace(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/NamespaceWithOwner'
+//      $ref: '#/definitions/Namespace'
 // responses:
 //  '201':
 //    description: namespace updated
 //    schema:
-//      $ref: '#/definitions/NamespaceWithOwner'
+//      $ref: '#/definitions/Namespace'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func UpdateNamespace(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
+		"Namespace": namespace,
 	}).Debug("Update namespace Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var res model.NamespaceWithOwner
+	var res model.NamespaceKubeAPI
 	if err := ctx.ShouldBindWith(&res, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	quotaOld, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	quota, errs := model.MakeResourceQuota(quotaOld.Namespace, quotaOld.Labels, res.Resources.Hard)
 	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	quotaAfter, err := kube.UpdateNamespaceQuota(namespace, quota)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
-	role := ctx.MustGet(m.UserRole).(string)
-	ret, err := model.ParseKubeResourceQuota(quotaAfter, role == m.RoleAdmin)
+	ret, err := model.ParseKubeResourceQuota(quotaAfter)
 	if err != nil {
 		ctx.Error(err)
 	}
@@ -267,17 +257,18 @@ func UpdateNamespace(ctx *gin.Context) {
 
 }
 
-// swagger:operation DELETE /namespaces/{namespace} Namespace DeleteNamespace
+// swagger:operation DELETE /projects/{project}/namespaces/{namespace} Namespace DeleteNamespace
 // Delete namespace.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-namespace
 //
 // ---
 // x-method-visibility: private
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
 //  - name: namespace
 //    in: path
 //    type: string
@@ -286,20 +277,57 @@ func UpdateNamespace(ctx *gin.Context) {
 //  '202':
 //    description: namespace deleted
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func DeleteNamespace(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
+		"Namespace": namespace,
 	}).Debug("Delete namespace Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
 	err := kube.DeleteNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
 		return
+	}
+
+	ctx.Status(http.StatusAccepted)
+}
+
+// swagger:operation DELETE /projects/{project}/namespaces Namespace DeleteUserNamespaces
+// Delete user namespaces.
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '202':
+//    description: namespaces deleted
+//  default:
+//    $ref: '#/responses/error'
+func DeleteUserNamespaces(ctx *gin.Context) {
+	log.Debug("Delete user namespaces Call")
+
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	list, err := kube.GetNamespaceList(httputil.MustGetUserID(ctx.Request.Context()))
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		return
+	}
+
+	for _, n := range list.Items {
+		err = kube.DeleteNamespace(n.Name)
+		if err != nil {
+			log.WithError(err)
+		}
 	}
 
 	ctx.Status(http.StatusAccepted)
