@@ -23,7 +23,7 @@ func (k *Kube) GetDeploymentList(ns string, owner string) (*api_apps.DeploymentL
 
 func (k *Kube) GetDeploymentSolutionList(ns string, solutionID string) (*api_apps.DeploymentList, error) {
 	deployments, err := k.AppsV1().Deployments(ns).List(api_meta.ListOptions{
-		LabelSelector: "solution=" + solutionID,
+		LabelSelector: getSolutionLabel(solutionID),
 	})
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -77,7 +77,7 @@ func (k *Kube) DeleteDeployment(ns string, deployName string) error {
 //DeleteDeployment deletes deployments
 func (k *Kube) DeleteDeploymentSolution(ns string, solutionID string) error {
 	err := k.AppsV1().Deployments(ns).DeleteCollection(&api_meta.DeleteOptions{}, api_meta.ListOptions{
-		LabelSelector: "solution=" + solutionID,
+		LabelSelector: getSolutionLabel(solutionID),
 	})
 	if err != nil {
 		log.WithFields(log.Fields{

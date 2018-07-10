@@ -80,6 +80,7 @@ func initRoutes(e gin.IRouter) {
 		{
 			deployment.GET("", m.ReadAccess, h.GetDeploymentList)
 			deployment.GET("/:deployment", m.ReadAccess, h.GetDeployment)
+			deployment.GET("/:deployment/pods", m.ReadAccess, h.GetDeploymentPodList)
 			deployment.POST("", h.CreateDeployment)
 			deployment.PUT("/:deployment", h.UpdateDeployment)
 			deployment.PUT("/:deployment/replicas", h.UpdateDeploymentReplicas)

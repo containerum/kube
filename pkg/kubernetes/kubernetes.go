@@ -42,3 +42,17 @@ func getOwnerLabel(owner string) (label string) {
 	}
 	return
 }
+
+func getSolutionLabel(solution string) (label string) {
+	if solution != "" {
+		label = fmt.Sprintf("solution=%s", solution)
+	}
+	return
+}
+
+func getDeploymentLabel(deploy string) (label string) {
+	if deploy != "" {
+		label = fmt.Sprintf("app=%s", deploy)
+	}
+	return
+}
