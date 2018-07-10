@@ -332,3 +332,54 @@ func Exec(ctx *gin.Context) {
 	go execFromClient(conn, tsQueue, pipes, closeAll)
 	go execToClient(conn, pipes, closeAll)
 }
+
+// swagger:operation GET /namespaces/{namespace}/deployments/{deployment}/pods Pod GetDeploymentPodList
+// Get deployment pods list.
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: deployment
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '200':
+//    description: deployment pod list
+//    schema:
+//      $ref: '#/definitions/PodsList'
+//  default:
+//    $ref: '#/responses/error'
+func GetDeploymentPodList(ctx *gin.Context) {
+	namespace := ctx.Param(namespaceParam)
+	deployment := ctx.Param(deploymentParam)
+	log.WithFields(log.Fields{
+		"Namespace":  namespace,
+		"Deployment": deployment,
+	}).Debug("Get deployment pod list Call")
+
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResourcesList()), ctx)
+		return
+	}
+
+	pods, err := kube.GetPodListByDeployment(namespace, deployment)
+	if err != nil {
+		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+		return
+	}
+
+	role := ctx.MustGet(m.UserRole).(string)
+	podList := model.ParseKubePodList(pods, role == m.RoleUser)
+	ctx.JSON(http.StatusOK, podList)
+}

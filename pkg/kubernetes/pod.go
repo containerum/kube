@@ -57,6 +57,20 @@ func (k *Kube) GetPod(ns string, po string) (interface{}, error) {
 	return pod, nil
 }
 
+func (k *Kube) GetPodListByDeployment(ns string, deploy string) (interface{}, error) {
+	pods, err := k.CoreV1().Pods(ns).List(meta_v1.ListOptions{
+		LabelSelector: getDeploymentLabel(deploy),
+	})
+	if err != nil {
+		log.WithFields(log.Fields{
+			"Namespace":  ns,
+			"Deployment": deploy,
+		}).Error(err)
+		return nil, err
+	}
+	return pods, nil
+}
+
 //DeletePod deletes pod
 func (k *Kube) DeletePod(ns string, po string) error {
 	err := k.CoreV1().Pods(ns).Delete(po, &meta_v1.DeleteOptions{})

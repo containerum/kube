@@ -18,7 +18,7 @@ func (k *Kube) GetServiceList(nsname string) (*api_core.ServiceList, error) {
 
 func (k *Kube) GetServiceSolutionList(ns string, solutionID string) (*api_core.ServiceList, error) {
 	services, err := k.CoreV1().Services(ns).List(api_meta.ListOptions{
-		LabelSelector: "solution=" + solutionID,
+		LabelSelector: getSolutionLabel(solutionID),
 	})
 	if err != nil {
 		log.WithFields(log.Fields{
