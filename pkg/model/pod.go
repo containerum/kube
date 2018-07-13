@@ -51,7 +51,7 @@ func ParseKubePod(pod interface{}, parseforuser bool) kube_types.Pod {
 	return newPod
 }
 
-func getContainers(cListi interface{}, mode map[string]int32, storageName map[string]string, replicas int) (containers []model.Container, totalcpu api_resource.Quantity, totalmem api_resource.Quantity) {
+func getContainers(cListi interface{}, mode map[string]int32, storageName map[string]string, replicas int) (containers []model.Container, totalcpu, totalmem api_resource.Quantity) {
 	cList := cListi.([]api_core.Container)
 	for _, c := range cList {
 		env := getEnv(c.Env)
