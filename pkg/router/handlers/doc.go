@@ -2,6 +2,7 @@
 //
 // Kube API service is service for connection with Kubernetes.
 //
+//  Version: 0.0.1
 //	Consumes:
 //	- application/json
 //

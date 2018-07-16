@@ -3,11 +3,12 @@ package handlers
 import (
 	"net/http"
 
-	"git.containerum.net/ch/cherry/adaptors/gonic"
-	cherry "git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
+	"github.com/containerum/cherry/adaptors/gonic"
+	kube_types "github.com/containerum/kube-client/pkg/model"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
@@ -19,7 +20,6 @@ const (
 
 // swagger:operation GET /namespaces/{namespace}/ingresses Ingress GetIngressList
 // Get ingresses list.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-ingress-list
 //
 // ---
 // x-method-visibility: public
@@ -27,7 +27,6 @@ const (
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -37,20 +36,25 @@ const (
 //    description: ingresses list
 //    schema:
 //      $ref: '#/definitions/IngressesList'
-//  configmap:
-//    description: error
+//  default:
+//    $ref: '#/responses/error'
 func GetIngressList(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
+		"Namespace": namespace,
 	}).Debug("Get ingress list")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResourcesList()), ctx)
+		return
+	}
+
 	ingressList, err := kube.GetIngressList(namespace)
 	if err != nil {
-		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
@@ -58,7 +62,7 @@ func GetIngressList(ctx *gin.Context) {
 	ret, err := model.ParseKubeIngressList(ingressList, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
@@ -67,7 +71,6 @@ func GetIngressList(ctx *gin.Context) {
 
 // swagger:operation GET /namespaces/{namespace}/ingresses/{ingress} Ingress GetIngress
 // Get ingresses list.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-ingress
 //
 // ---
 // x-method-visibility: public
@@ -75,7 +78,6 @@ func GetIngressList(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -88,31 +90,36 @@ func GetIngressList(ctx *gin.Context) {
 //  '200':
 //    description: ingresses
 //    schema:
-//      $ref: '#/definitions/IngressWithOwner'
-//  configmap:
-//    description: error
+//      $ref: '#/definitions/Ingress'
+//  default:
+//    $ref: '#/responses/error'
 func GetIngress(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	ingr := ctx.Param(ingressParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Ingress":         ingr,
+		"Namespace": namespace,
+		"Ingress":   ingr,
 	}).Debug("Get ingress Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
+		return
+	}
+
 	ingress, err := kube.GetIngress(namespace, ingr)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
 		return
 	}
 
 	role := ctx.MustGet(m.UserRole).(string)
-	ret, err := model.ParseKubeIngressList(ingress, role == m.RoleUser)
+	ret, err := model.ParseKubeIngress(ingress, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
+		gonic.Gonic(kubeErrors.ErrUnableGetResource(), ctx)
 		return
 	}
 
@@ -121,7 +128,6 @@ func GetIngress(ctx *gin.Context) {
 
 // swagger:operation POST /namespaces/{namespace}/ingresses Ingress CreateIngress
 // Create ingress.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-ingress
 //
 // ---
 // x-method-visibility: private
@@ -129,7 +135,6 @@ func GetIngress(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -137,45 +142,44 @@ func GetIngress(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/IngressWithOwner'
+//      $ref: '#/definitions/Ingress'
 // responses:
 //  '201':
 //    description: ingress created
 //    schema:
-//      $ref: '#/definitions/IngressWithOwner'
+//      $ref: '#/definitions/Ingress'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func CreateIngress(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
+		"Namespace": namespace,
 	}).Debug("Create ingress Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var ingressReq model.IngressWithOwner
+	var ingressReq model.IngressKubeAPI
 	if err := ctx.ShouldBindWith(&ingressReq, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
 	newIngress, errs := ingressReq.ToKube(namespace, quota.Labels)
 	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	ingressAfter, err := kube.CreateIngress(newIngress)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -190,7 +194,6 @@ func CreateIngress(ctx *gin.Context) {
 
 // swagger:operation PUT /namespaces/{namespace}/ingresses/{ingress} Ingress UpdateIngress
 // Update ingress.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#update-ingress
 //
 // ---
 // x-method-visibility: private
@@ -198,7 +201,6 @@ func CreateIngress(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -210,56 +212,55 @@ func CreateIngress(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/IngressWithOwner'
+//      $ref: '#/definitions/Ingress'
 // responses:
 //  '201':
 //    description: ingress updated
 //    schema:
-//      $ref: '#/definitions/IngressWithOwner'
+//      $ref: '#/definitions/Ingress'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func UpdateIngress(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	ingr := ctx.Param(ingressParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Ingress":         ingr,
+		"Namespace": namespace,
+		"Ingress":   ingr,
 	}).Debug("Update ingress Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var ingressReq model.IngressWithOwner
+	var ingressReq model.IngressKubeAPI
 	if err := ctx.ShouldBindWith(&ingressReq, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
-	quota, err := kube.GetNamespaceQuota(namespace)
+	ns, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	oldIngress, err := kube.GetIngress(namespace, ingr)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	ingressReq.Name = ingr
 	ingressReq.Owner = oldIngress.GetObjectMeta().GetLabels()[ownerQuery]
 
-	newIngress, errs := ingressReq.ToKube(namespace, quota.Labels)
+	newIngress, errs := ingressReq.ToKube(namespace, ns.Labels)
 	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	ingressAfter, err := kube.UpdateIngress(newIngress)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -274,7 +275,6 @@ func UpdateIngress(ctx *gin.Context) {
 
 // swagger:operation DELETE /namespaces/{namespace}/ingresses/{ingress} Ingress DeleteIngress
 // Delete ingress.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-ingress
 //
 // ---
 // x-method-visibility: private
@@ -282,7 +282,6 @@ func UpdateIngress(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -295,21 +294,26 @@ func UpdateIngress(ctx *gin.Context) {
 //  '202':
 //    description: ingress deleted
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func DeleteIngress(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	ingr := ctx.Param(ingressParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Ingress":         ingr,
+		"Namespace": namespace,
+		"Ingress":   ingr,
 	}).Debug("Delete ingress Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	err := kube.DeleteIngress(namespace, ingr)
+	_, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		return
+	}
+
+	err = kube.DeleteIngress(namespace, ingr)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
 		return
 	}
 
@@ -325,20 +329,19 @@ func DeleteIngress(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 // responses:
 //  '200':
 //    description: ingresses list from all users namespaces
 //    schema:
 //      $ref: '#/definitions/SelectedIngressesList'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func GetSelectedIngresses(ctx *gin.Context) {
 	log.Debug("Get selected ingresses Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	ingresses := make(model.SelectedIngressesList, 0)
+	ingresses := make(kube_types.SelectedIngressesList, 0)
 
 	role := ctx.MustGet(m.UserRole).(string)
 	if role == m.RoleUser {
@@ -347,18 +350,18 @@ func GetSelectedIngresses(ctx *gin.Context) {
 
 			ingressList, err := kube.GetIngressList(n.ID)
 			if err != nil {
-				gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+				gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
 				return
 			}
 
 			ingressesList, err := model.ParseKubeIngressList(ingressList, role == m.RoleUser)
 			if err != nil {
 				ctx.Error(err)
-				gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+				gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
 				return
 			}
 
-			ingresses[n.Label] = *ingressesList
+			ingresses[n.ID] = *ingressesList
 		}
 	}
 

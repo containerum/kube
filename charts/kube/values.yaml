@@ -1,0 +1,19 @@
+replicaCount: 1
+
+image:
+  repository: containerum/kube
+  tag: v1.0.0
+  pullPolicy: Always
+  secret:
+
+service:
+  port: 1214
+  targetPort: 1212
+  externalIP:
+
+rbac:
+  serviceAccountName: null
+
+env:
+  CH_KUBE_API_DEBUG: "true"
+  CH_KUBE_API_TEXTLOG: "true"

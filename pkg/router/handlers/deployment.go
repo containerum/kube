@@ -3,12 +3,12 @@ package handlers
 import (
 	"net/http"
 
-	"git.containerum.net/ch/cherry/adaptors/gonic"
-	cherry "git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
-	kube_types "git.containerum.net/ch/kube-client/pkg/model"
+	"github.com/containerum/cherry/adaptors/gonic"
+	kube_types "github.com/containerum/kube-client/pkg/model"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
@@ -16,11 +16,11 @@ import (
 
 const (
 	deploymentParam = "deployment"
+	solutionParam   = "solution"
 )
 
 // swagger:operation GET /namespaces/{namespace}/deployments Deployment GetDeploymentList
 // Get deployments list.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-deployments
 //
 // ---
 // x-method-visibility: public
@@ -28,7 +28,6 @@ const (
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -43,20 +42,25 @@ const (
 //    schema:
 //      $ref: '#/definitions/DeploymentsList'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func GetDeploymentList(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Owner":           ctx.Query(ownerQuery),
+		"Namespace": namespace,
+		"Owner":     ctx.Query(ownerQuery),
 	}).Debug("Get deployment list Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResourcesList()), ctx)
+		return
+	}
+
 	deploy, err := kube.GetDeploymentList(namespace, ctx.Query(ownerQuery))
 	if err != nil {
-		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
@@ -65,7 +69,65 @@ func GetDeploymentList(ctx *gin.Context) {
 	ret, err := model.ParseKubeDeploymentList(deploy, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, ret)
+}
+
+// swagger:operation GET /namespaces/{namespace}/solutions/{solution}/deployments Deployment GetDeploymentSolutionList
+// Get solution deployments list.
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: solution
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '200':
+//    description: deployments list
+//    schema:
+//      $ref: '#/definitions/DeploymentsList'
+//  default:
+//    $ref: '#/responses/error'
+func GetDeploymentSolutionList(ctx *gin.Context) {
+	namespace := ctx.Param(namespaceParam)
+	solution := ctx.Param(solutionParam)
+	log.WithFields(log.Fields{
+		"Namespace": namespace,
+		"Solution":  solution,
+	}).Debug("Get deployment list Call")
+
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResourcesList()), ctx)
+		return
+	}
+
+	deploy, err := kube.GetDeploymentSolutionList(namespace, solution)
+	if err != nil {
+		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+		return
+	}
+
+	role := ctx.MustGet(m.UserRole).(string)
+
+	ret, err := model.ParseKubeDeploymentList(deploy, role == m.RoleUser)
+	if err != nil {
+		ctx.Error(err)
+		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
@@ -74,7 +136,6 @@ func GetDeploymentList(ctx *gin.Context) {
 
 // swagger:operation GET /namespaces/{namespace}/deployments/{deployment} Deployment GetDeployment
 // Get deployment.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#get-deployment
 //
 // ---
 // x-method-visibility: public
@@ -82,7 +143,6 @@ func GetDeploymentList(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -95,23 +155,28 @@ func GetDeploymentList(ctx *gin.Context) {
 //  '200':
 //    description: deployment
 //    schema:
-//      $ref: '#/definitions/DeploymentWithOwner'
+//      $ref: '#/definitions/Deployment'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func GetDeployment(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	deployment := ctx.Param(deploymentParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Deployment":      deployment,
+		"Namespace":  namespace,
+		"Deployment": deployment,
 	}).Debug("Get deployment Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
+		return
+	}
+
 	deploy, err := kube.GetDeployment(namespace, deployment)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
 		return
 	}
 
@@ -119,7 +184,7 @@ func GetDeployment(ctx *gin.Context) {
 	ret, err := model.ParseKubeDeployment(deploy, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrUnableGetResource(), ctx)
+		gonic.Gonic(kubeErrors.ErrUnableGetResource(), ctx)
 		return
 	}
 
@@ -128,7 +193,6 @@ func GetDeployment(ctx *gin.Context) {
 
 // swagger:operation POST /namespaces/{namespace}/deployments Deployment CreateDeployment
 // Create deployment.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#create-deployment
 //
 // ---
 // x-method-visibility: private
@@ -136,7 +200,6 @@ func GetDeployment(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -144,45 +207,56 @@ func GetDeployment(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/DeploymentWithOwner'
+//      $ref: '#/definitions/Deployment'
 // responses:
 //  '201':
 //    description: deployment created
 //    schema:
-//      $ref: '#/definitions/DeploymentWithOwner'
+//      $ref: '#/definitions/Deployment'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func CreateDeployment(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
+		"Namespace": namespace,
 	}).Debug("Create deployment Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var deployReq model.DeploymentWithOwner
+	var deployReq model.DeploymentKubeAPI
 	if err := ctx.ShouldBindWith(&deployReq, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
-	quota, err := kube.GetNamespace(namespace)
+	ns, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
-	deploy, errs := deployReq.ToKube(namespace, quota.Labels)
+	deploy, errs := deployReq.ToKube(namespace, ns.Labels)
 	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
-
+	for _, v := range deploy.Spec.Template.Spec.Volumes {
+		if v.PersistentVolumeClaim != nil {
+			if pvc, err := kube.GetPersistentVolumeClaim(namespace, v.PersistentVolumeClaim.ClaimName); err != nil {
+				gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
+				return
+			} else {
+				if pvc.Status.Phase != "Bound" {
+					gonic.Gonic(kubeErrors.ErrVolumeNotReady().AddDetailF("Volume status: %v", pvc.Status.Phase), ctx)
+					return
+				}
+			}
+		}
+	}
 	deployAfter, err := kube.CreateDeployment(deploy)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -196,7 +270,6 @@ func CreateDeployment(ctx *gin.Context) {
 
 // swagger:operation PUT /namespaces/{namespace}/deployments/{deployment} Deployment UpdateDeployment
 // Update deployment.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#replace-deployment
 //
 // ---
 // x-method-visibility: private
@@ -204,7 +277,6 @@ func CreateDeployment(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -216,56 +288,62 @@ func CreateDeployment(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/DeploymentWithOwner'
+//      $ref: '#/definitions/Deployment'
 // responses:
 //  '202':
 //    description: deployment updated
 //    schema:
-//      $ref: '#/definitions/DeploymentWithOwner'
+//      $ref: '#/definitions/Deployment'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func UpdateDeployment(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	deployment := ctx.Param(deploymentParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Deployment":      deployment,
+		"Namespace":  namespace,
+		"Deployment": deployment,
 	}).Debug("Update deployment Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var deployReq model.DeploymentWithOwner
+	var deployReq model.DeploymentKubeAPI
 	if err := ctx.ShouldBindWith(&deployReq, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
-	quota, err := kube.GetNamespace(namespace)
+	ns, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	oldDeploy, err := kube.GetDeployment(namespace, deployment)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	deployReq.Name = deployment
 	deployReq.Owner = oldDeploy.GetObjectMeta().GetLabels()[ownerQuery]
+	if oldDeploy.GetObjectMeta().GetLabels()["solution"] != "" {
+		deployReq.SolutionID = oldDeploy.GetObjectMeta().GetLabels()["solution"]
+	}
 
-	deploy, errs := deployReq.ToKube(namespace, quota.Labels)
+	deploy, errs := deployReq.ToKube(namespace, ns.Labels)
 	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
+	//Ensure that immutable selectors wouldn't change
+	deploy.Spec.Selector = oldDeploy.Spec.Selector
+	deploy.Spec.Template.Labels = oldDeploy.Spec.Template.Labels
+
 	deployAfter, err := kube.UpdateDeployment(deploy)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -281,7 +359,6 @@ func UpdateDeployment(ctx *gin.Context) {
 
 // swagger:operation PUT /namespaces/{namespace}/deployments/{deployment}/replicas Deployment UpdateDeploymentReplicas
 // Update deployments replicas count.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#change-replicas-count
 //
 // ---
 // x-method-visibility: private
@@ -289,7 +366,6 @@ func UpdateDeployment(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -306,16 +382,15 @@ func UpdateDeployment(ctx *gin.Context) {
 //  '202':
 //    description: deployment updated
 //    schema:
-//      $ref: '#/definitions/DeploymentWithOwner'
+//      $ref: '#/definitions/Deployment'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func UpdateDeploymentReplicas(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	deployment := ctx.Param(deploymentParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Deployment":      deployment,
+		"Namespace":  namespace,
+		"Deployment": deployment,
 	}).Debug("Update deployment replicas Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -323,13 +398,19 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 	var replicas kube_types.UpdateReplicas
 	if err := ctx.ShouldBindWith(&replicas, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
+		return
+	}
+
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	deploy, err := kube.GetDeployment(namespace, deployment)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -338,7 +419,7 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 
 	deployAfter, err := kube.UpdateDeployment(deploy)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -353,7 +434,6 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 
 // swagger:operation PUT /namespaces/{namespace}/deployments/{deployment}/image Deployment UpdateDeploymentImage
 // Update image in deployments container.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#replace-deployment-image
 //
 // ---
 // x-method-visibility: private
@@ -361,7 +441,6 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -378,16 +457,15 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 //  '202':
 //    description: deployment updated
 //    schema:
-//      $ref: '#/definitions/DeploymentWithOwner'
+//      $ref: '#/definitions/Deployment'
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func UpdateDeploymentImage(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	deployment := ctx.Param(deploymentParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Deployment":      deployment,
+		"Namespace":  namespace,
+		"Deployment": deployment,
 	}).Debug("Update deployment container image Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
@@ -395,26 +473,32 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 	var newImage kube_types.UpdateImage
 	if err := ctx.ShouldBindWith(&newImage, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrRequestValidationFailed(), ctx)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
+		return
+	}
+
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	deploy, err := kube.GetDeployment(namespace, deployment)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	deployUpd, err := model.UpdateImage(deploy, newImage.Container, newImage.Image)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrUnableUpdateResource().AddDetailsErr(err), ctx)
+		gonic.Gonic(kubeErrors.ErrUnableUpdateResource().AddDetailsErr(err), ctx)
 		return
 	}
 
 	deployAfter, err := kube.UpdateDeployment(deployUpd)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -429,7 +513,6 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 
 // swagger:operation DELETE /namespaces/{namespace}/deployments/{deployment} Deployment DeleteDeployment
 // Delete deployment.
-// https://ch.pages.containerum.net/api-docs/modules/kube-api/index.html#delete-deployment
 //
 // ---
 // x-method-visibility: private
@@ -437,7 +520,6 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
 //  - $ref: '#/parameters/UserNamespaceHeader'
-//  - $ref: '#/parameters/UserVolumeHeader'
 //  - name: namespace
 //    in: path
 //    type: string
@@ -450,21 +532,73 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 //  '202':
 //    description: deployment deleted
 //  default:
-//    description: error
+//    $ref: '#/responses/error'
 func DeleteDeployment(ctx *gin.Context) {
-	namespace := ctx.MustGet(m.NamespaceKey).(string)
+	namespace := ctx.Param(namespaceParam)
 	deployment := ctx.Param(deploymentParam)
 	log.WithFields(log.Fields{
-		"Namespace Param": ctx.Param(namespaceParam),
-		"Namespace":       namespace,
-		"Deployment":      deployment,
+		"Namespace":  namespace,
+		"Deployment": deployment,
 	}).Debug("Delete deployment Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	err := kube.DeleteDeployment(namespace, deployment)
+	_, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, cherry.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		return
+	}
+
+	err = kube.DeleteDeployment(namespace, deployment)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		return
+	}
+
+	ctx.Status(http.StatusAccepted)
+}
+
+// swagger:operation DELETE /namespaces/{namespace}/solutiosn/{solution}deployments Deployment DeleteDeploymentsSolution
+// Delete solution deployments.
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: solution
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '202':
+//    description: deployments deleted
+//  default:
+//    $ref: '#/responses/error'
+func DeleteDeploymentsSolution(ctx *gin.Context) {
+	namespace := ctx.Param(namespaceParam)
+	solution := ctx.Param(solutionParam)
+	log.WithFields(log.Fields{
+		"Namespace": namespace,
+		"Solution":  solution,
+	}).Debug("Delete solution deployments Call")
+
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	_, err := kube.GetNamespace(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		return
+	}
+
+	err = kube.DeleteDeploymentSolution(namespace, solution)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
 		return
 	}
 

@@ -5,74 +5,57 @@ import (
 
 	"time"
 
-	"git.containerum.net/ch/kube-client/pkg/model"
-	kube_types "git.containerum.net/ch/kube-client/pkg/model"
+	"strings"
+
+	"github.com/containerum/kube-client/pkg/model"
+	kube_types "github.com/containerum/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_resource "k8s.io/apimachinery/pkg/api/resource"
 )
 
-// PodsList -- model for pods list
-//
-// swagger:model
-type PodsList struct {
-	Pods []PodWithOwner `json:"pods"`
-}
-
-// PodWithOwner -- model for pod with owner
-//
-// swagger:model
-type PodWithOwner struct {
-	// swagger: allOf
-	kube_types.Pod
-	Owner string `json:"owner,omitempty"`
-}
-
 // ParseKubePodList parses kubernetes v1.PodList to more convenient []Pod struct.
-func ParseKubePodList(pods interface{}, parseforuser bool) *PodsList {
+func ParseKubePodList(pods interface{}, parseforuser bool) *kube_types.PodsList {
 	podList := pods.(*api_core.PodList)
-	ret := make([]PodWithOwner, 0)
+	ret := make([]kube_types.Pod, 0)
 	for _, po := range podList.Items {
 		ret = append(ret, ParseKubePod(&po, parseforuser))
 	}
-	return &PodsList{ret}
+	return &kube_types.PodsList{ret}
 }
 
 // ParseKubePod parses kubernetes v1.PodList to more convenient Pod struct.
-func ParseKubePod(pod interface{}, parseforuser bool) PodWithOwner {
+func ParseKubePod(pod interface{}, parseforuser bool) kube_types.Pod {
 	obj := pod.(*api_core.Pod)
 	owner := obj.GetObjectMeta().GetLabels()[ownerLabel]
-	containers, cpu, mem := getContainers(obj.Spec.Containers, nil, 1)
+	containers, cpu, mem := getContainers(obj.Spec.Containers, nil, nil, 1)
 	deploy := obj.GetObjectMeta().GetLabels()[appLabel]
 	createdAt := obj.ObjectMeta.CreationTimestamp.UTC().Format(time.RFC3339)
 
-	newPod := PodWithOwner{
-		Pod: model.Pod{
-			CreatedAt:  &createdAt,
-			Deploy:     &deploy,
-			Name:       obj.GetName(),
-			Containers: containers,
-			Hostname:   &obj.Spec.Hostname,
-			Status: &model.PodStatus{
-				Phase: string(obj.Status.Phase),
-			},
-			TotalCPU:    uint(cpu.ScaledValue(api_resource.Milli)),
-			TotalMemory: uint(mem.Value() / 1024 / 1024),
+	newPod := kube_types.Pod{
+		CreatedAt:  &createdAt,
+		Deploy:     &deploy,
+		Name:       obj.GetName(),
+		Containers: containers,
+		Status: &model.PodStatus{
+			Phase: string(obj.Status.Phase),
 		},
-		Owner: owner,
+		TotalCPU:    uint(cpu.ScaledValue(api_resource.Milli)),
+		TotalMemory: uint(mem.Value() / 1024 / 1024),
+		Owner:       owner,
 	}
 
 	if parseforuser {
-		newPod.Owner = ""
+		newPod.Mask()
 	}
 
 	return newPod
 }
 
-func getContainers(cListi interface{}, mode map[string]int32, replicas int) (containers []model.Container, totalcpu api_resource.Quantity, totalmem api_resource.Quantity) {
+func getContainers(cListi interface{}, mode map[string]int32, storageName map[string]string, replicas int) (containers []model.Container, totalcpu api_resource.Quantity, totalmem api_resource.Quantity) {
 	cList := cListi.([]api_core.Container)
 	for _, c := range cList {
 		env := getEnv(c.Env)
-		volumes, configMaps := getVolumes(c.VolumeMounts, mode)
+		volumes, configMaps := getVolumes(c.VolumeMounts, mode, storageName)
 
 		cpu := c.Resources.Limits["cpu"]
 		mem := c.Resources.Limits["memory"]
@@ -98,7 +81,7 @@ func getContainers(cListi interface{}, mode map[string]int32, replicas int) (con
 	return containers, totalcpu, totalmem
 }
 
-func getVolumes(vListi interface{}, mode map[string]int32) ([]model.ContainerVolume, []model.ContainerVolume) {
+func getVolumes(vListi interface{}, mode map[string]int32, storageName map[string]string) ([]model.ContainerVolume, []model.ContainerVolume) {
 	vList := vListi.([]api_core.VolumeMount)
 	volumes := make([]model.ContainerVolume, 0)
 	configMaps := make([]model.ContainerVolume, 0)
@@ -118,8 +101,13 @@ func getVolumes(vListi interface{}, mode map[string]int32) ([]model.ContainerVol
 		if ok {
 			formated := strconv.FormatInt(int64(mode), 8)
 			newvol.Mode = &formated
+			newvol.Name = strings.TrimRight(newvol.Name, "-cm")
 			configMaps = append(configMaps, newvol)
 		} else {
+			storage, ok := storageName[v.Name]
+			if ok {
+				newvol.Name = storage
+			}
 			volumes = append(volumes, newvol)
 		}
 	}

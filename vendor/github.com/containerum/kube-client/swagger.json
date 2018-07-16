@@ -1,0 +1,1340 @@
+{
+  "swagger": "2.0",
+  "paths": {},
+  "definitions": {
+    "AccessLevel": {
+      "type": "string",
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "AvailableSolution": {
+      "description": "AvailableSolution -- solution which user can run",
+      "type": "object",
+      "properties": {
+        "active": {
+          "type": "boolean",
+          "x-go-name": "Active"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Images"
+        },
+        "limits": {
+          "$ref": "#/definitions/SolutionLimits"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "url": {
+          "type": "string",
+          "x-go-name": "URL"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "AvailableSolutionsList": {
+      "description": "AvailableSolutionsList -- list of available solutions",
+      "type": "object",
+      "properties": {
+        "solutions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AvailableSolution"
+          },
+          "x-go-name": "Solutions"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "ConfigFile": {
+      "type": "object",
+      "properties": {
+        "config_file": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "type": {
+          "type": "string",
+          "x-go-name": "Type"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "ConfigMap": {
+      "description": "ConfigMap -- model for config map",
+      "type": "object",
+      "required": [
+        "name",
+        "data"
+      ],
+      "properties": {
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "data": {
+          "$ref": "#/definitions/ConfigMapData"
+        },
+        "deleted_at": {
+          "description": "delete date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "DeletedAt"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "ConfigMapData": {
+      "description": "ConfigMapData -- model for config map data",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "ConfigMapsList": {
+      "description": "ConfigMapsList -- model for config maps list",
+      "type": "object",
+      "properties": {
+        "configmaps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConfigMap"
+          },
+          "x-go-name": "ConfigMaps"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "Container": {
+      "description": "Container -- model for container in deployment",
+      "type": "object",
+      "required": [
+        "image",
+        "name",
+        "limits"
+      ],
+      "properties": {
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Commands"
+        },
+        "config_maps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ContainerVolume"
+          },
+          "x-go-name": "ConfigMaps"
+        },
+        "env": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Env"
+          },
+          "x-go-name": "Env"
+        },
+        "image": {
+          "type": "string",
+          "x-go-name": "Image"
+        },
+        "limits": {
+          "$ref": "#/definitions/Resource"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "ports": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ContainerPort"
+          },
+          "x-go-name": "Ports"
+        },
+        "volume_mounts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ContainerVolume"
+          },
+          "x-go-name": "VolumeMounts"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "ContainerPort": {
+      "description": "ContainerPort -- model for port in container",
+      "type": "object",
+      "required": [
+        "name",
+        "port",
+        "protocol"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Port"
+        },
+        "protocol": {
+          "$ref": "#/definitions/Protocol"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "ContainerVolume": {
+      "description": "ContainerVolume -- volume (or config map) mounted in container",
+      "type": "object",
+      "required": [
+        "mount_path"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "x-go-name": "Mode"
+        },
+        "mount_path": {
+          "type": "string",
+          "x-go-name": "MountPath"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "sub_path": {
+          "type": "string",
+          "x-go-name": "SubPath"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "CreateVolume": {
+      "description": "CreateVolume --",
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string",
+          "x-go-name": "Label"
+        },
+        "tariff_id": {
+          "type": "string",
+          "x-go-name": "TariffID"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "Deployment": {
+      "description": "Deployment -- model for deployments",
+      "type": "object",
+      "required": [
+        "containers",
+        "name",
+        "replicas"
+      ],
+      "properties": {
+        "active": {
+          "type": "boolean",
+          "x-go-name": "Active"
+        },
+        "containers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Container"
+          },
+          "x-go-name": "Containers"
+        },
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "deleted_at": {
+          "description": "delete date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "DeletedAt"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
+        },
+        "replicas": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Replicas"
+        },
+        "solution_id": {
+          "description": "Solution ID (only if deployment is part of solution)",
+          "type": "string",
+          "x-go-name": "SolutionID"
+        },
+        "status": {
+          "$ref": "#/definitions/DeploymentStatus"
+        },
+        "total_cpu": {
+          "description": "total CPU usage by all containers in this deployment",
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "TotalCPU"
+        },
+        "total_memory": {
+          "description": "total RAM usage by all containers in this deployment",
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "TotalMemory"
+        },
+        "version": {
+          "$ref": "#/definitions/Version"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "DeploymentStatus": {
+      "description": "DeploymentStatus -- kubernetes status of deployment",
+      "type": "object",
+      "properties": {
+        "available_replicas": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "AvailableReplicas"
+        },
+        "ready_replicas": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ReadyReplicas"
+        },
+        "replicas": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Replicas"
+        },
+        "unavailable_replicas": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "UnavailableReplicas"
+        },
+        "updated_replicas": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "UpdatedReplicas"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "DeploymentVersion": {
+      "description": "DeploymentVersion -- model for deployment version update",
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "x-go-name": "Version"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "DeploymentsList": {
+      "description": "DeploymentsList -- model for deployments list",
+      "type": "object",
+      "properties": {
+        "deployments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Deployment"
+          },
+          "x-go-name": "Deployments"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "Env": {
+      "description": "Env -- key-value pair of environment variables",
+      "type": "object",
+      "required": [
+        "value",
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "value": {
+          "type": "string",
+          "x-go-name": "Value"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "Image": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Tag": {
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "Ingress": {
+      "description": "Ingress -- model for ingress",
+      "type": "object",
+      "required": [
+        "name",
+        "rules"
+      ],
+      "properties": {
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "deleted_at": {
+          "description": "delete date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "DeletedAt"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Rule"
+          },
+          "x-go-name": "Rules"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "IngressesList": {
+      "description": "IngressesList -- model for ingresses list",
+      "type": "object",
+      "properties": {
+        "ingresses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Ingress"
+          },
+          "x-go-name": "Ingress"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "Namespace": {
+      "description": "Namespace -- namespace representation",
+      "type": "object",
+      "required": [
+        "resources"
+      ],
+      "properties": {
+        "access": {
+          "$ref": "#/definitions/AccessLevel"
+        },
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "label": {
+          "description": "user-visible label for the namespace",
+          "type": "string",
+          "x-go-name": "Label"
+        },
+        "max_ext_service": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "MaxExtService"
+        },
+        "max_int_service": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "MaxIntService"
+        },
+        "max_traffic": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "MaxTraffic"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
+        },
+        "owner_login": {
+          "type": "string",
+          "x-go-name": "OwnerLogin"
+        },
+        "resources": {
+          "$ref": "#/definitions/Resources"
+        },
+        "tariff_id": {
+          "type": "string",
+          "x-go-name": "TariffID"
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserAccess"
+          },
+          "x-go-name": "Users"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "NamespacesList": {
+      "description": "NamespacesList -- model for namespaces list",
+      "type": "object",
+      "properties": {
+        "namespaces": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Namespace"
+          },
+          "x-go-name": "Namespaces"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "PRVersion": {
+      "description": "PRVersion represents a PreRelease Version",
+      "type": "object",
+      "properties": {
+        "IsNum": {
+          "type": "boolean"
+        },
+        "VersionNum": {
+          "type": "integer",
+          "format": "uint64"
+        },
+        "VersionStr": {
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/vendor/github.com/blang/semver"
+    },
+    "Path": {
+      "description": "Path -- ingress path",
+      "type": "object",
+      "required": [
+        "path",
+        "service_name",
+        "service_port"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "x-go-name": "Path"
+        },
+        "service_name": {
+          "type": "string",
+          "x-go-name": "ServiceName"
+        },
+        "service_port": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ServicePort"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "PersistentVolumeAccessMode": {
+      "type": "string",
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "Pod": {
+      "description": "Pod -- model for pod",
+      "type": "object",
+      "properties": {
+        "containers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Container"
+          },
+          "x-go-name": "Containers"
+        },
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "deploy": {
+          "type": "string",
+          "x-go-name": "Deploy"
+        },
+        "image_pull_secret": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-name": "ImagePullSecret"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
+        },
+        "status": {
+          "$ref": "#/definitions/PodStatus"
+        },
+        "total_cpu": {
+          "description": "total CPU usage by all containers in this pod",
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "TotalCPU"
+        },
+        "total_memory": {
+          "description": "total RAM usage by all containers in this pod",
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "TotalMemory"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "PodStatus": {
+      "description": "PodStatus -- kubernetes status of pod",
+      "type": "object",
+      "properties": {
+        "phase": {
+          "type": "string",
+          "x-go-name": "Phase"
+        },
+        "restart_count": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "RestartCount"
+        },
+        "start_at": {
+          "description": "pod start date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "StartAt"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "PodsList": {
+      "description": "PodsList -- model for pods list",
+      "type": "object",
+      "properties": {
+        "pods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Pod"
+          },
+          "x-go-name": "Pods"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "Protocol": {
+      "description": "represents port protocol type (TCP or UDP)",
+      "type": "string",
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "Resource": {
+      "description": "Resource -- represents namespace CPU and RAM",
+      "type": "object",
+      "required": [
+        "cpu",
+        "memory"
+      ],
+      "properties": {
+        "cpu": {
+          "description": "CPU in m",
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "CPU"
+        },
+        "memory": {
+          "description": "RAM in Mi",
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "Memory"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "ResourceUpdateName": {
+      "description": "ResourceUpdateName -- contains new resource name",
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string",
+          "x-go-name": "Label"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "ResourceUpdateUserAccess": {
+      "description": "ResourceUpdateUserAccess -- contains user access data",
+      "type": "object",
+      "properties": {
+        "access": {
+          "$ref": "#/definitions/AccessLevel"
+        },
+        "username": {
+          "type": "string",
+          "x-go-name": "Username"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "Resources": {
+      "type": "object",
+      "title": "Resources -- represents namespace limits and user resources.",
+      "required": [
+        "hard"
+      ],
+      "properties": {
+        "hard": {
+          "$ref": "#/definitions/Resource"
+        },
+        "used": {
+          "$ref": "#/definitions/Resource"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "Rule": {
+      "description": "Rule -- ingress rule",
+      "type": "object",
+      "required": [
+        "host",
+        "path"
+      ],
+      "properties": {
+        "host": {
+          "type": "string",
+          "x-go-name": "Host"
+        },
+        "path": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Path"
+          },
+          "x-go-name": "Path"
+        },
+        "tls_secret": {
+          "type": "string",
+          "x-go-name": "TLSSecret"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "RunSolutionResponse": {
+      "description": "RunSolutionResponse -- response to run solution request",
+      "type": "object",
+      "properties": {
+        "created": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Created"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Errors"
+        },
+        "not_created": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "NotCreated"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "Secret": {
+      "description": "model for secret",
+      "type": "object",
+      "required": [
+        "name",
+        "data"
+      ],
+      "properties": {
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-name": "Data"
+        },
+        "deleted_at": {
+          "description": "delete date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "DeletedAt"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "SecretsList": {
+      "description": "SecretsList -- model for secrets list",
+      "type": "object",
+      "properties": {
+        "secrets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Secret"
+          },
+          "x-go-name": "Secrets"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "SelectedConfigMapsList": {
+      "description": "SelectedConfigMapsList -- model for config maps list from all namespaces",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/ConfigMapsList"
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "SelectedIngressesList": {
+      "description": "SelectedIngressesList -- model for ingresses list from all namespaces",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/IngressesList"
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "Service": {
+      "description": "represents service",
+      "type": "object",
+      "required": [
+        "name",
+        "ports"
+      ],
+      "properties": {
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "deleted_at": {
+          "description": "delete date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "DeletedAt"
+        },
+        "deploy": {
+          "type": "string",
+          "x-go-name": "Deploy"
+        },
+        "domain": {
+          "type": "string",
+          "x-go-name": "Domain"
+        },
+        "ips": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "IPs"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
+        },
+        "ports": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ServicePort"
+          },
+          "x-go-name": "Ports"
+        },
+        "solution_id": {
+          "description": "Solution ID (only if service is part of solution)",
+          "type": "string",
+          "x-go-name": "SolutionID"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "ServicePort": {
+      "description": "represent service port",
+      "type": "object",
+      "required": [
+        "name",
+        "target_port",
+        "protocol"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Port"
+        },
+        "protocol": {
+          "$ref": "#/definitions/Protocol"
+        },
+        "target_port": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "TargetPort"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "ServiceType": {
+      "description": "represents service type",
+      "type": "string",
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "ServicesList": {
+      "description": "ServicesList -- model for services list",
+      "type": "object",
+      "properties": {
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Service"
+          },
+          "x-go-name": "Services"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "SolutionEnv": {
+      "description": "SolutionEnv -- solution environment variables",
+      "type": "object",
+      "properties": {
+        "env": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-name": "Env"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "SolutionLimits": {
+      "description": "SolutionLimits -- solution resources limits",
+      "type": "object",
+      "properties": {
+        "cpu": {
+          "type": "string",
+          "x-go-name": "CPU"
+        },
+        "ram": {
+          "type": "string",
+          "x-go-name": "RAM"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "SolutionResources": {
+      "description": "SolutionResources -- list of solution resources",
+      "type": "object",
+      "properties": {
+        "resources": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "x-go-name": "Resources"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "UpdateImage": {
+      "description": "UpdateImage -- model for update container image request",
+      "type": "object",
+      "required": [
+        "container_name",
+        "image"
+      ],
+      "properties": {
+        "container_name": {
+          "type": "string",
+          "x-go-name": "Container"
+        },
+        "image": {
+          "type": "string",
+          "x-go-name": "Image"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "UpdateNamespaceName": {
+      "description": "UpdateNamespaceName -- contains new namespace label",
+      "type": "object",
+      "required": [
+        "label"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "x-go-name": "Label"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "UpdateReplicas": {
+      "description": "UpdateReplicas -- contains new number of replicas",
+      "type": "object",
+      "required": [
+        "replicas"
+      ],
+      "properties": {
+        "replicas": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Replicas"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "UserAccess": {
+      "type": "object",
+      "properties": {
+        "access_level": {
+          "$ref": "#/definitions/AccessLevel"
+        },
+        "username": {
+          "type": "string",
+          "x-go-name": "Username"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "UserGroup": {
+      "description": "UserGroup -- group of users",
+      "type": "object",
+      "properties": {
+        "access": {
+          "$ref": "#/definitions/UserGroupAccess"
+        },
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "label": {
+          "type": "string",
+          "x-go-name": "Label"
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserGroupMember"
+          },
+          "x-go-name": "Members"
+        },
+        "members_count": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "MembersCount"
+        },
+        "owner_login": {
+          "type": "string",
+          "x-go-name": "OwnerLogin"
+        },
+        "owner_user_id": {
+          "type": "string",
+          "x-go-name": "OwnerID"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "UserGroupAccess": {
+      "type": "string",
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "UserGroupMember": {
+      "description": "UserGroupMember -- group member",
+      "type": "object",
+      "properties": {
+        "access": {
+          "$ref": "#/definitions/UserGroupAccess"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "username": {
+          "type": "string",
+          "x-go-name": "Username"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "UserGroupMembers": {
+      "description": "UserGroupMembers -- list of user group members",
+      "type": "object",
+      "properties": {
+        "members": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserGroupMember"
+          },
+          "x-go-name": "Members"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "UserGroups": {
+      "description": "UserGroups -- list of user groups",
+      "type": "object",
+      "properties": {
+        "groups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserGroup"
+          },
+          "x-go-name": "Groups"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "UserHeaderData": {
+      "description": "represents header data for X-User-Namespace and X-User-Volume headers (encoded in base64)",
+      "type": "object",
+      "required": [
+        "id",
+        "label",
+        "access"
+      ],
+      "properties": {
+        "access": {
+          "$ref": "#/definitions/AccessLevel"
+        },
+        "id": {
+          "description": "hosting-internal name",
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "label": {
+          "description": "user-visible label for the object",
+          "type": "string",
+          "x-go-name": "Label"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "UserSolution": {
+      "description": "UserSolution -- running solution",
+      "type": "object",
+      "required": [
+        "template",
+        "name",
+        "namespace"
+      ],
+      "properties": {
+        "branch": {
+          "type": "string",
+          "x-go-name": "Branch"
+        },
+        "env": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-name": "Env"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "namespace": {
+          "type": "string",
+          "x-go-name": "Namespace"
+        },
+        "template": {
+          "type": "string",
+          "x-go-name": "Template"
+        },
+        "url": {
+          "type": "string",
+          "x-go-name": "URL"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "UserSolutionsList": {
+      "description": "UserSolutionsList -- list of running solution",
+      "type": "object",
+      "properties": {
+        "solutions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserSolution"
+          },
+          "x-go-name": "Solutions"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "Version": {
+      "description": "Version represents a semver compatible version",
+      "type": "object",
+      "properties": {
+        "Build": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Major": {
+          "type": "integer",
+          "format": "uint64"
+        },
+        "Minor": {
+          "type": "integer",
+          "format": "uint64"
+        },
+        "Patch": {
+          "type": "integer",
+          "format": "uint64"
+        },
+        "Pre": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PRVersion"
+          }
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/vendor/github.com/blang/semver"
+    },
+    "Volume": {
+      "description": "Volume -- volume representation",
+      "type": "object",
+      "properties": {
+        "access": {
+          "$ref": "#/definitions/AccessLevel"
+        },
+        "access_mode": {
+          "$ref": "#/definitions/PersistentVolumeAccessMode"
+        },
+        "capacity": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "Capacity"
+        },
+        "created_at": {
+          "description": "creation date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "deleted_at": {
+          "type": "string",
+          "x-go-name": "DeletedAt"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "owner": {
+          "type": "string",
+          "x-go-name": "Owner"
+        },
+        "owner_login": {
+          "type": "string",
+          "x-go-name": "OwnerLogin"
+        },
+        "status": {
+          "description": "delete date in RFC3339 format",
+          "type": "string",
+          "x-go-name": "Status"
+        },
+        "storage_name": {
+          "type": "string",
+          "x-go-name": "StorageName"
+        },
+        "tariff_id": {
+          "type": "string",
+          "x-go-name": "TariffID"
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserAccess"
+          },
+          "x-go-name": "Users"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    },
+    "VolumesList": {
+      "description": "VolumesList -- model for volumes list",
+      "type": "object",
+      "properties": {
+        "volumes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Volume"
+          },
+          "x-go-name": "Volumes"
+        }
+      },
+      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+    }
+  }
+}
