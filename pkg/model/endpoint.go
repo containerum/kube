@@ -147,10 +147,8 @@ func (endpoint *Endpoint) ToKube(nsName string, labels map[string]string) (*api_
 
 func makeEndpointPorts(ports []Port) []api_core.EndpointPort {
 	endpointports := make([]api_core.EndpointPort, 0)
-	if ports != nil {
-		for _, v := range ports {
-			endpointports = append(endpointports, api_core.EndpointPort{Name: v.Name, Protocol: api_core.Protocol(v.Protocol), Port: int32(v.Port)})
-		}
+	for _, v := range ports {
+		endpointports = append(endpointports, api_core.EndpointPort{Name: v.Name, Protocol: api_core.Protocol(v.Protocol), Port: int32(v.Port)})
 	}
 	return endpointports
 }
