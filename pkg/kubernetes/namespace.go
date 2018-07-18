@@ -10,6 +10,18 @@ const (
 	quotaName = "quota"
 )
 
+//GetNamespaceList returns namespaces list
+func (k *Kube) GetNamespaceList(owner string) (*api_core.NamespaceList, error) {
+	quotas, err := k.CoreV1().Namespaces().List(api_meta.ListOptions{
+		LabelSelector: getOwnerLabel(owner),
+	})
+	if err != nil {
+		log.WithField("Owner", owner).Error(err)
+		return nil, err
+	}
+	return quotas, nil
+}
+
 //GetNamespaceQuotaList returns namespaces (quotas) list
 func (k *Kube) GetNamespaceQuotaList(owner string) (*api_core.ResourceQuotaList, error) {
 	quotas, err := k.CoreV1().ResourceQuotas("").List(api_meta.ListOptions{

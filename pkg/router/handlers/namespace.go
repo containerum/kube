@@ -7,6 +7,7 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
+	"git.containerum.net/ch/utils/httputil"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -281,6 +282,44 @@ func DeleteNamespace(ctx *gin.Context) {
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
 		return
+	}
+
+	ctx.Status(http.StatusAccepted)
+}
+
+// swagger:operation DELETE /namespaces Namespace DeleteUserNamespaces
+// Delete user namespaces.
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - name: project
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '202':
+//    description: namespaces deleted
+//  default:
+//    $ref: '#/responses/error'
+func DeleteUserNamespaces(ctx *gin.Context) {
+	log.Debug("Delete user namespaces Call")
+
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	list, err := kube.GetNamespaceList(httputil.MustGetUserID(ctx.Request.Context()))
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		return
+	}
+
+	for _, n := range list.Items {
+		err = kube.DeleteNamespace(n.Name)
+		if err != nil {
+			log.WithError(err)
+		}
 	}
 
 	ctx.Status(http.StatusAccepted)
