@@ -295,10 +295,6 @@ func DeleteNamespace(ctx *gin.Context) {
 // parameters:
 //  - $ref: '#/parameters/UserIDHeader'
 //  - $ref: '#/parameters/UserRoleHeader'
-//  - name: project
-//    in: path
-//    type: string
-//    required: true
 // responses:
 //  '202':
 //    description: namespaces deleted
