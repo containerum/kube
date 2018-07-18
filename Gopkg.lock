@@ -162,8 +162,8 @@
     "proto",
     "sortkeys"
   ]
-  revision = "7d68e886eac4f7e34d0d82241a6273d6c304c5cf"
-  version = "v1.1.0"
+  revision = "636bf0302bc95575d69441b25a2603156ffdddf1"
+  version = "v1.1.1"
 
 [[projects]]
   branch = "master"
@@ -270,7 +270,7 @@
     "jlexer",
     "jwriter"
   ]
-  revision = "3fdea8d05856a0c8df22ed4bc71b3219245e4485"
+  revision = "efc7eb8984d6655c26b5c9d2e65c024e5767c37c"
 
 [[projects]]
   name = "github.com/mattn/go-isatty"
@@ -591,8 +591,8 @@
 [[projects]]
   name = "k8s.io/kubernetes"
   packages = ["pkg/api/legacyscheme"]
-  revision = "91e7b4fd31fcd3d5f436da26c980becec37ceefe"
-  version = "v1.11.0"
+  revision = "b1b29978270dc22fecc592ac55d903350454310a"
+  version = "v1.11.1"
 
 [solve-meta]
   analyzer-name = "dep"

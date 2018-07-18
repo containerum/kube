@@ -7,7 +7,7 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
-	"git.containerum.net/ch/utils/httputil"
+	"github.com/containerum/utils/httputil"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
