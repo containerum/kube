@@ -345,7 +345,7 @@ func GetSelectedConfigMaps(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	ret := make(kube_types.SelectedConfigMapsList, 0)
+	ret := make(kube_types.SelectedConfigMapsList)
 
 	role := ctx.MustGet(m.UserRole).(string)
 	if role == m.RoleUser {

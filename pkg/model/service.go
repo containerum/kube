@@ -65,7 +65,7 @@ func ParseKubeServiceList(ns interface{}, parseforuser bool) (*ServiceWithParamL
 			serviceList = append(serviceList, *service)
 		}
 	}
-	return &ServiceWithParamList{serviceList}, nil
+	return &ServiceWithParamList{Services: serviceList}, nil
 }
 
 // ParseKubeService parses kubernetes v1.Service to more convenient Service struct.
@@ -167,7 +167,7 @@ func (service *ServiceWithParam) ToKube(nsName string, labels map[string]string)
 }
 
 func makeServicePorts(ports []kube_types.ServicePort) []api_core.ServicePort {
-	var serviceports []api_core.ServicePort
+	serviceports := make([]api_core.ServicePort, len(ports))
 	for _, port := range ports {
 		if port.Port == nil {
 			port.Port = &port.TargetPort

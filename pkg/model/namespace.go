@@ -41,7 +41,7 @@ func ParseKubeResourceQuotaList(quotas interface{}, parseforuser bool) (*kube_ty
 		}
 		namespaces = append(namespaces, *ns)
 	}
-	return &kube_types.NamespacesList{namespaces}, nil
+	return &kube_types.NamespacesList{Namespaces: namespaces}, nil
 }
 
 // ParseKubeResourceQuota parses kubernetes v1.ResourceQuota to more convenient Namespace struct.
@@ -136,11 +136,11 @@ func MakeResourceQuota(ns string, labels map[string]string, resources kube_types
 
 func ParseNamespaceListForUser(headers UserHeaderDataMap, nsl []kube_types.Namespace) *kube_types.NamespacesList {
 	nso := make([]kube_types.Namespace, 0)
-	ret := kube_types.NamespacesList{nso}
+	ret := kube_types.NamespacesList{Namespaces: nso}
 	for _, ns := range nsl {
 		ns = *ParseForUser(&ns, headers)
 		if ns.Label != "" {
-			ret.Namespaces = append(ret.Namespaces, kube_types.Namespace(ns))
+			ret.Namespaces = append(ret.Namespaces, ns)
 		}
 	}
 	return &ret

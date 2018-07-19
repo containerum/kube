@@ -37,7 +37,7 @@ func ParseKubePersistentVolumeClaimList(ns interface{}, parseforuser bool) (*kub
 		}
 		pvcList = append(pvcList, *pvc)
 	}
-	return &kube_types.VolumesList{pvcList}, nil
+	return &kube_types.VolumesList{Volumes: pvcList}, nil
 }
 
 // ParseKubePersistentVolumeClaim parses kubernetes v1.PersistentVolume to more convenient PersistentVolumeClaimWithOwner struct.

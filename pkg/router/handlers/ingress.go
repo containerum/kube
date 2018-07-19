@@ -344,7 +344,7 @@ func GetSelectedIngresses(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	ingresses := make(kube_types.SelectedIngressesList, 0)
+	ingresses := make(kube_types.SelectedIngressesList)
 
 	role := ctx.MustGet(m.UserRole).(string)
 	if role == m.RoleUser {

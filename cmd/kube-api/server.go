@@ -37,7 +37,7 @@ func initServer(c *cli.Context) error {
 
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 5 seconds.
-	quit := make(chan os.Signal)
+	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt) // subscribe on interrupt event
 	<-quit                            // wait for event
 	logrus.Infoln("shutting down server...")

@@ -61,7 +61,7 @@ func ParseKubeEndpointList(endpointi interface{}) (*EndpointsList, error) {
 		}
 		newEndpoints = append(newEndpoints, *newEndpoint)
 	}
-	return &EndpointsList{newEndpoints}, nil
+	return &EndpointsList{Endpoints: newEndpoints}, nil
 }
 
 // ParseKubeEndpoint parses kubernetes v1.Endpoint to more convenient Endpoint struct
