@@ -17,8 +17,8 @@ import (
 const (
 	ownerLabel = "owner"
 
-	minNamespaceCPU    = 300   //m
-	minNamespaceMemory = 512   //Mi
+	minNamespaceCPU    = 10   //m
+	minNamespaceMemory = 10   //Mi
 	maxNamespaceCPU    = 12000 //m
 	maxNamespaceMemory = 28672 //Mi
 )

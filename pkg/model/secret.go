@@ -112,10 +112,8 @@ func (secret *SecretWithParam) ToKube(nsName string, labels map[string]string) (
 
 func makeSecretData(data map[string]string) map[string][]byte {
 	newData := make(map[string][]byte, 0)
-	if data != nil {
-		for k, v := range data {
-			newData[k] = []byte(v)
-		}
+	for k, v := range data {
+		newData[k] = []byte(v)
 	}
 	return newData
 }

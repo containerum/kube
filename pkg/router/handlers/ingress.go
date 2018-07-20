@@ -3,6 +3,8 @@ package handlers
 import (
 	"net/http"
 
+	"sync"
+
 	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
@@ -12,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -346,22 +349,29 @@ func GetSelectedIngresses(ctx *gin.Context) {
 	role := ctx.MustGet(m.UserRole).(string)
 	if role == m.RoleUser {
 		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
+		var g errgroup.Group
+		var mutex = &sync.Mutex{}
 		for _, n := range *nsList {
-
-			ingressList, err := kube.GetIngressList(n.ID)
-			if err != nil {
-				gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
-				return
-			}
-
-			ingressesList, err := model.ParseKubeIngressList(ingressList, role == m.RoleUser)
-			if err != nil {
-				ctx.Error(err)
-				gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
-				return
-			}
-
-			ingresses[n.ID] = *ingressesList
+			currentNs := n
+			g.Go(func() error {
+				ingressList, err := kube.GetIngressList(currentNs.ID)
+				if err != nil {
+					return err
+				}
+				ingress, err := model.ParseKubeIngressList(ingressList, role == m.RoleUser)
+				if err != nil {
+					return err
+				}
+				mutex.Lock()
+				ingresses[currentNs.ID] = *ingress
+				mutex.Unlock()
+				return nil
+			})
+		}
+		if err := g.Wait(); err != nil {
+			ctx.Error(err)
+			gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+			return
 		}
 	}
 

@@ -42,6 +42,8 @@ func initMiddlewares(e gin.IRouter, kube *kubernetes.Kube, enableCORS bool) {
 	e.Use(ginrus.Ginrus(logrus.WithField("component", "gin"), time.RFC3339, true))
 	e.Use(gonic.Recovery(kubeErrors.ErrInternalError, cherrylog.NewLogrusAdapter(logrus.WithField("component", "gin"))))
 	/* Custom */
+	e.Use(headers.SaveHeaders)
+	e.Use(headers.PrepareContext)
 	e.Use(m.RequiredUserHeaders())
 	e.Use(m.RegisterKubeClient(kube))
 }
@@ -57,6 +59,7 @@ func initRoutes(e gin.IRouter) {
 		namespace.POST("", h.CreateNamespace)
 		namespace.PUT("/:namespace", h.UpdateNamespace)
 		namespace.DELETE("/:namespace", h.DeleteNamespace)
+		namespace.DELETE("", h.DeleteUserNamespaces)
 
 		solutions := namespace.Group("/:namespace/solutions")
 		{

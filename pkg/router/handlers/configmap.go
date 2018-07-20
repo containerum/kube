@@ -3,6 +3,8 @@ package handlers
 import (
 	"net/http"
 
+	"sync"
+
 	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
@@ -12,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -347,20 +350,29 @@ func GetSelectedConfigMaps(ctx *gin.Context) {
 	role := ctx.MustGet(m.UserRole).(string)
 	if role == m.RoleUser {
 		nsList := ctx.MustGet(m.UserNamespaces).(*model.UserHeaderDataMap)
+		var g errgroup.Group
+		var mutex = &sync.Mutex{}
 		for _, n := range *nsList {
-			cmList, err := kube.GetConfigMapList(n.ID)
-			if err != nil {
-				gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
-				return
-			}
-
-			cm, err := model.ParseKubeConfigMapList(cmList, role == m.RoleUser)
-			if err != nil {
-				gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
-				return
-			}
-
-			ret[n.ID] = *cm
+			currentNs := n
+			g.Go(func() error {
+				cmList, err := kube.GetConfigMapList(currentNs.ID)
+				if err != nil {
+					return err
+				}
+				cm, err := model.ParseKubeConfigMapList(cmList, role == m.RoleUser)
+				if err != nil {
+					return err
+				}
+				mutex.Lock()
+				ret[currentNs.ID] = *cm
+				mutex.Unlock()
+				return nil
+			})
+		}
+		if err := g.Wait(); err != nil {
+			ctx.Error(err)
+			gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+			return
 		}
 	}
 

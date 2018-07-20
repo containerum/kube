@@ -253,20 +253,16 @@ func makeContainerVolumes(volumes []kube_types.ContainerVolume, configMaps []kub
 
 func makeContainerEnv(env []kube_types.Env) []api_core.EnvVar {
 	envvar := make([]api_core.EnvVar, 0)
-	if env != nil {
-		for _, v := range env {
-			envvar = append(envvar, api_core.EnvVar{Name: v.Name, Value: v.Value})
-		}
+	for _, v := range env {
+		envvar = append(envvar, api_core.EnvVar{Name: v.Name, Value: v.Value})
 	}
 	return envvar
 }
 
 func makeContainerPorts(ports []kube_types.ContainerPort) []api_core.ContainerPort {
 	contports := make([]api_core.ContainerPort, 0)
-	if ports != nil {
-		for _, v := range ports {
-			contports = append(contports, api_core.ContainerPort{ContainerPort: int32(v.Port), Protocol: api_core.Protocol(v.Protocol), Name: v.Name})
-		}
+	for _, v := range ports {
+		contports = append(contports, api_core.ContainerPort{ContainerPort: int32(v.Port), Protocol: api_core.Protocol(v.Protocol), Name: v.Name})
 	}
 	return contports
 }
@@ -376,7 +372,7 @@ func UpdateImage(deployment interface{}, containerName, newimage string) (*api_a
 			break
 		}
 	}
-	if updated == false {
+	if !updated {
 		return nil, fmt.Errorf(noContainer, containerName)
 	}
 
