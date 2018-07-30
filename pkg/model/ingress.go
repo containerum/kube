@@ -36,7 +36,7 @@ func ParseKubeIngressList(ingressi interface{}, parseforuser bool) (*kube_types.
 		}
 		newIngresses = append(newIngresses, *newIngress)
 	}
-	return &kube_types.IngressesList{newIngresses}, nil
+	return &kube_types.IngressesList{Ingress: newIngresses}, nil
 }
 
 // ParseKubeIngress parses kubernetes v1beta1.Ingress to more convenient Ingress struct
@@ -85,7 +85,7 @@ func parseRules(rules []api_extensions.IngressRule, secrets map[string]string) [
 }
 
 func parseTLS(tlss []api_extensions.IngressTLS) map[string]string {
-	secrets := make(map[string]string, 0)
+	secrets := make(map[string]string)
 
 	for _, v := range tlss {
 		for _, h := range v.Hosts {
