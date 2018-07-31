@@ -8,7 +8,7 @@ import (
 
 //GetConfigMapList returns config maps list
 func (k *Kube) GetConfigMapList(namespace string) (*api_core.ConfigMapList, error) {
-	cmAfter, err := k.CoreV1().ConfigMaps("").List(api_meta.ListOptions{})
+	cmAfter, err := k.CoreV1().ConfigMaps(namespace).List(api_meta.ListOptions{})
 	if err != nil {
 		log.WithFields(log.Fields{
 			"Namespace": namespace,
