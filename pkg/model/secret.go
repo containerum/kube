@@ -13,22 +13,11 @@ import (
 	api_validation "k8s.io/apimachinery/pkg/util/validation"
 )
 
-// SecretWithParamList -- model for secrets list
-//
-// swagger:model
-type SecretWithParamList struct {
-	Secrets []SecretWithParam `json:"secrets"`
-}
-
 // SecretWithParam -- model for secret with owner
 //
 // swagger:model
-type SecretWithParam struct {
-	// swagger: allOf
-	*kube_types.Secret
-	//hide secret from users
-	Hidden bool `json:"hidden,omitempty"`
-}
+
+type SecretKubeAPI kube_types.Secret
 
 const (
 	secretKind       = "Secret"
@@ -36,27 +25,25 @@ const (
 )
 
 // ParseKubeSecretList parses kubernetes v1.SecretList to more convenient []Secret struct.
-func ParseKubeSecretList(secreti interface{}, parseforuser bool) (*SecretWithParamList, error) {
+func ParseKubeSecretList(secreti interface{}, parseforuser bool) (*kube_types.SecretsList, error) {
 	nativeSecrets := secreti.(*api_core.SecretList)
 	if nativeSecrets == nil {
 		return nil, ErrUnableConvertSecretList
 	}
 
-	secrets := make([]SecretWithParam, 0)
+	secrets := make([]kube_types.Secret, 0)
 	for _, secret := range nativeSecrets.Items {
 		newSecret, err := ParseKubeSecret(&secret, parseforuser)
 		if err != nil {
 			return nil, err
 		}
-		if !newSecret.Hidden || !parseforuser {
-			secrets = append(secrets, *newSecret)
-		}
+		secrets = append(secrets, *newSecret)
 	}
-	return &SecretWithParamList{secrets}, nil
+	return &kube_types.SecretsList{secrets}, nil
 }
 
 // ParseKubeSecret parses kubernetes v1.Secret to more convenient Secret struct.
-func ParseKubeSecret(secreti interface{}, parseforuser bool) (*SecretWithParam, error) {
+func ParseKubeSecret(secreti interface{}, parseforuser bool) (*kube_types.Secret, error) {
 	secret := secreti.(*api_core.Secret)
 	if secret == nil {
 		return nil, ErrUnableConvertSecret
@@ -67,23 +54,23 @@ func ParseKubeSecret(secreti interface{}, parseforuser bool) (*SecretWithParam, 
 		newData[k] = string(v)
 	}
 
-	newSecret := SecretWithParam{
-		Secret: &kube_types.Secret{
-			Name:      secret.GetName(),
-			CreatedAt: secret.CreationTimestamp.UTC().Format(time.RFC3339),
-			Data:      newData,
-			Owner:     secret.GetObjectMeta().GetLabels()[ownerLabel],
-		},
+	newSecret := kube_types.Secret{
+		Name:      secret.GetName(),
+		CreatedAt: secret.CreationTimestamp.UTC().Format(time.RFC3339),
+		Data:      newData,
+		Owner:     secret.GetObjectMeta().GetLabels()[ownerLabel],
 	}
 
-	newSecret.ParseForUser()
+	if parseforuser {
+		newSecret.Mask()
+	}
 
 	return &newSecret, nil
 
 }
 
 // ToKube creates kubernetes v1.Secret from Secret struct and namespace labels
-func (secret *SecretWithParam) ToKube(nsName string, labels map[string]string) (*api_core.Secret, []error) {
+func (secret *SecretKubeAPI) ToKube(nsName string, labels map[string]string, secretType api_core.SecretType) (*api_core.Secret, []error) {
 	err := secret.Validate()
 	if err != nil {
 		return nil, err
@@ -91,6 +78,10 @@ func (secret *SecretWithParam) ToKube(nsName string, labels map[string]string) (
 
 	if labels == nil {
 		return nil, []error{kubeErrors.ErrInternalError().AddDetails("invalid project labels")}
+	}
+
+	if secretType == api_core.SecretTypeDockerConfigJson && secret.Data[".dockerconfigjson"] == "" {
+		return nil, []error{kubeErrors.ErrRequestValidationFailed().AddDetails("field '.dockerconfigjson' is required")}
 	}
 
 	newSecret := api_core.Secret{
@@ -104,7 +95,7 @@ func (secret *SecretWithParam) ToKube(nsName string, labels map[string]string) (
 			Namespace: nsName,
 		},
 		Data: makeSecretData(secret.Data),
-		Type: "Opaque",
+		Type: secretType,
 	}
 
 	return &newSecret, nil
@@ -118,7 +109,7 @@ func makeSecretData(data map[string]string) map[string][]byte {
 	return newData
 }
 
-func (secret *SecretWithParam) Validate() []error {
+func (secret *SecretKubeAPI) Validate() []error {
 	var errs []error
 	if secret.Name == "" {
 		errs = append(errs, fmt.Errorf(fieldShouldExist, "name"))
@@ -138,13 +129,4 @@ func (secret *SecretWithParam) Validate() []error {
 		return errs
 	}
 	return nil
-}
-
-// ParseForUser removes information not interesting for users
-func (secret *SecretWithParam) ParseForUser() {
-	if secret.Owner == "" {
-		secret.Hidden = true
-		return
-	}
-	secret.Mask()
 }
