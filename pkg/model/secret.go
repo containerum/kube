@@ -13,10 +13,6 @@ import (
 	api_validation "k8s.io/apimachinery/pkg/util/validation"
 )
 
-// SecretWithParam -- model for secret with owner
-//
-// swagger:model
-
 type SecretKubeAPI kube_types.Secret
 
 const (

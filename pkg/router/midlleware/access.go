@@ -79,7 +79,7 @@ func CheckAccess(ctx *gin.Context, level []kubeModel.AccessLevel) {
 
 func containsAccess(access kubeModel.AccessLevel, in ...kubeModel.AccessLevel) bool {
 	contains := false
-	userAccess := kubeModel.AccessLevel(access)
+	userAccess := access
 	for _, acc := range in {
 		if acc == userAccess {
 			return true

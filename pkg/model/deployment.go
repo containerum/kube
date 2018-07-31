@@ -56,7 +56,7 @@ func ParseKubeDeploymentList(deploys interface{}, parseforuser bool) (*kube_type
 
 		deployments = append(deployments, *deployment)
 	}
-	return &kube_types.DeploymentsList{deployments}, nil
+	return &kube_types.DeploymentsList{Deployments: deployments}, nil
 }
 
 // ParseKubeDeployment parses kubernetes v1.Deployment to more convenient Deployment struct
@@ -103,7 +103,7 @@ func ParseKubeDeployment(deployment interface{}, parseforuser bool) (*kube_types
 }
 
 func getVolumeMode(volumes []api_core.Volume) map[string]int32 {
-	volumemap := make(map[string]int32, 0)
+	volumemap := make(map[string]int32)
 	for _, v := range volumes {
 		if v.ConfigMap != nil {
 			volumemap[v.Name] = *v.ConfigMap.DefaultMode
@@ -113,7 +113,7 @@ func getVolumeMode(volumes []api_core.Volume) map[string]int32 {
 }
 
 func getVolumeStorageName(volumes []api_core.Volume) map[string]string {
-	volumemap := make(map[string]string, 0)
+	volumemap := make(map[string]string)
 	for _, v := range volumes {
 		if v.PersistentVolumeClaim != nil {
 			volumemap[v.Name] = v.PersistentVolumeClaim.ClaimName
@@ -211,7 +211,7 @@ func (deploy *DeploymentKubeAPI) ToKube(nsName string, labels map[string]string)
 }
 
 func makeContainers(containers []kube_types.Container) ([]api_core.Container, []error) {
-	var containersAfter []api_core.Container
+	containersAfter := make([]api_core.Container, len(containers))
 
 	for _, c := range containers {
 		errs := validateContainer(c, c.Limits.CPU, c.Limits.Memory)
@@ -312,8 +312,8 @@ func makeContainerResourceQuota(cpu, memory uint) *api_core.ResourceRequirements
 
 func makeTemplateVolumes(containers []kube_types.Container) ([]api_core.Volume, error) {
 	templateVolumes := make([]api_core.Volume, 0)
-	existingVolume := make(map[string]bool, 0)
-	existingMountPath := make(map[string]bool, 0)
+	existingVolume := make(map[string]bool)
+	existingMountPath := make(map[string]bool)
 
 	for _, c := range containers {
 		for _, v := range c.VolumeMounts {

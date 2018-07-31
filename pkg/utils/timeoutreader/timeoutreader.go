@@ -96,7 +96,7 @@ func (this *TimeoutReader) Read(p []byte) (int, error) {
 			if err == io.ErrUnexpectedEOF {
 				err = nil
 			}
-			this.done <- &readResponse{n, err}
+			this.done <- &readResponse{n: n, err: err}
 		}
 	}()
 

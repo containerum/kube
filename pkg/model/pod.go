@@ -20,7 +20,7 @@ func ParseKubePodList(pods interface{}, parseforuser bool) *kube_types.PodsList 
 	for _, po := range podList.Items {
 		ret = append(ret, ParseKubePod(&po, parseforuser))
 	}
-	return &kube_types.PodsList{ret}
+	return &kube_types.PodsList{Pods: ret}
 }
 
 // ParseKubePod parses kubernetes v1.PodList to more convenient Pod struct.
