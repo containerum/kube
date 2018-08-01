@@ -213,7 +213,7 @@ func (deploy *DeploymentKubeAPI) ToKube(nsName string, labels map[string]string)
 func makeContainers(containers []kube_types.Container) ([]api_core.Container, []error) {
 	containersAfter := make([]api_core.Container, len(containers))
 
-	for _, c := range containers {
+	for i, c := range containers {
 		errs := validateContainer(c, c.Limits.CPU, c.Limits.Memory)
 		if errs != nil {
 			return nil, errs
@@ -241,7 +241,7 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, []
 
 		container.Resources = *rq
 
-		containersAfter = append(containersAfter, container)
+		containersAfter[i] = container
 	}
 	return containersAfter, nil
 }
