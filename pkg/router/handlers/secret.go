@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
+	api_core "k8s.io/api/core/v1"
 )
 
 const (
@@ -18,7 +19,7 @@ const (
 )
 
 // swagger:operation GET /namespaces/{namespace}/secrets Secret GetSecretList
-// Get secrets list.
+// Get TLS secrets list.
 //
 // ---
 // x-method-visibility: public
@@ -30,6 +31,10 @@ const (
 //    in: path
 //    type: string
 //    required: true
+//  - name: docker
+//    in: query
+//    type: string
+//    required: false
 // responses:
 //  '200':
 //    description: secrets list
@@ -51,7 +56,14 @@ func GetSecretList(ctx *gin.Context) {
 		return
 	}
 
-	secrets, err := kube.GetSecretList(namespace)
+	_, isDocker := ctx.GetQuery("docker")
+
+	var secrets *api_core.SecretList
+	if isDocker {
+		secrets, err = kube.GetDockerSecretList(namespace)
+	} else {
+		secrets, err = kube.GetTLSSecretList(namespace)
+	}
 	if err != nil {
 		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
 		return
@@ -125,7 +137,7 @@ func GetSecret(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-// swagger:operation POST /namespaces/{namespace}/secrets Secret CreateSecret
+// swagger:operation POST /namespaces/{namespace}/secrets/tls Secret CreateTLSSecret
 // Create secret.
 //
 // ---
@@ -149,7 +161,7 @@ func GetSecret(ctx *gin.Context) {
 //      $ref: '#/definitions/SecretWithParam'
 //  default:
 //    $ref: '#/responses/error'
-func CreateSecret(ctx *gin.Context) {
+func CreateTLSSecret(ctx *gin.Context) {
 	namespace := ctx.Param(namespaceParam)
 	log.WithFields(log.Fields{
 		"Namespace": namespace,
@@ -157,7 +169,7 @@ func CreateSecret(ctx *gin.Context) {
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var secretReq model.SecretWithParam
+	var secretReq model.SecretKubeAPI
 	if err := ctx.ShouldBindWith(&secretReq, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
@@ -170,7 +182,73 @@ func CreateSecret(ctx *gin.Context) {
 		return
 	}
 
-	newSecret, errs := secretReq.ToKube(namespace, ns.Labels)
+	newSecret, errs := secretReq.ToKube(namespace, ns.Labels, api_core.SecretTypeOpaque)
+	if errs != nil {
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		return
+	}
+
+	secretAfter, err := kube.CreateSecret(newSecret)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
+		return
+	}
+
+	role := ctx.MustGet(m.UserRole).(string)
+	ret, err := model.ParseKubeSecret(secretAfter, role == m.RoleUser)
+	if err != nil {
+		ctx.Error(err)
+	}
+
+	ctx.JSON(http.StatusCreated, ret)
+}
+
+// swagger:operation POST /namespaces/{namespace}/secrets/docker Secret CreateDockerSecret
+// Create secret.
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserIDHeader'
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserNamespaceHeader'
+//  - name: namespace
+//    in: path
+//    type: string
+//    required: true
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/SecretWithParam'
+// responses:
+//  '201':
+//    description: secret created
+//    schema:
+//      $ref: '#/definitions/SecretWithParam'
+//  default:
+//    $ref: '#/responses/error'
+func CreateDockerSecret(ctx *gin.Context) {
+	namespace := ctx.Param(namespaceParam)
+	log.WithFields(log.Fields{
+		"Namespace": namespace,
+	}).Debug("Create secret Call")
+
+	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
+
+	var secretReq model.SecretKubeAPI
+	if err := ctx.ShouldBindWith(&secretReq, binding.JSON); err != nil {
+		ctx.Error(err)
+		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
+		return
+	}
+
+	ns, err := kube.GetNamespaceQuota(namespace)
+	if err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
+		return
+	}
+
+	newSecret, errs := secretReq.ToKube(namespace, ns.Labels, api_core.SecretTypeDockerConfigJson)
 	if errs != nil {
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
@@ -208,6 +286,10 @@ func CreateSecret(ctx *gin.Context) {
 //    in: path
 //    type: string
 //    required: true
+//  - name: docker
+//    in: query
+//    type: string
+//    required: false
 //  - name: body
 //    in: body
 //    schema:
@@ -225,11 +307,11 @@ func UpdateSecret(ctx *gin.Context) {
 	log.WithFields(log.Fields{
 		"Namespace": namespace,
 		"Secret":    sct,
-	}).Debug("Create secret Call")
+	}).Debug("Update secret Call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
 
-	var secretReq model.SecretWithParam
+	var secretReq model.SecretKubeAPI
 	if err := ctx.ShouldBindWith(&secretReq, binding.JSON); err != nil {
 		ctx.Error(err)
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
@@ -242,7 +324,7 @@ func UpdateSecret(ctx *gin.Context) {
 		return
 	}
 
-	oldSecret, err := kube.GetIngress(namespace, sct)
+	oldSecret, err := kube.GetSecret(namespace, sct)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
 		return
@@ -251,7 +333,15 @@ func UpdateSecret(ctx *gin.Context) {
 	secretReq.Name = sct
 	secretReq.Owner = oldSecret.GetObjectMeta().GetLabels()[ownerQuery]
 
-	newSecret, errs := secretReq.ToKube(namespace, ns.Labels)
+	_, isDocker := ctx.GetQuery("docker")
+
+	var newSecret *api_core.Secret
+	var errs []error
+	if isDocker {
+		newSecret, errs = secretReq.ToKube(namespace, ns.Labels, api_core.SecretTypeDockerConfigJson)
+	} else {
+		newSecret, errs = secretReq.ToKube(namespace, ns.Labels, api_core.SecretTypeOpaque)
+	}
 	if errs != nil {
 		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return

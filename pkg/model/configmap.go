@@ -33,7 +33,7 @@ func ParseKubeConfigMapList(cmi interface{}, parseforuser bool) (*kube_types.Con
 		}
 		newCms = append(newCms, *newCm)
 	}
-	return &kube_types.ConfigMapsList{newCms}, nil
+	return &kube_types.ConfigMapsList{ConfigMaps: newCms}, nil
 }
 
 // ParseKubeConfigMap parses kubernetes v1.ConfigMap to more convenient ConfigMap struct.
@@ -45,7 +45,7 @@ func ParseKubeConfigMap(cmi interface{}, parseforuser bool) (*kube_types.ConfigM
 
 	newData := make(map[string]string)
 	for k, v := range cm.Data {
-		newData[k] = string(v)
+		newData[k] = v
 	}
 
 	owner := cm.GetObjectMeta().GetLabels()[ownerLabel]
@@ -77,9 +77,8 @@ func (cm *ConfigMapKubeAPI) ToKube(nsName string, labels map[string]string) (*ap
 		dec, err := base64.StdEncoding.DecodeString(v)
 		if err != nil {
 			return nil, []error{fmt.Errorf("unable to decode base64 string '%v': %v", v, err)}
-		} else {
-			cm.Data[k] = string(dec)
 		}
+		cm.Data[k] = string(dec)
 	}
 
 	newCm := api_core.ConfigMap{

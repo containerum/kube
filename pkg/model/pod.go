@@ -20,7 +20,7 @@ func ParseKubePodList(pods interface{}, parseforuser bool) *kube_types.PodsList 
 	for _, po := range podList.Items {
 		ret = append(ret, ParseKubePod(&po, parseforuser))
 	}
-	return &kube_types.PodsList{ret}
+	return &kube_types.PodsList{Pods: ret}
 }
 
 // ParseKubePod parses kubernetes v1.PodList to more convenient Pod struct.
@@ -39,9 +39,10 @@ func ParseKubePod(pod interface{}, parseforuser bool) kube_types.Pod {
 		Status: &model.PodStatus{
 			Phase: string(obj.Status.Phase),
 		},
-		TotalCPU:    uint(cpu.ScaledValue(api_resource.Milli)),
-		TotalMemory: uint(mem.Value() / 1024 / 1024),
-		Owner:       owner,
+		ImagePullSecrets: getImagePullSecrets(obj.Spec.ImagePullSecrets),
+		TotalCPU:         uint(cpu.ScaledValue(api_resource.Milli)),
+		TotalMemory:      uint(mem.Value() / 1024 / 1024),
+		Owner:            owner,
 	}
 
 	if parseforuser {

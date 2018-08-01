@@ -18,8 +18,9 @@ type ConfigMap struct {
 	// key-value data
 	//
 	// required: true
-	Data  ConfigMapData `json:"data" yaml:"data"`
-	Owner string        `json:"owner,omitempty" yaml:"owner,omitempty"`
+	Data      ConfigMapData `json:"data" yaml:"data"`
+	Namespace string        `json:"namespace,omitempty" yaml:"namespace,omitempty"`
+	Owner     string        `json:"owner,omitempty" yaml:"owner,omitempty"`
 }
 
 // SelectedConfigMapsList -- model for config maps list from all namespaces
