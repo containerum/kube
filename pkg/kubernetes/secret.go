@@ -6,9 +6,21 @@ import (
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-//GetSecretList returns secrets list
-func (k *Kube) GetSecretList(nsName string) (*api_core.SecretList, error) {
-	secrets, err := k.CoreV1().Secrets(nsName).List(api_meta.ListOptions{})
+//GetTLSSecretList returns TLS secrets list
+func (k *Kube) GetTLSSecretList(nsName string) (*api_core.SecretList, error) {
+	secrets, err := k.CoreV1().Secrets(nsName).List(api_meta.ListOptions{FieldSelector: "type=Opaque"})
+	if err != nil {
+		log.WithFields(log.Fields{
+			"Namespace": nsName,
+		}).Error(err)
+		return nil, err
+	}
+	return secrets, nil
+}
+
+//GetDockerSecretList returns Docker secrets list
+func (k *Kube) GetDockerSecretList(nsName string) (*api_core.SecretList, error) {
+	secrets, err := k.CoreV1().Secrets(nsName).List(api_meta.ListOptions{FieldSelector: "type=kubernetes.io/dockerconfigjson"})
 	if err != nil {
 		log.WithFields(log.Fields{
 			"Namespace": nsName,

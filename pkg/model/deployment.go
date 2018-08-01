@@ -84,14 +84,15 @@ func ParseKubeDeployment(deployment interface{}, parseforuser bool) (*kube_types
 			UpdatedReplicas:     int(deploy.Status.UpdatedReplicas),
 			UnavailableReplicas: int(deploy.Status.UnavailableReplicas),
 		},
-		CreatedAt:   deploy.ObjectMeta.CreationTimestamp.UTC().Format(time.RFC3339),
-		SolutionID:  deploy.GetObjectMeta().GetLabels()[solutionLabel],
-		Containers:  containers,
-		TotalCPU:    uint(totalcpu.ScaledValue(api_resource.Milli)),
-		TotalMemory: uint(totalmem.Value() / 1024 / 1024),
-		Owner:       deploy.GetObjectMeta().GetLabels()[ownerLabel],
-		Version:     version,
-		Active:      true,
+		CreatedAt:        deploy.ObjectMeta.CreationTimestamp.UTC().Format(time.RFC3339),
+		SolutionID:       deploy.GetObjectMeta().GetLabels()[solutionLabel],
+		Containers:       containers,
+		ImagePullSecrets: getImagePullSecrets(deploy.Spec.Template.Spec.ImagePullSecrets),
+		TotalCPU:         uint(totalcpu.ScaledValue(api_resource.Milli)),
+		TotalMemory:      uint(totalmem.Value() / 1024 / 1024),
+		Owner:            deploy.GetObjectMeta().GetLabels()[ownerLabel],
+		Version:          version,
+		Active:           true,
 	}
 
 	if parseforuser {
@@ -119,6 +120,14 @@ func getVolumeStorageName(volumes []api_core.Volume) map[string]string {
 		}
 	}
 	return volumemap
+}
+
+func getImagePullSecrets(secrets []api_core.LocalObjectReference) []string {
+	secretsList := []string{}
+	for _, v := range secrets {
+		secretsList = append(secretsList, v.Name)
+	}
+	return secretsList
 }
 
 //ToKube creates kubernetes v1.Deployment from Deployment struct and namespace labels
@@ -159,6 +168,11 @@ func (deploy *DeploymentKubeAPI) ToKube(nsName string, labels map[string]string)
 		return nil, []error{verr}
 	}
 
+	var imagePullSecrets []api_core.LocalObjectReference
+	for _, im := range deploy.ImagePullSecrets {
+		imagePullSecrets = append(imagePullSecrets, api_core.LocalObjectReference{im})
+	}
+
 	newDeploy := api_apps.Deployment{
 		TypeMeta: api_meta.TypeMeta{
 			Kind:       deploymentKind,
@@ -183,7 +197,8 @@ func (deploy *DeploymentKubeAPI) ToKube(nsName string, labels map[string]string)
 					NodeSelector: map[string]string{
 						"role": "slave",
 					},
-					Volumes: volumes,
+					ImagePullSecrets: imagePullSecrets,
+					Volumes:          volumes,
 				},
 				ObjectMeta: api_meta.ObjectMeta{
 					Labels: labels,
@@ -198,7 +213,7 @@ func (deploy *DeploymentKubeAPI) ToKube(nsName string, labels map[string]string)
 func makeContainers(containers []kube_types.Container) ([]api_core.Container, []error) {
 	containersAfter := make([]api_core.Container, len(containers))
 
-	for _, c := range containers {
+	for i, c := range containers {
 		errs := validateContainer(c, c.Limits.CPU, c.Limits.Memory)
 		if errs != nil {
 			return nil, errs
@@ -226,7 +241,7 @@ func makeContainers(containers []kube_types.Container) ([]api_core.Container, []
 
 		container.Resources = *rq
 
-		containersAfter = append(containersAfter, container)
+		containersAfter[i] = container
 	}
 	return containersAfter, nil
 }

@@ -95,7 +95,8 @@ func initRoutes(e gin.IRouter) {
 		{
 			secret.GET("", m.ReadAccess, h.GetSecretList)
 			secret.GET("/:secret", m.ReadAccess, h.GetSecret)
-			secret.POST("", m.WriteAccess, h.CreateSecret)
+			secret.POST("/tls", m.WriteAccess, h.CreateTLSSecret)
+			secret.POST("/docker", m.WriteAccess, h.CreateDockerSecret)
 			secret.PUT("/:secret", m.WriteAccess, h.UpdateSecret)
 			secret.DELETE("/:secret", m.DeleteAccess, h.DeleteSecret)
 		}
