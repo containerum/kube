@@ -49,10 +49,10 @@ func NewTimeoutReader(reader io.ReadCloser, timeout time.Duration, closeOnTimeou
 
 // Closes the TimeoutReader.
 // Also closes the underlying Reader if it was not closed already at timeout.
-func (this *TimeoutReader) Close() (err error) {
-	this.onceClose.Do(func() {
-		this.close <- struct{}{}
-		err = this.reader.Close()
+func (tr *TimeoutReader) Close() (err error) {
+	tr.onceClose.Do(func() {
+		tr.close <- struct{}{}
+		err = tr.reader.Close()
 	})
 	return
 }
@@ -60,25 +60,25 @@ func (this *TimeoutReader) Close() (err error) {
 // Read from the underlying reader.
 // If the underlying Read() does not return within the timeout, ErrReadTimeout
 // is returned.
-func (this *TimeoutReader) Read(p []byte) (int, error) {
-	if this.timeout <= 0 {
-		return this.reader.Read(p)
+func (tr *TimeoutReader) Read(p []byte) (int, error) {
+	if tr.timeout <= 0 {
+		return tr.reader.Read(p)
 	}
 
-	if this.maxReadSize > 0 && len(p) > this.maxReadSize {
-		p = p[:this.maxReadSize]
+	if tr.maxReadSize > 0 && len(p) > tr.maxReadSize {
+		p = p[:tr.maxReadSize]
 	}
 
 	// reset the timer
 	select {
-	case <-this.timer.C:
+	case <-tr.timer.C:
 	default:
 	}
-	this.timer.Reset(this.timeout)
+	tr.timer.Reset(tr.timeout)
 
 	// clear the done channel
 	select {
-	case <-this.done:
+	case <-tr.done:
 	default:
 	}
 
@@ -87,35 +87,35 @@ func (this *TimeoutReader) Read(p []byte) (int, error) {
 	var mutex sync.Mutex
 
 	go func() {
-		n, err := io.ReadAtLeast(this.reader, p, 1)
+		n, err := io.ReadAtLeast(tr.reader, p, 1)
 		mutex.Lock()
 		defer mutex.Unlock()
 		finished = true
 		if !timedOut {
-			this.timer.Stop()
+			tr.timer.Stop()
 			if err == io.ErrUnexpectedEOF {
 				err = nil
 			}
-			this.done <- &readResponse{n: n, err: err}
+			tr.done <- &readResponse{n: n, err: err}
 		}
 	}()
 
 	select {
-	case <-this.timer.C:
+	case <-tr.timer.C:
 		mutex.Lock()
 		defer mutex.Unlock()
 		if finished {
-			resp := <-this.done
+			resp := <-tr.done
 			return resp.n, resp.err
 		}
 		timedOut = true
-		if this.closeOnTimeout {
-			this.reader.Close()
+		if tr.closeOnTimeout {
+			tr.reader.Close()
 		}
 		return 0, ErrReadTimeout
-	case <-this.close:
+	case <-tr.close:
 		return 0, io.EOF
-	case resp := <-this.done:
+	case resp := <-tr.done:
 		return resp.n, resp.err
 	}
 }
