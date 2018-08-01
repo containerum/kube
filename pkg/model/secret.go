@@ -35,7 +35,7 @@ func ParseKubeSecretList(secreti interface{}, parseforuser bool) (*kube_types.Se
 		}
 		secrets = append(secrets, *newSecret)
 	}
-	return &kube_types.SecretsList{secrets}, nil
+	return &kube_types.SecretsList{Secrets: secrets}, nil
 }
 
 // ParseKubeSecret parses kubernetes v1.Secret to more convenient Secret struct.
@@ -98,7 +98,7 @@ func (secret *SecretKubeAPI) ToKube(nsName string, labels map[string]string, sec
 }
 
 func makeSecretData(data map[string]string) map[string][]byte {
-	newData := make(map[string][]byte, 0)
+	newData := make(map[string][]byte)
 	for k, v := range data {
 		newData[k] = []byte(v)
 	}

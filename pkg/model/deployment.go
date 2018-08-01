@@ -170,7 +170,7 @@ func (deploy *DeploymentKubeAPI) ToKube(nsName string, labels map[string]string)
 
 	var imagePullSecrets []api_core.LocalObjectReference
 	for _, im := range deploy.ImagePullSecrets {
-		imagePullSecrets = append(imagePullSecrets, api_core.LocalObjectReference{im})
+		imagePullSecrets = append(imagePullSecrets, api_core.LocalObjectReference{Name: im})
 	}
 
 	newDeploy := api_apps.Deployment{
