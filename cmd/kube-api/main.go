@@ -7,10 +7,10 @@ import (
 	"github.com/urfave/cli"
 )
 
-//go:generate protoc --go_out=../../proto -I../../proto exec.proto
 //go:generate swagger generate spec -m -i ../../swagger-basic.yml -o ../../swagger.json
 //go:generate swagger flatten ../../swagger.json -o ../../swagger.json
 //go:generate swagger validate ../../swagger.json
+//go:generate protoc --go_out=../../proto -I../../proto exec.proto
 
 func main() {
 	app := cli.NewApp()

@@ -101,7 +101,7 @@ func GetSecretList(ctx *gin.Context) {
 //  '200':
 //    description: secret
 //    schema:
-//      $ref: '#/definitions/SecretWithParam'
+//      $ref: '#/definitions/Secret'
 //  default:
 //    $ref: '#/responses/error'
 func GetSecret(ctx *gin.Context) {
@@ -153,12 +153,12 @@ func GetSecret(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/SecretWithParam'
+//      $ref: '#/definitions/Secret'
 // responses:
 //  '201':
 //    description: secret created
 //    schema:
-//      $ref: '#/definitions/SecretWithParam'
+//      $ref: '#/definitions/Secret'
 //  default:
 //    $ref: '#/responses/error'
 func CreateTLSSecret(ctx *gin.Context) {
@@ -219,12 +219,12 @@ func CreateTLSSecret(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/SecretWithParam'
+//      $ref: '#/definitions/Secret'
 // responses:
 //  '201':
 //    description: secret created
 //    schema:
-//      $ref: '#/definitions/SecretWithParam'
+//      $ref: '#/definitions/Secret'
 //  default:
 //    $ref: '#/responses/error'
 func CreateDockerSecret(ctx *gin.Context) {
@@ -293,12 +293,12 @@ func CreateDockerSecret(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/SecretWithParam'
+//      $ref: '#/definitions/Secret'
 // responses:
 //  '202':
 //    description: secret updated
 //    schema:
-//      $ref: '#/definitions/SecretWithParam'
+//      $ref: '#/definitions/Secret'
 //  default:
 //    $ref: '#/responses/error'
 func UpdateSecret(ctx *gin.Context) {
