@@ -216,6 +216,44 @@
           }
         },
         "x-method-visibility": "private"
+      },
+      "delete": {
+        "tags": [
+          "Namespace"
+        ],
+        "summary": "Delete user namespaces.",
+        "operationId": "DeleteUserNamespaces",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "name": "X-User-ID",
+            "in": "header",
+            "required": true
+          },
+          {
+            "enum": [
+              "user",
+              "admin"
+            ],
+            "type": "string",
+            "name": "X-User-Role",
+            "in": "header",
+            "required": true
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "namespaces deleted"
+          },
+          "default": {
+            "description": "cherry error",
+            "schema": {
+              "$ref": "#/definitions/errOAIGen"
+            }
+          }
+        },
+        "x-method-visibility": "private"
       }
     },
     "/namespaces/{namespace}": {
@@ -1050,6 +1088,67 @@
           }
         },
         "x-method-visibility": "private"
+      }
+    },
+    "/namespaces/{namespace}/deployments/{deployment}/pods": {
+      "get": {
+        "tags": [
+          "Pod"
+        ],
+        "summary": "Get deployment pods list.",
+        "operationId": "GetDeploymentPodList",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "name": "X-User-ID",
+            "in": "header",
+            "required": true
+          },
+          {
+            "enum": [
+              "user",
+              "admin"
+            ],
+            "type": "string",
+            "name": "X-User-Role",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "X-User-Namespace",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "deployment",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "deployment pod list",
+            "schema": {
+              "$ref": "#/definitions/PodsList"
+            }
+          },
+          "default": {
+            "description": "cherry error",
+            "schema": {
+              "$ref": "#/definitions/errOAIGen"
+            }
+          }
+        },
+        "x-method-visibility": "public"
       }
     },
     "/namespaces/{namespace}/deployments/{deployment}/replicas": {
@@ -2004,7 +2103,7 @@
         "tags": [
           "Secret"
         ],
-        "summary": "Get secrets list.",
+        "summary": "Get TLS secrets list.",
         "operationId": "GetSecretList",
         "parameters": [
           {
@@ -2035,6 +2134,11 @@
             "name": "namespace",
             "in": "path",
             "required": true
+          },
+          {
+            "type": "string",
+            "name": "docker",
+            "in": "query"
           }
         ],
         "responses": {
@@ -2052,13 +2156,15 @@
           }
         },
         "x-method-visibility": "public"
-      },
+      }
+    },
+    "/namespaces/{namespace}/secrets/docker": {
       "post": {
         "tags": [
           "Secret"
         ],
         "summary": "Create secret.",
-        "operationId": "CreateSecret",
+        "operationId": "CreateDockerSecret",
         "parameters": [
           {
             "type": "string",
@@ -2093,7 +2199,7 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/SecretWithParam"
+              "$ref": "#/definitions/Secret"
             }
           }
         ],
@@ -2101,7 +2207,69 @@
           "201": {
             "description": "secret created",
             "schema": {
-              "$ref": "#/definitions/SecretWithParam"
+              "$ref": "#/definitions/Secret"
+            }
+          },
+          "default": {
+            "description": "cherry error",
+            "schema": {
+              "$ref": "#/definitions/errOAIGen"
+            }
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/namespaces/{namespace}/secrets/tls": {
+      "post": {
+        "tags": [
+          "Secret"
+        ],
+        "summary": "Create secret.",
+        "operationId": "CreateTLSSecret",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "name": "X-User-ID",
+            "in": "header",
+            "required": true
+          },
+          {
+            "enum": [
+              "user",
+              "admin"
+            ],
+            "type": "string",
+            "name": "X-User-Role",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "X-User-Namespace",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "namespace",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Secret"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "secret created",
+            "schema": {
+              "$ref": "#/definitions/Secret"
             }
           },
           "default": {
@@ -2162,7 +2330,7 @@
           "200": {
             "description": "secret",
             "schema": {
-              "$ref": "#/definitions/SecretWithParam"
+              "$ref": "#/definitions/Secret"
             }
           },
           "default": {
@@ -2217,10 +2385,15 @@
             "required": true
           },
           {
+            "type": "string",
+            "name": "docker",
+            "in": "query"
+          },
+          {
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/SecretWithParam"
+              "$ref": "#/definitions/Secret"
             }
           }
         ],
@@ -2228,7 +2401,7 @@
           "202": {
             "description": "secret updated",
             "schema": {
-              "$ref": "#/definitions/SecretWithParam"
+              "$ref": "#/definitions/Secret"
             }
           },
           "default": {
@@ -3225,6 +3398,10 @@
           "type": "string",
           "x-go-name": "Name"
         },
+        "namespace": {
+          "type": "string",
+          "x-go-name": "Namespace"
+        },
         "owner": {
           "type": "string",
           "x-go-name": "Owner"
@@ -3406,6 +3583,13 @@
           "description": "delete date in RFC3339 format",
           "type": "string",
           "x-go-name": "DeletedAt"
+        },
+        "image_pull_secret": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "ImagePullSecrets"
         },
         "name": {
           "type": "string",
@@ -3670,6 +3854,10 @@
           "type": "string",
           "x-go-name": "Name"
         },
+        "namespace": {
+          "type": "string",
+          "x-go-name": "Namespace"
+        },
         "owner": {
           "type": "string",
           "x-go-name": "Owner"
@@ -3843,11 +4031,11 @@
           "x-go-name": "Deploy"
         },
         "image_pull_secret": {
-          "type": "object",
-          "additionalProperties": {
+          "type": "array",
+          "items": {
             "type": "string"
           },
-          "x-go-name": "ImagePullSecret"
+          "x-go-name": "ImagePullSecrets"
         },
         "name": {
           "type": "string",
@@ -4088,61 +4276,6 @@
         }
       },
       "x-go-package": "git.containerum.net/ch/kube-api/vendor/github.com/containerum/kube-client/pkg/model"
-    },
-    "SecretWithParam": {
-      "description": "SecretWithParam -- model for secret with owner",
-      "type": "object",
-      "required": [
-        "name",
-        "data"
-      ],
-      "properties": {
-        "created_at": {
-          "description": "creation date in RFC3339 format",
-          "type": "string",
-          "x-go-name": "CreatedAt"
-        },
-        "data": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          },
-          "x-go-name": "Data"
-        },
-        "deleted_at": {
-          "description": "delete date in RFC3339 format",
-          "type": "string",
-          "x-go-name": "DeletedAt"
-        },
-        "hidden": {
-          "description": "hide secret from users",
-          "type": "boolean",
-          "x-go-name": "Hidden"
-        },
-        "name": {
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "owner": {
-          "type": "string",
-          "x-go-name": "Owner"
-        }
-      },
-      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
-    },
-    "SecretWithParamList": {
-      "description": "SecretWithParamList -- model for secrets list",
-      "type": "object",
-      "properties": {
-        "secrets": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SecretWithParam"
-          },
-          "x-go-name": "Secrets"
-        }
-      },
-      "x-go-package": "git.containerum.net/ch/kube-api/pkg/model"
     },
     "SecretsList": {
       "description": "SecretsList -- model for secrets list",
@@ -4463,7 +4596,7 @@
       "type": "object",
       "properties": {
         "access": {
-          "$ref": "#/definitions/UserGroupAccess"
+          "$ref": "#/definitions/AccessLevel"
         },
         "created_at": {
           "description": "creation date in RFC3339 format",
@@ -4510,7 +4643,7 @@
       "type": "object",
       "properties": {
         "access": {
-          "$ref": "#/definitions/UserGroupAccess"
+          "$ref": "#/definitions/AccessLevel"
         },
         "id": {
           "type": "string",
