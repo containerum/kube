@@ -48,13 +48,13 @@ func GetVolumeList(ctx *gin.Context) {
 
 	_, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResourcesList()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableGetResourcesList()), ctx)
 		return
 	}
 
 	svcList, err := kube.GetPersistentVolumeClaimsList(namespace)
 	if err != nil {
-		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeerrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
@@ -62,7 +62,7 @@ func GetVolumeList(ctx *gin.Context) {
 	ret, err := model.ParseKubePersistentVolumeClaimList(svcList, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeerrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 	ctx.JSON(http.StatusOK, ret)
@@ -104,13 +104,13 @@ func GetVolume(ctx *gin.Context) {
 
 	_, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableGetResource()), ctx)
 		return
 	}
 
 	svc, err := kube.GetPersistentVolumeClaim(namespace, volume)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableGetResource()), ctx)
 		return
 	}
 
@@ -118,7 +118,7 @@ func GetVolume(ctx *gin.Context) {
 	ret, err := model.ParseKubePersistentVolumeClaim(svc, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrUnableGetResource(), ctx)
+		gonic.Gonic(kubeerrors.ErrUnableGetResource(), ctx)
 		return
 	}
 
@@ -159,25 +159,25 @@ func CreateVolume(ctx *gin.Context) {
 	var pvc model.VolumeKubeAPI
 	if err := ctx.ShouldBindWith(&pvc, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrUnableCreateResource(), ctx)
+		gonic.Gonic(kubeerrors.ErrUnableCreateResource(), ctx)
 		return
 	}
 
 	ns, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
 	newPvc, errs := pvc.ToKube(namespace, ns.Labels)
 	if errs != nil {
-		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(kubeerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	pvcAfter, err := kube.CreatePersistentVolumeClaim(newPvc)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -231,19 +231,19 @@ func UpdateVolume(ctx *gin.Context) {
 	var pvc model.VolumeKubeAPI
 	if err := ctx.ShouldBindWith(&pvc, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrUnableUpdateResource(), ctx)
+		gonic.Gonic(kubeerrors.ErrUnableUpdateResource(), ctx)
 		return
 	}
 
 	ns, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	oldPvc, err := kube.GetPersistentVolumeClaim(namespace, vol)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -253,7 +253,7 @@ func UpdateVolume(ctx *gin.Context) {
 
 	newPvc, errs := pvc.ToKube(namespace, ns.Labels)
 	if errs != nil {
-		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(kubeerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
@@ -306,13 +306,13 @@ func DeleteVolume(ctx *gin.Context) {
 
 	_, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableDeleteResource()), ctx)
 		return
 	}
 
 	err = kube.DeletePersistentVolumeClaim(namespace, volume)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableDeleteResource()), ctx)
 		return
 	}
 	ctx.Status(http.StatusAccepted)

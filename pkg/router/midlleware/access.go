@@ -37,7 +37,7 @@ const (
 
 func IsAdmin(ctx *gin.Context) {
 	if role := GetHeader(ctx, headers.UserRoleXHeader); role != RoleAdmin {
-		gonic.Gonic(kubeErrors.ErrAdminRequired(), ctx)
+		gonic.Gonic(kubeerrors.ErrAdminRequired(), ctx)
 		return
 	}
 }
@@ -69,10 +69,10 @@ func CheckAccess(ctx *gin.Context, level []kubeModel.AccessLevel) {
 			if ok := containsAccess(userNsData.Access, level...); ok {
 				return
 			}
-			gonic.Gonic(kubeErrors.ErrAccessError(), ctx)
+			gonic.Gonic(kubeerrors.ErrAccessError(), ctx)
 			return
 		}
-		gonic.Gonic(kubeErrors.ErrResourceNotExist().AddDetails("project is not found"), ctx)
+		gonic.Gonic(kubeerrors.ErrResourceNotExist().AddDetails("project is not found"), ctx)
 		return
 	}
 }

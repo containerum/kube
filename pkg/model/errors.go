@@ -65,11 +65,11 @@ func ParseKubernetesResourceError(in interface{}, defaultErr *cherry.Err) *cherr
 		switch sE.ErrStatus.Reason {
 		case api_meta.StatusReasonNotFound:
 			if sE.Status().Details.Kind == "resourcequotas" {
-				return kubeErrors.ErrResourceNotExist().AddDetails(noNamespace)
+				return kubeerrors.ErrResourceNotExist().AddDetails(noNamespace)
 			}
-			return kubeErrors.ErrResourceNotExist().AddDetailsErr(fmt.Errorf(noResource, sE.Status().Details.Name, sE.Status().Details.Kind))
+			return kubeerrors.ErrResourceNotExist().AddDetailsErr(fmt.Errorf(noResource, sE.Status().Details.Name, sE.Status().Details.Kind))
 		case api_meta.StatusReasonAlreadyExists:
-			return kubeErrors.ErrResourceAlreadyExists().AddDetailsErr(fmt.Errorf(resourceAlreadyExists, sE.Status().Details.Name, sE.Status().Details.Kind))
+			return kubeerrors.ErrResourceAlreadyExists().AddDetailsErr(fmt.Errorf(resourceAlreadyExists, sE.Status().Details.Name, sE.Status().Details.Kind))
 		default:
 			return defaultErr
 		}

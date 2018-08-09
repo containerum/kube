@@ -73,11 +73,11 @@ func (secret *SecretKubeAPI) ToKube(nsName string, labels map[string]string, sec
 	}
 
 	if labels == nil {
-		return nil, []error{kubeErrors.ErrInternalError().AddDetails("invalid project labels")}
+		return nil, []error{kubeerrors.ErrInternalError().AddDetails("invalid project labels")}
 	}
 
 	if secretType == api_core.SecretTypeDockerConfigJson && secret.Data[".dockerconfigjson"] == "" {
-		return nil, []error{kubeErrors.ErrRequestValidationFailed().AddDetails("field '.dockerconfigjson' is required")}
+		return nil, []error{kubeerrors.ErrRequestValidationFailed().AddDetails("field '.dockerconfigjson' is required")}
 	}
 
 	newSecret := api_core.Secret{

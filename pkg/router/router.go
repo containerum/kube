@@ -40,7 +40,7 @@ func initMiddlewares(e gin.IRouter, kube *kubernetes.Kube, enableCORS bool) {
 		StaticFS("/", static.HTTP)
 	/* System */
 	e.Use(ginrus.Ginrus(logrus.WithField("component", "gin"), time.RFC3339, true))
-	e.Use(gonic.Recovery(kubeErrors.ErrInternalError, cherrylog.NewLogrusAdapter(logrus.WithField("component", "gin"))))
+	e.Use(gonic.Recovery(kubeerrors.ErrInternalError, cherrylog.NewLogrusAdapter(logrus.WithField("component", "gin"))))
 	/* Custom */
 	e.Use(headers.SaveHeaders)
 	e.Use(headers.PrepareContext)

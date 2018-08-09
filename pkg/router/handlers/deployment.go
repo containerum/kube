@@ -54,13 +54,13 @@ func GetDeploymentList(ctx *gin.Context) {
 
 	_, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResourcesList()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableGetResourcesList()), ctx)
 		return
 	}
 
 	deploy, err := kube.GetDeploymentList(namespace, ctx.Query(ownerQuery))
 	if err != nil {
-		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeerrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
@@ -69,7 +69,7 @@ func GetDeploymentList(ctx *gin.Context) {
 	ret, err := model.ParseKubeDeploymentList(deploy, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeerrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
@@ -112,13 +112,13 @@ func GetDeploymentSolutionList(ctx *gin.Context) {
 
 	_, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResourcesList()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableGetResourcesList()), ctx)
 		return
 	}
 
 	deploy, err := kube.GetDeploymentSolutionList(namespace, solution)
 	if err != nil {
-		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeerrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
@@ -127,7 +127,7 @@ func GetDeploymentSolutionList(ctx *gin.Context) {
 	ret, err := model.ParseKubeDeploymentList(deploy, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeerrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
@@ -170,13 +170,13 @@ func GetDeployment(ctx *gin.Context) {
 
 	_, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableGetResource()), ctx)
 		return
 	}
 
 	deploy, err := kube.GetDeployment(namespace, deployment)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableGetResource()), ctx)
 		return
 	}
 
@@ -184,7 +184,7 @@ func GetDeployment(ctx *gin.Context) {
 	ret, err := model.ParseKubeDeployment(deploy, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrUnableGetResource(), ctx)
+		gonic.Gonic(kubeerrors.ErrUnableGetResource(), ctx)
 		return
 	}
 
@@ -226,35 +226,35 @@ func CreateDeployment(ctx *gin.Context) {
 	var deployReq model.DeploymentKubeAPI
 	if err := ctx.ShouldBindWith(&deployReq, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
+		gonic.Gonic(kubeerrors.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	ns, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
 	deploy, errs := deployReq.ToKube(namespace, ns.Labels)
 	if errs != nil {
-		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(kubeerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 	for _, v := range deploy.Spec.Template.Spec.Volumes {
 		if v.PersistentVolumeClaim != nil {
 			if pvc, err := kube.GetPersistentVolumeClaim(namespace, v.PersistentVolumeClaim.ClaimName); err != nil {
-				gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
+				gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableGetResource()), ctx)
 				return
 			} else if pvc.Status.Phase != "Bound" {
-				gonic.Gonic(kubeErrors.ErrVolumeNotReady().AddDetailF("Volume status: %v", pvc.Status.Phase), ctx)
+				gonic.Gonic(kubeerrors.ErrVolumeNotReady().AddDetailF("Volume status: %v", pvc.Status.Phase), ctx)
 				return
 			}
 		}
 	}
 	deployAfter, err := kube.CreateDeployment(deploy)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -307,19 +307,19 @@ func UpdateDeployment(ctx *gin.Context) {
 	var deployReq model.DeploymentKubeAPI
 	if err := ctx.ShouldBindWith(&deployReq, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
+		gonic.Gonic(kubeerrors.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	ns, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	oldDeploy, err := kube.GetDeployment(namespace, deployment)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -331,7 +331,7 @@ func UpdateDeployment(ctx *gin.Context) {
 
 	deploy, errs := deployReq.ToKube(namespace, ns.Labels)
 	if errs != nil {
-		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(kubeerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
@@ -341,7 +341,7 @@ func UpdateDeployment(ctx *gin.Context) {
 
 	deployAfter, err := kube.UpdateDeployment(deploy)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -396,19 +396,19 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 	var replicas kube_types.UpdateReplicas
 	if err := ctx.ShouldBindWith(&replicas, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
+		gonic.Gonic(kubeerrors.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	_, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	deploy, err := kube.GetDeployment(namespace, deployment)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -417,7 +417,7 @@ func UpdateDeploymentReplicas(ctx *gin.Context) {
 
 	deployAfter, err := kube.UpdateDeployment(deploy)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -471,32 +471,32 @@ func UpdateDeploymentImage(ctx *gin.Context) {
 	var newImage kube_types.UpdateImage
 	if err := ctx.ShouldBindWith(&newImage, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
+		gonic.Gonic(kubeerrors.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	_, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	deploy, err := kube.GetDeployment(namespace, deployment)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	deployUpd, err := model.UpdateImage(deploy, newImage.Container, newImage.Image)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrUnableUpdateResource().AddDetailsErr(err), ctx)
+		gonic.Gonic(kubeerrors.ErrUnableUpdateResource().AddDetailsErr(err), ctx)
 		return
 	}
 
 	deployAfter, err := kube.UpdateDeployment(deployUpd)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -543,13 +543,13 @@ func DeleteDeployment(ctx *gin.Context) {
 
 	_, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableDeleteResource()), ctx)
 		return
 	}
 
 	err = kube.DeleteDeployment(namespace, deployment)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableDeleteResource()), ctx)
 		return
 	}
 
@@ -590,13 +590,13 @@ func DeleteDeploymentsSolution(ctx *gin.Context) {
 
 	_, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableDeleteResource()), ctx)
 		return
 	}
 
 	err = kube.DeleteDeploymentSolution(namespace, solution)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableDeleteResource()), ctx)
 		return
 	}
 

@@ -14,10 +14,10 @@ import (
 
 //TODO: Imp struct to GetPodLogs func
 type LogOptions struct {
-	Follow    bool
-	Tail      int64
-	Previous  bool
 	Container string
+	Tail      int64
+	Follow    bool
+	Previous  bool
 }
 
 type ExecOptions struct {
@@ -104,7 +104,7 @@ func (k *Kube) Exec(ns string, po string, opt *ExecOptions) error {
 	}
 
 	if pod.Status.Phase == v1.PodSucceeded || pod.Status.Phase == v1.PodFailed {
-		return kubeErrors.ErrRequestValidationFailed().
+		return kubeerrors.ErrRequestValidationFailed().
 			AddDetailF("cannot exec into a container in a completed pod; current phase is %s", pod.Status.Phase)
 	}
 

@@ -81,13 +81,13 @@ func GetPodList(ctx *gin.Context) {
 
 	_, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResourcesList()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableGetResourcesList()), ctx)
 		return
 	}
 
 	pods, err := kube.GetPodList(namespace, owner)
 	if err != nil {
-		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeerrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
@@ -132,13 +132,13 @@ func GetPod(ctx *gin.Context) {
 
 	_, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableGetResource()), ctx)
 		return
 	}
 
 	pod, err := kube.GetPod(namespace, podP)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableGetResource()), ctx)
 		return
 	}
 
@@ -181,13 +181,13 @@ func DeletePod(ctx *gin.Context) {
 
 	_, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableDeleteResource()), ctx)
 		return
 	}
 
 	err = kube.DeletePod(namespace, podP)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableDeleteResource()), ctx)
 		return
 	}
 	ctx.Status(http.StatusAccepted)
@@ -252,14 +252,14 @@ func GetPodLogs(ctx *gin.Context) {
 	rc, err := kube.GetPodLogs(ns, ctx.Param(podParam), &logOpt)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrUnableGetPodLogs().AddDetailsErr(err), ctx)
+		gonic.Gonic(kubeerrors.ErrUnableGetPodLogs().AddDetailsErr(err), ctx)
 		return
 	}
 
 	conn, err := wsupgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrUnableGetPodLogs().AddDetailsErr(err), ctx)
+		gonic.Gonic(kubeerrors.ErrUnableGetPodLogs().AddDetailsErr(err), ctx)
 		return
 	}
 
@@ -278,7 +278,7 @@ func Exec(ctx *gin.Context) {
 	conn, err := wsupgrader.Upgrade(ctx.Writer, ctx.Request, ctx.Request.Header)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrUnableGetPodLogs().AddDetailsErr(err), ctx)
+		gonic.Gonic(kubeerrors.ErrUnableGetPodLogs().AddDetailsErr(err), ctx)
 		return
 	}
 
@@ -292,7 +292,7 @@ func Exec(ctx *gin.Context) {
 
 	cmdMessage, err := receiveExecCommand(conn)
 	if err != nil {
-		wsutils.CloseWithCherry(conn, kubeErrors.ErrRequestValidationFailed().AddDetailsErr(err))
+		wsutils.CloseWithCherry(conn, kubeerrors.ErrRequestValidationFailed().AddDetailsErr(err))
 		return
 	}
 
@@ -325,7 +325,7 @@ func Exec(ctx *gin.Context) {
 
 	err = kube.Exec(ctx.Param(namespaceParam), ctx.Param(podParam), opts)
 	if err != nil {
-		wsutils.CloseWithCherry(conn, kubeErrors.ErrUnableGetPodLogs().AddDetailsErr(err))
+		wsutils.CloseWithCherry(conn, kubeerrors.ErrUnableGetPodLogs().AddDetailsErr(err))
 		return
 	}
 
@@ -369,13 +369,13 @@ func GetDeploymentPodList(ctx *gin.Context) {
 
 	_, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResourcesList()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableGetResourcesList()), ctx)
 		return
 	}
 
 	pods, err := kube.GetPodListByDeployment(namespace, deployment)
 	if err != nil {
-		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeerrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 

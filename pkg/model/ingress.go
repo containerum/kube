@@ -102,7 +102,7 @@ func (ingress *IngressKubeAPI) ToKube(nsName string, labels map[string]string) (
 		return nil, err
 	}
 	if labels == nil {
-		return nil, []error{kubeErrors.ErrInternalError().AddDetails("invalid project labels")}
+		return nil, []error{kubeerrors.ErrInternalError().AddDetails("invalid project labels")}
 	}
 
 	rules, secrets, tls := makeIngressRules(ingress.Rules)
