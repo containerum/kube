@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeerrors"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	headers "github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/gin"

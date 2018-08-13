@@ -11,7 +11,7 @@ import (
 	"git.containerum.net/ch/kube-api/pkg/utils/watchdog"
 	"git.containerum.net/ch/kube-api/pkg/utils/wsutils"
 
-	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeerrors"
 	"github.com/containerum/cherry/adaptors/gonic"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"

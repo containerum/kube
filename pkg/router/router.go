@@ -3,7 +3,7 @@ package router
 import (
 	"net/http"
 
-	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeerrors"
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	h "git.containerum.net/ch/kube-api/pkg/router/handlers"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
@@ -51,6 +51,7 @@ func initMiddlewares(e gin.IRouter, kube *kubernetes.Kube, enableCORS bool) {
 func initRoutes(e gin.IRouter) {
 	e.GET("/ingresses", h.GetSelectedIngresses)
 	e.GET("/configmaps", h.GetSelectedConfigMaps)
+	e.GET("/storages", h.GetStoragesList)
 
 	namespace := e.Group("/namespaces")
 	{

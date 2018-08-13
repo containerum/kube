@@ -10,7 +10,7 @@ import (
 
 	"time"
 
-	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeerrors"
 	"github.com/blang/semver"
 	kube_types "github.com/containerum/kube-client/pkg/model"
 	api_apps "k8s.io/api/apps/v1"

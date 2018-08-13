@@ -11,7 +11,7 @@ import (
 
 	"net/textproto"
 
-	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeerrors"
 	"github.com/containerum/cherry/adaptors/gonic"
 	headers "github.com/containerum/utils/httputil"
 	log "github.com/sirupsen/logrus"
