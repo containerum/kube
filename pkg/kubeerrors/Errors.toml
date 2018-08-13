@@ -1,6 +1,6 @@
 # File for noice errors generation
 
-Name = "kubeErrors"
+Name = "kubeerrors"
 SID = "Kube-API"
 
 # errors

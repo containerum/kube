@@ -19,13 +19,13 @@ type readResponse struct {
 // optionally closes the underlying Reader on timeout.
 type TimeoutReader struct {
 	reader         io.ReadCloser
-	timeout        time.Duration
-	closeOnTimeout bool
-	maxReadSize    int
 	done           chan *readResponse
 	timer          *time.Timer
 	close          chan struct{}
 	onceClose      sync.Once
+	timeout        time.Duration
+	maxReadSize    int
+	closeOnTimeout bool
 }
 
 func NewTimeoutReaderSize(reader io.ReadCloser, timeout time.Duration, closeOnTimeout bool, maxReadSize int) *TimeoutReader {

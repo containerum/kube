@@ -1,7 +1,7 @@
 package model
 
 import (
-	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeerrors"
 	kube_types "github.com/containerum/kube-client/pkg/model"
 	api_extensions "k8s.io/api/extensions/v1beta1"
 
@@ -102,7 +102,7 @@ func (ingress *IngressKubeAPI) ToKube(nsName string, labels map[string]string) (
 		return nil, err
 	}
 	if labels == nil {
-		return nil, []error{kubeErrors.ErrInternalError().AddDetails("invalid project labels")}
+		return nil, []error{kubeerrors.ErrInternalError().AddDetails("invalid project labels")}
 	}
 
 	rules, secrets, tls := makeIngressRules(ingress.Rules)

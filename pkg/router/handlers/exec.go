@@ -42,9 +42,8 @@ func receiveExecCommand(conn *websocket.Conn) (cmdMessage kubeProto.ExecCommand,
 func makeExecOptions(ctx *gin.Context, cmdMessage kubeProto.ExecCommand) (opts *kubernetes.ExecOptions, pipes *execPipes, tsQueue *terminal.SizeQueue) {
 	command := append([]string{cmdMessage.GetCommand()}, cmdMessage.GetArgs()...)
 
-	tty := ctx.Query(ttyQuery) == "true"
-
-	interactive := ctx.Query(interactiveQuery) == "true"
+	_, tty := ctx.GetQuery(ttyQuery)
+	_, interactive := ctx.GetQuery(interactiveQuery)
 
 	var (
 		stderrIn, stderrOut = io.Pipe()
@@ -75,7 +74,7 @@ func makeExecOptions(ctx *gin.Context, cmdMessage kubeProto.ExecCommand) (opts *
 		Stdin:             stdinIn,
 	}
 
-	return
+	return opts, pipes, tsQueue
 }
 
 func execFromClient(conn *websocket.Conn, tsQueue *terminal.SizeQueue, pipes *execPipes, closeAll func()) {

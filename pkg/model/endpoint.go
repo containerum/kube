@@ -6,7 +6,7 @@ import (
 
 	"time"
 
-	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeerrors"
 	kube_types "github.com/containerum/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -121,7 +121,7 @@ func (endpoint *Endpoint) ToKube(nsName string, labels map[string]string) (*api_
 	}
 
 	if labels == nil {
-		return nil, []error{kubeErrors.ErrInternalError().AddDetails("invalid project labels")}
+		return nil, []error{kubeerrors.ErrInternalError().AddDetails("invalid project labels")}
 	}
 
 	newEndpoint := api_core.Endpoints{

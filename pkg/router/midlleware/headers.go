@@ -11,7 +11,7 @@ import (
 
 	"net/textproto"
 
-	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeerrors"
 	"github.com/containerum/cherry/adaptors/gonic"
 	headers "github.com/containerum/utils/httputil"
 	log "github.com/sirupsen/logrus"
@@ -26,25 +26,25 @@ func RequiredUserHeaders() gin.HandlerFunc {
 		log.WithField("Headers", ctx.Request.Header).Debug("Header list")
 		notFoundHeaders := requireHeaders(ctx, headers.UserRoleXHeader)
 		if len(notFoundHeaders) > 0 {
-			gonic.Gonic(kubeErrors.ErrRequiredHeadersNotProvided().AddDetails(notFoundHeaders...), ctx)
+			gonic.Gonic(kubeerrors.ErrRequiredHeadersNotProvided().AddDetails(notFoundHeaders...), ctx)
 			return
 		}
 		// Check User-Role and User-Namespace
 		if isUser, err := checkIsUserRole(GetHeader(ctx, headers.UserRoleXHeader)); err != nil {
 			log.WithField("Value", GetHeader(ctx, headers.UserRoleXHeader)).WithError(err).Warn("Check User-Role Error")
-			gonic.Gonic(kubeErrors.ErrInvalidRole(), ctx)
+			gonic.Gonic(kubeerrors.ErrInvalidRole(), ctx)
 		} else {
 			// User-Role: user, check User-Namespace
 			if isUser {
 				notFoundHeaders := requireHeaders(ctx, headers.UserRoleXHeader, headers.UserNamespacesXHeader, headers.UserIDXHeader)
 				if len(notFoundHeaders) > 0 {
-					gonic.Gonic(kubeErrors.ErrRequiredHeadersNotProvided().AddDetails(notFoundHeaders...), ctx)
+					gonic.Gonic(kubeerrors.ErrRequiredHeadersNotProvided().AddDetails(notFoundHeaders...), ctx)
 					return
 				}
 				userNs, errNs := checkUserNamespace(GetHeader(ctx, headers.UserNamespacesXHeader))
 				if errNs != nil {
 					log.WithField("Value", GetHeader(ctx, headers.UserNamespacesXHeader)).WithError(errNs).Warn("Check User-Namespace header Error")
-					gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetails(fmt.Sprintf("%v: %v", headers.UserNamespacesXHeader, errNs)), ctx)
+					gonic.Gonic(kubeerrors.ErrRequestValidationFailed().AddDetails(fmt.Sprintf("%v: %v", headers.UserNamespacesXHeader, errNs)), ctx)
 					return
 				}
 				ctx.Set(UserNamespaces, userNs)

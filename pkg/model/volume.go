@@ -7,7 +7,7 @@ import (
 
 	"strings"
 
-	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeerrors"
 	kube_types "github.com/containerum/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_resource "k8s.io/apimachinery/pkg/api/resource"
@@ -76,7 +76,7 @@ func (pvc *VolumeKubeAPI) ToKube(nsName string, labels map[string]string) (*api_
 	}
 
 	if labels == nil {
-		return nil, []error{kubeErrors.ErrInternalError().AddDetails("invalid project labels")}
+		return nil, []error{kubeerrors.ErrInternalError().AddDetails("invalid project labels")}
 	}
 
 	memsize := api_resource.NewQuantity(int64(pvc.Capacity)*1024*1024*1024, api_resource.BinarySI)

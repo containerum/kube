@@ -6,7 +6,7 @@ import (
 
 	"time"
 
-	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeerrors"
 	kube_types "github.com/containerum/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -73,11 +73,11 @@ func (secret *SecretKubeAPI) ToKube(nsName string, labels map[string]string, sec
 	}
 
 	if labels == nil {
-		return nil, []error{kubeErrors.ErrInternalError().AddDetails("invalid project labels")}
+		return nil, []error{kubeerrors.ErrInternalError().AddDetails("invalid project labels")}
 	}
 
 	if secretType == api_core.SecretTypeDockerConfigJson && secret.Data[".dockerconfigjson"] == "" {
-		return nil, []error{kubeErrors.ErrRequestValidationFailed().AddDetails("field '.dockerconfigjson' is required")}
+		return nil, []error{kubeerrors.ErrRequestValidationFailed().AddDetails("field '.dockerconfigjson' is required")}
 	}
 
 	newSecret := api_core.Secret{
