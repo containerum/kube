@@ -38,6 +38,8 @@ var (
 
 	ErrUnableConvertConfigMapList = errors.New("unable to decode config maps list")
 	ErrUnableConvertConfigMap     = errors.New("unable to decode config map")
+
+	ErrUnableConvertStorageList = errors.New("unable to decode storage class list")
 )
 
 const (
