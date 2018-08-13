@@ -51,7 +51,7 @@ func initMiddlewares(e gin.IRouter, kube *kubernetes.Kube, enableCORS bool) {
 func initRoutes(e gin.IRouter) {
 	e.GET("/ingresses", h.GetSelectedIngresses)
 	e.GET("/configmaps", h.GetSelectedConfigMaps)
-	e.GET("/storages", h.GetStoragesList)
+	e.GET("/storage", h.GetStorageList)
 
 	namespace := e.Group("/namespaces")
 	{

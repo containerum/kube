@@ -12,8 +12,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// swagger:operation GET /storages Service GetStoragesList
-// Get storages list.
+// swagger:operation GET /storage Service GetStorageList
+// Get storage list.
 //
 // ---
 // x-method-visibility: public
@@ -22,12 +22,12 @@ import (
 //  - $ref: '#/parameters/UserRoleHeader'
 // responses:
 //  '200':
-//    description: storages list
+//    description: storage list
 //    schema:
 //      $ref: '#/definitions/StorageList'
 //  default:
 //    $ref: '#/responses/error'
-func GetStoragesList(ctx *gin.Context) {
+func GetStorageList(ctx *gin.Context) {
 	log.Debug("Get storages list call")
 
 	kube := ctx.MustGet(m.KubeClient).(*kubernetes.Kube)
