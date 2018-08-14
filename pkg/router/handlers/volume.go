@@ -11,7 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	log "github.com/sirupsen/logrus"
-	api_core "k8s.io/api/core/v1"
 )
 
 const (
@@ -235,7 +234,7 @@ func UpdateVolume(ctx *gin.Context) {
 		return
 	}
 
-	ns, err := kube.GetNamespaceQuota(namespace)
+	_, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
 		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableUpdateResource()), ctx)
 		return
@@ -247,13 +246,9 @@ func UpdateVolume(ctx *gin.Context) {
 		return
 	}
 
-	pvc.Name = ctx.Param(volumeParam)
-	pvc.Owner = oldPvc.GetObjectMeta().GetLabels()[ownerQuery]
-	pvc.StorageName = oldPvc.ObjectMeta.Annotations[api_core.BetaStorageClassAnnotation]
-
-	newPvc, errs := pvc.ToKube(namespace, ns.Labels)
-	if errs != nil {
-		gonic.Gonic(kubeerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+	newPvc, err := pvc.Resize(oldPvc)
+	if err != nil {
+		gonic.Gonic(kubeerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 

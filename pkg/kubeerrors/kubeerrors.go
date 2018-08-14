@@ -206,6 +206,18 @@ func ErrVolumeNotReady(params ...func(*cherry.Err)) *cherry.Err {
 	}
 	return err
 }
+
+func ErrUnableDownsizeVolume(params ...func(*cherry.Err)) *cherry.Err {
+	err := &cherry.Err{Message: "Unable to downsize volume", StatusHTTP: 400, ID: cherry.ErrID{SID: "Kube-API", Kind: 0x11}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	for _, param := range params {
+		param(err)
+	}
+	for i, detail := range err.Details {
+		det := renderTemplate(detail)
+		err.Details[i] = det
+	}
+	return err
+}
 func renderTemplate(templText string) string {
 	buf := &bytes.Buffer{}
 	templ, err := template.New("").Parse(templText)

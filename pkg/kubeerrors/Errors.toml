@@ -103,3 +103,9 @@ SID = "Kube-API"
     StatusHTTP = 503
     Message = "Volume is not ready"
     Kind = 16
+
+[[error]]
+    Name = "ErrUnableDownsizeVolume"
+    StatusHTTP = 400
+    Message = "Unable to downsize volume"
+    Kind = 17

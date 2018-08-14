@@ -105,6 +105,22 @@ func (pvc *VolumeKubeAPI) ToKube(nsName string, labels map[string]string) (*api_
 	return &newPvc, nil
 }
 
+// ToKube creates kubernetes v1.Service from Service struct and namespace labels
+func (pvc *VolumeKubeAPI) Resize(oldpvc *api_core.PersistentVolumeClaim) (*api_core.PersistentVolumeClaim, error) {
+	if oldpvc.Status.Phase != api_core.ClaimBound {
+		return nil, kubeerrors.ErrVolumeNotReady()
+	}
+
+	memsize := api_resource.NewQuantity(int64(pvc.Capacity)*1024*1024*1024, api_resource.BinarySI)
+	if memsize.Cmp(oldpvc.Spec.Resources.Requests["storage"]) < 1 {
+		return nil, kubeerrors.ErrUnableDownsizeVolume()
+	}
+
+	oldpvc.Spec.Resources.Requests["storage"] = *memsize
+
+	return oldpvc, nil
+}
+
 func (pvc *VolumeKubeAPI) Validate() []error {
 	var errs []error
 	if pvc.Name == "" {
