@@ -48,6 +48,7 @@ func ParseKubeIngress(ingressi interface{}, parseforuser bool) (*kube_types.Ingr
 
 	newIngress := kube_types.Ingress{
 		Name:      ingress.GetName(),
+		Namespace: ingress.Namespace,
 		CreatedAt: ingress.CreationTimestamp.UTC().Format(time.RFC3339),
 		Rules:     parseRules(ingress.Spec.Rules, parseTLS(ingress.Spec.TLS)),
 		Owner:     ingress.GetObjectMeta().GetLabels()[ownerLabel],

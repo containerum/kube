@@ -52,6 +52,7 @@ func ParseKubeSecret(secreti interface{}, parseforuser bool) (*kube_types.Secret
 
 	newSecret := kube_types.Secret{
 		Name:      secret.GetName(),
+		Namespace: secret.Namespace,
 		CreatedAt: secret.CreationTimestamp.UTC().Format(time.RFC3339),
 		Data:      newData,
 		Owner:     secret.GetObjectMeta().GetLabels()[ownerLabel],
