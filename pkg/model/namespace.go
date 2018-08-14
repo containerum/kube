@@ -27,7 +27,7 @@ type NamespaceKubeAPI kube_types.Namespace
 
 // ParseKubeResourceQuotaList parses kubernetes v1.ResourceQuotaList to more convenient []Namespace struct.
 // (resource quouta contains all fields that parent namespace contains)
-func ParseKubeResourceQuotaList(quotas interface{}, parseforuser bool) (*kube_types.NamespacesList, error) {
+func ParseKubeResourceQuotaList(quotas interface{}) (*kube_types.NamespacesList, error) {
 	objects := quotas.(*api_core.ResourceQuotaList)
 	if objects == nil {
 		return nil, ErrUnableConvertNamespaceList

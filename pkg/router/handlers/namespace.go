@@ -56,7 +56,7 @@ func GetNamespaceList(ctx *gin.Context) {
 		return
 	}
 
-	ret, err := model.ParseKubeResourceQuotaList(quotas, role == m.RoleAdmin)
+	ret, err := model.ParseKubeResourceQuotaList(quotas)
 	if err != nil {
 		ctx.Error(err)
 		gonic.Gonic(kubeerrors.ErrUnableGetResourcesList(), ctx)
