@@ -50,8 +50,9 @@ func ParseKubePersistentVolumeClaim(pvci interface{}, parseforuser bool) (*kube_
 	capacity := native.Spec.Resources.Requests["storage"]
 
 	pvc := kube_types.Volume{
-		Status:      string(native.Status.Phase),
 		Name:        native.Name,
+		Namespace:   native.Namespace,
+		Status:      string(native.Status.Phase),
 		CreatedAt:   native.GetCreationTimestamp().UTC().Format(time.RFC3339),
 		StorageName: native.ObjectMeta.Annotations[api_core.BetaStorageClassAnnotation],
 		AccessMode:  kube_types.PersistentVolumeAccessMode(native.Spec.AccessModes[0]),

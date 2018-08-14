@@ -62,6 +62,7 @@ type Deployment struct {
 	TotalMemory uint `json:"total_memory,omitempty"`
 	//Solution ID (only if deployment is part of solution)
 	SolutionID string         `json:"solution_id,omitempty" yaml:"solution_id,omitempty"`
+	Namespace  string         `json:"namespace,omitempty" yaml:"namespace,omitempty"`
 	Owner      string         `json:"owner,omitempty" yaml:"owner,omitempty"`
 	Active     bool           `json:"active" yaml:"active"`
 	Version    semver.Version `json:"version" yaml:"version"`
@@ -225,6 +226,6 @@ type ContainerVolume struct {
 }
 
 // Mask removes information not interesting for users
-func (deploy *Deployment) Mask() {
-	deploy.Owner = ""
+func (deployment *Deployment) Mask() {
+	deployment.Owner = ""
 }

@@ -75,8 +75,9 @@ func ParseKubeDeployment(deployment interface{}, parseforuser bool) (*kube_types
 	version, _ := semver.ParseTolerant(deploy.GetObjectMeta().GetLabels()[versionLabel])
 
 	newDeploy := kube_types.Deployment{
-		Name:     deploy.GetName(),
-		Replicas: replicas,
+		Name:      deploy.GetName(),
+		Namespace: deploy.Namespace,
+		Replicas:  replicas,
 		Status: &kube_types.DeploymentStatus{
 			Replicas:            int(deploy.Status.Replicas),
 			ReadyReplicas:       int(deploy.Status.ReadyReplicas),

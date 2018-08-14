@@ -52,6 +52,7 @@ func ParseKubeConfigMap(cmi interface{}, parseforuser bool) (*kube_types.ConfigM
 
 	newCm := kube_types.ConfigMap{
 		Name:      cm.GetName(),
+		Namespace: cm.Namespace,
 		CreatedAt: cm.CreationTimestamp.UTC().Format(time.RFC3339),
 		Data:      kube_types.ConfigMapData(newData),
 		Owner:     owner,

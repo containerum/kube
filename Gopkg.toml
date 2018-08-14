@@ -71,7 +71,7 @@ required = ["github.com/containerum/kube-client"]
 
 [[constraint]]
   name = "github.com/containerum/kube-client"
-  version = "^0.23.20"
+  version = "^0.23.23"
 
 [[constraint]]
   name = "k8s.io/kubernetes"
