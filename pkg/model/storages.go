@@ -4,6 +4,9 @@ import (
 	api_storage "k8s.io/api/storage/v1"
 )
 
+// StorageList -- model for storage names list
+//
+// swagger:model
 type StorageList []string
 
 // ParseStoragesList parses kubernetes v1.StorageClassList to more convenient StorageList struct.
