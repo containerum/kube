@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeerrors"
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
@@ -52,14 +52,14 @@ func GetNamespaceList(ctx *gin.Context) {
 
 	quotas, err := kube.GetNamespaceQuotaList(owner)
 	if err != nil {
-		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeerrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
-	ret, err := model.ParseKubeResourceQuotaList(quotas, role == m.RoleAdmin)
+	ret, err := model.ParseKubeResourceQuotaList(quotas)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeerrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
@@ -100,7 +100,7 @@ func GetNamespace(ctx *gin.Context) {
 
 	quota, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableGetResource()), ctx)
 		return
 	}
 
@@ -108,7 +108,7 @@ func GetNamespace(ctx *gin.Context) {
 	ret, err := model.ParseKubeResourceQuota(quota)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrUnableGetResource(), ctx)
+		gonic.Gonic(kubeerrors.ErrUnableGetResource(), ctx)
 		return
 	}
 
@@ -148,31 +148,31 @@ func CreateNamespace(ctx *gin.Context) {
 	var ns model.NamespaceKubeAPI
 	if err := ctx.ShouldBindWith(&ns, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
+		gonic.Gonic(kubeerrors.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	newNs, errs := ns.ToKube()
 	if errs != nil {
-		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(kubeerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	newQuota, errs := model.MakeResourceQuota(ns.ID, newNs.Labels, ns.Resources.Hard)
 	if errs != nil {
-		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(kubeerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	_, err := kube.CreateNamespace(newNs)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
 	quotaCreated, err := kube.CreateNamespaceQuota(ns.ID, newQuota)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -219,27 +219,27 @@ func UpdateNamespace(ctx *gin.Context) {
 	var res model.NamespaceKubeAPI
 	if err := ctx.ShouldBindWith(&res, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
+		gonic.Gonic(kubeerrors.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	quotaOld, err := kube.GetNamespaceQuota(namespace)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	quota, errs := model.MakeResourceQuota(quotaOld.Namespace, quotaOld.Labels, res.Resources.Hard)
 	if errs != nil {
-		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(kubeerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	quotaAfter, err := kube.UpdateNamespaceQuota(namespace, quota)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -280,7 +280,7 @@ func DeleteNamespace(ctx *gin.Context) {
 
 	err := kube.DeleteNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableDeleteResource()), ctx)
 		return
 	}
 
@@ -307,7 +307,7 @@ func DeleteUserNamespaces(ctx *gin.Context) {
 
 	list, err := kube.GetNamespaceList(httputil.MustGetUserID(ctx.Request.Context()))
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableDeleteResource()), ctx)
 		return
 	}
 

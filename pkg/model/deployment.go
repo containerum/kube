@@ -10,7 +10,7 @@ import (
 
 	"time"
 
-	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeerrors"
 	"github.com/blang/semver"
 	kube_types "github.com/containerum/kube-client/pkg/model"
 	api_apps "k8s.io/api/apps/v1"
@@ -75,8 +75,9 @@ func ParseKubeDeployment(deployment interface{}, parseforuser bool) (*kube_types
 	version, _ := semver.ParseTolerant(deploy.GetObjectMeta().GetLabels()[versionLabel])
 
 	newDeploy := kube_types.Deployment{
-		Name:     deploy.GetName(),
-		Replicas: replicas,
+		Name:      deploy.GetName(),
+		Namespace: deploy.Namespace,
+		Replicas:  replicas,
 		Status: &kube_types.DeploymentStatus{
 			Replicas:            int(deploy.Status.Replicas),
 			ReadyReplicas:       int(deploy.Status.ReadyReplicas),
@@ -144,7 +145,7 @@ func (deploy *DeploymentKubeAPI) ToKube(nsName string, labels map[string]string)
 	}
 
 	if labels == nil {
-		return nil, []error{kubeErrors.ErrInternalError().AddDetails("invalid project labels")}
+		return nil, []error{kubeerrors.ErrInternalError().AddDetails("invalid project labels")}
 	}
 
 	labels[appLabel] = deploy.Name

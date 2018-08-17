@@ -7,7 +7,7 @@ import (
 
 	"strings"
 
-	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeerrors"
 	kube_types "github.com/containerum/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_resource "k8s.io/apimachinery/pkg/api/resource"
@@ -50,8 +50,9 @@ func ParseKubePersistentVolumeClaim(pvci interface{}, parseforuser bool) (*kube_
 	capacity := native.Spec.Resources.Requests["storage"]
 
 	pvc := kube_types.Volume{
-		Status:      string(native.Status.Phase),
 		Name:        native.Name,
+		Namespace:   native.Namespace,
+		Status:      string(native.Status.Phase),
 		CreatedAt:   native.GetCreationTimestamp().UTC().Format(time.RFC3339),
 		StorageName: native.ObjectMeta.Annotations[api_core.BetaStorageClassAnnotation],
 		AccessMode:  kube_types.PersistentVolumeAccessMode(native.Spec.AccessModes[0]),
@@ -76,7 +77,7 @@ func (pvc *VolumeKubeAPI) ToKube(nsName string, labels map[string]string) (*api_
 	}
 
 	if labels == nil {
-		return nil, []error{kubeErrors.ErrInternalError().AddDetails("invalid project labels")}
+		return nil, []error{kubeerrors.ErrInternalError().AddDetails("invalid project labels")}
 	}
 
 	memsize := api_resource.NewQuantity(int64(pvc.Capacity)*1024*1024*1024, api_resource.BinarySI)
@@ -103,6 +104,22 @@ func (pvc *VolumeKubeAPI) ToKube(nsName string, labels map[string]string) (*api_
 	}
 
 	return &newPvc, nil
+}
+
+// ToKube creates kubernetes v1.Service from Service struct and namespace labels
+func (pvc *VolumeKubeAPI) Resize(oldpvc *api_core.PersistentVolumeClaim) (*api_core.PersistentVolumeClaim, error) {
+	if oldpvc.Status.Phase != api_core.ClaimBound {
+		return nil, kubeerrors.ErrVolumeNotReady()
+	}
+
+	memsize := api_resource.NewQuantity(int64(pvc.Capacity)*1024*1024*1024, api_resource.BinarySI)
+	if memsize.Cmp(oldpvc.Spec.Resources.Requests["storage"]) < 1 {
+		return nil, kubeerrors.ErrUnableDownsizeVolume()
+	}
+
+	oldpvc.Spec.Resources.Requests["storage"] = *memsize
+
+	return oldpvc, nil
 }
 
 func (pvc *VolumeKubeAPI) Validate() []error {

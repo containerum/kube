@@ -1,7 +1,7 @@
 package model
 
 import (
-	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeerrors"
 	kube_types "github.com/containerum/kube-client/pkg/model"
 	api_core "k8s.io/api/core/v1"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -80,6 +80,7 @@ func ParseKubeService(srv interface{}, parseforuser bool) (*ServiceWithParam, er
 	service := ServiceWithParam{
 		Service: &kube_types.Service{
 			Name:       native.Name,
+			Namespace:  native.Namespace,
 			CreatedAt:  native.GetCreationTimestamp().UTC().Format(time.RFC3339),
 			Ports:      ports,
 			Deploy:     native.GetObjectMeta().GetLabels()[appLabel],
@@ -129,7 +130,7 @@ func (service *ServiceWithParam) ToKube(nsName string, labels map[string]string)
 	}
 
 	if labels == nil {
-		return nil, []error{kubeErrors.ErrInternalError().AddDetails("invalid project labels")}
+		return nil, []error{kubeerrors.ErrInternalError().AddDetails("invalid project labels")}
 	}
 	labels[appLabel] = service.Deploy
 	labels[hiddenLabel] = strconv.FormatBool(service.Hidden)

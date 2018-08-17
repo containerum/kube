@@ -3,7 +3,7 @@ package router
 import (
 	"net/http"
 
-	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeerrors"
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	h "git.containerum.net/ch/kube-api/pkg/router/handlers"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
@@ -40,7 +40,7 @@ func initMiddlewares(e gin.IRouter, kube *kubernetes.Kube, enableCORS bool) {
 		StaticFS("/", static.HTTP)
 	/* System */
 	e.Use(ginrus.Ginrus(logrus.WithField("component", "gin"), time.RFC3339, true))
-	e.Use(gonic.Recovery(kubeErrors.ErrInternalError, cherrylog.NewLogrusAdapter(logrus.WithField("component", "gin"))))
+	e.Use(gonic.Recovery(kubeerrors.ErrInternalError, cherrylog.NewLogrusAdapter(logrus.WithField("component", "gin"))))
 	/* Custom */
 	e.Use(headers.SaveHeaders)
 	e.Use(headers.PrepareContext)
@@ -51,6 +51,7 @@ func initMiddlewares(e gin.IRouter, kube *kubernetes.Kube, enableCORS bool) {
 func initRoutes(e gin.IRouter) {
 	e.GET("/ingresses", h.GetSelectedIngresses)
 	e.GET("/configmaps", h.GetSelectedConfigMaps)
+	e.GET("/storage", h.GetStorageList)
 
 	namespace := e.Group("/namespaces")
 	{

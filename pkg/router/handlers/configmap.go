@@ -5,7 +5,7 @@ import (
 
 	"sync"
 
-	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeerrors"
 	"git.containerum.net/ch/kube-api/pkg/kubernetes"
 	"git.containerum.net/ch/kube-api/pkg/model"
 	m "git.containerum.net/ch/kube-api/pkg/router/midlleware"
@@ -51,13 +51,13 @@ func GetConfigMapList(ctx *gin.Context) {
 
 	_, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResourcesList()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableGetResourcesList()), ctx)
 		return
 	}
 
 	cmList, err := kube.GetConfigMapList(namespace)
 	if err != nil {
-		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeerrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
@@ -65,7 +65,7 @@ func GetConfigMapList(ctx *gin.Context) {
 	ret, err := model.ParseKubeConfigMapList(cmList, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+		gonic.Gonic(kubeerrors.ErrUnableGetResourcesList(), ctx)
 		return
 	}
 
@@ -108,13 +108,13 @@ func GetConfigMap(ctx *gin.Context) {
 
 	_, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableGetResource()), ctx)
 		return
 	}
 
 	cm, err := kube.GetConfigMap(namespace, configMap)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableGetResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableGetResource()), ctx)
 		return
 	}
 
@@ -122,7 +122,7 @@ func GetConfigMap(ctx *gin.Context) {
 	ret, err := model.ParseKubeConfigMap(cm, role == m.RoleUser)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrUnableGetResource(), ctx)
+		gonic.Gonic(kubeerrors.ErrUnableGetResource(), ctx)
 		return
 	}
 
@@ -164,26 +164,26 @@ func CreateConfigMap(ctx *gin.Context) {
 	var cmReq model.ConfigMapKubeAPI
 	if err := ctx.ShouldBindWith(&cmReq, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
+		gonic.Gonic(kubeerrors.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	ns, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
 	cm, errs := cmReq.ToKube(namespace, ns.Labels)
 	if errs != nil {
-		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(kubeerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	cmAfter, err := kube.CreateConfigMap(cm)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableCreateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableCreateResource()), ctx)
 		return
 	}
 
@@ -237,19 +237,19 @@ func UpdateConfigMap(ctx *gin.Context) {
 	var cmReq model.ConfigMapKubeAPI
 	if err := ctx.ShouldBindWith(&cmReq, binding.JSON); err != nil {
 		ctx.Error(err)
-		gonic.Gonic(kubeErrors.ErrRequestValidationFailed(), ctx)
+		gonic.Gonic(kubeerrors.ErrRequestValidationFailed(), ctx)
 		return
 	}
 
 	ns, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
 	oldCm, err := kube.GetConfigMap(namespace, ctx.Param(configMapParam))
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -258,13 +258,13 @@ func UpdateConfigMap(ctx *gin.Context) {
 
 	newCm, errs := cmReq.ToKube(namespace, ns.Labels)
 	if errs != nil {
-		gonic.Gonic(kubeErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(kubeerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	cmAfter, err := kube.UpdateConfigMap(newCm)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableUpdateResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableUpdateResource()), ctx)
 		return
 	}
 
@@ -311,13 +311,13 @@ func DeleteConfigMap(ctx *gin.Context) {
 
 	_, err := kube.GetNamespace(namespace)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableDeleteResource()), ctx)
 		return
 	}
 
 	err = kube.DeleteConfigMap(namespace, configMap)
 	if err != nil {
-		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeErrors.ErrUnableDeleteResource()), ctx)
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableDeleteResource()), ctx)
 		return
 	}
 
@@ -371,7 +371,7 @@ func GetSelectedConfigMaps(ctx *gin.Context) {
 		}
 		if err := g.Wait(); err != nil {
 			ctx.Error(err)
-			gonic.Gonic(kubeErrors.ErrUnableGetResourcesList(), ctx)
+			gonic.Gonic(kubeerrors.ErrUnableGetResourcesList(), ctx)
 			return
 		}
 	}

@@ -5,7 +5,7 @@ import (
 
 	"fmt"
 
-	"git.containerum.net/ch/kube-api/pkg/kubeErrors"
+	"git.containerum.net/ch/kube-api/pkg/kubeerrors"
 	"github.com/containerum/cherry"
 	api_errors "k8s.io/apimachinery/pkg/api/errors"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -38,6 +38,8 @@ var (
 
 	ErrUnableConvertConfigMapList = errors.New("unable to decode config maps list")
 	ErrUnableConvertConfigMap     = errors.New("unable to decode config map")
+
+	ErrUnableConvertStorageList = errors.New("unable to decode storage class list")
 )
 
 const (
@@ -65,11 +67,11 @@ func ParseKubernetesResourceError(in interface{}, defaultErr *cherry.Err) *cherr
 		switch sE.ErrStatus.Reason {
 		case api_meta.StatusReasonNotFound:
 			if sE.Status().Details.Kind == "resourcequotas" {
-				return kubeErrors.ErrResourceNotExist().AddDetails(noNamespace)
+				return kubeerrors.ErrResourceNotExist().AddDetails(noNamespace)
 			}
-			return kubeErrors.ErrResourceNotExist().AddDetailsErr(fmt.Errorf(noResource, sE.Status().Details.Name, sE.Status().Details.Kind))
+			return kubeerrors.ErrResourceNotExist().AddDetailsErr(fmt.Errorf(noResource, sE.Status().Details.Name, sE.Status().Details.Kind))
 		case api_meta.StatusReasonAlreadyExists:
-			return kubeErrors.ErrResourceAlreadyExists().AddDetailsErr(fmt.Errorf(resourceAlreadyExists, sE.Status().Details.Name, sE.Status().Details.Kind))
+			return kubeerrors.ErrResourceAlreadyExists().AddDetailsErr(fmt.Errorf(resourceAlreadyExists, sE.Status().Details.Name, sE.Status().Details.Kind))
 		default:
 			return defaultErr
 		}
