@@ -3,6 +3,7 @@ package kubernetes
 import (
 	log "github.com/sirupsen/logrus"
 	api_core "k8s.io/api/core/v1"
+	api_resource "k8s.io/apimachinery/pkg/api/resource"
 	api_meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -72,6 +73,40 @@ func (k *Kube) CreateNamespaceQuota(nsName string, quota *api_core.ResourceQuota
 		return nil, err
 	}
 	return quotaAfter, nil
+}
+
+//CreateNamespaceQuota creates namespace quota
+func (k *Kube) CreateLimitRange(nsName string) error {
+	_, err := k.CoreV1().LimitRanges(nsName).Create(&api_core.LimitRange{
+		TypeMeta: api_meta.TypeMeta{
+			Kind:       "LimitRange",
+			APIVersion: "v1",
+		},
+		ObjectMeta: api_meta.ObjectMeta{
+			Name:      "limitrange",
+			Namespace: nsName,
+		},
+		Spec: api_core.LimitRangeSpec{
+			Limits: []api_core.LimitRangeItem{
+				{
+					Type: api_core.LimitTypeContainer,
+					Default: api_core.ResourceList{
+						api_core.ResourceCPU:    api_resource.MustParse("200m"),
+						api_core.ResourceMemory: api_resource.MustParse("256Mi"),
+					},
+					DefaultRequest: api_core.ResourceList{
+						api_core.ResourceCPU:    api_resource.MustParse("100m"),
+						api_core.ResourceMemory: api_resource.MustParse("128Mi"),
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		log.WithField("Namespace", nsName).Error(err)
+		return err
+	}
+	return nil
 }
 
 //UpdateNamespaceQuota updates namespace quota
