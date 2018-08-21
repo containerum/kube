@@ -15,7 +15,7 @@ VERSION?=$(LATEST_TAG:v%=%)
 # make directory and store path to variable
 BUILDS_DIR:=$(PWD)/build
 EXECUTABLE:=kube-api
-LDFLAGS=-X '$(PACKAGE)/$(CLI_DIR).VERSION=v$(VERSION)'
+LDFLAGS=-X 'main.version=$(VERSION)'
 
 # go has build artifacts caching so soruce tracking not needed
 build:
