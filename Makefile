@@ -6,8 +6,6 @@ CLI_DIR:=cmd/kube-api
 PACKAGE := $(shell go list -f '{{.ImportPath}}' ./$(CLI_DIR))
 PACKAGE := $(PACKAGE:%/$(CLI_DIR)=%)
 
-BUILD_DATE=$(shell date +%FT%T%Z)
-
 # make directory and store path to variable
 BUILDS_DIR:=$(PWD)/build
 EXECUTABLE:=kube-api
