@@ -57,12 +57,12 @@
   version = "v0.23.27"
 
 [[projects]]
-  digest = "1:f332cfcc393a262145934ed77269e485c04987ca5ed836c6937e36147d3103d5"
+  digest = "1:30b68702657dd0cb860432e0ac74af43606fdbda7ca1a7171c34df8506f218e0"
   name = "github.com/containerum/utils"
   packages = ["httputil"]
   pruneopts = "UT"
-  revision = "f396ca4039012a63f7025cba99a5d514d2824421"
-  version = "v1.0.6"
+  revision = "d5ad116d65495380f8dba105acb9ffcb7ae935cc"
+  version = "v1.0.7"
 
 [[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
