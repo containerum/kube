@@ -15,29 +15,20 @@ import (
 
 	"time"
 
+	"github.com/containerum/kube-client/pkg/model"
 	headers "github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
 )
 
-func CreateRouter(kube *kubernetes.Kube, enableCORS bool) http.Handler {
+func CreateRouter(kube *kubernetes.Kube, status *model.ServiceStatus, enableCORS bool) http.Handler {
 	e := gin.New()
-	initMiddlewares(e, kube, enableCORS)
-	initRoutes(e)
+	initMiddlewares(e, kube)
+	initRoutes(e, status, enableCORS)
 	return e
 }
 
-func initMiddlewares(e gin.IRouter, kube *kubernetes.Kube, enableCORS bool) {
-	/* CORS */
-	if enableCORS {
-		cfg := cors.DefaultConfig()
-		cfg.AllowAllOrigins = true
-		cfg.AddAllowMethods(http.MethodDelete)
-		cfg.AddAllowHeaders(headers.UserRoleXHeader, headers.UserIDXHeader, headers.UserNamespacesXHeader)
-		e.Use(cors.New(cfg))
-	}
-	e.Group("/static").
-		StaticFS("/", static.HTTP)
+func initMiddlewares(e gin.IRouter, kube *kubernetes.Kube) {
 	/* System */
 	e.Use(ginrus.Ginrus(logrus.WithField("component", "gin"), time.RFC3339, true))
 	e.Use(gonic.Recovery(kubeerrors.ErrInternalError, cherrylog.NewLogrusAdapter(logrus.WithField("component", "gin"))))
@@ -48,7 +39,19 @@ func initMiddlewares(e gin.IRouter, kube *kubernetes.Kube, enableCORS bool) {
 	e.Use(m.RegisterKubeClient(kube))
 }
 
-func initRoutes(e gin.IRouter) {
+func initRoutes(e gin.IRouter, status *model.ServiceStatus, enableCORS bool) {
+	if enableCORS {
+		cfg := cors.DefaultConfig()
+		cfg.AllowAllOrigins = true
+		cfg.AddAllowMethods(http.MethodDelete)
+		cfg.AddAllowHeaders(headers.UserRoleXHeader, headers.UserIDXHeader, headers.UserNamespacesXHeader)
+		e.Use(cors.New(cfg))
+	}
+	e.Group("/static").
+		StaticFS("/", static.HTTP)
+
+	e.GET("/status", h.ServiceStatus(status))
+
 	e.GET("/ingresses", h.GetSelectedIngresses)
 	e.GET("/configmaps", h.GetSelectedConfigMaps)
 	e.GET("/storage", h.GetStorageList)

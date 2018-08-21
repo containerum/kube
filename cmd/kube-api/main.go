@@ -14,7 +14,8 @@ import (
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "ch-kube-api-server"
+	app.Name = "kube-api"
+	app.Version = "1.0.0"
 	app.Usage = "Kube api server for Container Hosting"
 	app.Flags = flags
 
