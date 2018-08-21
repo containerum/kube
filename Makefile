@@ -6,11 +6,7 @@ CLI_DIR:=cmd/kube-api
 PACKAGE := $(shell go list -f '{{.ImportPath}}' ./$(CLI_DIR))
 PACKAGE := $(PACKAGE:%/$(CLI_DIR)=%)
 
-COMMIT_HASH=$(shell git rev-parse --short HEAD 2>/dev/null)
 BUILD_DATE=$(shell date +%FT%T%Z)
-LATEST_TAG=$(shell git describe --tags $(shell git rev-list --tags --max-count=1))
-
-VERSION?=$(LATEST_TAG:v%=%)
 
 # make directory and store path to variable
 BUILDS_DIR:=$(PWD)/build
@@ -69,7 +65,6 @@ single_release:
 	$(call build_release,$(OS),$(ARCH))
 
 dev:
-	$(eval VERSION=$(LATEST_TAG:v%=%)+dev)
 	@echo building $(VERSION)
 	@echo $(PACKAGE)
-	go build -v --tags="dev" --ldflags="$(DEV_LDFLAGS)" ./$(CMD_DIR)
+	go build -v --tags="dev" --ldflags="$(LDFLAGS)" ./$(CMD_DIR)
