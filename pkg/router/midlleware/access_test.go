@@ -9,6 +9,8 @@ import (
 	headers "github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/gin"
 
+	"git.containerum.net/ch/kube-api/pkg/kubeerrors"
+	"github.com/containerum/utils/httputil"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -39,7 +41,7 @@ func TestContainsAccess(t *testing.T) {
 func TestIsAdmin(t *testing.T) {
 	e := gin.New()
 	r := gofight.New()
-	e.GET("/test", IsAdmin, func(c *gin.Context) {
+	e.GET("/test", httputil.RequireAdminRole(kubeerrors.ErrAdminRequired), func(c *gin.Context) {
 		c.AbortWithStatus(http.StatusOK)
 	})
 	Convey("Test IsAdmin Middleware", t, func() {
@@ -52,7 +54,7 @@ func TestIsAdmin(t *testing.T) {
 		Convey("Check wrong User-Role", func() {
 			r.GET("/test").
 				SetHeader(gofight.H{
-					headers.UserRoleXHeader: "useradmin",
+					httputil.UserRoleXHeader: "useradmin",
 				}).
 				Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
 					So(r.Code, ShouldEqual, http.StatusForbidden)
@@ -61,7 +63,7 @@ func TestIsAdmin(t *testing.T) {
 		Convey("Check user User-Role", func() {
 			r.GET("/test").
 				SetHeader(gofight.H{
-					headers.UserRoleXHeader: RoleUser,
+					httputil.UserRoleXHeader: RoleUser,
 				}).
 				Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
 					So(r.Code, ShouldEqual, http.StatusForbidden)

@@ -114,7 +114,7 @@ func initRoutes(e gin.IRouter, status *model.ServiceStatus, enableCORS bool) {
 			ingress.DELETE("/:ingress", h.DeleteIngress)
 		}
 
-		endpoint := namespace.Group("/:namespace/endpoints", m.IsAdmin)
+		endpoint := namespace.Group("/:namespace/endpoints", httputil.RequireAdminRole(kubeerrors.ErrAdminRequired))
 		{
 			endpoint.GET("", h.GetEndpointList)
 			endpoint.GET("/:endpoint", h.GetEndpoint)
