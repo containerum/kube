@@ -23,6 +23,7 @@ import (
 
 func CreateRouter(kube *kubernetes.Kube, status *model.ServiceStatus, enableCORS bool) http.Handler {
 	e := gin.New()
+	e.GET("/status", httputil.ServiceStatus(status))
 	initMiddlewares(e, kube)
 	initRoutes(e, status, enableCORS)
 	return e
@@ -49,8 +50,6 @@ func initRoutes(e gin.IRouter, status *model.ServiceStatus, enableCORS bool) {
 	}
 	e.Group("/static").
 		StaticFS("/", static.HTTP)
-
-	e.GET("/status", httputil.ServiceStatus(status))
 
 	e.GET("/ingresses", h.GetSelectedIngresses)
 	e.GET("/configmaps", h.GetSelectedConfigMaps)
