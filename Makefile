@@ -4,7 +4,7 @@ CMD_DIR:=cmd/kube-api
 
 # make directory and store path to variable
 BUILDS_DIR:=$(PWD)/build
-EXECUTABLE:=kube-api
+EXECUTABLE:=kube
 LDFLAGS=-X 'main.version=$(VERSION)' -w -s -extldflags '-static'
 
 # go has build artifacts caching so soruce tracking not needed
