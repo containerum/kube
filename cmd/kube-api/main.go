@@ -16,7 +16,7 @@ var version string
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "kube-api"
+	app.Name = "kube"
 	app.Version = version
 	app.Usage = "Kube api server for Container Hosting"
 	app.Flags = flags
