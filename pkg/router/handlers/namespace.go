@@ -176,6 +176,11 @@ func CreateNamespace(ctx *gin.Context) {
 		return
 	}
 
+	if err := kube.CreateLimitRange(ns.ID); err != nil {
+		gonic.Gonic(model.ParseKubernetesResourceError(err, kubeerrors.ErrUnableCreateResource()), ctx)
+		return
+	}
+
 	ret, err := model.ParseKubeResourceQuota(quotaCreated)
 	if err != nil {
 		ctx.Error(err)

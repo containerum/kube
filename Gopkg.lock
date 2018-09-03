@@ -46,31 +46,31 @@
   version = "v1.0.2"
 
 [[projects]]
-  digest = "1:d652ab42537fde5cee32c1ef80660df9befcd9a3f080d333a0b998e586b6e30f"
+  digest = "1:232b4ef5db92a5016d8f7c668d8114ea3df1341cff76691ddbd36915d049ff47"
   name = "github.com/containerum/kube-client"
   packages = [
     ".",
     "pkg/model",
   ]
   pruneopts = "UT"
-  revision = "972c4f252587d8d783aba690c36237d94f4e7715"
-  version = "v0.23.23"
+  revision = "d9a1865782bb10b027248a9770a42a53ed11a423"
+  version = "v0.23.27"
 
 [[projects]]
-  digest = "1:f332cfcc393a262145934ed77269e485c04987ca5ed836c6937e36147d3103d5"
+  digest = "1:30b68702657dd0cb860432e0ac74af43606fdbda7ca1a7171c34df8506f218e0"
   name = "github.com/containerum/utils"
   packages = ["httputil"]
   pruneopts = "UT"
-  revision = "f396ca4039012a63f7025cba99a5d514d2824421"
-  version = "v1.0.6"
+  revision = "d5ad116d65495380f8dba105acb9ffcb7ae935cc"
+  version = "v1.0.7"
 
 [[projects]]
-  digest = "1:a2c1d0e43bd3baaa071d1b9ed72c27d78169b2b269f71c105ac4ba34b1be4a39"
+  digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   pruneopts = "NUT"
-  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
-  version = "v1.1.0"
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
 
 [[projects]]
   digest = "1:3cabbabc9e0e4aa7e12b882bdc213f41cf8bd2b2ce2a7b5e0aceaf8a6a78049b"
@@ -220,7 +220,7 @@
   revision = "23def4e6c14b4da8ac2ed8007337bc5eb5007998"
 
 [[projects]]
-  digest = "1:03e14cff610a8a58b774e36bd337fa979482be86aab01be81fb8bbd6d0f07fc8"
+  digest = "1:63ccdfbd20f7ccd2399d0647a7d100b122f79c13bb83da9660b1598396fd9f62"
   name = "github.com/golang/protobuf"
   packages = [
     "proto",
@@ -230,8 +230,8 @@
     "ptypes/timestamp",
   ]
   pruneopts = "NUT"
-  revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
-  version = "v1.1.0"
+  revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
+  version = "v1.2.0"
 
 [[projects]]
   branch = "master"
@@ -275,7 +275,7 @@
   name = "github.com/gopherjs/gopherjs"
   packages = ["js"]
   pruneopts = "NUT"
-  revision = "0892b62f0d9fb5857760c3cfca837207185117ee"
+  revision = "89baedc74dd74098df0c4ba8792e3cf6d722d4d0"
 
 [[projects]]
   digest = "1:3b708ebf63bfa9ba3313bedb8526bc0bb284e51474e65e958481476a9d4a12aa"
@@ -474,11 +474,11 @@
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
   pruneopts = "NUT"
-  revision = "de0752318171da717af4ce24d0a2e8626afaeb11"
+  revision = "614d502a4dac94afa3a6ce146bd1736da82514c6"
 
 [[projects]]
   branch = "master"
-  digest = "1:30080e3b16960b76f9cac9bbd943a608f55fb3aeb58a02f6da7c2c82afc26ea7"
+  digest = "1:b97884227f0b15b579731be9eafd87d3d143d82715ea14942f8e8e032220f4c4"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -490,7 +490,7 @@
     "webdav/internal/xml",
   ]
   pruneopts = "NUT"
-  revision = "c39426892332e1bb5ec0a434a079bf82f5d30c54"
+  revision = "922f4815f713f213882e8ef45e0d315b164d705c"
 
 [[projects]]
   branch = "master"
@@ -502,14 +502,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:89ad83167492e9810168f2feca808ec4134321d61223b3ae1520134a9a1ef283"
+  digest = "1:f8130e9e646175a1dcce75cfe1b57fa4cb07015c79690b03aa87bf9c912209fe"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "NUT"
-  revision = "4e1fef5609515ec7a2cee7b5de30ba6d9b438cbf"
+  revision = "4ea2f632f6e912459fe60b26b1749377f0d889d5"
 
 [[projects]]
   digest = "1:e33513a825fcd765e97b5de639a2f7547542d1a8245df0cef18e1fd390b778a9"

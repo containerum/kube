@@ -1,26 +1,21 @@
-.PHONY: build test clean release single_release
+.PHONY: build build-for-docker test clean release single_release
 
 CMD_DIR:=cmd/kube-api
-CLI_DIR:=cmd/kube-api
-#get current package, assuming it`s in GOPATH sources
-PACKAGE := $(shell go list -f '{{.ImportPath}}' ./$(CLI_DIR))
-PACKAGE := $(PACKAGE:%/$(CLI_DIR)=%)
-
-COMMIT_HASH=$(shell git rev-parse --short HEAD 2>/dev/null)
-BUILD_DATE=$(shell date +%FT%T%Z)
-LATEST_TAG=$(shell git describe --tags $(shell git rev-list --tags --max-count=1))
-
-VERSION?=$(LATEST_TAG:v%=%)
 
 # make directory and store path to variable
 BUILDS_DIR:=$(PWD)/build
-EXECUTABLE:=kube-api
-LDFLAGS=-X '$(PACKAGE)/$(CLI_DIR).VERSION=v$(VERSION)'
+EXECUTABLE:=kube
+LDFLAGS=-X 'main.version=$(VERSION)' -w -s -extldflags '-static'
 
 # go has build artifacts caching so soruce tracking not needed
 build:
-	@echo "Building kube-api for current OS/architecture"
-	@go build -v -ldflags="$(LDFLAGS)" -o $(BUILDS_DIR)/$(EXECUTABLE) ./$(CMD_DIR)
+	@echo "Building mail-templater for current OS/architecture"
+	@echo $(LDFLAGS)
+	@CGO_ENABLED=0 go build -v -ldflags="$(LDFLAGS)" -tags="jsoniter" -o $(BUILDS_DIR)/$(EXECUTABLE) ./$(CMD_DIR)
+
+build-for-docker:
+	@echo $(LDFLAGS)
+	@CGO_ENABLED=0 go build -v -ldflags="$(LDFLAGS)" -tags="jsoniter" -o  /tmp/$(EXECUTABLE) ./$(CMD_DIR)
 
 test:
 	@echo "Running tests"
@@ -69,7 +64,5 @@ single_release:
 	$(call build_release,$(OS),$(ARCH))
 
 dev:
-	$(eval VERSION=$(LATEST_TAG:v%=%)+dev)
 	@echo building $(VERSION)
-	@echo $(PACKAGE)
-	go build -v --tags="dev" --ldflags="$(DEV_LDFLAGS)" ./$(CMD_DIR)
+	go build -v --tags="dev" --ldflags="$(LDFLAGS)" ./$(CMD_DIR)

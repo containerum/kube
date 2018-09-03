@@ -12,9 +12,12 @@ import (
 //go:generate swagger validate ../../swagger.json
 //go:generate protoc --go_out=../../proto -I../../proto exec.proto
 
+var version string
+
 func main() {
 	app := cli.NewApp()
-	app.Name = "ch-kube-api-server"
+	app.Name = "kube"
+	app.Version = version
 	app.Usage = "Kube api server for Container Hosting"
 	app.Flags = flags
 

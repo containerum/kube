@@ -35,13 +35,6 @@ const (
 	RoleAdmin = "admin"
 )
 
-func IsAdmin(ctx *gin.Context) {
-	if role := GetHeader(ctx, headers.UserRoleXHeader); role != RoleAdmin {
-		gonic.Gonic(kubeerrors.ErrAdminRequired(), ctx)
-		return
-	}
-}
-
 func ReadAccess(ctx *gin.Context) {
 	CheckAccess(ctx, readLevels)
 }
