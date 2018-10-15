@@ -9,8 +9,8 @@ FROM alpine:3.7
 VOLUME ["/cfg"]
 
 COPY --from=builder /tmp/kube /
-ENV CH_KUBE_API_DEBUG="true" \
-    CH_KUBE_API_TEXTLOG="true"
+ENV DEBUG="true" \
+    TEXTLOG="true"
 
 EXPOSE 1212
 

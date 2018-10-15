@@ -8,28 +8,28 @@ import (
 
 var flags = []cli.Flag{
 	cli.BoolFlag{
-		EnvVar: "CH_KUBE_API_DEBUG",
+		EnvVar: "DEBUG",
 		Name:   "debug",
 		Usage:  "start the server in debug mode",
 	},
 	cli.StringFlag{
-		EnvVar: "CH_KUBE_API_PORT",
+		EnvVar: "PORT",
 		Name:   "port",
 		Value:  "1212",
 		Usage:  "port for kube-api server",
 	},
 	cli.StringFlag{
-		EnvVar: "CH_KUBE_API_KUBE_CONF",
+		EnvVar: "KUBE_CONF",
 		Name:   "kubeconf",
 		Usage:  "config file for kubernetes apiserver client",
 	},
 	cli.BoolFlag{
-		EnvVar: "CH_KUBE_API_TEXTLOG",
+		EnvVar: "TEXTLOG",
 		Name:   "textlog",
 		Usage:  "output log in text format",
 	},
 	cli.BoolFlag{
-		EnvVar: "CH_KUBE_API_CORS",
+		EnvVar: "CORS",
 		Name:   "cors",
 		Usage:  "enable CORS",
 	},
