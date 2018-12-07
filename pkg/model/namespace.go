@@ -17,10 +17,10 @@ import (
 const (
 	ownerLabel = "owner"
 
-	minNamespaceCPU    = 10    //m
-	minNamespaceMemory = 10    //Mi
-	maxNamespaceCPU    = 12000 //m
-	maxNamespaceMemory = 28672 //Mi
+	minNamespaceCPU    = 10     //m
+	minNamespaceMemory = 10     //Mi
+	maxNamespaceCPU    = 120000 //m
+	maxNamespaceMemory = 286720 //Mi
 )
 
 type NamespaceKubeAPI kube_types.Namespace
